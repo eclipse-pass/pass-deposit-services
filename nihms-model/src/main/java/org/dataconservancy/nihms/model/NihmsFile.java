@@ -16,6 +16,10 @@
 
 package org.dataconservancy.nihms.model;
 
+/**
+ * Represents a file that was uploaded by a user into PASS; e.g. a manuscript or supplemental material for a specific
+ * submission.
+ */
 public class NihmsFile {
 
     /**

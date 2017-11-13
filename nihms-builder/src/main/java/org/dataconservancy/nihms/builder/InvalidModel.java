@@ -13,37 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.dataconservancy.nihms.model;
+package org.dataconservancy.nihms.builder;
 
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public enum NihmsFileType {
+public class InvalidModel extends Exception {
 
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
+    public InvalidModel(String message) {
+        super(message);
+    }
 
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
+    public InvalidModel(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
-
+    public InvalidModel(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

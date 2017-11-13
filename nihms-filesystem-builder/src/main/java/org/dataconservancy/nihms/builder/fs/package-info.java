@@ -14,36 +14,8 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
-
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * Implementation capable of building a {@link org.dataconservancy.nihms.model.NihmsSubmission} from submission metadata
+ * mounted on the local filesystem.
  */
-public enum NihmsFileType {
-
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
-
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
-
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
-
-}
+package org.dataconservancy.nihms.builder.fs;

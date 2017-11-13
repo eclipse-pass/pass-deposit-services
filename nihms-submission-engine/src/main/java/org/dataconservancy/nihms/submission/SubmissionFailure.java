@@ -14,36 +14,20 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
+package org.dataconservancy.nihms.submission;
 
-/**
- * The semantic type of a {@link NihmsFile file}.
- */
-public enum NihmsFileType {
+public class SubmissionFailure extends Exception {
 
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
+    public SubmissionFailure(String message) {
+        super(message);
+    }
 
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
+    public SubmissionFailure(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
+    public SubmissionFailure(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
 }

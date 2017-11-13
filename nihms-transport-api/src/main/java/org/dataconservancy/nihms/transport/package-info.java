@@ -14,36 +14,8 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
-
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * Provides an API for streaming a submission package to a target system, independent of the transport layer (FTP, HTTP,
+ * etc.).
  */
-public enum NihmsFileType {
-
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
-
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
-
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
-
-}
+package org.dataconservancy.nihms.transport;

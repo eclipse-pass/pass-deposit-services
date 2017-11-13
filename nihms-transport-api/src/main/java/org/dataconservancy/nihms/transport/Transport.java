@@ -14,36 +14,19 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
+package org.dataconservancy.nihms.transport;
+
+import java.io.InputStream;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * Abstracts the transport protocol used to deposit a package with a target submission system.
  */
-public enum NihmsFileType {
+public interface Transport {
 
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
+    TransportSession open(Map<String, String> hints);
 
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
 
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
 
 }

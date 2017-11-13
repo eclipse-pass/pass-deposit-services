@@ -13,37 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.dataconservancy.nihms.model;
 
+import java.util.List;
+
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * Encapsulates a submission to the NIHMS system, including the manuscript and supplemental files, metadata describing
+ * the manuscript, authors, and the journal of publication, and a manifest cataloging every file in the submission.
+ *
+ * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public enum NihmsFileType {
+public class NihmsSubmission {
 
     /**
-     * Metadata required by the NIHMS submission process.
+     * Internal, submission engine, identifier
      */
-    bulksub_meta_xml,
+    private String id;
 
     /**
-     * Manuscript file uploaded by an end-user.
+     * Manifest containing an entry for each file in the submission
      */
-    manuscript,
+    private NihmsManifest manifest;
 
     /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
+     * Metadata describing the contents of the submission
      */
-    supplement,
+    private NihmsMetadata metadata;
 
     /**
-     * Manuscript figure uploaded by an end-user.
+     * The files uploaded by the user, including the manuscript and supplemental files.
      */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
+    private List<NihmsFile> files;
 
 }

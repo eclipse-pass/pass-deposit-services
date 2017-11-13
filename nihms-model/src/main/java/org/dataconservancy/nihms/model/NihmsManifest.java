@@ -16,6 +16,21 @@
 
 package org.dataconservancy.nihms.model;
 
+import java.util.List;
+
+/**
+ * Accounts for every file in a NIHMS submission.  Each entry in this manifest includes:
+ * <ol>
+ *     <li>the {@link NihmsFile#name name} of the file</li>
+ *     <li>the {@link NihmsFileType semantic type} of the file</li>
+ *     <li>a label for the file, <em>required</em> for {@link NihmsFileType#figure figures}, {@link NihmsFileType#table tables}, and {@link NihmsFileType#supplement supplements}</li>
+ * </ol>
+ */
 public class NihmsManifest {
+
+    /**
+     * List of files in this manifest
+     */
+    private List<NihmsFile> files;
 
 }

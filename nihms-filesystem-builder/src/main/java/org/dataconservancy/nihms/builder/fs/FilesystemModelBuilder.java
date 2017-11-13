@@ -14,36 +14,21 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
+package org.dataconservancy.nihms.builder.fs;
+
+import org.dataconservancy.nihms.builder.InvalidModel;
+import org.dataconservancy.nihms.builder.SubmissionBuilder;
+import org.dataconservancy.nihms.model.NihmsSubmission;
 
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * Builds a NIHMS submission from a file on a locally mounted filesystem.  The file contains key-value pairs that would
+ * loosely mimic the form data provided by the view layer.
  */
-public enum NihmsFileType {
+public class FilesystemModelBuilder implements SubmissionBuilder {
 
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
-
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
-
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
+    @Override
+    public NihmsSubmission build(String formDataUrl) throws InvalidModel {
+        return null;
+    }
 
 }

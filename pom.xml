@@ -26,9 +26,15 @@
 
     <modules>
         <module>nihms-model</module>
-        <!--<module>nihms-builder</module>-->
-        <!--<module>nihms-assembler</module>-->
-        <!--<module>nihms-transport-ftp</module>-->
+        <module>nihms-builder</module>
+        <module>nihms-filesystem-builder</module>
+        <module>nihms-assembler-api</module>
+        <module>nihms-native-assembler</module>
+        <!-- nihms-bagit-assembler -->
+        <module>nihms-transport-api</module>
+        <module>nihms-ftp-transport</module>
+        <!-- nihms-http-transport -->
+        <module>nihms-submission-engine</module>
         <!--<module>nihms-integration</module>-->
     </modules>
 
@@ -181,6 +187,12 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${commons-net.version}</version>
             </dependency>
 
         </dependencies>

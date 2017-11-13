@@ -15,7 +15,7 @@
  */
 
 /**
- * Provides the basic model for creating a submission package for the NIHMS Publisher Bulk-Upload Pathway
+ * Provides the basic model for the submission of article manuscripts and supplemental data to NIHMS.
  *
  * @see <a href="https://www.nihms.nih.gov/db/sub.cgi?page=faq">NIHMS FAQ</a>
  * @see <a href="https://www.nihms.nih.gov/db/i/nihms-bulk-sub.tar.gz">NIHMS bulk upload information package</a>

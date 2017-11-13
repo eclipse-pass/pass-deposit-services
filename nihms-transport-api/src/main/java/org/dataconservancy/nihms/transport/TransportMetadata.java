@@ -14,36 +14,7 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.model;
+package org.dataconservancy.nihms.transport;
 
-/**
- * The semantic type of a {@link NihmsFile file}.
- */
-public enum NihmsFileType {
-
-    /**
-     * Metadata required by the NIHMS submission process.
-     */
-    bulksub_meta_xml,
-
-    /**
-     * Manuscript file uploaded by an end-user.
-     */
-    manuscript,
-
-    /**
-     * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
-     */
-    supplement,
-
-    /**
-     * Manuscript figure uploaded by an end-user.
-     */
-    figure,
-
-    /**
-     * Manuscript table uploaded by an end-user.
-     */
-    table
-
+public interface TransportMetadata {
 }
