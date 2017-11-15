@@ -25,7 +25,6 @@ import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
 
 import java.util.Collections;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -47,6 +46,7 @@ public class SubmissionEngine {
 
     public void submit(String formDataUrl) throws SubmissionFailure {
 
+        // Build the submission
         NihmsSubmission submission = null;
 
         try {
@@ -55,24 +55,30 @@ public class SubmissionEngine {
             throw new SubmissionFailure(format(MODEL_ERROR, e.getMessage()), e);
         }
 
-        final String resource = format("%s/%s", nihmsDestinationDirectory(), nihmsDestinationFile());
         final TransportResponse response;
+        String resourceName = null;
 
+        // Open the underlying transport (FTP for NIHMS)
+        // Assemble the package
+        // Stream it to the target system
         try (TransportSession session = transport.open(Collections.emptyMap())) {
             PackageStream stream = assembler.assemble(submission);
+            resourceName = stream.metadata().name();
+            // this is using the piped input stream (returned from stream.open()).  does this have to occur in a
+            // separate thread?
             response = session
-                    .send(resource, getTransportHints(), stream.open())
+                    .send(resourceName, getTransportHints(), stream.open())
                     .get(3, TimeUnit.MINUTES);
         } catch (Exception e) {
-            throw new SubmissionFailure(format(SUBMISSION_ERROR, resource, e.getMessage()), e);
+            throw new SubmissionFailure(format(SUBMISSION_ERROR, resourceName, e.getMessage()), e);
         }
 
         if (!response.success()) {
-            if (response.error() != null) {
-                throw new SubmissionFailure(format(SUBMISSION_ERROR, resource, response.error().getMessage()), response.error());
-            } else {
-                throw new SubmissionFailure(format(SUBMISSION_ERROR, resource, "Cause unknown."));
-            }
+            throw new SubmissionFailure(
+                    format(SUBMISSION_ERROR,
+                            resourceName,
+                            (response.error() != null) ? response.error().getMessage() : "Cause unknown"),
+                    response.error());
         }
 
     }
@@ -81,10 +87,14 @@ public class SubmissionEngine {
         return null;
     }
 
+    // transport concern
+    @Deprecated
     private String nihmsDestinationDirectory() {
         return null;
     }
 
+    // filename could be provided by the assembler (e.g. bagit places requirements on the filename of the package)
+    @Deprecated
     private String nihmsDestinationFile() {
         return null;
     }

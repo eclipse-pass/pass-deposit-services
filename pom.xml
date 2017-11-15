@@ -53,6 +53,8 @@
         <spring-framework.version>5.0.1.RELEASE</spring-framework.version>
         <spring-boot.version>2.0.0.M6</spring-boot.version>
         <commons-net.version>3.6</commons-net.version>
+        <commons-compress.version>1.15</commons-compress.version>
+        <commons-io.version>2.6</commons-io.version>
         <mockito.version>2.12.0</mockito.version>
         <okhttp.version>3.9.0</okhttp.version>
     </properties>
@@ -193,6 +195,18 @@
                 <groupId>commons-net</groupId>
                 <artifactId>commons-net</artifactId>
                 <version>${commons-net.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
 
         </dependencies>
