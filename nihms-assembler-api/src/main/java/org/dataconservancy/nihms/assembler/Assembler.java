@@ -24,6 +24,7 @@ import org.dataconservancy.nihms.model.NihmsSubmission;
  * the specific packaging requirements (e.g. comporting with BagIt, or profile of BagIt) of a submission destination ,
  * and are responsible for providing a compliant package.
  *
+ * TODO: Consider a type parameter to represent the packaging specification
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface Assembler {

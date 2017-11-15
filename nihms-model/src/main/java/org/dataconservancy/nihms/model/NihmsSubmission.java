@@ -45,6 +45,11 @@ public class NihmsSubmission {
      */
     private List<NihmsFile> files;
 
+    /**
+     * Short, human-readable, name of the submission.  Used to generate the file name for the package file.
+     */
+    private String name;
+
     public String getId() {
         return id;
     }
@@ -77,14 +82,12 @@ public class NihmsSubmission {
         this.files = files;
     }
 
-    @Override
-    public String toString() {
-        return "NihmsSubmission{" +
-                "id='" + id + '\'' +
-                ", manifest=" + manifest +
-                ", metadata=" + metadata +
-                ", files=" + files +
-                '}';
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -97,7 +100,8 @@ public class NihmsSubmission {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (manifest != null ? !manifest.equals(that.manifest) : that.manifest != null) return false;
         if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
-        return files != null ? files.equals(that.files) : that.files == null;
+        if (files != null ? !files.equals(that.files) : that.files != null) return false;
+        return name != null ? name.equals(that.name) : that.name == null;
     }
 
     @Override
@@ -106,6 +110,18 @@ public class NihmsSubmission {
         result = 31 * result + (manifest != null ? manifest.hashCode() : 0);
         result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
         result = 31 * result + (files != null ? files.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NihmsSubmission{" +
+                "id='" + id + '\'' +
+                ", manifest=" + manifest +
+                ", metadata=" + metadata +
+                ", files=" + files +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
