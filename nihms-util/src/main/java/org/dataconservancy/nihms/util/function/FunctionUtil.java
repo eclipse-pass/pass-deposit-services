@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.transport;
+package org.dataconservancy.nihms.util.function;
 
-public class TransportProperties implements TransportMetadata {
+public class FunctionUtil {
+
+    public static <T> T performSilently(ExceptionThrowingCommand<T> command) {
+        try {
+            return command.perform();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

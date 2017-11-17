@@ -59,6 +59,13 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+        <!-- TODO: remove this in the future; included for the FtpTransportHints class -->
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-ftp-transport</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>

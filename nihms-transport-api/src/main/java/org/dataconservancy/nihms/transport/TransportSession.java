@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.transport;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 public interface TransportSession extends AutoCloseable {
@@ -32,9 +33,9 @@ public interface TransportSession extends AutoCloseable {
      * @param content
      * @return
      */
-    Future<TransportResponse> send(String destinationResource, InputStream content);
+    TransportResponse send(String destinationResource, InputStream content);
 
-    Future<TransportResponse> send(String destinationResource, TransportMetadata metadata, InputStream content);
+    TransportResponse send(String destinationResource, Map<String, String> metadata, InputStream content);
 
     boolean closed();
 
