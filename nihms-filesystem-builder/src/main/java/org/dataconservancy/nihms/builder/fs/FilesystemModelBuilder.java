@@ -20,6 +20,7 @@ import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.NihmsBuilderPropertyNames;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.NihmsFile;
+import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.dataconservancy.nihms.model.NihmsSubmission;
 
 
@@ -37,46 +38,57 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
     @Override
     public NihmsSubmission build(String formDataUrl) throws InvalidModel {
         Properties properties = new Properties();
-        InputStream input = null;
+        InputStream is = null;
         NihmsSubmission submission = new NihmsSubmission();
+        NihmsFile file = new NihmsFile();
+        NihmsMetadata metadata = new NihmsMetadata();
 
         try {
-            input = getClass().getClassLoader().getResourceAsStream(formDataUrl);
-            if (input == null) {
+            is = getClass().getClassLoader().getResourceAsStream(formDataUrl);
+            if (is == null) {
                 System.out.println("Sorry, unable to find submission properties file " + formDataUrl);
                 return null;
             }
 
-            properties.load(input);
+            properties.load(is);
 
             Enumeration<?> e = properties.propertyNames();
             while (e.hasMoreElements()) {
                 String key = (String) e.nextElement();
                 String value = properties.getProperty(key);
 
-               // switch (key) {
-                //    case NihmsBuilderPropertyNames.NIHMS_FILE_NAME:
-                //        NihmsFile file = new NihmsFile();
+                switch (key) {
+                    case NihmsBuilderPropertyNames.NIHMS_FILE_NAME:
+                        file.setName(value);
+                        break;
+                    case NihmsBuilderPropertyNames.NIHMS_FILE_LABEL:
+                        file.setLabel(value);
+                        break;
+
+                    case NihmsBuilderPropertyNames.NIHMS_JOURNAL_ID:
 
 
 
-               // }
+                }
                // System.out.println("Key : " + key + ", Value : " + value);
             }
+
+            //now populate the submission
+            submission.getFiles().add(file);
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } finally {
-            if (input != null) {
+            if (is != null) {
                 try {
-                    input.close();
+                    is.close();
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
             }
         }
 
-        return null;
+        return submission;
     }
 
 }
