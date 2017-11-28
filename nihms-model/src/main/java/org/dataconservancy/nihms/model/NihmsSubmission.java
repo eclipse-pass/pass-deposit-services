@@ -45,4 +45,68 @@ public class NihmsSubmission {
      */
     private List<NihmsFile> files;
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public NihmsManifest getManifest() {
+        return manifest;
+    }
+
+    public void setManifest(NihmsManifest manifest) {
+        this.manifest = manifest;
+    }
+
+    public NihmsMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(NihmsMetadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public List<NihmsFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<NihmsFile> files) {
+        this.files = files;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NihmsSubmission that = (NihmsSubmission) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (manifest != null ? !manifest.equals(that.manifest) : that.manifest != null) return false;
+        if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
+        return files != null ? files.equals(that.files) : that.files == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (manifest != null ? manifest.hashCode() : 0);
+        result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
+        result = 31 * result + (files != null ? files.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NihmsSubmission{" +
+                "id='" + id + '\'' +
+                ", manifest=" + manifest +
+                ", metadata=" + metadata +
+                ", files=" + files +
+                '}';
+    }
+
 }

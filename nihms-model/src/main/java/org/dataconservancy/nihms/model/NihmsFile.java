@@ -39,4 +39,74 @@ public class NihmsFile {
      * </p>
      */
     private String label;
+
+    /**
+     * The location of the bytes for the file
+     */
+    private String location;
+
+    public NihmsFileType getType() {
+        return type;
+    }
+
+    public void setType(NihmsFileType type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NihmsFile nihmsFile = (NihmsFile) o;
+
+        if (type != nihmsFile.type) return false;
+        if (name != null ? !name.equals(nihmsFile.name) : nihmsFile.name != null) return false;
+        if (label != null ? !label.equals(nihmsFile.label) : nihmsFile.label != null) return false;
+        return location != null ? location.equals(nihmsFile.location) : nihmsFile.location == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (label != null ? label.hashCode() : 0);
+        result = 31 * result + (location != null ? location.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NihmsFile{" +
+                "type=" + type +
+                ", name='" + name + '\'' +
+                ", label='" + label + '\'' +
+                ", location='" + location + '\'' +
+                '}';
+    }
+
 }
