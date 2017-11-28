@@ -78,6 +78,16 @@ public class NihmsSubmission {
     }
 
     @Override
+    public String toString() {
+        return "NihmsSubmission{" +
+                "id='" + id + '\'' +
+                ", manifest=" + manifest +
+                ", metadata=" + metadata +
+                ", files=" + files +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -98,15 +108,4 @@ public class NihmsSubmission {
         result = 31 * result + (files != null ? files.hashCode() : 0);
         return result;
     }
-
-    @Override
-    public String toString() {
-        return "NihmsSubmission{" +
-                "id='" + id + '\'' +
-                ", manifest=" + manifest +
-                ", metadata=" + metadata +
-                ", files=" + files +
-                '}';
-    }
-
 }
