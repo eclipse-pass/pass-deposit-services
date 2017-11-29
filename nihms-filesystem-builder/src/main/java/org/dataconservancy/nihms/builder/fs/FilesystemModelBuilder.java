@@ -45,7 +45,6 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
     @Override
     public NihmsSubmission build(String formDataUrl) throws InvalidModel {
         Properties properties = new Properties();
-        InputStream is = null;
 
         //The submission object to populate
         NihmsSubmission submission = new NihmsSubmission();
@@ -63,11 +62,9 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
         NihmsMetadata.Person person = new NihmsMetadata.Person();
         List<NihmsMetadata.Person> persons = new ArrayList<>();
 
-        try {
-            is = new FileInputStream(formDataUrl);
+        try (InputStream is = new FileInputStream(formDataUrl)){
             if (is == null) {
-                System.out.println("Sorry, unable to find submission properties file " + formDataUrl);
-                return null;
+                throw new InvalidModel("Sorry, unable to find submission properties file " + formDataUrl);
             }
 
             properties.load(is);
@@ -107,11 +104,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
 
                     //manuscript metadata
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI:
-                        try {
-                            manuscript.setDoi(new URI(value));
-                        } catch (URISyntaxException e1) {
-                            e1.printStackTrace();
-                        }
+                        manuscript.setDoi(URI.create(value));
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
                         manuscript.setNihmsId(value);
@@ -164,15 +157,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
             submission.setMetadata(metadata);
 
         } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
+            throw new InvalidModel(ioe.getMessage());
         }
 
         return submission;

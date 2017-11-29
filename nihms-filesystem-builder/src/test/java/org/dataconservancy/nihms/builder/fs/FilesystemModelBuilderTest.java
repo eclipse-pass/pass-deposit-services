@@ -17,7 +17,8 @@
 package org.dataconservancy.nihms.builder.fs;
 
 import org.dataconservancy.nihms.model.NihmsSubmission;
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,60 +40,60 @@ public class FilesystemModelBuilderTest {
         expectedProperties.load(is);
         is.close();
 
-        submission = underTest.build(resourceFileUrl.getPath());
-
         //check that we have at least one property so that we know we have processed the file
-        Assert.assertNotNull(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID));
+        assertNotNull(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID));
+
+        submission = underTest.build(resourceFileUrl.getPath());
     }
 
     @Test
     public void testElementValues(){
         //Submission id
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID),
                 submission.getId());
 
         //File Elements
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LABEL),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LABEL),
                 submission.getFiles().get(0).getLabel());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LOCATION),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LOCATION),
                 submission.getFiles().get(0).getLocation());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_NAME),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_NAME),
                 submission.getFiles().get(0).getName());
 
         //Person elements
-        Assert.assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_AUTHOR)),
+        assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_AUTHOR)),
                 submission.getMetadata().getPersons().get(0).isAuthor());
-        Assert.assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_CORRESPONDINGPI)),
+        assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_CORRESPONDINGPI)),
                 submission.getMetadata().getPersons().get(0).isCorrespondingPi());
-        Assert.assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_PI)),
+        assertEquals(Boolean.parseBoolean(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_PI)),
                 submission.getMetadata().getPersons().get(0).isPi());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_EMAIL),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_EMAIL),
                 submission.getMetadata().getPersons().get(0).getEmail());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_FIRSTNAME),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_FIRSTNAME),
                 submission.getMetadata().getPersons().get(0).getFirstName());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_MIDDLENAME),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_MIDDLENAME),
                 submission.getMetadata().getPersons().get(0).getMiddleName());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_LASTNAME),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_PERSON_LASTNAME),
                 submission.getMetadata().getPersons().get(0).getLastName());
 
         //Journal elements
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_ID),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_ID),
                 submission.getMetadata().getJournalMetadata().getJournalId());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_ISSN),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_ISSN),
                 submission.getMetadata().getJournalMetadata().getIssn());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_TITLE),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_JOURNAL_TITLE),
                 submission.getMetadata().getJournalMetadata().getJournalTitle());
 
         //Manuscript elements
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID),
                 submission.getMetadata().getManuscriptMetadata().getNihmsId());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDID),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDID),
                 submission.getMetadata().getManuscriptMetadata().getPubmedId());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID),
                 submission.getMetadata().getManuscriptMetadata().getPubmedCentralId());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL),
                 submission.getMetadata().getManuscriptMetadata().getManuscriptUrl().toString());
-        Assert.assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI),
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI),
                 submission.getMetadata().getManuscriptMetadata().getDoi().toString());
     }
 
