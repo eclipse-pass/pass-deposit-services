@@ -64,7 +64,7 @@ public class NihmsMetadata {
     /**
      * Manuscript-related metadata fields
      */
-    public class Manuscript {
+    public static class Manuscript {
 
         /**
          * Internal NIHMS submission ID; {@code null} unless this is a re-submission
@@ -177,7 +177,7 @@ public class NihmsMetadata {
     /**
      * Journal-related metadata fields
      */
-    public class Journal {
+    public static class Journal {
 
         /**
          * NLM title abbreviation
@@ -242,7 +242,7 @@ public class NihmsMetadata {
     }
 
     // TODO: filled in by submitter or for NIHMS?
-    public class Article {
+    public static class Article {
 
     }
 
