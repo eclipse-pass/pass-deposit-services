@@ -23,6 +23,7 @@ import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
 
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -46,6 +47,29 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV;
 
 /**
+ * Performs the submission of a manuscript and associated files to a target repository.
+ * <p>
+ * A {@code SubmissionEngine} instance requires three collaborators:
+ * <dl>
+ *     <dt>{@link SubmissionBuilder Submission Builder}</dt>
+ *     <dd>Responsible for building a {@link NihmsSubmission submission model}.  This component, therefore, is
+ *         influenced by the type and version of the model being employed.  Different versions or model types may
+ *         require a builder specific to that model.</dd>
+ *     <dt>{@link Assembler Package Assembler}</dt>
+ *     <dd>Responsible for interrogating the submission model and creating a {@link PackageStream streamable} package
+ *         of the submission contents.  The package includes everything that is required by the target repository,
+ *         including manuscript files, supplemental files, and any metadata, manifests or checksums.  Different target
+ *         repositories will have different packaging requirements, so this component is largely influenced by the
+ *         policy or requirements of the target repository.</dd>
+ *     <dt>{@link Transport Transport Layer}</dt>
+ *     <dd>Responsible for streaming a {@link PackageStream package} to the target repository.  This includes selecting
+ *         the transport protocol (HTTP, FTP, etc.), configuring the parameters for the connection (authentication,
+ *         TLS, etc.), the creation of any intermediate resources (e.g. intermediate directories or target
+ *         "collections"), and finally streaming the contents of the package to a resource on the target repository.
+ *         Different target repositories will support different transports, so this component is largely influenced by
+ *         the technical platform and policies of the target repository.</dd>
+ * </dl>
+ * </p>
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionEngine {
@@ -60,6 +84,34 @@ public class SubmissionEngine {
 
     private Transport transport;
 
+    /**
+     * Instantiate a {@code SubmissionEngine} that is associated with a specific model, packaging format, and transport.
+     * <p>
+     * This instance will be able to {@link SubmissionBuilder#build(String) build} a {@link NihmsSubmission submission
+     * model}, {@link Assembler#assemble(NihmsSubmission) generate} a {@link PackageStream package}, and
+     * {@link TransportSession#send(String, InputStream) deposit} the package in a target repository.
+     * </p>
+     *
+     * @param builder the submission model builder
+     * @param assembler the submission package assembler
+     * @param transport the TCP transport used to deposit the package to the target repository
+     */
+    public SubmissionEngine(SubmissionBuilder builder, Assembler assembler, Transport transport) {
+        this.builder = builder;
+        this.assembler = assembler;
+        this.transport = transport;
+    }
+
+    /**
+     * Provided a reference to key-value pairs that represent a submission, this engine will build a model, assemble a
+     * package, and deposit it to a target repository.  The {@code formDataUrl} references a resource that contains
+     * the key-value pairs for a submission that adhere to a specific model.  The {@link
+     * #SubmissionEngine(SubmissionBuilder, Assembler, Transport) model builder} supplied on construction must know how
+     * to parse the information in the resource specified by {@code formDataUrl}.
+     *
+     * @param formDataUrl a URL to a resource containing key-value pairs representing a submission
+     * @throws SubmissionFailure if the submission fails for any reason
+     */
     public void submit(String formDataUrl) throws SubmissionFailure {
 
         // Build the submission
@@ -114,18 +166,6 @@ public class SubmissionEngine {
                 put(DATA_TYPE, TYPE.binary.name());
             }
         };
-    }
-
-    // transport concern
-    @Deprecated
-    private String nihmsDestinationDirectory() {
-        return null;
-    }
-
-    // filename could be provided by the assembler (e.g. bagit places requirements on the filename of the package)
-    @Deprecated
-    private String nihmsDestinationFile() {
-        return null;
     }
 
 }
