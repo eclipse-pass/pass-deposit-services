@@ -17,7 +17,6 @@
 package org.dataconservancy.nihms.builder.fs;
 
 import org.dataconservancy.nihms.builder.InvalidModel;
-import org.dataconservancy.nihms.builder.NihmsBuilderPropertyNames;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.NihmsFile;
 import org.dataconservancy.nihms.model.NihmsMetadata;

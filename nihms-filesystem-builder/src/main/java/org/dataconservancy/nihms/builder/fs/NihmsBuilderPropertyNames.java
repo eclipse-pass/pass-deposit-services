@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.builder;
+package org.dataconservancy.nihms.builder.fs;
 
 public class NihmsBuilderPropertyNames {
     public static final String NIHMS_FILE_LABEL = "nihms.file.label";
