@@ -33,4 +33,11 @@ public class NihmsManifest {
      */
     private List<NihmsFile> files;
 
+    public List<NihmsFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<NihmsFile> files) {
+        this.files = files;
+    }
 }

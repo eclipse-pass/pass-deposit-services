@@ -249,7 +249,7 @@ public class NihmsMetadata {
     /**
      * Persons associated with the submission, and their roles
      */
-    public class Person {
+    public static class Person {
 
         public String firstName;
 
