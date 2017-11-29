@@ -18,9 +18,9 @@ package org.dataconservancy.nihms.builder;
 
 public class NihmsBuilderPropertyNames {
     public static final String NIHMS_FILE_LABEL = "nihms.file.label";
+    public static final String NIHMS_FILE_LOCATION = "nihms.file.location";
     public static final String NIHMS_FILE_NAME = "nihms.file.name";
     public static final String NIHMS_FILE_TYPE = "nihms.file.type";
-
 
     public static final String NIHMS_PERSON_FIRSTNAME = "nihms.person.firstname";
     public static final String NIHMS_PERSON_MIDDLENAME = "nihms.person.middlename";
