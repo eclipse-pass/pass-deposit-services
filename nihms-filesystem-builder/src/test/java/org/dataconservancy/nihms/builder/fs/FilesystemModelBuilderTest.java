@@ -22,8 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.net.URI;
 import java.net.URL;
 import java.util.Properties;
 
