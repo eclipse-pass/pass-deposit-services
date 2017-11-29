@@ -90,6 +90,9 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                     case NihmsBuilderPropertyNames.NIHMS_FILE_LABEL:
                         file.setLabel(value);
                         break;
+                    case NihmsBuilderPropertyNames.NIHMS_FILE_LOCATION:
+                        file.setLocation(value);
+                        break;
 
                     //journal metadata
                     case NihmsBuilderPropertyNames.NIHMS_JOURNAL_ID:
