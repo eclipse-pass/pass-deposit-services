@@ -144,6 +144,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_PERSON_PI:
                         person.setPi(Boolean.parseBoolean(value));
+                        break;
                 }
             }
 
