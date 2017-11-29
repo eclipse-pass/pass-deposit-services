@@ -75,9 +75,12 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                 String value = properties.getProperty(key);
 
                 switch (key) {
-                    //the id for the submission
+                    //submission properties
                     case NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID:
                         submission.setId(value);
+                        break;
+                    case NihmsBuilderPropertyNames.NIHMS_SUBMISSION_NAME:
+                        submission.setName(value);
                         break;
 
                     //file properties

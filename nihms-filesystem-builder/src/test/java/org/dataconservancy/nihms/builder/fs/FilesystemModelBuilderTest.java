@@ -48,9 +48,11 @@ public class FilesystemModelBuilderTest {
 
     @Test
     public void testElementValues(){
-        //Submission id
+        //Submission Elements
         assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_ID),
                 submission.getId());
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_SUBMISSION_NAME),
+                submission.getName());
 
         //File Elements
         assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LABEL),
