@@ -30,11 +30,11 @@ public class FilesystemModelBuilderTest {
 
     private NihmsSubmission submission;
     private Properties expectedProperties = new Properties();
-    private String testPropertiesFile = "FilesystemModelBuilderTest.properties";
     private  FilesystemModelBuilder underTest = new FilesystemModelBuilder();
 
     @Before
     public void setup() throws Exception{
+        String testPropertiesFile = "FilesystemModelBuilderTest.properties";
         URL resourceFileUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(testPropertiesFile);
         InputStream is = FilesystemModelBuilderTest.class.getClassLoader().getResourceAsStream(testPropertiesFile);
         expectedProperties.load(is);
