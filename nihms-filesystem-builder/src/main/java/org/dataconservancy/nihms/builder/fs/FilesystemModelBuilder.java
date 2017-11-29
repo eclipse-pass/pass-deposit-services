@@ -45,7 +45,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
     @Override
     public NihmsSubmission build(String formDataUrl) throws InvalidModel {
         Properties properties = new Properties();
-
+      
         //The submission object to populate
         NihmsSubmission submission = new NihmsSubmission();
 
@@ -65,6 +65,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
         try (InputStream is = new FileInputStream(formDataUrl)){
             if (is == null) {
                 throw new InvalidModel("Sorry, unable to find submission properties file " + formDataUrl);
+        
             }
 
             properties.load(is);
@@ -104,7 +105,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
 
                     //manuscript metadata
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI:
-                        manuscript.setDoi(URI.create(value));
+                        manuscript.setDoi(URI.create(value));                    
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
                         manuscript.setNihmsId(value);
@@ -159,7 +160,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
         } catch (IOException ioe) {
             throw new InvalidModel(ioe.getMessage(), ioe);
         }
-
+      
         return submission;
     }
 
