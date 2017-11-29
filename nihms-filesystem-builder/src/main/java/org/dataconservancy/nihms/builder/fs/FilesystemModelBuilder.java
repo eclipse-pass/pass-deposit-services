@@ -157,7 +157,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
             submission.setMetadata(metadata);
 
         } catch (IOException ioe) {
-            throw new InvalidModel(ioe.getMessage());
+            throw new InvalidModel(ioe.getMessage(), ioe);
         }
 
         return submission;
