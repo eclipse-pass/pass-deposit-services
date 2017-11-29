@@ -64,7 +64,7 @@ public class NihmsMetadata {
     /**
      * Manuscript-related metadata fields
      */
-    public class Manuscript {
+    public static class Manuscript {
 
         /**
          * Internal NIHMS submission ID; {@code null} unless this is a re-submission
@@ -109,12 +109,75 @@ public class NihmsMetadata {
          */
         public int relativeEmbargoPeriodMonths;
 
+        public String getNihmsId() {
+            return nihmsId;
+        }
+
+        public void setNihmsId(String nihmsId) {
+            this.nihmsId = nihmsId;
+        }
+
+        public String getPubmedId() {
+            return pubmedId;
+        }
+
+        public void setPubmedId(String pubmedId) {
+            this.pubmedId = pubmedId;
+        }
+
+        public String getPubmedCentralId() {
+            return pubmedCentralId;
+        }
+
+        public void setPubmedCentralId(String pubmedCentralId) {
+            this.pubmedCentralId = pubmedCentralId;
+        }
+
+        public URL getManuscriptUrl() {
+            return manuscriptUrl;
+        }
+
+        public void setManuscriptUrl(URL manuscriptUrl) {
+            this.manuscriptUrl = manuscriptUrl;
+        }
+
+        public URI getDoi() {
+            return doi;
+        }
+
+        public void setDoi(URI doi) {
+            this.doi = doi;
+        }
+
+        public boolean isPublisherPdf() {
+            return publisherPdf;
+        }
+
+        public void setPublisherPdf(boolean publisherPdf) {
+            this.publisherPdf = publisherPdf;
+        }
+
+        public boolean isShowPublisherPdf() {
+            return showPublisherPdf;
+        }
+
+        public void setShowPublisherPdf(boolean showPublisherPdf) {
+            this.showPublisherPdf = showPublisherPdf;
+        }
+
+        public int getRelativeEmbargoPeriodMonths() {
+            return relativeEmbargoPeriodMonths;
+        }
+
+        public void setRelativeEmbargoPeriodMonths(int relativeEmbargoPeriodMonths) {
+            this.relativeEmbargoPeriodMonths = relativeEmbargoPeriodMonths;
+        }
     }
 
     /**
      * Journal-related metadata fields
      */
-    public class Journal {
+    public static class Journal {
 
         /**
          * NLM title abbreviation
@@ -141,17 +204,52 @@ public class NihmsMetadata {
          */
         public String issn;
 
+        public String getJournalId() {
+            return journalId;
+        }
+
+        public void setJournalId(String journalId) {
+            this.journalId = journalId;
+        }
+
+        public String getJournalType() {
+            return journalType;
+        }
+
+        public String getJournalTitle() {
+            return journalTitle;
+        }
+
+        public void setJournalTitle(String journalTitle) {
+            this.journalTitle = journalTitle;
+        }
+
+        public JOURNAL_PUBLICATION_TYPE getPubType() {
+            return pubType;
+        }
+
+        public void setPubType(JOURNAL_PUBLICATION_TYPE pubType) {
+            this.pubType = pubType;
+        }
+
+        public String getIssn() {
+            return issn;
+        }
+
+        public void setIssn(String issn) {
+            this.issn = issn;
+        }
     }
 
     // TODO: filled in by submitter or for NIHMS?
-    public class Article {
+    public static class Article {
 
     }
 
     /**
      * Persons associated with the submission, and their roles
      */
-    public class Person {
+    public static class Person {
 
         public String firstName;
 
@@ -173,6 +271,103 @@ public class NihmsMetadata {
 
         public boolean author;
 
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getMiddleName() {
+            return middleName;
+        }
+
+        public void setMiddleName(String middleName) {
+            this.middleName = middleName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public boolean isPi() {
+            return pi;
+        }
+
+        public void setPi(boolean pi) {
+            this.pi = pi;
+        }
+
+        public boolean isCorrespondingPi() {
+            return correspondingPi;
+        }
+
+        public void setCorrespondingPi(boolean correspondingPi) {
+            this.correspondingPi = correspondingPi;
+        }
+
+        public boolean isAuthor() {
+            return author;
+        }
+
+        public void setAuthor(boolean author) {
+            this.author = author;
+        }
+    }
+
+    public Manuscript getManuscriptMetadata() {
+        return manuscriptMetadata;
+    }
+
+    public void setManuscriptMetadata(Manuscript manuscriptMetadata) {
+        this.manuscriptMetadata = manuscriptMetadata;
+    }
+
+    public Journal getJournalMetadata() {
+        return journalMetadata;
+    }
+
+    public void setJournalMetadata(Journal journalMetadata) {
+        this.journalMetadata = journalMetadata;
+    }
+
+    public List<Person> getPersons() {
+        return persons;
+    }
+
+    public void setPersons(List<Person> persons) {
+        this.persons = persons;
+    }
+
+    public Article getArticleMetadata() {
+        return articleMetadata;
+    }
+
+    public void setArticleMetadata(Article articleMetadata) {
+        this.articleMetadata = articleMetadata;
+    }
+
+    @Override
+    public String toString() {
+        return "NihmsMetadata{" +
+                "manuscriptMetadata=" + manuscriptMetadata +
+                ", journalMetadata=" + journalMetadata +
+                ", persons=" + persons +
+                ", articleMetadata=" + articleMetadata +
+                '}';
     }
 
 }
