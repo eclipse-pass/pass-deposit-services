@@ -21,7 +21,6 @@ public class NihmsBuilderPropertyNames {
     public static final String NIHMS_FILE_NAME = "nihms.file.name";
     public static final String NIHMS_FILE_TYPE = "nihms.file.type";
 
-    //public static final String NIHMS_FILE = "nihms.file";
 
     public static final String NIHMS_PERSON_FIRSTNAME = "nihms.person.firstname";
     public static final String NIHMS_PERSON_MIDDLENAME = "nihms.person.middlename";
@@ -42,6 +41,6 @@ public class NihmsBuilderPropertyNames {
     public static final String NIHMS_MANUSCRIPT_PUBMEDCENTRALID = "nihms.manuscript.pubmedcentralid";
     public static final String NIHMS_MANUSCRIPT_PBMEDID = "nihms.manuscript.pubmedid";
 
-
+    public static final String NIHMS_SUBMISSION_ID = "nihms.submission.id";
 
 }
