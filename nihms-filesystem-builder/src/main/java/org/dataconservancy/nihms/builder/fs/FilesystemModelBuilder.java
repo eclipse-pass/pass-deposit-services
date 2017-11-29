@@ -24,6 +24,7 @@ import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.dataconservancy.nihms.model.NihmsSubmission;
 
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -61,10 +62,10 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
 
         //... including the person object and its list
         NihmsMetadata.Person person = new NihmsMetadata.Person();
-        List<NihmsMetadata.Person> persons = new ArrayList<NihmsMetadata.Person>();
+        List<NihmsMetadata.Person> persons = new ArrayList<>();
 
         try {
-            is = getClass().getClassLoader().getResourceAsStream(formDataUrl);
+            is = new FileInputStream(formDataUrl);
             if (is == null) {
                 System.out.println("Sorry, unable to find submission properties file " + formDataUrl);
                 return null;
