@@ -116,7 +116,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
                         manuscript.setNihmsId(value);
                         break;
-                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PBMEDID:
+                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDID:
                         manuscript.setPubmedId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID:
