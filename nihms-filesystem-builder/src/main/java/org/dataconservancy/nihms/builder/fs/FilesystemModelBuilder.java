@@ -26,8 +26,12 @@ import org.dataconservancy.nihms.model.NihmsSubmission;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -42,10 +46,22 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
     public NihmsSubmission build(String formDataUrl) throws InvalidModel {
         Properties properties = new Properties();
         InputStream is = null;
+
+        //The submission object to populate
         NihmsSubmission submission = new NihmsSubmission();
+
+        //The file to add, and its list to add to submission
         NihmsFile file = new NihmsFile();
+        List<NihmsFile> files = new ArrayList<>();
+
+        //The metadata object, and components to add to it ...
         NihmsMetadata metadata = new NihmsMetadata();
+        NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
+        NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
+
+        //... including the person object and its list
         NihmsMetadata.Person person = new NihmsMetadata.Person();
+        List<NihmsMetadata.Person> persons = new ArrayList<NihmsMetadata.Person>();
 
         try {
             is = getClass().getClassLoader().getResourceAsStream(formDataUrl);
@@ -77,27 +93,34 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
 
                     //journal metadata
                     case NihmsBuilderPropertyNames.NIHMS_JOURNAL_ID:
-                        metadata.getJournalMetadata().setJournalId(value);
+                        journal.setJournalId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_JOURNAL_ISSN:
-                        metadata.getJournalMetadata().setIssn(value);
+                        journal.setIssn(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_JOURNAL_TITLE:
-                        metadata.getJournalMetadata().setJournalTitle(value);
+                        journal.setJournalTitle(value);
                         break;
 
                     //manuscript metadata
+                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI:
+                        try {
+                            manuscript.setDoi(new URI(value));
+                        } catch (URISyntaxException e1) {
+                            e1.printStackTrace();
+                        }
+                        break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
-                        metadata.getManuscriptMetadata().setNihmsId(value);
+                        manuscript.setNihmsId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PBMEDID:
-                        metadata.getManuscriptMetadata().setPubmedId(value);
+                        manuscript.setPubmedId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID:
-                        metadata.getManuscriptMetadata().setPubmedCentralId(value);
+                        manuscript.setPubmedCentralId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL:
-                        metadata.getManuscriptMetadata().setManuscriptUrl(new URL(value));
+                        manuscript.setManuscriptUrl(new URL(value));
                         break;
 
                     //person metadata
@@ -119,14 +142,22 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                     case NihmsBuilderPropertyNames.NIHMS_PERSON_LASTNAME:
                         person.setLastName(value);
                         break;
+                    case NihmsBuilderPropertyNames.NIHMS_PERSON_PI:
+                        person.setPi(Boolean.parseBoolean(value));
                 }
             }
 
             //now populate the submission
-            submission.getFiles().add(file);
-            metadata.getPersons().add(person);
+            files.add(file);
+            submission.setFiles(files);
+
+            persons.add(person);
+            metadata.setPersons(persons);
+
+            metadata.setJournalMetadata(journal);
+            metadata.setManuscriptMetadata(manuscript);
+
             submission.setMetadata(metadata);
-            submission.getManifest().getFiles().add(file);
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
