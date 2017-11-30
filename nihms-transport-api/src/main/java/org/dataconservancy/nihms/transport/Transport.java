@@ -16,17 +16,53 @@
 
 package org.dataconservancy.nihms.transport;
 
-import java.io.InputStream;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 /**
  * Abstracts the transport protocol used to deposit a package with a target submission system.
  */
 public interface Transport {
 
+    String TRANSPORT_SERVERID = "nihms.transport.serverid";
+
+    String TRANSPORT_USERNAME = "nihms.transport.username";
+
+    String TRANSPORT_PASSWORD = "nihms.transport.password";
+
+    String TRANSPORT_AUTHMODE = "nihms.transport.authmode";
+
+    String TRANSPORT_PROTOCOL = "nihms.transport.protocol";
+
+    String TRANSPORT_SERVER_FQDN = "nihms.transport.server-fqdn";
+
+    String TRANSPORT_SERVER_PORT = "nihms.transport.server-port";
+
+    enum AUTHMODE {
+
+        /**
+         * The implementation will use the username and password from {@link #TRANSPORT_USERNAME} and {@link #TRANSPORT_PASSWORD}
+         */
+        userpass,
+
+        /**
+         * The transport implementation will perform authentication implicitly
+         */
+        implicit,
+
+        /**
+         * The transport implementation will look up authentication credentials using an implementation-specific
+         * reference (e.g. a {@link #TRANSPORT_SERVERID} that can be used to look up authentication credentials)
+         */
+        reference
+
+    }
+
+    enum PROTOCOL {
+        http,
+        https,
+        ftp
+    }
+
     TransportSession open(Map<String, String> hints);
-
-
 
 }

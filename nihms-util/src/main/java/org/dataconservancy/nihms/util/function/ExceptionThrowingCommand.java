@@ -14,7 +14,22 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.transport;
+package org.dataconservancy.nihms.util.function;
 
-public interface TransportMetadata {
+/**
+ * Performs an operation over some internal state and returns the result.  Implementations may throw checked exceptions.
+ *
+ * @param <T> the type of the output of the function
+ */
+@FunctionalInterface
+public interface ExceptionThrowingCommand<T> {
+
+    /**
+     * Implementations perform some operation over internal state and return a result.
+     *
+     * @return the result of the operation
+     * @throws Exception
+     */
+    T perform() throws Exception;
+
 }

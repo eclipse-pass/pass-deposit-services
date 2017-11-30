@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.transport;
+package org.dataconservancy.nihms.transport.ftp;
 
-public class TransportProperties implements TransportMetadata {
+public class FtpTestUtil {
+
+    /**
+     * String literal for the "root" directory of the FTP server.  Used by unit tests only.
+     */
+    static final String FTP_ROOT_DIR = "/";
 
 }

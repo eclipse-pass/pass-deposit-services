@@ -48,6 +48,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
