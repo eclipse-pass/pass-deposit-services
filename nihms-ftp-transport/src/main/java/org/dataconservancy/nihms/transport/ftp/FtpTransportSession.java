@@ -35,6 +35,7 @@ import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE.binary;
+import static org.dataconservancy.nihms.transport.ftp.FtpUtil.PATH_SEP;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.makeDirectories;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.performSilently;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setDataType;
@@ -90,7 +91,7 @@ public class FtpTransportSession implements TransportSession {
             try {
                 // make any parent directories defensively- if they don't exist create them,
                 // if they do exist, don't create them
-                makeDirectories(ftpClient, destinationResource.substring(0, destinationResource.lastIndexOf("/")));
+                makeDirectories(ftpClient, destinationResource.substring(0, destinationResource.lastIndexOf(PATH_SEP)));
                 setPasv(ftpClient, true);
                 setDataType(ftpClient, binary.name());
                 return storeFile(destinationResource, content);
@@ -182,12 +183,12 @@ public class FtpTransportSession implements TransportSession {
         AtomicBoolean success = new AtomicBoolean(false);
         AtomicReference<Exception> caughtException = new AtomicReference<>();
 
-        if (!destinationResource.contains("/")) {
+        if (!destinationResource.contains(PATH_SEP)) {
             fileName = destinationResource;
             directory = null;
         } else {
-            fileName = destinationResource.substring(destinationResource.lastIndexOf("/") + 1);
-            directory = destinationResource.substring(0, destinationResource.lastIndexOf("/"));
+            fileName = destinationResource.substring(destinationResource.lastIndexOf(PATH_SEP) + 1);
+            directory = destinationResource.substring(0, destinationResource.lastIndexOf(PATH_SEP));
         }
 
         try {
@@ -234,7 +235,7 @@ public class FtpTransportSession implements TransportSession {
 
     void validateDestinationResource(String destinationResource) {
         // at a minimum, the destination resource must specify a file name (i.e. not end with a directory separator)
-        if (destinationResource.endsWith("/")) {
+        if (destinationResource.endsWith(PATH_SEP)) {
             throw new RuntimeException(format(ERR_TRANSFER, destinationResource, "<host>", "<port>", "Destination " +
                     "resource '" + destinationResource + "' must specify a file and not a directory"));
         }

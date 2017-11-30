@@ -34,6 +34,12 @@ class FtpUtil {
 
     private static final String ERR_CMD = "Exception performing FTP command; error message: %s";
 
+    /**
+     * Character used to separate path components: e.g. use of the forward slash in the path '/path/to/file.txt'
+     * separates three components: 'path', 'to', and 'file.txt'
+     */
+    static final String PATH_SEP = "/";
+
     private static final Function<FTPClient, Boolean> ACCEPT_POSITIVE_COMPLETION = (ftpClient) ->
             FTPReply.isPositiveCompletion(ftpClient.getReplyCode());
 
@@ -166,7 +172,7 @@ class FtpUtil {
     }
 
     static void makeDirectories(FTPClient ftpClient, String destinationResource) {
-        String[] parts = destinationResource.split("/");
+        String[] parts = destinationResource.split(PATH_SEP);
         if (parts.length == 0) {
             return; // destination resource was "/"
         }

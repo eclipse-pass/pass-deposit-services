@@ -24,11 +24,13 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.dataconservancy.nihms.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE.block;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE.compressed;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE.stream;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE.ascii;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE.binary;
+import static org.dataconservancy.nihms.transport.ftp.FtpUtil.PATH_SEP;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -266,7 +268,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeSingleDirectory() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
                 .thenReturn(FTPReply.PATHNAME_CREATED)
@@ -278,7 +280,7 @@ public class FtpUtilTest {
         verify(ftpClient).printWorkingDirectory();
         verify(ftpClient).makeDirectory(eq("dir"));
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
         verify(ftpClient, times(4)).getReplyCode();
     }
 
@@ -294,7 +296,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeSingleDirectoryThatAlreadyExists() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
                 .thenReturn(FTPReply.COMMAND_OK)
@@ -309,7 +311,7 @@ public class FtpUtilTest {
         verify(ftpClient).printWorkingDirectory();
         verify(ftpClient).makeDirectory(eq("dir"));
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
         verify(ftpClient, times(5)).getReplyCode();
     }
 
@@ -326,20 +328,20 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeNestedDirectory() throws IOException {
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
                 .thenReturn(FTPReply.PATHNAME_CREATED)
                 .thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
-        FtpUtil.makeDirectories(ftpClient, "dir/subdir");
+        FtpUtil.makeDirectories(ftpClient, "dir" + PATH_SEP + "subdir");
 
         verify(ftpClient).makeDirectory(eq("dir"));
         verify(ftpClient).changeWorkingDirectory(eq("dir"));
         verify(ftpClient).makeDirectory(eq("subdir"));
         verify(ftpClient).changeWorkingDirectory(eq("subdir"));
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
     /**
@@ -350,7 +352,7 @@ public class FtpUtilTest {
      */
     @Test
     public void testMakeDirectoryFails() throws Exception {
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.getReplyCode())
                 .thenReturn(FTPReply.COMMAND_OK)
                 .thenReturn(FTPReply.NOT_LOGGED_IN);
@@ -365,6 +367,6 @@ public class FtpUtilTest {
         }
 
         verify(ftpClient).makeDirectory(eq("dir"));
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 }

@@ -33,6 +33,7 @@ import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_USERNAME;
+import static org.dataconservancy.nihms.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIRECTORY;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.DATA_TYPE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TRANSFER_MODE;
@@ -68,7 +69,7 @@ public class FtpTransportTest {
             put(TRANSPORT_SERVER_FQDN, "example.ftp.submission.nih.org");
             put(TRANSPORT_SERVER_PORT, "21");
             // For simplicity of testing, stay in the base directory (no need to create directories upon open)
-            put(BASE_DIRECTORY, "/");
+            put(BASE_DIRECTORY, FTP_ROOT_DIR);
             put(TRANSFER_MODE, FtpTransportHints.MODE.stream.name());
             put(USE_PASV, Boolean.TRUE.toString());
             put(DATA_TYPE, FtpTransportHints.TYPE.binary.name());
@@ -99,7 +100,7 @@ public class FtpTransportTest {
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.USER_LOGGED_IN);
         when(ftpClient.setFileTransferMode(anyInt())).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
-        when(ftpClient.changeWorkingDirectory("/")).thenReturn(true);
+        when(ftpClient.changeWorkingDirectory(FTP_ROOT_DIR)).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
 
         TransportSession session = transport.open(expectedHints);
@@ -107,7 +108,7 @@ public class FtpTransportTest {
         assertNotNull(session);
         verify(ftpClient).login("nihmsftpuser", "nihmsftppass");
         verify(ftpClient).setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
     /**

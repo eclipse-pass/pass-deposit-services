@@ -26,6 +26,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.dataconservancy.nihms.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -68,7 +69,7 @@ public class FtpTransportSessionTest {
         String destinationResource = "package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
 
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
 
         TransportResponse response = ftpSession.storeFile(destinationResource, content);
@@ -92,7 +93,7 @@ public class FtpTransportSessionTest {
         String destinationResource = "sub/directory/package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
 
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
@@ -104,7 +105,7 @@ public class FtpTransportSessionTest {
         assertNull(response.error());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verify(ftpClient).storeFile("package.tar.gz", content);
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
     /**
@@ -121,7 +122,7 @@ public class FtpTransportSessionTest {
         IOException expectedException = new IOException(expectedMessage);
         NullInputStream content = new NullInputStream(ONE_MIB);
 
-        when(ftpClient.printWorkingDirectory()).thenReturn("/");
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
                 .thenReturn(FTPReply.COMMAND_OK)
@@ -140,6 +141,6 @@ public class FtpTransportSessionTest {
         assertEquals(expectedMessage, response.error().getCause().getCause().getMessage());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verify(ftpClient).storeFile("package.tar.gz", content);
-        verify(ftpClient).changeWorkingDirectory("/");
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 }
