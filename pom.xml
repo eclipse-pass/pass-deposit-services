@@ -35,7 +35,7 @@
         <module>nihms-ftp-transport</module>
         <!-- nihms-http-transport -->
         <module>nihms-submission-engine</module>
-        <!--<module>nihms-integration</module>-->
+        <module>nihms-integration</module>
         <module>nihms-util</module>
     </modules>
 

@@ -1,0 +1,13 @@
+FROM stilliard/pure-ftpd
+
+#
+# docker run -e PUBLICHOST=0.0.0.0 -p 21:21 <image sha>
+#
+
+RUN echo \
+    'nihmsftpuser:$6$x0HwRJld$xpRkxTjkstqg5.piEkUGcKyQGamvErjfNQKJiQZwdc18rSx/b.61u1TS9DF3ClMgrS7n3jXCALAq.v4CwXxGw.:500:101::/home/ftpusers/nihmsftpuser/./::::::1000:10485760::::::' \
+    > /etc/pureftpd.passwd
+
+RUN pure-pw mkdb /etc/pure-ftpd/pureftpd.pdb -f /etc/pureftpd.passwd
+
+CMD /run.sh -c 1 -C 1 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -p 30000:30010
