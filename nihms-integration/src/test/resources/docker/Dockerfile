@@ -5,7 +5,7 @@ FROM stilliard/pure-ftpd
 #
 
 RUN echo \
-    'nihmsftpuser:$6$x0HwRJld$xpRkxTjkstqg5.piEkUGcKyQGamvErjfNQKJiQZwdc18rSx/b.61u1TS9DF3ClMgrS7n3jXCALAq.v4CwXxGw.:500:101::/home/ftpusers/nihmsftpuser/./::::::1000:10485760::::::' \
+    'nihmsftpuser:$6$x0HwRJld$xpRkxTjkstqg5.piEkUGcKyQGamvErjfNQKJiQZwdc18rSx/b.61u1TS9DF3ClMgrS7n3jXCALAq.v4CwXxGw.:500:101::/home/ftpusers/nihmsftpuser/./::::::1000:::::::' \
     > /etc/pureftpd.passwd
 
 RUN pure-pw mkdb /etc/pure-ftpd/pureftpd.pdb -f /etc/pureftpd.passwd
