@@ -17,7 +17,11 @@
 package org.dataconservancy.nihms.cli;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.dataconservancy.nihms.submission.SubmissionEngine;
+
+import org.dataconservancy.nihms.submission.SubmissionFailure;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -89,6 +93,14 @@ public class NihmsSubmissionApp {
     }
 
     private void run() throws NihmsCliException {
-        //do the fun stuff here
+        try {
+            SubmissionEngine engine = new SubmissionEngine();
+            engine.submit(propertiesFile.getCanonicalPath());
+            System.exit(0);
+        } catch (IOException | SubmissionFailure ex) {
+            ex.printStackTrace();
+            System.err.println(ex.getMessage());
+            System.exit(1);
+        }
     }
 }
