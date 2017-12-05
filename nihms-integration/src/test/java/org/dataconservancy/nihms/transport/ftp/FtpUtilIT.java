@@ -16,8 +16,6 @@
 
 package org.dataconservancy.nihms.transport.ftp;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.junit.Before;
 import org.junit.Test;
