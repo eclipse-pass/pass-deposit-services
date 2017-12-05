@@ -22,10 +22,10 @@ import java.io.IOException;
 import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
-
 import org.dataconservancy.nihms.submission.SubmissionFailure;
 import org.dataconservancy.nihms.transport.ftp.DefaultFtpClientFactory;
 import org.dataconservancy.nihms.transport.ftp.FtpTransport;
+
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
