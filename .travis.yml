@@ -17,7 +17,11 @@ script:
   - sudo service resolvconf stop
   - sudo service sshguard stop
   - sudo service ssh stop
-  - mvn verify -DtrimStackTrace=false
+  - mvn verify -DtrimStackTrace=false -Ddocker.keepRunning
 jdk:
   - oraclejdk8
-after_failure: docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
+after_failure:
+  - docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
+  - cd nihms-integration && mvn docker:stop
+after_success:
+  - cd nihms-integration && mvn docker:stop
