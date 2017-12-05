@@ -96,8 +96,9 @@ public class SmokeIT extends BaseIT {
         itUtil.connect();
         itUtil.login();
 
-        ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
-        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        assertTrue(ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE));
+        assertTrue(ftpClient.setFileType(FTP.BINARY_FILE_TYPE));
+        assertTrue(ftpClient.enterRemotePassiveMode());
 
         String destFile = "org.jpg";
         MessageDigestCalculatingInputStream content = new MessageDigestCalculatingInputStream(
@@ -112,6 +113,7 @@ public class SmokeIT extends BaseIT {
         itUtil.assertPositiveReply();
         MessageDigest expectedDigest = content.getMessageDigest();
 
+        assertTrue(ftpClient.enterRemotePassiveMode());
         ByteArrayOutputStream baos = new ByteArrayOutputStream(32 * 2 ^ 10);
         assertTrue(ftpClient.retrieveFile(destFile, baos));
         itUtil.assertPositiveReply();
@@ -127,13 +129,16 @@ public class SmokeIT extends BaseIT {
         itUtil.connect();
         itUtil.login();
 
-        ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
-        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        assertTrue(ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE));
+        assertTrue(ftpClient.setFileType(FTP.BINARY_FILE_TYPE));
+        assertTrue(ftpClient.enterRemotePassiveMode());
 
         String destFile = "foo.bin";
 
         assertTrue(ftpClient.storeFile(destFile, new NullInputStream(2 ^ 20)));
         itUtil.assertPositiveReply();
+
+        assertTrue(ftpClient.enterRemotePassiveMode());
 
         assertTrue(ftpClient.storeFile(destFile, new NullInputStream(2 ^ 20)));
         itUtil.assertPositiveReply();

@@ -82,14 +82,16 @@ public class FtpUtilIT extends BaseIT {
     @Test
     public void testSetWorkingDirectory() throws Exception {
         String directory = "FtpUtilIT-testSetWorkingDirectory";
+        assertTrue(ftpClient.enterRemotePassiveMode());
         assertEquals(0, ftpClient.listFiles(directory).length);
 
         FtpUtil.setWorkingDirectory(ftpClient, directory);
 
         assertEquals("/" + directory, ftpClient.printWorkingDirectory());
         assertTrue(ftpClient.changeToParentDirectory());
+        assertTrue(ftpClient.enterRemotePassiveMode());
         assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(ftpFile -> LOG.debug("{}", ftpFile.getName()))
-                        .anyMatch(ftpFile -> ftpFile.getName().equals(directory)));
+                .anyMatch(ftpFile -> ftpFile.getName().equals(directory)));
     }
 }
