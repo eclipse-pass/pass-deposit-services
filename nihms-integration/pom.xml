@@ -80,7 +80,7 @@
                             </build>
                             <run>
                                 <env>
-                                    <PUBLICHOST>0.0.0.0</PUBLICHOST>
+                                    <PUBLICHOST>${docker.host.address}</PUBLICHOST>
                                 </env>
                                 <ports>
                                     <port>21:21</port>
