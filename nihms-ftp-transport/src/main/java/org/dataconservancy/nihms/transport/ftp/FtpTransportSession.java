@@ -136,6 +136,11 @@ public class FtpTransportSession implements TransportSession {
 
     @Override
     public void close() throws Exception {
+        if (!transfer.isDone()) {
+            LOG.debug("Closing {}@{}, cancelling pending transfer...",
+                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+            transfer.cancel(true);
+        }
 
         if (this.isClosed) {
             LOG.debug("{}@{} is already closed.",
@@ -143,30 +148,12 @@ public class FtpTransportSession implements TransportSession {
             return;
         }
 
-        if (!transfer.isDone()) {
-            LOG.debug("Closing {}@{}, cancelling pending transfer...",
-                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
-            transfer.cancel(true);
-        }
-
-        if (ftpClient.isConnected()) {
-
-            try {
-                ftpClient.logout();
-            } catch (IOException e) {
-                LOG.debug("Exception encountered while closing {}@{}, FTP client logout failed.  " +
-                                "Continuing to close the object despite the exception: {}",
-                        this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
-            }
-
-            try {
-                ftpClient.disconnect();
-            } catch (IOException e) {
-                LOG.debug("Exception encountered while closing {}@{}, FTP client disconnection failed.  " +
-                                "Continuing to close the object despite the exception: {}",
-                        this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
-            }
-
+        try {
+            FtpUtil.disconnect(ftpClient);
+        } catch (IOException e) {
+            LOG.debug("Exception encountered while closing {}@{}, FTP client logout failed.  " +
+                            "Continuing to close the object despite the exception: {}",
+                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
         }
 
         LOG.debug("Marking {}@{} as closed.",

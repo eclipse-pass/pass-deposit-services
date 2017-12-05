@@ -30,6 +30,10 @@ public abstract class BaseIT {
 
     protected static final String DOCKER_HOST_PROPERTY = "docker.host.address";
 
+    protected static final String FTP_INTEGRATION_USERNAME = "nihmsftpuser";
+
+    protected static final String FTP_INTEGRATION_PASSWORD = "nihmsftppass";
+
     protected String ftpHost;
 
     protected int ftpPort = 21;

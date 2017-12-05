@@ -39,10 +39,13 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.DATA_TYP
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TRANSFER_MODE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,6 +101,7 @@ public class FtpTransportTest {
     public void testOpenSuccess() throws IOException {
         when(ftpClient.login(anyString(), anyString())).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.USER_LOGGED_IN);
+        when(ftpClient.sendNoOp()).thenReturn(true);
         when(ftpClient.setFileTransferMode(anyInt())).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(FTP_ROOT_DIR)).thenReturn(true);
@@ -116,12 +120,27 @@ public class FtpTransportTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testLoginFailure() throws IOException {
+        when(ftpClient.sendNoOp()).thenReturn(true);
         when(ftpClient.login(anyString(), anyString())).thenReturn(false);
-        when(ftpClient.getReplyString()).thenReturn("Invalid username or password");
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.REQUEST_DENIED);
+        when(ftpClient.getReplyCode())
+                .thenReturn(200)
+                .thenReturn(530);
 
-        transport.open(expectedHints);
+        when(ftpClient.getReplyString())
+                .thenReturn("OK")
+                .thenReturn("Login authentication failed");
+
+        try {
+            transport.open(expectedHints);
+            fail("Expected RuntimeException to be thrown.");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        verify(ftpClient).sendNoOp();
+        verify(ftpClient, atLeastOnce()).getReplyCode();
+        verify(ftpClient, atLeastOnce()).getReplyString();
     }
 }

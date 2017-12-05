@@ -22,11 +22,7 @@ import org.dataconservancy.nihms.transport.TransportSession;
 
 import java.util.Map;
 
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.login;
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.makeDirectories;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.performSilently;
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setDataType;
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setPasv;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setTransferMode;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setWorkingDirectory;
 
@@ -50,19 +46,8 @@ public class FtpTransport implements Transport {
         String transferMode = hints.get(FtpTransportHints.TRANSFER_MODE);
         String baseDir = hints.get(FtpTransportHints.BASE_DIRECTORY);
 
-        if (InetAddresses.isInetAddress(serverName)) {
-            performSilently(ftpClient, () -> {
-                ftpClient.connect(InetAddresses.forString(serverName), Integer.parseInt(serverPort));
-                return true;
-            });
-        } else {
-            performSilently(ftpClient, () -> {
-                ftpClient.connect(serverName, Integer.parseInt(serverPort));
-                return true;
-            });
-        }
-
-        login(ftpClient, hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD));
+        FtpUtil.connect(ftpClient, serverName, Integer.parseInt(serverPort));
+        FtpUtil.login(ftpClient, hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD));
         setTransferMode(ftpClient, transferMode);
         setWorkingDirectory(ftpClient, baseDir);
 
