@@ -19,4 +19,5 @@ script:
   - sudo service ssh stop
   - mvn verify -DtrimStackTrace=false
 jdk:
-- oraclejdk8
+  - oraclejdk8
+after_failure: docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
