@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-class DefaultFtpClientFactory implements FtpClientFactory {
+public class DefaultFtpClientFactory implements FtpClientFactory {
 
     @Override
     public FTPClient newInstance(Map<String, String> hints) {

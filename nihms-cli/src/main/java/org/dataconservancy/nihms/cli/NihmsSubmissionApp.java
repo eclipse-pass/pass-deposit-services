@@ -19,9 +19,13 @@ package org.dataconservancy.nihms.cli;
 import java.io.File;
 import java.io.IOException;
 
+import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
+import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
 
 import org.dataconservancy.nihms.submission.SubmissionFailure;
+import org.dataconservancy.nihms.transport.ftp.DefaultFtpClientFactory;
+import org.dataconservancy.nihms.transport.ftp.FtpTransport;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -94,7 +98,11 @@ public class NihmsSubmissionApp {
 
     private void run() throws NihmsCliException {
         try {
-            SubmissionEngine engine = new SubmissionEngine();
+            NihmsAssembler assembler = new NihmsAssembler();
+            FilesystemModelBuilder builder = new FilesystemModelBuilder();
+            DefaultFtpClientFactory factory = new DefaultFtpClientFactory();
+            FtpTransport transport = new FtpTransport(factory);
+            SubmissionEngine engine = new SubmissionEngine(builder,assembler,transport);
             engine.submit(propertiesFile.getCanonicalPath());
             System.exit(0);
         } catch (IOException | SubmissionFailure ex) {

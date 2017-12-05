@@ -58,8 +58,26 @@
     <dependencies>
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-filesystem-builder</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-ftp-transport</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-native-assembler</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-submission-engine</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
