@@ -113,7 +113,7 @@ class FtpUtil {
 
     static void setPasv(FTPClient ftpClient, boolean usePasv) {
         if (usePasv) {
-            performSilently(ftpClient, ftpClient::enterRemotePassiveMode);
+            performSilently(ftpClient::enterLocalPassiveMode);
         } else {
             performSilently(() -> {
                 ftpClient.enterLocalActiveMode();

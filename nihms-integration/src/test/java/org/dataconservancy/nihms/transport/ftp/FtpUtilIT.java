@@ -89,7 +89,7 @@ public class FtpUtilIT extends BaseIT {
 
         assertEquals("/" + directory, ftpClient.printWorkingDirectory());
         assertTrue(ftpClient.changeToParentDirectory());
-        assertTrue(ftpClient.enterRemotePassiveMode());
+        ftpClient.enterLocalPassiveMode();
         assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(ftpFile -> LOG.debug("{}", ftpFile.getName()))
                 .anyMatch(ftpFile -> ftpFile.getName().equals(directory)));
