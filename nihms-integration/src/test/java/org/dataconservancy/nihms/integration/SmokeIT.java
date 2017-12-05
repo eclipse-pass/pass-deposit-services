@@ -16,7 +16,6 @@
 
 package org.dataconservancy.nihms.integration;
 
-import com.google.common.net.InetAddresses;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.MessageDigestCalculatingInputStream;
 import org.apache.commons.io.input.NullInputStream;
@@ -24,9 +23,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -35,35 +31,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Insures the FTP docker container is up and running and configured with the proper user credentials. Includes
  * additional tests that verify the use of the {@link FTPClient Apache FTP client}.
  */
-public class SmokeIT {
-
-    private static final String DOCKER_HOST_PROPERTY = "docker.host.address";
-
-    private String ftpHost;
-
-    private int ftpPort = 21;
-
-    private FTPClient ftpClient;
-
-    @Before
-    public void setUp() throws Exception {
-        ftpHost = System.getProperty(DOCKER_HOST_PROPERTY);
-        assertNotNull("Missing value for system property '" + DOCKER_HOST_PROPERTY + "'", ftpHost);
-
-        ftpClient = new FTPClient();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        disconnect();
-    }
+public class SmokeIT extends BaseIT {
 
     /**
      * Insure the docker container started and that an ftp client can connect with the expected username
@@ -73,8 +48,8 @@ public class SmokeIT {
      */
     @Test
     public void testConnectFtpServer() throws IOException {
-        connect();
-        login();
+        itUtil.connect();
+        itUtil.login();
     }
 
     /**
@@ -85,31 +60,30 @@ public class SmokeIT {
      */
     @Test
     public void testMakeDirectoryAndChangeDirectory() throws IOException {
-        connect();
-        login();
+        itUtil.connect();
+        itUtil.login();
 
         String cwd = ftpClient.printWorkingDirectory();
 
         assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeDirectoryAndChangeDirectory"));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
 
         assertTrue(ftpClient.changeWorkingDirectory("SmokeIT-testMakeDirectoryAndChangeDirectory"));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
 
         assertTrue(ftpClient.changeWorkingDirectory(cwd));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
     }
 
     @Test
     public void testMakeTheSameDirectoryTwice() throws Exception {
-        connect();
-        login();
+        itUtil.connect();
+        itUtil.login();
 
         assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
 
-        assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
-        assertPositiveReply();
+        assertFalse(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
     }
 
     /**
@@ -119,8 +93,8 @@ public class SmokeIT {
      */
     @Test
     public void testStoreFile() throws IOException, NoSuchAlgorithmException {
-        connect();
-        login();
+        itUtil.connect();
+        itUtil.login();
 
         ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -135,12 +109,12 @@ public class SmokeIT {
 //        552 Quota exceeded: [org.jpg] won't be saved
 
         assertTrue(ftpClient.storeFile(destFile, content));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
         MessageDigest expectedDigest = content.getMessageDigest();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(32 * 2 ^ 10);
         assertTrue(ftpClient.retrieveFile(destFile, baos));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
 
         content = new MessageDigestCalculatingInputStream(new ByteArrayInputStream(baos.toByteArray()));
         IOUtils.copy(content, new NullOutputStream());
@@ -150,8 +124,8 @@ public class SmokeIT {
 
     @Test
     public void testStoreSameFileTwice() throws Exception {
-        connect();
-        login();
+        itUtil.connect();
+        itUtil.login();
 
         ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -159,36 +133,10 @@ public class SmokeIT {
         String destFile = "foo.bin";
 
         assertTrue(ftpClient.storeFile(destFile, new NullInputStream(2 ^ 20)));
-        assertPositiveReply();
+        itUtil.assertPositiveReply();
 
         assertTrue(ftpClient.storeFile(destFile, new NullInputStream(2 ^ 20)));
-        assertPositiveReply();
-    }
-
-    private void assertPositiveReply() {
-        assertTrue(FTPReply.isPositiveCompletion(ftpClient.getReplyCode()));
-    }
-
-    private void login() throws IOException {
-        assertTrue(ftpClient.login("nihmsftpuser", "nihmsftppass"));
-
-        assertPositiveReply();
-    }
-
-    private void connect() throws IOException {
-        if (InetAddresses.isInetAddress(ftpHost)) {
-            ftpClient.connect(InetAddresses.forString(ftpHost), ftpPort);
-        } else {
-            ftpClient.connect(ftpHost, ftpPort);
-        }
-
-        assertPositiveReply();
-    }
-
-    private void disconnect() throws IOException {
-        if (ftpClient != null && ftpClient.isConnected()) {
-            ftpClient.disconnect();
-        }
+        itUtil.assertPositiveReply();
     }
 
 }
