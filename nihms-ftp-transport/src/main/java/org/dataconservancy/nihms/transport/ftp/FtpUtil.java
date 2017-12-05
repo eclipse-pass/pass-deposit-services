@@ -20,6 +20,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.dataconservancy.nihms.util.function.ExceptionThrowingCommand;
+import org.dataconservancy.nihms.util.function.ExceptionThrowingVoidCommand;
 import org.dataconservancy.nihms.util.function.ExceptionThrowingFunction;
 
 import java.util.function.Consumer;
@@ -40,24 +41,32 @@ class FtpUtil {
      */
     static final String PATH_SEP = "/";
 
-    private static final Function<FTPClient, Boolean> ACCEPT_POSITIVE_COMPLETION = (ftpClient) ->
+    static final Function<FTPClient, Boolean> ACCEPT_POSITIVE_COMPLETION = (ftpClient) ->
             FTPReply.isPositiveCompletion(ftpClient.getReplyCode());
 
-    private static final Function<FTPClient, Boolean> ACCEPT_MKD_COMPLETION = (ftpClient) ->
+    static final Function<FTPClient, Boolean> ACCEPT_MKD_COMPLETION = (ftpClient) ->
             ACCEPT_POSITIVE_COMPLETION.apply(ftpClient) ||
                     acceptResponseCodes(550, 553).apply(ftpClient.getReplyCode());
 
-    private static final Consumer<FTPClient> ASSERT_POSITIVE_COMPLETION = (ftpClient) -> {
+    static final Consumer<FTPClient> ASSERT_POSITIVE_COMPLETION = (ftpClient) -> {
         if (!ACCEPT_POSITIVE_COMPLETION.apply(ftpClient)) {
             throw new RuntimeException(String.format(ERR_REPLY, ftpClient.getReplyString(), ftpClient.getReplyCode()));
         }
     };
 
-    private static final Consumer<FTPClient> ASSERT_MKD_COMPLETION = (ftpClient) -> {
+    static final Consumer<FTPClient> ASSERT_MKD_COMPLETION = (ftpClient) -> {
         if (!ACCEPT_MKD_COMPLETION.apply(ftpClient)) {
             throw new RuntimeException(String.format(ERR_REPLY, ftpClient.getReplyString(), ftpClient.getReplyCode()));
         }
     };
+
+    static void performSilently(ExceptionThrowingVoidCommand clientCommand) {
+        try {
+            clientCommand.perform();
+        } catch (Exception e) {
+            throw new RuntimeException(format(ERR_CMD, e.getMessage()), e);
+        }
+    }
 
     static <T> T performSilently(ExceptionThrowingCommand<T> clientCommand) {
         try {
