@@ -36,6 +36,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,13 +59,8 @@ public class FtpUtilTest {
      */
     @Test
     public void setPasvSuccess() throws IOException {
-        when(ftpClient.enterRemotePassiveMode()).thenReturn(true);
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.ENTERING_PASSIVE_MODE);
-
         FtpUtil.setPasv(ftpClient, true);
-
-        verify(ftpClient, atLeastOnce()).getReplyCode();
-        verify(ftpClient).enterRemotePassiveMode();
+        verify(ftpClient).enterLocalPassiveMode();
     }
 
     /**
@@ -81,8 +77,7 @@ public class FtpUtilTest {
 
     @Test(expected = RuntimeException.class)
     public void setPasvFail() throws Exception {
-        when(ftpClient.enterRemotePassiveMode()).thenReturn(false);
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.NOT_LOGGED_IN);
+        doThrow(new RuntimeException("Unable to enter local passive mode")).when(ftpClient).enterLocalPassiveMode();
 
         FtpUtil.setPasv(ftpClient, true);
     }

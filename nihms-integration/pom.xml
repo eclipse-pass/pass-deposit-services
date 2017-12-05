@@ -52,6 +52,13 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -73,7 +80,7 @@
                             </build>
                             <run>
                                 <env>
-                                    <PUBLICHOST>0.0.0.0</PUBLICHOST>
+                                    <PUBLICHOST>${docker.host.address}</PUBLICHOST>
                                 </env>
                                 <ports>
                                     <port>21:21</port>
@@ -98,6 +105,7 @@
                         <id>start-docker-its</id>
                         <phase>pre-integration-test</phase>
                         <goals>
+                            <goal>build</goal>
                             <goal>start</goal>
                         </goals>
                     </execution>
