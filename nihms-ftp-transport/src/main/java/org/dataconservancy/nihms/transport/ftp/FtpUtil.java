@@ -246,12 +246,14 @@ class FtpUtil {
     static void connect(FTPClient ftpClient, String ftpHost, int ftpPort) {
         LOG.debug(OVERVIEW_CONNECTION_ATTEMPT, ftpClientAsString(ftpClient), ftpHost, ftpPort);
 
-        long waitMs = 2000;
+        long initialWaitMs = 2000;
+        double backoffFactor = 1.5;
         long start = System.currentTimeMillis();
         boolean connectionSuccess = false;
         Exception caughtException = null;
 
         do {
+            long waitMs = initialWaitMs;
             try {
                 LOG.debug(CONNECTION_ATTEMPT, ftpClientAsString(ftpClient), ftpHost, ftpPort);
                 if (InetAddresses.isInetAddress(ftpHost)) {
@@ -281,6 +283,7 @@ class FtpUtil {
                     LOG.debug(CONNECTION_ATTEMPT_FAILED_WITH_EXCEPTION,
                             ftpClientAsString(ftpClient), ftpHost, ftpPort, waitMs, e.getMessage(), e);
                     Thread.sleep(waitMs);
+                    waitMs = Math.round(waitMs * backoffFactor);
                 } catch (InterruptedException ie) {
                     throw new RuntimeException(ie);
                 }
