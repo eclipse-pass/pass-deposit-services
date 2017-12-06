@@ -49,7 +49,9 @@ public class FtpTransport implements Transport {
         FtpUtil.connect(ftpClient, serverName, Integer.parseInt(serverPort));
         FtpUtil.login(ftpClient, hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD));
         setTransferMode(ftpClient, transferMode);
-        setWorkingDirectory(ftpClient, baseDir);
+        if (baseDir != null && baseDir.trim().length() > 0) {
+            setWorkingDirectory(ftpClient, baseDir);
+        }
 
         return new FtpTransportSession(ftpClient);
     }
