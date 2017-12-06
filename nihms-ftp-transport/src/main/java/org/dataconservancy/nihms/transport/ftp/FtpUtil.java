@@ -61,6 +61,11 @@ class FtpUtil {
      */
     static final String PATH_SEP = "/";
 
+    /**
+     * Checks the most recent {@link FTPClient#getReplyCode() reply code} using the supplied {@code ftpClient}.  Returns
+     * {@code true} if the reply code is considered to indicate a positive completion of the previous command.  Returns
+     * {@code false} otherwise.
+     */
     static final Function<FTPClient, Boolean> ACCEPT_POSITIVE_COMPLETION = (ftpClient) ->
             FTPReply.isPositiveCompletion(ftpClient.getReplyCode());
 
@@ -80,6 +85,13 @@ class FtpUtil {
         }
     };
 
+    /**
+     * {@link ExceptionThrowingCommand#perform() Perform} the command.  Any exceptions thrown by the command are caught
+     * and re-thrown as {@link RuntimeException}.
+     *
+     * @param clientCommand the command to perform
+     * @throws RuntimeException if the command throw a checked exception
+     */
     static void performSilently(ExceptionThrowingVoidCommand clientCommand) {
         try {
             clientCommand.perform();
@@ -96,10 +108,43 @@ class FtpUtil {
         }
     }
 
+    /**
+     * Performs the {@code clientCommand} using the supplied {@code ftpClient}.  If the command does not succeed (that
+     * is, the reply code from the FTP server is not considered to be a positive completion reply code (typically a
+     * code in the range of 200 - 299 inclusive)), then a {@code RuntimeException} will be thrown.
+     * <p>
+     * If the {@code clientCommand} throws an exception when it is executed (and the exception prevents the reply code
+     * from the FTP server being retrieved), it will be wrapped as a {@link RuntimeException} and re-thrown.
+     * </p>
+     *
+     * @param ftpClient the FTP client used to execute the command
+     * @param clientCommand the command to execute against the FTP server using the supplied client
+     * @param <T> the type returned by the command
+     * @return the result of the command
+     * @throws RuntimeException if the command is executed and is not considered successful, or if the command fails to
+     *                          execute.
+     */
     static <T> T performSilently(FTPClient ftpClient, ExceptionThrowingCommand<T> clientCommand) {
         return performSilently(ftpClient, clientCommand, ASSERT_POSITIVE_COMPLETION);
     }
 
+    /**
+     * Performs the {@code clientCommand} using the supplied {@code ftpClient}, then invokes the {@code callback}.  A
+     * typical callback will use the {@code ftpClient} to check the result of the {@code clientCommand} that was just
+     * executed, and take some action based on the response code.  See {@link #ASSERT_POSITIVE_COMPLETION} as an
+     * example.
+     * <p>
+     * If the {@code clientCommand} throws an exception when it is executed (and the exception prevents the callback
+     * from being executed), it will be wrapped as a {@link RuntimeException} and re-thrown.
+     * </p>
+     *
+     * @param ftpClient the FTP client used to execute the command
+     * @param clientCommand the command to execute against the FTP server using the supplied client
+     * @param <T> the type returned by the command
+     * @return the result of the command
+     * @throws RuntimeException if the command is executed and is not considered successful, or if the command fails to
+     *                          execute.
+     */
     static <T> T performSilently(FTPClient ftpClient, ExceptionThrowingCommand<T> clientCommand, Consumer<FTPClient> callback) {
         try {
             T result = clientCommand.perform();
@@ -196,6 +241,7 @@ class FtpUtil {
     }
 
     static void setWorkingDirectory(FTPClient ftpClient, String directoryPath) {
+        LOG.trace("Setting working directory to {}", directoryPath);
         if (directoryPath == null || directoryPath.trim().length() == 0) {
             return;
         }
@@ -210,18 +256,33 @@ class FtpUtil {
         }
 
         String cwd = performSilently(ftpClient, FTPClient::printWorkingDirectory);
+        LOG.trace("Obtaining current working directory as: '{}'", cwd);
 
         try {
             for (int i = 0; i < parts.length; i++) {
                 String part = parts[i];
+                LOG.trace("Creating intermediate directory '{}'", part);
                 performSilently(ftpClient, () -> ftpClient.makeDirectory(part), ASSERT_MKD_COMPLETION);
+                LOG.trace("Changing to directory '{}'", part);
                 performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(part));
             }
         } finally {
+            LOG.trace("Changing back to original working directory to '{}'", cwd);
             performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(cwd));
         }
     }
 
+    /**
+     * Attempt to login to the FTP server.
+     * <p>
+     * The supplied {@code ftpClient} should already be {@link #connect(FTPClient, String, int) connected}.
+     * </p>
+     *
+     * @param ftpClient the connected FTP client
+     * @param username the username to authenticate as
+     * @param password the password for the user
+     * @throws RuntimeException if authentication fails
+     */
     static void login(FTPClient ftpClient, String username, String password) {
         performSilently(ftpClient, () -> ftpClient.login(username, password));
     }
@@ -237,11 +298,14 @@ class FtpUtil {
      * <p>
      * When a connection fails, it is assumed to be a transient failure (again, due to potential bugs in the underlying
      * Apache FTP library).  So this method will block and retry a failed connection up to a 30 second timeout before
-     * giving up.
+     * giving up.  If this method cannot connect within the timeout period, a {@code RuntimeException} will be thrown.
+     * The thrown exception will have its {@link Exception#getCause() underlying cause set}, if one was caught.
      * </p>
      * @param ftpClient the FTP client instance that is not yet connected
      * @param ftpHost the host to connect to (may be an IPv4, IPv6, or string domain name)
      * @param ftpPort the port to connect to
+     * @throws RuntimeException if the connection fails (the cause of the connection failure will be set, if one was
+     *                          caught)
      */
     static void connect(FTPClient ftpClient, String ftpHost, int ftpPort) {
         LOG.debug(OVERVIEW_CONNECTION_ATTEMPT, ftpClientAsString(ftpClient), ftpHost, ftpPort);
