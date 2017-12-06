@@ -117,8 +117,18 @@ public class FtpTransportSession implements TransportSession {
                 }
             };
         } catch (ExecutionException e) {
-            throw new RuntimeException(format(
-                    ERR_TRANSFER, destinationResource, "<host>", "<port>", e.getMessage()), e);
+            LOG.info(format(ERR_TRANSFER, destinationResource, "<host>", "<port>", e.getMessage()), e);
+            return new TransportResponse() {
+                @Override
+                public boolean success() {
+                    return false;
+                }
+
+                @Override
+                public Throwable error() {
+                    return e;
+                }
+            };
         }
 
     }
