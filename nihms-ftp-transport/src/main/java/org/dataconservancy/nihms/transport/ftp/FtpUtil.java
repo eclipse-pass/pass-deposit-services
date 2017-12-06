@@ -196,6 +196,9 @@ class FtpUtil {
     }
 
     static void setWorkingDirectory(FTPClient ftpClient, String directoryPath) {
+        if (directoryPath == null || directoryPath.trim().length() == 0) {
+            return;
+        }
         makeDirectories(ftpClient, directoryPath);
         performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(directoryPath));
     }
