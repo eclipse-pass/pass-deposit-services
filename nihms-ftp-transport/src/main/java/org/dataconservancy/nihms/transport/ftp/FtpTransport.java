@@ -53,6 +53,10 @@ public class FtpTransport implements Transport {
             setWorkingDirectory(ftpClient, baseDir);
         }
 
+        // Initialize the system type, which is cached for the duration of an FTP Client instance
+        // Having this value cached will resolve some issues with aborted file transfers and directory listings
+        FtpUtil.performSilently(ftpClient, ftpClient::getSystemType);
+
         return new FtpTransportSession(ftpClient);
     }
 
