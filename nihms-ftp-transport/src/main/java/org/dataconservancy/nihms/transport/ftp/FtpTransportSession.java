@@ -91,7 +91,11 @@ public class FtpTransportSession implements TransportSession {
             try {
                 return storeFile(destinationResource, content);
             } finally {
-                content.close();
+                try {
+                    content.close();
+                } catch (IOException e) {
+                    // ignore
+                }
             }
         });
 
