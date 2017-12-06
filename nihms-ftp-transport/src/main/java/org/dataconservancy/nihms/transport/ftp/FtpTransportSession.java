@@ -136,7 +136,7 @@ public class FtpTransportSession implements TransportSession {
 
     @Override
     public void close() throws Exception {
-        if (!transfer.isDone()) {
+        if (transfer != null && !transfer.isDone()) {
             LOG.debug("Closing {}@{}, cancelling pending transfer...",
                     this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
             transfer.cancel(true);
