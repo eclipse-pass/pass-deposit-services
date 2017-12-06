@@ -15,32 +15,94 @@
  */
 package org.dataconservancy.nihms.transport.ftp;
 
-import com.google.common.net.InetAddresses;
 import org.apache.commons.net.ftp.FTPClient;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.performSilently;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setTransferMode;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setWorkingDirectory;
 
 /**
+ * Encapsulates a provider for FTP transport sessions.  {@link #open(Map) Opening} a FTP transport session entails the
+ * following:
+ * <ol>
+ *     <li>Successfully {@link FtpUtil#connect(FTPClient, String, int) connect} to an FTP server</li>
+ *     <li>Successfully {@link FtpUtil#login(FTPClient, String, String) login} to the FTP server</li>
+ *     <li>Set the transfer mode being used for this session</li>
+ *     <li>Create (if needed) and change into the base working directory</li>
+ * </ol>
+ * In other words, a caller executing a {@link FtpTransport#open(Map)} will receive a {@link FtpTransportSession} that
+ * is connected, logged in, and set to a certain working directory.
+ *
+ * Hints accepted by this transport are:
+ * <dl>
+ *     <dt>{@link Transport#TRANSPORT_SERVER_FQDN}</dt>
+ *     <dd>The fully qualified domain name, IPv4, or IPv6 address of the FTP server</dd>
+ *     <dt>{@link Transport#TRANSPORT_SERVER_PORT}</dt>
+ *     <dd>The TCP port number of the FTP server</dd>
+ *     <dt>{@link Transport#TRANSPORT_USERNAME}</dt>
+ *     <dd>The username to authenticate as</dd>
+ *     <dt>{@link Transport#TRANSPORT_PASSWORD}</dt>
+ *     <dd>The password to authenticate with</dd>
+ *     <dt>{@link FtpTransportHints#TRANSFER_MODE}</dt>
+ *     <dd>The transfer mode, expected to be one of {@link FtpTransportHints.MODE}</dd>
+ *     <dt>{@link FtpTransportHints#DATA_TYPE}</dt>
+ *     <dd>The data type to use when transferring files, expected to be one of {@link FtpTransportHints.TYPE}</dd>
+ *     <dt>{@link FtpTransportHints#BASE_DIRECTORY}</dt>
+ *     <dd>A directory that will be set as the current working directory for the session</dd>
+ * </dl>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class FtpTransport implements Transport {
 
+    private static Logger LOG = LoggerFactory.getLogger(FtpTransport.class);
+
     private FtpClientFactory ftpClientFactory;
 
+    /**
+     * Constructs a new FtpTransport with the supplied {@link FtpClientFactory}.  The client factory is used to create
+     * instances of {@link FTPClient} that underly {@link #open(Map) opened sessions}.
+     *
+     * @param ftpClientFactory used to create instances of {@link FTPClient}
+     */
     public FtpTransport(FtpClientFactory ftpClientFactory) {
         this.ftpClientFactory = ftpClientFactory;
     }
 
+    /**
+     * Uses the supplied configuration hints to open a new session with an FTP server.  Each session has new {@link
+     * FTPClient} which is used to communicate with the remote FTP server.  The {@link #FtpTransport(FtpClientFactory)
+     * client factory} supplied on construction is used for creating the {@code FTPClient} instances.
+     *
+     * @param hints configuration hints
+     * @return the open transport session
+     * @throws RuntimeException if the session cannot be successfully opened
+     */
     @Override
     public TransportSession open(Map<String, String> hints) {
-        FTPClient ftpClient = ftpClientFactory.newInstance(hints);
+        return open(ftpClientFactory.newInstance(hints), hints);
+    }
 
+    /**
+     * Uses the supplied configuration hints to open a new session with an FTP server.  The {@code ftpClient} underlies
+     * the opened session.
+     * <p>
+     * Package private method for testing.
+     * </p>
+     *
+     * @param ftpClient the FTP client used by the underlying FTP session
+     * @param hints configuration hints
+     * @return the open transport session
+     * @throws RuntimeException if the session cannot be successfully opened
+     */
+    FtpTransportSession open(FTPClient ftpClient, Map<String, String> hints) {
         String serverName = hints.get(Transport.TRANSPORT_SERVER_FQDN);
         String serverPort = hints.get(Transport.TRANSPORT_SERVER_PORT);
         String transferMode = hints.get(FtpTransportHints.TRANSFER_MODE);
@@ -57,7 +119,9 @@ public class FtpTransport implements Transport {
         // Having this value cached will resolve some issues with aborted file transfers and directory listings
         FtpUtil.performSilently(ftpClient, ftpClient::getSystemType);
 
-        return new FtpTransportSession(ftpClient);
+        FtpTransportSession session = new FtpTransportSession(ftpClient);
+        LOG.debug("Opened {}@{}...", session.getClass().getSimpleName(), toHexString(identityHashCode(session)));
+        return session;
     }
 
 
