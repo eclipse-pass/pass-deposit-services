@@ -89,11 +89,6 @@ public class FtpTransportSession implements TransportSession {
 
         this.transfer = new FutureTask<>(() -> {
             try {
-                // make any parent directories defensively- if they don't exist create them,
-                // if they do exist, don't create them
-                makeDirectories(ftpClient, destinationResource.substring(0, destinationResource.lastIndexOf(PATH_SEP)));
-                setPasv(ftpClient, true);
-                setDataType(ftpClient, binary.name());
                 return storeFile(destinationResource, content);
             } finally {
                 content.close();
@@ -180,8 +175,10 @@ public class FtpTransportSession implements TransportSession {
 
         try {
             if (directory != null) {
-                performSilently(ftpClient, ftpClient -> ftpClient.changeWorkingDirectory(directory));
+                FtpUtil.setWorkingDirectory(ftpClient, directory);
             }
+            setPasv(ftpClient, true);
+            setDataType(ftpClient, binary.name());
             performSilently(ftpClient, ftpClient -> ftpClient.storeFile(fileName, content));
             success.set(true);
         } catch (Exception e) {
