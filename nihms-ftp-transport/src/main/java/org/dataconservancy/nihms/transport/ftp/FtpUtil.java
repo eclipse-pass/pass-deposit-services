@@ -246,14 +246,13 @@ class FtpUtil {
     static void connect(FTPClient ftpClient, String ftpHost, int ftpPort) {
         LOG.debug(OVERVIEW_CONNECTION_ATTEMPT, ftpClientAsString(ftpClient), ftpHost, ftpPort);
 
-        long initialWaitMs = 2000;
+        long waitMs = 2000;
         double backoffFactor = 1.5;
         long start = System.currentTimeMillis();
         boolean connectionSuccess = false;
         Exception caughtException = null;
 
         do {
-            long waitMs = initialWaitMs;
             try {
                 LOG.debug(CONNECTION_ATTEMPT, ftpClientAsString(ftpClient), ftpHost, ftpPort);
                 if (InetAddresses.isInetAddress(ftpHost)) {
