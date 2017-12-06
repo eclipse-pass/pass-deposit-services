@@ -198,6 +198,14 @@ public class FtpTransportSession implements TransportSession {
         } catch (Exception e) {
             caughtException.set(e);
             success.set(false);
+
+            try {
+                // If the file transfer doesn't even start we need to abort the STOR command so that the server isn't
+                // expecting data from us
+                performSilently(ftpClient, () -> ftpClient.abort());
+            } catch (Exception innerE) {
+                // ignore
+            }
         } finally {
             if (directory != null) {
                 try {
