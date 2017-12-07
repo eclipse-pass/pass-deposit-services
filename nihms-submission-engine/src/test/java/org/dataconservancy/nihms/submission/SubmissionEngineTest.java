@@ -86,13 +86,13 @@ public class SubmissionEngineTest {
         when(packageStream.metadata()).thenReturn(md);
         when(md.name()).thenReturn(expectedPackageName);
         when(packageStream.open()).thenReturn(contentStream);
-        when(session.send(anyString(), anyMap(), any(InputStream.class))).thenReturn(response);
+        when(session.send(anyString(), any(InputStream.class))).thenReturn(response);
         when(response.success()).thenReturn(true);
 
         engine.submit(expectedFormDataUrl);
 
         verify(builder).build(eq(expectedFormDataUrl));
-        verify(session).send(eq(expectedPackageName), anyMap(), eq(contentStream));
+        verify(session).send(eq(expectedPackageName), eq(contentStream));
         verify(response).success();
     }
 

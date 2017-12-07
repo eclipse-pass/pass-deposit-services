@@ -134,7 +134,7 @@ public class SubmissionEngine {
             resourceName = stream.metadata().name();
             // this is using the piped input stream (returned from stream.open()).  does this have to occur in a
             // separate thread?
-            response = session.send(resourceName, getTransportHints(submission), stream.open());
+            response = session.send(resourceName, stream.open());
         } catch (Exception e) {
             throw new SubmissionFailure(format(SUBMISSION_ERROR, resourceName, e.getMessage()), e);
         }
