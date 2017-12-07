@@ -16,6 +16,7 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
+import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.NihmsFile;
@@ -25,6 +26,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
+import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,10 +47,10 @@ public class NihmsAssembler implements Assembler {
     public PackageStream assemble(NihmsSubmission submission) {
 
         // Prepare manifest and a serialization of the manifest
-        StreamingSerializer manifestSerializer = null; // new NihmsManifestSerializer(...)
+        StreamingSerializer manifestSerializer = () -> IOUtils.toInputStream("This is a manifest", "UTF-8");
 
         // Prepare metadata and a serialization of the metadata
-        StreamingSerializer metadataSerializer = null; // new NihmsMetadataSerializer(...)
+        StreamingSerializer metadataSerializer = () -> IOUtils.toInputStream("This is metadata", "UTF-8");
 
         // Locate byte streams for uploaded manuscript and supplemental data
         List<Resource> fileResources = submission.getFiles()

@@ -16,10 +16,11 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 interface StreamingSerializer {
 
-    InputStream serialize();
+    InputStream serialize() throws IOException;
 
 }
