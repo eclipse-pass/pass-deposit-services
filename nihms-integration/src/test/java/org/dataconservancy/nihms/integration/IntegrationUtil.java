@@ -109,6 +109,11 @@ public class IntegrationUtil {
         assertPositiveReply();
     }
 
+    public void logout() throws IOException {
+        assertTrue(ftpClient.logout());
+        assertPositiveReply();
+    }
+
     private String ftpClient() {
         if (ftpClient == null) {
             return "null";
