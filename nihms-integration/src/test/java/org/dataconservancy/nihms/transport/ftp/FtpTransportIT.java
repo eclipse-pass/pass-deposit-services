@@ -22,9 +22,14 @@ import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
@@ -40,12 +45,23 @@ import static org.mockito.Mockito.mock;
 
 public class FtpTransportIT extends BaseIT {
 
+    private static final String EXPECTED_SUCCESS = "Expected successful TransportResponse.  " +
+            "Underlying exception was:%n%s";
+
     private static final String FILE_LISTING = "Listing files in directory {}: {}";
 
     private FtpTransport transport;
 
     private FtpTransportSession transportSession;
 
+    /**
+     * Opens an {@link FtpTransportSession} to the FTP server running in Docker.  After logging in, a directory is made
+     * on the FTP server corresponding to the test class name, and that is set as the base working directory for the
+     * test.
+     *
+     * The {@link FtpTransport} is instantiated using a mock factory, because we use the {@link BaseIT#ftpClient} for
+     * performing tests.
+     */
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -70,18 +86,27 @@ public class FtpTransportIT extends BaseIT {
         assertEquals(asDirectory(FtpTransportIT.class.getSimpleName()), ftpClient.printWorkingDirectory());
     }
 
+    /**
+     * If the transport session was created, close it, otherwise use the underlying FTP client to disconnect from the
+     * server.  Closing the transport session should close the underlying FTP client.
+     */
     @Override
     @After
     public void tearDown() throws Exception {
         if (transportSession != null) {
             transportSession.close();
+            assertFalse(ftpClient.isConnected());
         } else {
             FtpUtil.disconnect(ftpClient, true);
         }
     }
 
+    /**
+     * Attempts to successfully store a file using the package-private {@link FtpTransportSession#storeFile(String, InputStream)}
+     * method.
+     */
     @Test
-    public void testStoreFile() throws Exception {
+    public void testStoreFile() {
         String expectedFilename = "FtpTransportIT-testStoreFile.jpg";
         TransportResponse response = transportSession.storeFile(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
 
@@ -90,8 +115,12 @@ public class FtpTransportIT extends BaseIT {
         assertFileListingContains(expectedFilename);
     }
 
+    /**
+     * Attempts to successfully store a file that has path components in it.  The implementation should create
+     * intermediate directories.
+     */
     @Test
-    public void testStoreFileWithDirectory() throws Exception {
+    public void testStoreFileWithDirectory() {
         String expectedDirectory = "FtpTransportIT";
         String expectedFilename = "testStoreFileWithDirectory.jpg";
         String storeFilename = expectedDirectory + "/" + expectedFilename;
@@ -106,8 +135,12 @@ public class FtpTransportIT extends BaseIT {
         assertFileListingContains(expectedFilename);
     }
 
+    /**
+     * Attempt to store the same file twice (with the second attempt overwriting the first file) and see how the FTP
+     * server responds.
+     */
     @Test
-    public void testStoreFileWithSameName() throws Exception {
+    public void testStoreFileWithSameName() {
         String expectedFilename = "FtpTransportIT-testStoreFileWithSameName.jpg";
         TransportResponse response = transportSession.storeFile(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
 
@@ -122,8 +155,12 @@ public class FtpTransportIT extends BaseIT {
         assertFileListingContains(expectedFilename);
     }
 
+    /**
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * method.
+     */
     @Test
-    public void testSendFile() throws Exception {
+    public void testSendFile() {
         String expectedFilename = "FtpTransportIT-testSendFile.jpg";
         TransportResponse response = transportSession.send(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
 
@@ -132,8 +169,14 @@ public class FtpTransportIT extends BaseIT {
         assertFileListingContains(expectedFilename);
     }
 
+    /**
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * method, which will fail because the file stream cannot be read.  Insure that the underlying exception can be
+     * retrieved and that the transport response indicates failure.  Insure that the file is not present on the FTP
+     * server.  The underlying FTP connection should still be open even though the file transfer failed.
+     */
     @Test
-    public void testSendFileWithException() throws Exception {
+    public void testSendFileWithException() {
         String expectedFilename = "FtpTransportIT-testSendFileWithException.jpg";
         IOException expectedException = new IOException("Broken stream.");
 
@@ -145,10 +188,54 @@ public class FtpTransportIT extends BaseIT {
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
                 .noneMatch(candidateFile -> candidateFile.getName().endsWith(expectedFilename))));
+
+        assertTrue(ftpClient.isConnected());
+        assertTrue(performSilently(() -> ftpClient.sendNoOp()));
     }
 
+    /**
+     * A transport session should not become unusable just because a file transfer failed.
+     * <p>
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * method, which will fail because the file stream cannot be read.  Then retry, and send a file that should succeed.
+     * </p>
+     * Assertions that are redundant with respect to {@link #testSendFileWithException()} are not re-asserted.
+     * <p>
+     * This test currently fails because upon the second attempt, a data connection cannot be opened by the FTPClient.
+     * FTPClient.storeFile(...) attempts to open a data connection which comes back null.  The data connection comes
+     * back null because in attempting to open a data connection a PASV command is issued to the server.  According to
+     * the logs on the FTP server, the PASV command succeeds, but for some reason when the FTP reply is read by
+     * FTPClient, it reads back the reply from a previous command (the TYPE command with a reply of '200 TYPE is now
+     * 8-bit binary').  Since the response from the TYPE command is not what is expected by the FTPClient upon issuing
+     * a PASV command, the data connection comes back null.
+     *
+     * Something definitely seems to be off regarding the state of the control channel's reply codes and messages, but
+     * for now if a file transfer fails, a new transport session needs to be re-opened, and the the tranfer re-tried
+     * from the new session.
+     * </p>
+     */
     @Test
-    public void testSendMultipleFiles() throws Exception {
+    @Ignore("Test currently fails")
+    public void testSendFileWithExceptionAndTryAgain() throws IOException {
+        String expectedFilename = "FtpTransportIT-testSendFileWithExceptionAndTryAgain.jpg";
+        IOException expectedException = new IOException("Broken stream.");
+
+        TransportResponse response = transportSession.send(expectedFilename, new BrokenInputStream(expectedException));
+
+        assertErrorResponse(response);
+        assertEquals(expectedException, response.error().getCause().getCause().getCause());
+
+        response = transportSession.send(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
+
+        assertSuccessfulResponse(response);
+        assertFileListingContains(expectedFilename);
+    }
+
+    /**
+     * Attempt to send multiple files successfully using the same session.
+     */
+    @Test
+    public void testSendMultipleFiles() {
         String expectedFilename_01 = "FtpTransportIT-testSendMultipleFiles-01.jpg";
         String expectedFilename_02 = "FtpTransportIT-testSendMultipleFiles-02.jpg";
 
@@ -183,8 +270,14 @@ public class FtpTransportIT extends BaseIT {
      * @param response the transport response
      */
     private static void assertSuccessfulResponse(TransportResponse response) {
+        String exceptionTrace = null;
+        if (response.error() != null) {
+            ByteArrayOutputStream sink = new ByteArrayOutputStream();
+            response.error().printStackTrace(new PrintStream(sink));
+            exceptionTrace = new String(sink.toByteArray());
+        }
         assertNotNull(response);
-        assertTrue(response.success());
+        assertTrue(String.format(EXPECTED_SUCCESS, exceptionTrace), response.success());
         assertNull(response.error());
     }
 
