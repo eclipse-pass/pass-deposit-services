@@ -121,6 +121,8 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL:
                         manuscript.setManuscriptUrl(new URL(value));
                         break;
+                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_TITLE:
+                        manuscript.setTitle(value);
 
                     //person metadata
                     case NihmsBuilderPropertyNames.NIHMS_PERSON_AUTHOR:

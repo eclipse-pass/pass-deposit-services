@@ -40,6 +40,7 @@ public class NihmsBuilderPropertyNames {
     public static final String NIHMS_MANUSCRIPT_ID = "nihms.manuscript.id";
     public static final String NIHMS_MANUSCRIPT_PUBMEDCENTRALID = "nihms.manuscript.pubmedcentralid";
     public static final String NIHMS_MANUSCRIPT_PUBMEDID = "nihms.manuscript.pubmedid";
+    public static final String NIHMS_MANUSCRIPT_TITLE = "nihms.manuscript.title";
 
     public static final String NIHMS_SUBMISSION_ID = "nihms.submission.id";
     public static final String NIHMS_SUBMISSION_NAME = "nihms.submission.name";
