@@ -261,6 +261,9 @@ class FtpUtil {
         try {
             for (int i = 0; i < parts.length; i++) {
                 String part = parts[i];
+                if ("".equals(part)) {
+                    continue;
+                }
                 LOG.trace("Creating intermediate directory '{}'", part);
                 performSilently(ftpClient, () -> ftpClient.makeDirectory(part), ASSERT_MKD_COMPLETION);
                 LOG.trace("Changing to directory '{}'", part);
