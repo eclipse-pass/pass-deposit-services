@@ -32,7 +32,14 @@
 
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-submission-engine</artifactId>
+            <artifactId>nihms-ftp-transport</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-cli</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
