@@ -42,7 +42,6 @@ public class NihmsManifestSerializer implements StreamingSerializer{
 
     private NihmsManifest manifest;
 
-
     NihmsManifestSerializer(NihmsManifest manifest){
         this.manifest = manifest;
     }
@@ -54,7 +53,9 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         for (NihmsFile file : manifest.getFiles() ){
             writer.write(file.getType().toString());
             writer.append("\t");
-            writer.write(file.getLabel());
+            if(file.getLabel() != null) {
+                writer.write(file.getLabel());
+            }
             writer.append("\t");
             writer.write(file.getName());
             writer.append("\n");

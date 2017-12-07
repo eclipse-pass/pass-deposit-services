@@ -29,6 +29,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Jim Martino (jrm@jhu.edu)
+ */
 public class NihmsManifestSerializerTest {
 
     @Test
@@ -50,10 +53,16 @@ public class NihmsManifestSerializerTest {
         file3.setName("File Three name");
         file3.setType(NihmsFileType.table);
 
+        NihmsFile file4 = new NihmsFile();
+        //label not always required
+        file4.setName("File Four name");
+        file4.setType(NihmsFileType.manuscript);
+
         List<NihmsFile> files = new ArrayList<>();
         files.add(file1);
         files.add(file2);
         files.add(file3);
+        files.add(file4);
 
         manifest.setFiles(files);
 
@@ -61,10 +70,10 @@ public class NihmsManifestSerializerTest {
 
         InputStream is = underTest.serialize();
 
-        //tab delimited lines
-        String expected = "figure	File One Label	File One name" + "\n" +
-                "bulksub_meta_xml	File Two Label	File Two name" + "\n" +
-                "table	File Three Label	File Three name" + "\n";
+        String expected = "figure" + "\t" + "File One Label" + "\t" +"File One name" + "\n" +
+                "bulksub_meta_xml"+ "\t" + "File Two Label" + "\t" +"File Two name" + "\n" +
+                "table" + "\t" + "File Three Label" + "\t" + "File Three name" + "\n" +
+                "manuscript" + "\t\t" + "File Four name"+ "\n";
 
         String actual = "";
 
