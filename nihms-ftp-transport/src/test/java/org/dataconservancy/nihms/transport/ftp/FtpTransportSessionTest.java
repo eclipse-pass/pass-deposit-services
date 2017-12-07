@@ -34,7 +34,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -104,7 +106,7 @@ public class FtpTransportSessionTest {
         assertNull(response.error());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verify(ftpClient).storeFile("package.tar.gz", content);
-        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
+        verify(ftpClient, atLeastOnce()).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
     /**
@@ -124,12 +126,22 @@ public class FtpTransportSessionTest {
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(500);
-        when(ftpClient.getReplyString()).thenReturn("Transfer failed");
+                .thenReturn(FTPReply.PATHNAME_CREATED) // print working directory
+                .thenReturn(FTPReply.PATHNAME_CREATED) // print working directory
+                .thenReturn(FTPReply.COMMAND_OK) // mkd 'sub'
+                .thenReturn(FTPReply.COMMAND_OK) // cd 'sub'
+                .thenReturn(FTPReply.COMMAND_OK) // mkd 'directory'
+                .thenReturn(FTPReply.COMMAND_OK) // cd 'directory'
+                .thenReturn(FTPReply.COMMAND_OK) // cd '/'
+                .thenReturn(FTPReply.COMMAND_OK) // cd '/'
+                .thenReturn(FTPReply.COMMAND_OK) // set data type
+                .thenReturn(FTPReply.COMMAND_OK) // set pasv
+                .thenReturn(500);                // store file
 
         when(ftpClient.storeFile(anyString(), any(InputStream.class))).thenThrow(expectedException);
+
+        when(ftpClient.getReplyString()).thenReturn("Transfer failed");
+
 
         TransportResponse response = ftpSession.storeFile(destinationResource, content);
 
@@ -140,6 +152,6 @@ public class FtpTransportSessionTest {
         assertEquals(expectedMessage, response.error().getCause().getCause().getMessage());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verify(ftpClient).storeFile("package.tar.gz", content);
-        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
+        verify(ftpClient, times(2)).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 }
