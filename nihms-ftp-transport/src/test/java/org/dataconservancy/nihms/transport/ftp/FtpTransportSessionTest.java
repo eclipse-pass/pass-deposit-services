@@ -16,6 +16,7 @@
 
 package org.dataconservancy.nihms.transport.ftp;
 
+import org.apache.commons.io.input.BrokenInputStream;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -154,4 +156,29 @@ public class FtpTransportSessionTest {
         verify(ftpClient).storeFile("package.tar.gz", content);
         verify(ftpClient, times(2)).changeWorkingDirectory(FTP_ROOT_DIR);
     }
+
+    /**
+     * Insure that an ABORT command is sent to the FTP server when an exception is thrown storing the file.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAbortWhenStoringFileThrowingException() throws Exception {
+        String destinationResource = "package.tar.gz";
+        String expectedMessage = "Broken stream.";
+        IOException expectedException = new IOException(expectedMessage);
+
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
+        when(ftpClient.storeFile(any(), any())).thenThrow(expectedException);
+        when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK); // assume all commands return OK
+
+        TransportResponse response = ftpSession.storeFile(destinationResource, mock(InputStream.class));
+
+        verify(ftpClient).storeFile(eq(destinationResource), any());
+        verify(ftpClient).abort();
+        assertNotNull(response);
+        assertFalse(response.success());
+        assertEquals(expectedException, response.error().getCause().getCause());
+    }
+
 }
