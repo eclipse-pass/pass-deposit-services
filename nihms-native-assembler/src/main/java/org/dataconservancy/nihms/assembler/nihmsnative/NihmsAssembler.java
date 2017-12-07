@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class NihmsAssembler implements Assembler {
 
-    private static final String ERR_MAPPING_LOCATION = "Unable to map location %s to a Spring Resource type.";
+    private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to a Spring Resource type.";
 
     /**
      * Assembles Java {@code Object} references to <em>{@code InputStream}s</em> for each file in the package.  The

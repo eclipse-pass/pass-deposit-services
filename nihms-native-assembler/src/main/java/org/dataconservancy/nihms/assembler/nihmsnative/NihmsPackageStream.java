@@ -39,7 +39,7 @@ public class NihmsPackageStream implements PackageStream {
 
     static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
 
-    static final String ERR_PUT_RESOURCE = "Error putting resource %s into archive output stream: %s";
+    static final String ERR_PUT_RESOURCE = "Error putting resource '%s' into archive output stream: %s";
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageStream.class);
 
