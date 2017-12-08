@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Integer.toHexString;
@@ -36,12 +37,13 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE.binary;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.PATH_SEP;
-import static org.dataconservancy.nihms.transport.ftp.FtpUtil.makeDirectories;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.performSilently;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setDataType;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setPasv;
 
 /**
+ * Encapsulates a logged-in connection to an FTP server.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class FtpTransportSession implements TransportSession {
@@ -89,14 +91,13 @@ public class FtpTransportSession implements TransportSession {
 
         this.transfer = new FutureTask<>(() -> {
             try {
-                // make any parent directories defensively- if they don't exist create them,
-                // if they do exist, don't create them
-                makeDirectories(ftpClient, destinationResource.substring(0, destinationResource.lastIndexOf(PATH_SEP)));
-                setPasv(ftpClient, true);
-                setDataType(ftpClient, binary.name());
                 return storeFile(destinationResource, content);
             } finally {
-                content.close();
+                try {
+                    content.close();
+                } catch (IOException e) {
+                    // ignore
+                }
             }
         });
 
@@ -118,8 +119,18 @@ public class FtpTransportSession implements TransportSession {
                 }
             };
         } catch (ExecutionException e) {
-            throw new RuntimeException(format(
-                    ERR_TRANSFER, destinationResource, "<host>", "<port>", e.getMessage()), e);
+            LOG.info(format(ERR_TRANSFER, destinationResource, "<host>", "<port>", e.getMessage()), e);
+            return new TransportResponse() {
+                @Override
+                public boolean success() {
+                    return false;
+                }
+
+                @Override
+                public Throwable error() {
+                    return e;
+                }
+            };
         }
 
     }
@@ -136,6 +147,13 @@ public class FtpTransportSession implements TransportSession {
 
     @Override
     public void close() throws Exception {
+        LOG.debug("Closing {}@{}...",
+                this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+        if (transfer != null && !transfer.isDone()) {
+            LOG.debug("Closing {}@{}, cancelling pending transfer...",
+                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+            transfer.cancel(true);
+        }
 
         if (this.isClosed) {
             LOG.debug("{}@{} is already closed.",
@@ -143,30 +161,12 @@ public class FtpTransportSession implements TransportSession {
             return;
         }
 
-        if (!transfer.isDone()) {
-            LOG.debug("Closing {}@{}, cancelling pending transfer...",
-                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
-            transfer.cancel(true);
-        }
-
-        if (ftpClient.isConnected()) {
-
-            try {
-                ftpClient.logout();
-            } catch (IOException e) {
-                LOG.debug("Exception encountered while closing {}@{}, FTP client logout failed.  " +
-                                "Continuing to close the object despite the exception: {}",
-                        this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
-            }
-
-            try {
-                ftpClient.disconnect();
-            } catch (IOException e) {
-                LOG.debug("Exception encountered while closing {}@{}, FTP client disconnection failed.  " +
-                                "Continuing to close the object despite the exception: {}",
-                        this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
-            }
-
+        try {
+            FtpUtil.disconnect(ftpClient);
+        } catch (IOException e) {
+            LOG.debug("Exception encountered while closing {}@{}, FTP client logout failed.  " +
+                            "Continuing to close the object despite the exception: {}",
+                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
         }
 
         LOG.debug("Marking {}@{} as closed.",
@@ -174,6 +174,12 @@ public class FtpTransportSession implements TransportSession {
         this.isClosed = true;
     }
 
+    /**
+     * Streams the supplied {@code content} to t
+     * @param destinationResource
+     * @param content
+     * @return
+     */
     TransportResponse storeFile(String destinationResource, InputStream content) {
         String cwd = performSilently(ftpClient, FTPClient::printWorkingDirectory);
 
@@ -182,6 +188,8 @@ public class FtpTransportSession implements TransportSession {
 
         AtomicBoolean success = new AtomicBoolean(false);
         AtomicReference<Exception> caughtException = new AtomicReference<>();
+        AtomicInteger ftpReplyCode = new AtomicInteger();
+        AtomicReference<String> ftpReplyString = new AtomicReference<>();
 
         if (!destinationResource.contains(PATH_SEP)) {
             fileName = destinationResource;
@@ -193,13 +201,27 @@ public class FtpTransportSession implements TransportSession {
 
         try {
             if (directory != null) {
-                performSilently(ftpClient, ftpClient -> ftpClient.changeWorkingDirectory(directory));
+                FtpUtil.setWorkingDirectory(ftpClient, directory);
             }
+            setPasv(ftpClient, true);
+            setDataType(ftpClient, binary.name());
             performSilently(ftpClient, ftpClient -> ftpClient.storeFile(fileName, content));
             success.set(true);
+            ftpReplyCode.set(ftpClient.getReplyCode());
+            ftpReplyString.set(ftpClient.getReplyString());
         } catch (Exception e) {
+            ftpReplyCode.set(ftpClient.getReplyCode());
+            ftpReplyString.set(ftpClient.getReplyString());
             caughtException.set(e);
             success.set(false);
+
+            try {
+                // If the file transfer doesn't even start we need to abort the STOR command so that the server isn't
+                // expecting data from us
+                performSilently(ftpClient, () -> ftpClient.abort());
+            } catch (Exception innerE) {
+                // ignore
+            }
         } finally {
             if (directory != null) {
                 try {
@@ -219,11 +241,9 @@ public class FtpTransportSession implements TransportSession {
             @Override
             public Throwable error() {
                 if (!success.get()) {
-                    int code = ftpClient.getReplyCode();
-                    String msg = ftpClient.getReplyString();
                     return new RuntimeException(
-                            format(ERR_TRANSFER_WITH_CODE, destinationResource, "host", "port", code, msg),
-                            caughtException.get());
+                            format(ERR_TRANSFER_WITH_CODE, destinationResource, "host", "port",
+                                    ftpReplyCode.get(), ftpReplyString.get()), caughtException.get());
                 }
 
                 return null;

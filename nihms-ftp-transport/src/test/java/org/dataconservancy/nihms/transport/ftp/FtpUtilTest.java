@@ -21,6 +21,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.io.IOException;
 
@@ -34,12 +35,14 @@ import static org.dataconservancy.nihms.transport.ftp.FtpUtil.PATH_SEP;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class FtpUtilTest {
@@ -337,6 +340,38 @@ public class FtpUtilTest {
         verify(ftpClient).makeDirectory(eq("subdir"));
         verify(ftpClient).changeWorkingDirectory(eq("subdir"));
         verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
+    }
+
+    /**
+     * Insure that when FtpUtil.makeDirectories(ftpClient, "/dir/subdir") is invoked that:
+     * - the current working directory is obtained
+     * - the specified directory is created and reply code checked
+     * - the client changes the current working directory to the newly created directory (in prep for creating the sub
+     * directory)
+     * - the subdirectory is created, reply code checked, and changed into
+     * - changes the current working directory to the originally obtained working directory
+     *
+     * Specifically that leading slashes in the directory name are handled properly when parsed
+     * @throws IOException
+     */
+    @Test
+    public void testMakeNestedDirectoryStartingWithPathSep() throws IOException {
+        when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
+        when(ftpClient.makeDirectory(argThat(s -> s.length() > 0))).thenReturn(true);
+        when(ftpClient.getReplyCode())
+                .thenReturn(FTPReply.PATHNAME_CREATED)
+                .thenReturn(FTPReply.COMMAND_OK);
+        when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
+
+        FtpUtil.makeDirectories(ftpClient, PATH_SEP + "dir" + PATH_SEP + "subdir");
+
+        verify(ftpClient).makeDirectory(eq("dir"));
+        verify(ftpClient).changeWorkingDirectory(eq("dir"));
+        verify(ftpClient).makeDirectory(eq("subdir"));
+        verify(ftpClient).changeWorkingDirectory(eq("subdir"));
+        verify(ftpClient).changeWorkingDirectory(FTP_ROOT_DIR);
+        verify(ftpClient, never()).makeDirectory(eq(""));
+        verify(ftpClient, never()).makeDirectory(eq(PATH_SEP));
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.transport.ftp;
 
 import org.dataconservancy.nihms.integration.BaseIT;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,11 +29,18 @@ import static org.junit.Assert.fail;
 
 public class FtpUtilIT extends BaseIT {
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        itUtil.connect();
-        itUtil.login();
+        FtpUtil.connect(ftpClient, ftpHost, ftpPort);
+        FtpUtil.login(ftpClient, FTP_INTEGRATION_USERNAME, FTP_INTEGRATION_PASSWORD);
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        FtpUtil.disconnect(ftpClient);
     }
 
     @Test
