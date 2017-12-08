@@ -102,4 +102,16 @@ public class FilesystemModelBuilderTest {
                 submission.getMetadata().getManuscriptMetadata().getTitle());
     }
 
+    @Test
+    public void testManifestFileValues(){
+        //File Elements
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LABEL),
+                submission.getManifest().getFiles().get(0).getLabel());
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_LOCATION),
+                submission.getManifest().getFiles().get(0).getLocation());
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_FILE_NAME),
+                submission.getManifest().getFiles().get(0).getName());
+
+    }
+
 }
