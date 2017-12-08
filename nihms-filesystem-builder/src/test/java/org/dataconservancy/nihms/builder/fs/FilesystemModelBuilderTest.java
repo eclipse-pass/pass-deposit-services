@@ -16,6 +16,7 @@
 
 package org.dataconservancy.nihms.builder.fs;
 
+import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.dataconservancy.nihms.model.NihmsSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -97,6 +98,8 @@ public class FilesystemModelBuilderTest {
                 submission.getMetadata().getManuscriptMetadata().getManuscriptUrl().toString());
         assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI),
                 submission.getMetadata().getManuscriptMetadata().getDoi().toString());
+        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_TITLE),
+                submission.getMetadata().getManuscriptMetadata().getTitle());
     }
 
 }
