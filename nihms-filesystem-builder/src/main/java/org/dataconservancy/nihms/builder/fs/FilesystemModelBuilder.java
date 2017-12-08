@@ -19,6 +19,7 @@ package org.dataconservancy.nihms.builder.fs;
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.NihmsFile;
+import org.dataconservancy.nihms.model.NihmsManifest;
 import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.dataconservancy.nihms.model.NihmsSubmission;
 
@@ -56,6 +57,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
         NihmsMetadata metadata = new NihmsMetadata();
         NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
         NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
+        NihmsManifest manifest = new NihmsManifest();
 
         //... including the person object and its list
         NihmsMetadata.Person person = new NihmsMetadata.Person();
@@ -152,6 +154,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
             //now populate the submission
             files.add(file);
             submission.setFiles(files);
+            manifest.setFiles(files);
 
             persons.add(person);
             metadata.setPersons(persons);
@@ -160,6 +163,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
             metadata.setManuscriptMetadata(manuscript);
 
             submission.setMetadata(metadata);
+            submission.setManifest(manifest);
 
         } catch (IOException ioe) {
             throw new InvalidModel(ioe.getMessage(), ioe);
