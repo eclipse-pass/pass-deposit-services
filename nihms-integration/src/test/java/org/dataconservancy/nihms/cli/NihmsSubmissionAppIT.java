@@ -71,7 +71,7 @@ public class NihmsSubmissionAppIT extends BaseIT {
         assertFalse(ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
         itUtil.logout();
 
-        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()));
+        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()), "local");
         app.run();
 
         itUtil.connect();

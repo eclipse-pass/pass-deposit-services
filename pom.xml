@@ -64,6 +64,7 @@
         <args4j.version>2.33</args4j.version>
         <xmlunit.version>2.3.0</xmlunit.version>
         <xstream.version>1.4.10</xstream.version>
+        <commons-codec.version>1.11</commons-codec.version>
     </properties>
 
     <build>
@@ -246,6 +247,11 @@
                 <version>${xmlunit.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
 
         </dependencies>
 

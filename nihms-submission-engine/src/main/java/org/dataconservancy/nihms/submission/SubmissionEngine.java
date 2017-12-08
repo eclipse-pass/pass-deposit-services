@@ -29,6 +29,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -40,7 +41,6 @@ import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_USERNAME;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIRECTORY;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.DATA_TYPE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TRANSFER_MODE;
@@ -89,6 +89,8 @@ public class SubmissionEngine {
 
     private Transport transport;
 
+    private Supplier<Map<String, String>> transportHints;
+
     /**
      * Instantiate a {@code SubmissionEngine} that is associated with a specific model, packaging format, and transport.
      * <p>
@@ -134,7 +136,7 @@ public class SubmissionEngine {
         // Open the underlying transport (FTP for NIHMS)
         // Assemble the package
         // Stream it to the target system
-        try (TransportSession session = transport.open(getTransportHints(submission))) {
+        try (TransportSession session = transport.open(getTransportHints(transportHints))) {
             PackageStream stream = assembler.assemble(submission);
             resourceName = stream.metadata().name();
             // this is using the piped input stream (returned from stream.open()).  does this have to occur in a
@@ -154,7 +156,21 @@ public class SubmissionEngine {
 
     }
 
-    private Map<String, String> getTransportHints(NihmsSubmission submission) {
+    public Supplier<Map<String, String>> getTransportHints() {
+        return transportHints;
+    }
+
+    public <T> void setTransportHints(Supplier<Map<String, String>> transportHints) {
+        this.transportHints = transportHints;
+    }
+
+    private Map<String, String> getTransportHints(Supplier<Map<String, String>> transportHints) {
+
+        if (transportHints != null) {
+            Map<String, String> hints = transportHints.get();
+            return hints;
+        }
+
         return new HashMap<String, String>() {
             {
                 put(TRANSPORT_PROTOCOL, PROTOCOL.ftp.name());
@@ -169,6 +185,7 @@ public class SubmissionEngine {
                 put(DATA_TYPE, TYPE.binary.name());
             }
         };
+
     }
 
 }
