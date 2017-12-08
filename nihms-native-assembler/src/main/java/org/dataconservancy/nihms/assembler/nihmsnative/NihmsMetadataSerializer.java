@@ -32,7 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-
+/**
+ * XML serialization of our NihmsMetadata to conform with the bulk submission dtd
+ *
+ * @author Jim Martino (jrm@jhu.edu)
+ */
 public class NihmsMetadataSerializer implements StreamingSerializer{
 
     private NihmsMetadata metadata;
@@ -164,7 +168,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
     }
 
     /**
-     * Method to convert boolean into yes ore no
+     * Method to convert boolean into yes or no
      * @param  b the boolean to convert
      * @return yes if true, no if false
      */

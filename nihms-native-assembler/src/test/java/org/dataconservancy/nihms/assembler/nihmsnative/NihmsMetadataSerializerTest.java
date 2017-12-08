@@ -36,7 +36,7 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 /**
- * This is a test for the metadat serializer. for now we just validate against the bulk submission dtd
+ * This is a test for the metadata serializer. for now we just validate against the bulk submission dtd
  *
  * @author Jim Martino (jrm@jhu.edu)
  */
