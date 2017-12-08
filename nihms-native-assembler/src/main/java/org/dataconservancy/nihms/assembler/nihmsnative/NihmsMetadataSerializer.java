@@ -161,10 +161,15 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                                  UnmarshallingContext context) {
             return null;
         }
+    }
 
-        private String booleanConvert(boolean b){
-            return(b?"yes":"no");
-        }
+    /**
+     * Method to convert boolean into yes ore no
+     * @param  b the boolean to convert
+     * @return yes if true, no if false
+     */
+    String booleanConvert(boolean b){
+        return(b?"yes":"no");
     }
 
 }

@@ -16,29 +16,38 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
-import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.model.NihmsMetadata;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xmlunit.validation.Languages;
+import org.xmlunit.validation.ValidationResult;
+import org.xmlunit.validation.Validator;
 
-import java.io.IOException;
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * This is a test for the metadat serializer. for now we just validate against the bulk submission dtd
+ *
+ * @author Jim Martino (jrm@jhu.edu)
+ */
 public class NihmsMetadataSerializerTest {
 
-    @Test
-    public void metadataSerializerTest() throws MalformedURLException {
+    private static NihmsMetadataSerializer underTest;
+    private static NihmsMetadata metadata= new NihmsMetadata();
 
+    @BeforeClass
+    public static void setup() throws Exception {
         //set up metadata snd its fields;
-        NihmsMetadata metadata = new NihmsMetadata();
-
-        //NihmsMetadata.Article article = new NihmsMetadata.Article();
         NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
         NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
         List<NihmsMetadata.Person> personList = new ArrayList<>();
@@ -54,7 +63,7 @@ public class NihmsMetadataSerializerTest {
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
         manuscript.setNihmsId("00001");
         manuscript.setPublisherPdf(true);
-        //manuscript.setPubmedCentralId("PMC00001");
+        manuscript.setPubmedCentralId("PMC00001");
         manuscript.setPubmedId("00001");
         manuscript.setRelativeEmbargoPeriodMonths(0);
         manuscript.setShowPublisherPdf(false);
@@ -105,23 +114,34 @@ public class NihmsMetadataSerializerTest {
         metadata.setManuscriptMetadata(manuscript);
         metadata.setPersons(personList);
 
-
-        NihmsMetadataSerializer underTest = new NihmsMetadataSerializer(metadata);
-
-        InputStream is = underTest.serialize();
-
-        //System.out.println(IOUtils.toString(is, "UTF-8"));
-
-        try {
-            System.out.println(IOUtils.toString(is, "UTF-8"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //assertEquals(expected, actual);
-
+        underTest = new NihmsMetadataSerializer(metadata);
     }
 
 
+    @Test
+    public void testSerializedMetadataValidity() throws Exception {
+        InputStream is = underTest.serialize();
+        byte[] buffer = new byte[is.available()];
+        is.read(buffer);
+        is.close();
+
+        File targetFile = new File("MetadataSerializerTest.xml");
+
+        OutputStream os = new FileOutputStream(targetFile);
+
+        os.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n".getBytes());
+        os.write("<!DOCTYPE nihms-submit SYSTEM \"bulksubmission.dtd\">\n".getBytes());
+        os.write(buffer);
+        os.close();
+
+        Validator v = Validator.forLanguage(Languages.XML_DTD_NS_URI);
+        StreamSource dtd = new StreamSource(getClass().getResourceAsStream("bulksubmissiom.dtd"));
+        dtd.setSystemId(getClass().getResource("bulksubmission.dtd").toURI().toString());
+        v.setSchemaSource(dtd);
+        StreamSource s = new StreamSource("MetadataSerializerTest.xml");
+        ValidationResult r = v.validateInstance(s);
+        assertTrue(r.isValid());
+
+    }
 
 }
