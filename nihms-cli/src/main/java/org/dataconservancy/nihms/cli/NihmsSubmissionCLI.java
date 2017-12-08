@@ -80,6 +80,7 @@ public class NihmsSubmissionCLI {
             /* Run the package generation application proper */
             NihmsSubmissionApp app = new NihmsSubmissionApp(propertiesFile);
             app.run();
+            System.exit((0));
         } catch (CmdLineException e) {
             /**
              * This is an error in command line args, just print out usage data
