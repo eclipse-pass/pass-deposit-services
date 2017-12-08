@@ -135,7 +135,7 @@ public class NihmsMetadataSerializerTest {
         os.close();
 
         Validator v = Validator.forLanguage(Languages.XML_DTD_NS_URI);
-        StreamSource dtd = new StreamSource(getClass().getResourceAsStream("bulksubmissiom.dtd"));
+        StreamSource dtd = new StreamSource(getClass().getResourceAsStream("bulksubmission.dtd"));
         dtd.setSystemId(getClass().getResource("bulksubmission.dtd").toURI().toString());
         v.setSchemaSource(dtd);
         StreamSource s = new StreamSource("MetadataSerializerTest.xml");
