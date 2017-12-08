@@ -57,11 +57,9 @@ public class NihmsAssembler implements Assembler {
     public PackageStream assemble(NihmsSubmission submission) {
 
         // Prepare manifest and a serialization of the manifest
-        StreamingSerializer manifestSerializer = () -> IOUtils.toInputStream("This is a manifest", "UTF-8");
-
+        StreamingSerializer manifestSerializer = new NihmsManifestSerializer(submission.getManifest());
         // Prepare metadata and a serialization of the metadata
-        StreamingSerializer metadataSerializer = () -> IOUtils.toInputStream("This is metadata", "UTF-8");
-
+        StreamingSerializer metadataSerializer = new NihmsMetadataSerializer(submission.getMetadata());
         // Locate byte streams for uploaded manuscript and supplemental data
         List<Resource> fileResources = submission.getFiles()
                 .stream()
