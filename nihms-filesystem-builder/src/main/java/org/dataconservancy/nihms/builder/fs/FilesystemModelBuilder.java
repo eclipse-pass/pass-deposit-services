@@ -19,6 +19,7 @@ package org.dataconservancy.nihms.builder.fs;
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.NihmsFile;
+import org.dataconservancy.nihms.model.NihmsFileType;
 import org.dataconservancy.nihms.model.NihmsManifest;
 import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.dataconservancy.nihms.model.NihmsSubmission;
@@ -94,6 +95,9 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_FILE_LOCATION:
                         file.setLocation(value);
+                        break;
+                    case NihmsBuilderPropertyNames.NIHMS_FILE_TYPE:
+                        file.setType(NihmsFileType.valueOf(value));
                         break;
 
                     //journal metadata
