@@ -289,11 +289,11 @@ public class FtpTransportIT extends BaseIT {
     private void assertFileListingContains(String expectedFilename) {
         ftpClient.enterLocalPassiveMode();
 
-        String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(".")) : "";
+        String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(".")) : expectedFilename;
         String suffix = (expectedFilename.contains(".")) ? expectedFilename.substring(expectedFilename.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
-        assertTrue("Must have a filename suffix!", suffix.length() > 0);
+        assertTrue("Must have a filename suffix!", suffix.length() >= 0);
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))

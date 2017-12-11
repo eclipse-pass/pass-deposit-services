@@ -187,11 +187,11 @@ public class FtpTransportSessionTest {
     }
 
     private void verifyDestinationResource(String destinationResource, InputStream content) throws IOException {
-        String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0, destinationResource.indexOf(".")) : "";
+        String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0, destinationResource.indexOf(".")) : destinationResource;
         String suffix = (destinationResource.contains(".")) ? destinationResource.substring(destinationResource.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
-        assertTrue("Must have a filename suffix!", suffix.length() > 0);
+        assertTrue("Must have a filename suffix!", suffix.length() >= 0);
 
         verify(ftpClient).storeFile(argThat((candidateResource) ->
                         candidateResource.startsWith(prefix) && candidateResource.endsWith(suffix)), eq(content));
