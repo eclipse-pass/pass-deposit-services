@@ -22,12 +22,14 @@ import org.dataconservancy.nihms.model.NihmsSubmission;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
 
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -39,7 +41,6 @@ import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_USERNAME;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIRECTORY;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.DATA_TYPE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE;
 import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TRANSFER_MODE;
@@ -74,6 +75,10 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
  */
 public class SubmissionEngine {
 
+    // TODO verify timezone with NIHMS
+    public static final String BASE_DIRECTORY = String.format("/logs/upload/%s",
+            OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE));
+
     private static final String MODEL_ERROR = "Error building submission model: %s";
 
     private static final String SUBMISSION_ERROR = "Submission of package %s failed: %s";
@@ -83,6 +88,8 @@ public class SubmissionEngine {
     private Assembler assembler;
 
     private Transport transport;
+
+    private Supplier<Map<String, String>> transportHints;
 
     /**
      * Instantiate a {@code SubmissionEngine} that is associated with a specific model, packaging format, and transport.
@@ -129,7 +136,7 @@ public class SubmissionEngine {
         // Open the underlying transport (FTP for NIHMS)
         // Assemble the package
         // Stream it to the target system
-        try (TransportSession session = transport.open(getTransportHints(submission))) {
+        try (TransportSession session = transport.open(getTransportHints(transportHints))) {
             PackageStream stream = assembler.assemble(submission);
             resourceName = stream.metadata().name();
             // this is using the piped input stream (returned from stream.open()).  does this have to occur in a
@@ -149,23 +156,36 @@ public class SubmissionEngine {
 
     }
 
-    private Map<String, String> getTransportHints(NihmsSubmission submission) {
+    public Supplier<Map<String, String>> getTransportHints() {
+        return transportHints;
+    }
+
+    public <T> void setTransportHints(Supplier<Map<String, String>> transportHints) {
+        this.transportHints = transportHints;
+    }
+
+    private Map<String, String> getTransportHints(Supplier<Map<String, String>> transportHints) {
+
+        if (transportHints != null) {
+            Map<String, String> hints = transportHints.get();
+            return hints;
+        }
+
         return new HashMap<String, String>() {
             {
                 put(TRANSPORT_PROTOCOL, PROTOCOL.ftp.name());
                 put(TRANSPORT_AUTHMODE, AUTHMODE.userpass.name());
                 put(TRANSPORT_USERNAME, "nihmsftpuser");
                 put(TRANSPORT_PASSWORD, "nihmsftppass");
-                put(TRANSPORT_SERVER_FQDN, "example.ftp.submission.nih.org");
+                put(TRANSPORT_SERVER_FQDN, "192.168.99.100");
                 put(TRANSPORT_SERVER_PORT, "21");
-                // TODO verify timezone with NIHMS
-                put(BASE_DIRECTORY, String.format("/logs/upload/%s",
-                        OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE)));
+                put(FtpTransportHints.BASE_DIRECTORY, BASE_DIRECTORY);
                 put(TRANSFER_MODE, MODE.stream.name());
                 put(USE_PASV, Boolean.TRUE.toString());
                 put(DATA_TYPE, TYPE.binary.name());
             }
         };
+
     }
 
 }

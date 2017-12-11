@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.io.input.BrokenInputStream;
 import org.apache.commons.net.ftp.FTPClient;
+import org.dataconservancy.nihms.cli.NihmsSubmissionAppIT;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
@@ -185,6 +186,8 @@ public class FtpTransportIT extends BaseIT {
         assertErrorResponse(response);
         assertEquals(expectedException, response.error().getCause().getCause().getCause());
 
+        ftpClient.enterLocalPassiveMode();
+
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
                 .noneMatch(candidateFile -> candidateFile.getName().endsWith(expectedFilename))));
@@ -288,6 +291,7 @@ public class FtpTransportIT extends BaseIT {
      * @param expectedFilename the file that is expected to exist in the current working directory
      */
     private void assertFileListingContains(String expectedFilename) {
+        ftpClient.enterLocalPassiveMode();
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
                 .anyMatch(candidateFile -> candidateFile.getName().endsWith(expectedFilename))));

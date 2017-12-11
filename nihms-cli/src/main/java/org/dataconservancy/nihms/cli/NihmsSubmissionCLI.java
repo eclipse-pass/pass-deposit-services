@@ -16,20 +16,12 @@
 
 package org.dataconservancy.nihms.cli;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
-import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
-import org.dataconservancy.nihms.submission.SubmissionEngine;
-import org.dataconservancy.nihms.submission.SubmissionFailure;
-import org.dataconservancy.nihms.transport.ftp.DefaultFtpClientFactory;
-import org.dataconservancy.nihms.transport.ftp.FtpTransport;
-
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+
+import java.io.File;
 
 /**
  * @author Jim Martino (jrm@jhu.edu)
@@ -41,6 +33,9 @@ public class NihmsSubmissionCLI {
      */
     @Argument(required = true, index = 0, metaVar = "[properties file]", usage = "properties file for the submission")
     public static File propertiesFile = null;
+
+    @Argument(required = true, index = 1, metaVar = "[FTP configuration key]", usage = "key used to look up the FTP server and credentials for performing submissions")
+    public static String transportKey = null;
 
     /**
      *
@@ -58,6 +53,7 @@ public class NihmsSubmissionCLI {
     public NihmsSubmissionCLI(){
 
     }
+
     public static void main(String[] args) {
 
         final NihmsSubmissionCLI application = new NihmsSubmissionCLI();
@@ -78,7 +74,7 @@ public class NihmsSubmissionCLI {
             }
 
             /* Run the package generation application proper */
-            NihmsSubmissionApp app = new NihmsSubmissionApp(propertiesFile);
+            NihmsSubmissionApp app = new NihmsSubmissionApp(propertiesFile, transportKey);
             app.run();
             System.exit((0));
         } catch (CmdLineException e) {

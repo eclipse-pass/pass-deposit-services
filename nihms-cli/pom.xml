@@ -31,7 +31,14 @@
     <name>Nihms Submission Command Line Interface</name>
 
     <build>
+
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -52,10 +59,13 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
+
     </build>
 
     <dependencies>
+
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-filesystem-builder</artifactId>
@@ -84,6 +94,30 @@
             <groupId>args4j</groupId>
             <artifactId>args4j</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
