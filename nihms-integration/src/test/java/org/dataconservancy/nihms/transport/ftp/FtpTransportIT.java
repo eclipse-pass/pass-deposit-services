@@ -125,7 +125,7 @@ public class FtpTransportIT extends BaseIT {
 
         assertSuccessfulResponse(response);
 
-        assertFileListingContains(expectedDirectory);
+        assertDirectoryListingContains(expectedDirectory);
 
         FtpUtil.setWorkingDirectory(ftpClient, expectedDirectory);
 
@@ -293,7 +293,28 @@ public class FtpTransportIT extends BaseIT {
         String suffix = (expectedFilename.contains(".")) ? expectedFilename.substring(expectedFilename.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
-        assertTrue("Must have a filename suffix!", suffix.length() >= 0);
+        assertTrue("Must have a filename suffix!", suffix.length() > 0);
+
+        performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
+                .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
+                .anyMatch(candidateFile -> candidateFile.getName().startsWith(prefix) && candidateFile.getName().endsWith(suffix))));
+    }
+
+    /**
+     * Lists the contents of the current working directory of the FTP server, and asserts that there is at least one directory
+     * name that matches the prefix and the suffix of the {@code expectedFilename}. This test is a little different from the file
+     * name test in taht we allow directory names to not be "normal" - i.e., they may not have a suffix
+     *
+     * @param expectedDirectoryName the file that is expected to exist in the current working directory
+     */
+    private void assertDirectoryListingContains(String expectedDirectoryName) {
+        ftpClient.enterLocalPassiveMode();
+
+        String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0, expectedDirectoryName.indexOf(".")) : expectedDirectoryName;
+        String suffix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(expectedDirectoryName.indexOf(".")) : "";
+
+        assertTrue("Must have a filename prefix!", prefix.length() > 0);
+        //directory names may not have a dot in them, so we do not check for a positive length suffix
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))

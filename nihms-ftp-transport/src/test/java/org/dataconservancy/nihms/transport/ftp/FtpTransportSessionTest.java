@@ -190,8 +190,8 @@ public class FtpTransportSessionTest {
         String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0, destinationResource.indexOf(".")) : destinationResource;
         String suffix = (destinationResource.contains(".")) ? destinationResource.substring(destinationResource.indexOf(".")) : "";
 
-        assertTrue("Must have a filename prefix!", prefix.length() > 0);
-        assertTrue("Must have a filename suffix!", suffix.length() >= 0);
+        assertTrue("Must have a filename prefix!", prefix.length() > 0); //we are requiring both a prefix
+        assertTrue("Must have a filename suffix!", suffix.length() > 0); //and a suffix
 
         verify(ftpClient).storeFile(argThat((candidateResource) ->
                         candidateResource.startsWith(prefix) && candidateResource.endsWith(suffix)), eq(content));
