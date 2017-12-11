@@ -199,13 +199,32 @@ public class FtpTransportSession implements TransportSession {
             directory = destinationResource.substring(0, destinationResource.lastIndexOf(PATH_SEP));
         }
 
+        //temporary adjustment to allow multiple submissions in demo to not overwrite files on ftp server
+        //NOTE the original variable fileName was used below in a lambda expression - we had to change this to
+        //finalFileName to satisfy the finality requirement. when this adjustment is removed, the finalFileName variable
+        //in the try block (performSilently ... )below can be reverted to fileName
+        String base;
+        String extension;
+        if (fileName.contains(".")) {
+            int i = fileName.indexOf("."); //there may be more than one (.tar.gz)
+            base = fileName.substring(0, i);
+            extension = fileName.substring(i); //save the "."
+        } else {
+            base = fileName;
+            extension = "";
+        }
+        String pseudoTimeStamp = String.format("%04d", System.currentTimeMillis() % 10000);
+        fileName = base + pseudoTimeStamp + extension;
+        String finalFileName = fileName;
+        //end of adjustment
+
         try {
             if (directory != null) {
                 FtpUtil.setWorkingDirectory(ftpClient, directory);
             }
             setPasv(ftpClient, true);
             setDataType(ftpClient, binary.name());
-            performSilently(ftpClient, ftpClient -> ftpClient.storeFile(fileName, content));
+            performSilently(ftpClient, ftpClient -> ftpClient.storeFile(finalFileName, content));
             success.set(true);
             ftpReplyCode.set(ftpClient.getReplyCode());
             ftpReplyString.set(ftpClient.getReplyString());
