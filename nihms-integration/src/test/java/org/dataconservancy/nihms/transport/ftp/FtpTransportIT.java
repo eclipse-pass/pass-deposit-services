@@ -17,8 +17,6 @@
 package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.io.input.BrokenInputStream;
-import org.apache.commons.net.ftp.FTPClient;
-import org.dataconservancy.nihms.cli.NihmsSubmissionAppIT;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
@@ -29,7 +27,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.stream.Stream;
@@ -41,7 +38,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 public class FtpTransportIT extends BaseIT {
@@ -129,7 +125,7 @@ public class FtpTransportIT extends BaseIT {
 
         assertSuccessfulResponse(response);
 
-        assertFileListingContains(expectedDirectory);
+        assertDirectoryListingContains(expectedDirectory);
 
         FtpUtil.setWorkingDirectory(ftpClient, expectedDirectory);
 
@@ -286,19 +282,47 @@ public class FtpTransportIT extends BaseIT {
 
     /**
      * Lists the files in the current working directory of the FTP server, and asserts that there is at least one file
-     * name that matches the {@code expectedFilename}.
+     * name that matches the prefix and the suffix of the {@code expectedFilename}.
      *
      * @param expectedFilename the file that is expected to exist in the current working directory
      */
     private void assertFileListingContains(String expectedFilename) {
         ftpClient.enterLocalPassiveMode();
+
+        String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(".")) : expectedFilename;
+        String suffix = (expectedFilename.contains(".")) ? expectedFilename.substring(expectedFilename.indexOf(".")) : "";
+
+        assertTrue("Must have a filename prefix!", prefix.length() > 0);
+        assertTrue("Must have a filename suffix!", suffix.length() > 0);
+
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
                 .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
-                .anyMatch(candidateFile -> candidateFile.getName().endsWith(expectedFilename))));
+                .anyMatch(candidateFile -> candidateFile.getName().startsWith(prefix) && candidateFile.getName().endsWith(suffix))));
     }
 
     /**
-     * Prefixs the supplied path component with a path separator.  If the path component already starts with a path
+     * Lists the contents of the current working directory of the FTP server, and asserts that there is at least one directory
+     * name that matches the prefix and the suffix of the {@code expectedFilename}. This test is a little different from the file
+     * name test in taht we allow directory names to not be "normal" - i.e., they may not have a suffix
+     *
+     * @param expectedDirectoryName the file that is expected to exist in the current working directory
+     */
+    private void assertDirectoryListingContains(String expectedDirectoryName) {
+        ftpClient.enterLocalPassiveMode();
+
+        String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0, expectedDirectoryName.indexOf(".")) : expectedDirectoryName;
+        String suffix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(expectedDirectoryName.indexOf(".")) : "";
+
+        assertTrue("Must have a filename prefix!", prefix.length() > 0);
+        //directory names may not have a dot in them, so we do not check for a positive length suffix
+
+        performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
+                .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
+                .anyMatch(candidateFile -> candidateFile.getName().startsWith(prefix) && candidateFile.getName().endsWith(suffix))));
+    }
+
+    /**
+     * Prefixes the supplied path component with a path separator.  If the path component already starts with a path
      * separator, it is returned unchanged
      *
      * @param pathComponent a non-null path component

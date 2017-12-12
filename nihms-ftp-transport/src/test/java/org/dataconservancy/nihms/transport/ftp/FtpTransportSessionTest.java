@@ -16,7 +16,6 @@
 
 package org.dataconservancy.nihms.transport.ftp;
 
-import org.apache.commons.io.input.BrokenInputStream;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
@@ -35,6 +34,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -80,7 +80,7 @@ public class FtpTransportSessionTest {
         assertNotNull(response);
         assertTrue(response.success());
         assertNull(response.error());
-        verify(ftpClient).storeFile(destinationResource, content);
+        verifyDestinationResource(destinationResource, content);
     }
 
     /**
@@ -107,7 +107,7 @@ public class FtpTransportSessionTest {
         assertTrue(response.success());
         assertNull(response.error());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
-        verify(ftpClient).storeFile("package.tar.gz", content);
+        verifyDestinationResource("package.tar.gz", content);
         verify(ftpClient, atLeastOnce()).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
@@ -153,7 +153,7 @@ public class FtpTransportSessionTest {
         assertEquals(expectedException, response.error().getCause().getCause());
         assertEquals(expectedMessage, response.error().getCause().getCause().getMessage());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
-        verify(ftpClient).storeFile("package.tar.gz", content);
+        verifyDestinationResource("package.tar.gz", content);
         verify(ftpClient, times(2)).changeWorkingDirectory(FTP_ROOT_DIR);
     }
 
@@ -172,13 +172,29 @@ public class FtpTransportSessionTest {
         when(ftpClient.storeFile(any(), any())).thenThrow(expectedException);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK); // assume all commands return OK
 
-        TransportResponse response = ftpSession.storeFile(destinationResource, mock(InputStream.class));
+        InputStream content = mock(InputStream.class);
+        TransportResponse response = ftpSession.storeFile(destinationResource, content);
 
-        verify(ftpClient).storeFile(eq(destinationResource), any());
+        verifyDestinationResource(destinationResource, content);
         verify(ftpClient).abort();
         assertNotNull(response);
         assertFalse(response.success());
         assertEquals(expectedException, response.error().getCause().getCause());
+    }
+
+    private void verifyDestinationResource(String destinationResource) throws IOException {
+        verifyDestinationResource(destinationResource, any(InputStream.class));
+    }
+
+    private void verifyDestinationResource(String destinationResource, InputStream content) throws IOException {
+        String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0, destinationResource.indexOf(".")) : destinationResource;
+        String suffix = (destinationResource.contains(".")) ? destinationResource.substring(destinationResource.indexOf(".")) : "";
+
+        assertTrue("Must have a filename prefix!", prefix.length() > 0); //we are requiring both a prefix
+        assertTrue("Must have a filename suffix!", suffix.length() > 0); //and a suffix
+
+        verify(ftpClient).storeFile(argThat((candidateResource) ->
+                        candidateResource.startsWith(prefix) && candidateResource.endsWith(suffix)), eq(content));
     }
 
 }
