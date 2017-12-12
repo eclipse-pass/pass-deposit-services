@@ -96,11 +96,11 @@ public class NihmsAssembler implements Assembler {
         return new NihmsPackageStream(manifestSerializer, metadataSerializer, fileResources, md);
     }
 
-    private static String sanitize(String name) {
+    static String sanitize(String name) {
         String result = name
                 .chars()
                 .filter(NihmsAssembler::isValidChar)
-                .mapToObj(String::valueOf)
+                .mapToObj(c -> Character.toString((char)c))
                 .collect(Collectors.joining());
 
         return result;
