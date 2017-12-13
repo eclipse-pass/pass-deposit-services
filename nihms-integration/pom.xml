@@ -138,6 +138,7 @@
                 <configuration>
                     <systemProperties>
                         <docker.host.address>${docker.host.address}</docker.host.address>
+                        <LOCAL_FTP_SERVER>${docker.host.address}</LOCAL_FTP_SERVER>
                     </systemProperties>
                 </configuration>
                 <executions>
