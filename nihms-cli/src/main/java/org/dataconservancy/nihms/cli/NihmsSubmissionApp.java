@@ -42,15 +42,11 @@ public class NihmsSubmissionApp {
     private static final String MISSING_TRANSPORT_HINTS = "No classpath resource found for transport configuration " +
             "key '%s': '%s' not found on class path.";
 
-    private static final String BAD_DOCKER_HOST = "Unable to parse environment variable '%s' with value: '%s'\n" +
-            "Maybe try running 'eval $(docker-machine env default)', or manually setting %s to the IP address of " +
-            "your docker-machine";
-
     private static final String ERR_LOADING_TRANSPORT_HINTS = "Error loading classpath resource '%s': %s";
 
     private static final String SETTING_TRANSPORT_HINT = "Transport hint key: '%s' -> Setting '%s' to '%s'";
 
-    private static final String DOCKER_HOST_ADDRESS_KEY = "DOCKER_HOST";
+    private static final String LOCAL_FTP_SERVER_KEY = "LOCAL_FTP_SERVER";
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
 
@@ -117,19 +113,8 @@ public class NihmsSubmissionApp {
                 }
                 if ("local".equals(transportKey)) {
                     String localFtpHost;
-                    if ((localFtpHost = System.getenv(DOCKER_HOST_ADDRESS_KEY)) == null) {
-                        localFtpHost = System.getProperty(DOCKER_HOST_ADDRESS_KEY, "localhost");
-                    } else {
-                        String envVar = System.getenv(DOCKER_HOST_ADDRESS_KEY);
-                        if (envVar.startsWith("tcp://")) {
-                            if (envVar.lastIndexOf(":") < 4 ) {
-                                localFtpHost = envVar.substring("tcp://".length());
-                            }
-                            localFtpHost = envVar.substring("tcp://".length(), envVar.lastIndexOf(":"));
-                        } else {
-                            throw new RuntimeException(format(BAD_DOCKER_HOST,
-                                    DOCKER_HOST_ADDRESS_KEY, envVar, DOCKER_HOST_ADDRESS_KEY));
-                        }
+                    if ((localFtpHost = System.getenv(LOCAL_FTP_SERVER_KEY)) == null) {
+                        localFtpHost = System.getProperty(LOCAL_FTP_SERVER_KEY, "localhost");
                     }
 
                     LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey, TRANSPORT_SERVER_FQDN, localFtpHost));
