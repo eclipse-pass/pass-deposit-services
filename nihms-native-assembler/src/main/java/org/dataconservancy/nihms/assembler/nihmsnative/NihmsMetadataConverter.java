@@ -22,6 +22,8 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.dataconservancy.nihms.model.NihmsMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -61,6 +63,8 @@ public class NihmsMetadataConverter implements Converter {
     private static final String N_PI = "pi";
     private static final String N_CORRESPONDING_PI = "corrpi";
     private static final String N_AUTHOR = "author";
+
+    private static final Logger LOG = LoggerFactory.getLogger(NihmsMetadataConverter.class);
 
     public boolean canConvert(Class clazz) {
         return NihmsMetadata.class == clazz;
@@ -190,10 +194,11 @@ public class NihmsMetadataConverter implements Converter {
                         manuscriptMetadata.setPubmedCentralId(reader.getAttribute(N_PUB_MED_CENTRAL_ID));
                     }
                     if (reader.getAttribute(N_MANUSCRIPT_URL) != null) {
+                        String manuscriptURL = reader.getAttribute(N_MANUSCRIPT_URL);
                         try {
-                            manuscriptMetadata.setManuscriptUrl(new URL(reader.getAttribute(N_MANUSCRIPT_URL)));
+                            manuscriptMetadata.setManuscriptUrl(new URL(manuscriptURL));
                         } catch (MalformedURLException mue) {
-                            //do something here
+                            LOG.error("Unable to create URL for " + manuscriptURL, mue.getMessage());
                         }
                     }
                     if (reader.getAttribute(N_DOI) != null) {
