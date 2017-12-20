@@ -16,6 +16,9 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,6 +28,7 @@ import org.xmlunit.validation.Validator;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,7 +37,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 
 /**
  * This is a test for the metadata serializer. for now we just validate against the bulk submission dtd
@@ -60,11 +66,11 @@ public class NihmsMetadataSerializerTest {
 
         //populate manuscript metadata
         manuscript.setDoi(URI.create("doi:10.1234/smh0000001"));
-        manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
+        manuscript.setManuscriptUrl(new URL("http://google.com"));
         manuscript.setNihmsId("00001");
         manuscript.setPublisherPdf(true);
         manuscript.setPubmedCentralId("PMC00001");
-        manuscript.setPubmedId("00001");
+        manuscript.setPubmedId("00002");
         manuscript.setRelativeEmbargoPeriodMonths(0);
         manuscript.setShowPublisherPdf(false);
         manuscript.setTitle("Manuscript Title");
@@ -75,8 +81,8 @@ public class NihmsMetadataSerializerTest {
         person1.setCorrespondingPi(false);
         person1.setEmail("person@farm.com");
         person1.setFirstName("Bessie");
-        person1.setLastName("Cow");
-        person1.setMiddleName("The");
+        person1.setLastName("Beef");
+        person1.setMiddleName("A");
         person1.setPi(true);
         personList.add(person1);
 
@@ -86,7 +92,7 @@ public class NihmsMetadataSerializerTest {
         person2.setEmail("person@farm.com");
         person2.setFirstName("Elsie");
         person2.setLastName("Cow");
-        person2.setMiddleName("The");
+        person2.setMiddleName("B");
         person2.setPi(false);
         personList.add(person2);
 
@@ -95,8 +101,8 @@ public class NihmsMetadataSerializerTest {
         person3.setCorrespondingPi(false);
         person3.setEmail("person@farm.com");
         person3.setFirstName("Mark");
-        person3.setLastName("Cow");
-        person3.setMiddleName("The");
+        person3.setLastName("Bovine");
+        person3.setMiddleName("C");
         person3.setPi(false);
         personList.add(person3);
 
@@ -105,8 +111,8 @@ public class NihmsMetadataSerializerTest {
         person4.setCorrespondingPi(false);
         person4.setEmail("person@farm.com");
         person4.setFirstName("John");
-        person4.setLastName("Cow");
-        person4.setMiddleName("The");
+        person4.setLastName("Bull");
+        person4.setMiddleName("D");
         person4.setPi(true);
         personList.add(person4);
 
@@ -129,6 +135,7 @@ public class NihmsMetadataSerializerTest {
 
         OutputStream os = new FileOutputStream(targetFile);
 
+        //need to add these to make validator happy
         os.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n".getBytes());
         os.write("<!DOCTYPE nihms-submit SYSTEM \"bulksubmission.dtd\">\n".getBytes());
         os.write(buffer);
@@ -144,4 +151,69 @@ public class NihmsMetadataSerializerTest {
 
     }
 
+    @Test
+    public void testUnmarshalMarshalIsIdentity() throws Exception {
+        XStream xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("_-", "_")));
+        xstream.registerConverter(new NihmsMetadataConverter());
+        XStream.setupDefaultSecurity(xstream);
+        xstream.alias("nihms-submit",NihmsMetadata.class);
+        xstream.allowTypesByWildcard(new String[] {
+            "org.dataconservancy.nihms.model.**"
+        });
+
+        InputStream is = underTest.serialize();
+        byte[] buffer = new byte[is.available()];
+        is.read(buffer);
+        is.close();
+
+        File targetFile = new File("MetadataRoundtripTest.xml");
+
+        OutputStream os = new FileOutputStream(targetFile);
+        os.write(buffer);
+        os.close();
+
+        NihmsMetadata roundtrippedMetadata = (NihmsMetadata) xstream.fromXML(new FileInputStream(targetFile));
+
+        //manuscript metadata
+        NihmsMetadata.Manuscript expectedManuscript = metadata.getManuscriptMetadata();
+        NihmsMetadata.Manuscript actualManuscript = roundtrippedMetadata.getManuscriptMetadata();
+
+        assertEquals(expectedManuscript.getTitle(), actualManuscript.getTitle());
+        assertEquals(expectedManuscript.getRelativeEmbargoPeriodMonths(), actualManuscript.getRelativeEmbargoPeriodMonths());
+        assertEquals(expectedManuscript.getDoi(), actualManuscript.getDoi());
+        assertEquals(expectedManuscript.getPubmedId(), actualManuscript.getPubmedId());
+        assertEquals(expectedManuscript.getPubmedCentralId(), actualManuscript.getPubmedCentralId());
+        assertEquals(expectedManuscript.getManuscriptUrl(),actualManuscript.getManuscriptUrl());
+        assertEquals(expectedManuscript.getNihmsId(), actualManuscript.getNihmsId());
+        assertEquals(expectedManuscript.getRelativeEmbargoPeriodMonths(), actualManuscript.getRelativeEmbargoPeriodMonths());
+
+        //journal metadata
+        NihmsMetadata.Journal expectedJournal = metadata.getJournalMetadata();
+        NihmsMetadata.Journal actualJournal = roundtrippedMetadata.getJournalMetadata();
+
+        assertEquals(expectedJournal.getIssn(), actualJournal.getIssn());
+        assertEquals(expectedJournal.getJournalId(), actualJournal.getJournalId());
+        assertEquals(expectedJournal.getJournalTitle(), actualJournal.getJournalTitle());
+        assertEquals(expectedJournal.getJournalType(), actualJournal.getJournalType());
+        assertEquals(expectedJournal.getPubType(), actualJournal.getPubType());
+
+        List<NihmsMetadata.Person> expectedPersons = metadata.getPersons();
+        List<NihmsMetadata.Person> actualPersons = roundtrippedMetadata.getPersons();
+
+        //person metadata
+        assertEquals(expectedPersons.size(), actualPersons.size());
+
+        for (int i=0; i < expectedPersons.size(); i++) {
+            NihmsMetadata.Person expectedPerson = expectedPersons.get(i);
+            NihmsMetadata.Person actualPerson = actualPersons.get(i);
+
+            assertEquals(expectedPerson.getEmail(), actualPerson.getEmail());
+            assertEquals(expectedPerson.getFirstName(), actualPerson.getFirstName());
+            assertEquals(expectedPerson.getMiddleName(), actualPerson.getMiddleName());
+            assertEquals(expectedPerson.getLastName(), actualPerson.getLastName());
+            assertEquals(expectedPerson.isAuthor(), actualPerson.isAuthor());
+            assertEquals(expectedPerson.isCorrespondingPi(), actualPerson.isCorrespondingPi());
+            assertEquals(expectedPerson.isPi(), actualPerson.isPi());
+        }
+    }
 }
