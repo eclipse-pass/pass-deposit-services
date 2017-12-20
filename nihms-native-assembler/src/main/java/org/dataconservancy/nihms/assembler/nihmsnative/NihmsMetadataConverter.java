@@ -198,7 +198,8 @@ public class NihmsMetadataConverter implements Converter {
                         try {
                             manuscriptMetadata.setManuscriptUrl(new URL(manuscriptURL));
                         } catch (MalformedURLException mue) {
-                            LOG.error("Unable to create URL for " + manuscriptURL, mue.getMessage());
+                            LOG.error("Unable to create URL for " + manuscriptURL, mue);
+                            throw new RuntimeException(mue.getMessage(), mue);
                         }
                     }
                     if (reader.getAttribute(N_DOI) != null) {

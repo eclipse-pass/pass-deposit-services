@@ -131,7 +131,7 @@ public class NihmsMetadataSerializerTest {
         is.read(buffer);
         is.close();
 
-        File targetFile = new File("MetadataSerializerTest.xml");
+        File targetFile = File.createTempFile("MetadataSerializerTest-",".xml");
 
         OutputStream os = new FileOutputStream(targetFile);
 
@@ -145,7 +145,7 @@ public class NihmsMetadataSerializerTest {
         StreamSource dtd = new StreamSource(getClass().getResourceAsStream("bulksubmission.dtd"));
         dtd.setSystemId(getClass().getResource("bulksubmission.dtd").toURI().toString());
         v.setSchemaSource(dtd);
-        StreamSource s = new StreamSource("MetadataSerializerTest.xml");
+        StreamSource s = new StreamSource(targetFile);
         ValidationResult r = v.validateInstance(s);
         assertTrue(r.isValid());
 
@@ -166,7 +166,7 @@ public class NihmsMetadataSerializerTest {
         is.read(buffer);
         is.close();
 
-        File targetFile = new File("MetadataRoundtripTest.xml");
+        File targetFile =  File.createTempFile("MetadataRoundtripTest-",".xml");
 
         OutputStream os = new FileOutputStream(targetFile);
         os.write(buffer);
