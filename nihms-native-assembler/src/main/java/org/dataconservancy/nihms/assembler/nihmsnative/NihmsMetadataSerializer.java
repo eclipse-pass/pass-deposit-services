@@ -40,7 +40,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
     }
 
     public InputStream serialize() {
-        //this incantation allows us to handle underscores in the html element names
+        //this incantation allows us to handle underscores in the xml element names
         XStream xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("_-", "_")));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         xstream.registerConverter(new NihmsMetadataConverter());
