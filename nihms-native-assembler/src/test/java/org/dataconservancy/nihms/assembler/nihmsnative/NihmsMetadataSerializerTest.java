@@ -21,7 +21,9 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import org.dataconservancy.nihms.model.NihmsMetadata;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -47,6 +49,9 @@ import static org.junit.Assert.assertTrue;
  * @author Jim Martino (jrm@jhu.edu)
  */
 public class NihmsMetadataSerializerTest {
+
+    @Rule
+    public TemporaryFolder testFolder = new TemporaryFolder();
 
     private static NihmsMetadataSerializer underTest;
     private static NihmsMetadata metadata= new NihmsMetadata();
@@ -131,7 +136,7 @@ public class NihmsMetadataSerializerTest {
         is.read(buffer);
         is.close();
 
-        File targetFile = File.createTempFile("MetadataSerializerTest-",".xml");
+        File targetFile = testFolder.newFile("MetadataSerializerTest.xml");
 
         OutputStream os = new FileOutputStream(targetFile);
 
@@ -153,10 +158,11 @@ public class NihmsMetadataSerializerTest {
 
     @Test
     public void testUnmarshalMarshalIsIdentity() throws Exception {
+        //this incantation allows us to handle underscores in the html element names
         XStream xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("_-", "_")));
         xstream.registerConverter(new NihmsMetadataConverter());
-        XStream.setupDefaultSecurity(xstream);
         xstream.alias("nihms-submit",NihmsMetadata.class);
+        XStream.setupDefaultSecurity(xstream);
         xstream.allowTypesByWildcard(new String[] {
             "org.dataconservancy.nihms.model.**"
         });
@@ -166,7 +172,7 @@ public class NihmsMetadataSerializerTest {
         is.read(buffer);
         is.close();
 
-        File targetFile =  File.createTempFile("MetadataRoundtripTest-",".xml");
+        File targetFile =  testFolder.newFile("MetadataRoundtripTest.xml");
 
         OutputStream os = new FileOutputStream(targetFile);
         os.write(buffer);
