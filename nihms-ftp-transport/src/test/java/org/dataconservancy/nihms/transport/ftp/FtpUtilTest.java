@@ -56,13 +56,14 @@ public class FtpUtilTest {
 
     /**
      * Invoking {@link FtpUtil#setPasv(FTPClient, boolean)} with a {@code true} value should result in the client
-     * entering passive mode.
+     * entering passive mode, and using extended passive mode.
      *
      * @throws IOException
      */
     @Test
     public void setPasvSuccess() throws IOException {
         FtpUtil.setPasv(ftpClient, true);
+        verify(ftpClient).setUseEPSVwithIPv4(true);
         verify(ftpClient).enterLocalPassiveMode();
     }
 

@@ -14,4 +14,4 @@ RUN echo 'yes' > /etc/pure-ftpd/conf/VerboseLog
 
 RUN pure-pw mkdb /etc/pure-ftpd/pureftpd.pdb -f /etc/pureftpd.passwd
 
-CMD /etc/init.d/rsyslog start && /run.sh -d -d -c 1 -C 1 -H -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -p 30000:30010
+CMD /etc/init.d/rsyslog start && /run.sh -d -d -c 1 -C 1 -H -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -p 30000:30010

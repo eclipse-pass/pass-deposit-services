@@ -108,6 +108,7 @@ public class SmokeIT extends BaseIT {
 //        552-0 Kbytes used (0%) - authorized: 10240 Kb
 //        552 Quota exceeded: [org.jpg] won't be saved
 
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
         boolean success = ftpClient.storeFile(destFile, content);
         itUtil.assertPositiveReply();
@@ -136,6 +137,7 @@ public class SmokeIT extends BaseIT {
 
         String destFile = "foo.bin";
 
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
         boolean success = ftpClient.storeFile(destFile, new NullInputStream(2 ^ 20));
         itUtil.assertPositiveReply();
