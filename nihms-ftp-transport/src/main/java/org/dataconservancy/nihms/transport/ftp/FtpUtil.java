@@ -178,6 +178,7 @@ class FtpUtil {
 
     static void setPasv(FTPClient ftpClient, boolean usePasv) {
         if (usePasv) {
+            ftpClient.setUseEPSVwithIPv4(true);
             performSilently(ftpClient::enterLocalPassiveMode);
         } else {
             performSilently(() -> {

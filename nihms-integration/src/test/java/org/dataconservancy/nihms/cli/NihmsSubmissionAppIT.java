@@ -68,7 +68,7 @@ public class NihmsSubmissionAppIT extends BaseIT {
      */
     @Test
     public void testSubmissionFromCli() throws Exception {
-        assertFalse(ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
+        assertFalse("Did not expect working directory '" + SubmissionEngine.BASE_DIRECTORY + "' to exist!", ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
         itUtil.logout();
 
         NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()), "local");
@@ -77,6 +77,7 @@ public class NihmsSubmissionAppIT extends BaseIT {
         itUtil.connect();
         itUtil.login();
         assertTrue(ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
         assertEquals(1, ftpClient.listFiles().length);
     }

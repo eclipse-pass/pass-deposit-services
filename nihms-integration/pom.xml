@@ -92,9 +92,6 @@
                                 <dockerFile>${project.basedir}/src/test/resources/docker/Dockerfile</dockerFile>
                             </build>
                             <run>
-                                <env>
-                                    <PUBLICHOST>${docker.host.address}</PUBLICHOST>
-                                </env>
                                 <wait>
                                     <time>6000</time>
                                 </wait>

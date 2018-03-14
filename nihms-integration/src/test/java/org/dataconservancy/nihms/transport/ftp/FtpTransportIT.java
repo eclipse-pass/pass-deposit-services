@@ -182,6 +182,7 @@ public class FtpTransportIT extends BaseIT {
         assertErrorResponse(response);
         assertEquals(expectedException, response.error().getCause().getCause().getCause());
 
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
@@ -287,6 +288,7 @@ public class FtpTransportIT extends BaseIT {
      * @param expectedFilename the file that is expected to exist in the current working directory
      */
     private void assertFileListingContains(String expectedFilename) {
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
         String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(".")) : expectedFilename;
@@ -308,6 +310,7 @@ public class FtpTransportIT extends BaseIT {
      * @param expectedDirectoryName the file that is expected to exist in the current working directory
      */
     private void assertDirectoryListingContains(String expectedDirectoryName) {
+        ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
         String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0, expectedDirectoryName.indexOf(".")) : expectedDirectoryName;
