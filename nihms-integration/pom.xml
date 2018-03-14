@@ -95,6 +95,9 @@
                                 <env>
                                     <PUBLICHOST>${docker.host.address}</PUBLICHOST>
                                 </env>
+                                <wait>
+                                    <time>6000</time>
+                                </wait>
                                 <ports>
                                     <port>21:21</port>
                                     <port>30000:30000</port>
