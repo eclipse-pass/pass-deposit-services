@@ -28,6 +28,21 @@
     <artifactId>nihms-integration</artifactId>
     <name>Integration Tests</name>
 
+    <profiles>
+        <profile>
+            <id>external-ftp-server</id>
+            <activation>
+                <property>
+                    <name>ftp.server</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.host.address>${ftp.server}</docker.host.address>
+                <docker.skip>true</docker.skip>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
 
         <dependency>
