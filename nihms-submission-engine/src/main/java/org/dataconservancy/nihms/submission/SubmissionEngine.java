@@ -24,14 +24,20 @@ import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
 import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.dataconservancy.nihms.transport.Transport.AUTHMODE;
 import static org.dataconservancy.nihms.transport.Transport.PROTOCOL;
@@ -76,7 +82,7 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
 public class SubmissionEngine {
 
     // TODO verify timezone with NIHMS
-    public static final String BASE_DIRECTORY = String.format("/logs/upload/%s",
+    public static final String BASE_DIRECTORY = format("/logs/upload/%s",
             OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE));
 
     private static final String MODEL_ERROR = "Error building submission model: %s";
@@ -153,6 +159,43 @@ public class SubmissionEngine {
                             (response.error() != null) ? response.error().getMessage() : "Cause unknown"),
                     response.error());
         }
+
+    }
+
+    /**
+     * Provided key-value pairs that represent a submission, this engine will build a model, assemble a
+     * package, and deposit it to a target repository.  The {@link
+     * #SubmissionEngine(SubmissionBuilder, Assembler, Transport) model builder} supplied on construction must know how
+     * to parse the information in the supplied {@code submissionProperties}
+     * <p>
+     * Implementation note: this method simply stores the provided {@code submissionProperties} into a temporary file,
+     * and invokes {@link #submit(String)}.
+     * </p>
+     *
+     * @param submissionProperties contains key-value pairs representing a submission
+     * @throws SubmissionFailure if the submission fails for any reason
+     */
+    public void submit(Properties submissionProperties) throws SubmissionFailure {
+
+        File properties;
+        try {
+            properties = File.createTempFile("SubmissionEngine-", ".properties");
+            properties.deleteOnExit();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create temporary submission properties file: " +
+                    e.getMessage(), e);
+        }
+
+        try {
+            try (FileOutputStream fos = new FileOutputStream(properties)) {
+                submissionProperties.store(fos, format("Submission properties generated on %s by %s",
+                        ISO_DATE_TIME.withZone(ZoneId.of("UTC")), this.getClass().getName()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to store temporary submission properties file: " + e.getMessage(), e);
+        }
+
+        submit(properties.toURI().getPath());
 
     }
 
