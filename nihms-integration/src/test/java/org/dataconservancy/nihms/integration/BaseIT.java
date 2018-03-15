@@ -34,6 +34,12 @@ public abstract class BaseIT {
 
     protected static final String FTP_INTEGRATION_PASSWORD = "nihmsftppass";
 
+    /**
+     * A string that is likely to be unique each time ITs are run.  This string will be used as the base directory for
+     * any ITs that create content (directories, files) on the FTP server.
+     */
+    protected static final String FTP_SUBMISSION_BASE_DIRECTORY = String.format("/%s", System.currentTimeMillis());
+
     protected String ftpHost;
 
     protected int ftpPort = 21;

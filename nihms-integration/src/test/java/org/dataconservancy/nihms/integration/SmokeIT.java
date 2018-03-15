@@ -23,6 +23,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -40,14 +42,18 @@ import static org.junit.Assert.assertTrue;
  */
 public class SmokeIT extends BaseIT {
 
+
     /**
      * Insure the docker container started and that an ftp client can connect with the expected username
-     * and password
+     * and password.  Set the base directory to a directory that is unique to the execution of this IT.
      *
-     * @throws IOException
+     * @throws Exception
      */
-    @Test
-    public void testConnectFtpServer() throws IOException {
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        itUtil.setBaseDirectory(BaseIT.FTP_SUBMISSION_BASE_DIRECTORY);
         itUtil.connect();
         itUtil.login();
     }
@@ -60,9 +66,6 @@ public class SmokeIT extends BaseIT {
      */
     @Test
     public void testMakeDirectoryAndChangeDirectory() throws IOException {
-        itUtil.connect();
-        itUtil.login();
-
         String cwd = ftpClient.printWorkingDirectory();
 
         assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeDirectoryAndChangeDirectory"));
@@ -77,9 +80,6 @@ public class SmokeIT extends BaseIT {
 
     @Test
     public void testMakeTheSameDirectoryTwice() throws Exception {
-        itUtil.connect();
-        itUtil.login();
-
         assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
         itUtil.assertPositiveReply();
 
@@ -93,9 +93,6 @@ public class SmokeIT extends BaseIT {
      */
     @Test
     public void testStoreFile() throws IOException, NoSuchAlgorithmException {
-        itUtil.connect();
-        itUtil.login();
-
         assertTrue(ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE));
         assertTrue(ftpClient.setFileType(FTP.BINARY_FILE_TYPE));
 
@@ -129,9 +126,6 @@ public class SmokeIT extends BaseIT {
 
     @Test
     public void testStoreSameFileTwice() throws Exception {
-        itUtil.connect();
-        itUtil.login();
-
         assertTrue(ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE));
         assertTrue(ftpClient.setFileType(FTP.BINARY_FILE_TYPE));
 

@@ -47,6 +47,9 @@ public class FtpTransportIT extends BaseIT {
 
     private static final String FILE_LISTING = "Listing files in directory {}: {}";
 
+    private static final String FTP_BASE_DIRECTORY = String.format("%s/%s", BaseIT.FTP_SUBMISSION_BASE_DIRECTORY,
+            FtpTransportIT.class.getSimpleName());
+
     private FtpTransport transport;
 
     private FtpTransportSession transportSession;
@@ -75,12 +78,12 @@ public class FtpTransportIT extends BaseIT {
                 put(FtpTransportHints.TRANSFER_MODE, FtpTransportHints.MODE.stream.name());
 
                 // Opening a session puts us into this base directory, creating it if necessary.
-                put(FtpTransportHints.BASE_DIRECTORY, FtpTransportIT.class.getSimpleName());
+                put(FtpTransportHints.BASE_DIRECTORY, FTP_BASE_DIRECTORY);
             }
         });
 
         // Assert we were put into the correct base directory.
-        assertEquals(asDirectory(FtpTransportIT.class.getSimpleName()), ftpClient.printWorkingDirectory());
+        assertEquals(FTP_BASE_DIRECTORY, ftpClient.printWorkingDirectory());
     }
 
     /**
@@ -118,16 +121,15 @@ public class FtpTransportIT extends BaseIT {
      */
     @Test
     public void testStoreFileWithDirectory() {
-        String expectedDirectory = "FtpTransportIT";
         String expectedFilename = "testStoreFileWithDirectory.jpg";
-        String storeFilename = expectedDirectory + "/" + expectedFilename;
+        String storeFilename = String.format("%s/%s", FTP_BASE_DIRECTORY, expectedFilename);
         TransportResponse response = transportSession.storeFile(storeFilename, this.getClass().getResourceAsStream("/org.jpg"));
 
         assertSuccessfulResponse(response);
 
-        assertDirectoryListingContains(expectedDirectory);
+        assertDirectoryListingContains(FTP_BASE_DIRECTORY);
 
-        FtpUtil.setWorkingDirectory(ftpClient, expectedDirectory);
+        FtpUtil.setWorkingDirectory(ftpClient, FTP_BASE_DIRECTORY);
 
         assertFileListingContains(expectedFilename);
     }

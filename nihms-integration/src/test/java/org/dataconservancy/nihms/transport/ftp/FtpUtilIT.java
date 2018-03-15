@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import java.util.stream.Stream;
 
+import static org.dataconservancy.nihms.integration.IntegrationUtil.directoryExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -35,6 +36,15 @@ public class FtpUtilIT extends BaseIT {
         super.setUp();
         FtpUtil.connect(ftpClient, ftpHost, ftpPort);
         FtpUtil.login(ftpClient, FTP_INTEGRATION_USERNAME, FTP_INTEGRATION_PASSWORD);
+
+        if (!directoryExists(ftpClient, FTP_SUBMISSION_BASE_DIRECTORY)) {
+            assertTrue("Unable to create base directory '" + FTP_SUBMISSION_BASE_DIRECTORY + "'",
+                    ftpClient.makeDirectory(FTP_SUBMISSION_BASE_DIRECTORY));
+        }
+
+        assertTrue("Unable to set working directory '" + FTP_SUBMISSION_BASE_DIRECTORY + "'",
+                ftpClient.changeWorkingDirectory(FTP_SUBMISSION_BASE_DIRECTORY));
+
     }
 
     @Override
@@ -93,7 +103,8 @@ public class FtpUtilIT extends BaseIT {
 
         FtpUtil.setWorkingDirectory(ftpClient, directory);
 
-        assertEquals("/" + directory, ftpClient.printWorkingDirectory());
+        assertEquals(String.format("%s/%s", FTP_SUBMISSION_BASE_DIRECTORY, directory),
+                ftpClient.printWorkingDirectory());
         assertTrue(ftpClient.changeToParentDirectory());
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();

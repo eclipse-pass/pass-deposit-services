@@ -17,16 +17,20 @@ package org.dataconservancy.nihms.cli;
 
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
+import org.dataconservancy.nihms.transport.Transport;
+import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -35,7 +39,12 @@ public class NihmsSubmissionAppIT extends BaseIT {
 
     private static String SUBMISSION_PROPERTIES_RESOURCE = "FilesystemModelBuilderTest.properties";
 
+    private static String NIHMS_FTP_SUBMISSION_BASE_DIRECTORY = String.format("%s%s",
+            BaseIT.FTP_SUBMISSION_BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
+
     private URL submissionProperties;
+
+    private Map<String, String> transportHints;
 
     /**
      * Insure that the classpath resource which embodies a submission is available.
@@ -46,6 +55,22 @@ public class NihmsSubmissionAppIT extends BaseIT {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        transportHints = new HashMap<String, String>() {
+            {
+                put(Transport.TRANSPORT_SERVER_FQDN, System.getProperty("docker.host.address", "localhost"));
+                put(FtpTransportHints.BASE_DIRECTORY, NIHMS_FTP_SUBMISSION_BASE_DIRECTORY);
+                put(Transport.TRANSPORT_PROTOCOL, "ftp");
+                put(Transport.TRANSPORT_AUTHMODE, "userpass");
+                put(Transport.TRANSPORT_USERNAME, "nihmsftpuser");
+                put(Transport.TRANSPORT_PASSWORD, "nihmsftppass");
+                put(Transport.TRANSPORT_SERVER_PORT, "21");
+                put(FtpTransportHints.DATA_TYPE, "binary");
+                put(FtpTransportHints.USE_PASV, "true");
+                put(FtpTransportHints.TRANSFER_MODE, "stream");
+            }
+        };
+
         submissionProperties = this.getClass().getResource(SUBMISSION_PROPERTIES_RESOURCE);
         assertNotNull("Unable to locate " + SUBMISSION_PROPERTIES_RESOURCE + " as a classpath resource",
                 submissionProperties);
@@ -68,15 +93,19 @@ public class NihmsSubmissionAppIT extends BaseIT {
      */
     @Test
     public void testSubmissionFromCli() throws Exception {
-        assertFalse("Did not expect working directory '" + SubmissionEngine.BASE_DIRECTORY + "' to exist!", ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
+        assertFalse("Did not expect working directory '" + NIHMS_FTP_SUBMISSION_BASE_DIRECTORY + "' to exist!",
+                ftpClient.changeWorkingDirectory(NIHMS_FTP_SUBMISSION_BASE_DIRECTORY));
         itUtil.logout();
 
-        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()), "local");
+        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()), transportHints);
         app.run();
 
         itUtil.connect();
         itUtil.login();
-        assertTrue(ftpClient.changeWorkingDirectory(SubmissionEngine.BASE_DIRECTORY));
+
+        assertTrue("Unable to change working directory to '" + NIHMS_FTP_SUBMISSION_BASE_DIRECTORY + "'",
+                ftpClient.changeWorkingDirectory(NIHMS_FTP_SUBMISSION_BASE_DIRECTORY));
+
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
         assertEquals(1, ftpClient.listFiles().length);
