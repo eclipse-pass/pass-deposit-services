@@ -50,15 +50,45 @@ public class NihmsSubmissionApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
 
+    /**
+     * Reference to a File that contains the submission properties used to compose the submission
+     */
     private File propertiesFile;
 
+    /**
+     * Properties object that contains the submission properties used to compose the submission
+     */
+    private Properties properties;
+
+    /**
+     * Key used to resolve FTP transport configuration hints
+     */
     private String transportKey;
 
+    /**
+     * Map containing FTP transport configuration hints
+     */
+    private Map<String, String> transportHints;
 
 
     NihmsSubmissionApp(File propertiesFile, String transportKey) {
         this.propertiesFile = propertiesFile;
         this.transportKey = transportKey;
+    }
+
+    NihmsSubmissionApp(Properties properties, String transportKey) {
+        this.properties = properties;
+        this.transportKey = transportKey;
+    }
+
+    NihmsSubmissionApp(Properties properties, Map<String, String> transportHints) {
+        this.properties = properties;
+        this.transportHints = transportHints;
+    }
+
+    NihmsSubmissionApp(File propertiesFile, Map<String, String> transportHints) {
+        this.propertiesFile = propertiesFile;
+        this.transportHints = transportHints;
     }
 
     void run() throws NihmsCliException {
@@ -68,7 +98,27 @@ public class NihmsSubmissionApp {
                     new NihmsAssembler(),
                     new FtpTransport(new DefaultFtpClientFactory()));
 
-            engine.setTransportHints(() -> resolveTransportHints(transportKey));
+            // Prefer the use of the Map<String, String> transport hints.  If they aren't available, use the
+            // transport key to resolve the transport hints
+            if (transportHints == null) {
+                engine.setTransportHints(() -> {
+                    Map<String, String> hints = resolveTransportHints(transportKey);
+                    if (LOG.isDebugEnabled()) {
+                        hints.forEach((k, v) -> LOG.debug("Resolved transport key '{}' property '{}' to '{}'",
+                                transportKey, k, v));
+                    }
+                    return hints;
+                });
+            } else {
+                engine.setTransportHints(() -> {
+                    if (LOG.isDebugEnabled()) {
+                        transportHints.forEach((k, v) -> LOG.debug("Using supplied transport property '{}' = '{}'",
+                                k, v));
+
+                    }
+                    return transportHints;
+                });
+            }
 
             run(engine);
         } catch (Exception e) {
@@ -81,12 +131,36 @@ public class NihmsSubmissionApp {
 
     void run(SubmissionEngine engine) throws NihmsCliException {
         try {
-            engine.submit(propertiesFile.getCanonicalPath());
+            // Prefer the use of the file referencing the submission properties.  If the file isn't available, use
+            // the Properties object.
+            if (propertiesFile != null) {
+                engine.submit(propertiesFile.getCanonicalPath());
+            } else if (properties != null) {
+                engine.submit(properties);
+            } else {
+                throw new NihmsCliException("No properties were supplied for the submission!");
+            }
         } catch (Exception e) {
             throw new NihmsCliException(e.getMessage(), e);
         }
     }
 
+    /**
+     * Resolves the configuration properties of the FTP transport using the supplied {@code transportKey}.
+     * <p>
+     * A classpath resource is derived from the {@code transportKey} formatted as: {@code /<transportKey>.properties}.
+     * As such, the {@code transportKey} should be suitable for use as a path component (e.g. don't use characters that
+     * may not be easily expressed in a path component when using or deciding on transport keys).
+     * </p>
+     * <p>
+     * This method will attempt to resolve the classpath resource {@code /<transportKey>.properties}, convert the
+     * properties to a {@code Map<String, String>}, and may employ logic to set default values for the properties based
+     * on the transport key used, and/or the presence or absence of environment variables.
+     * </p>
+     * @param transportKey the key, converted to a classpath resource, used to resolve properties that will be used to
+     *                     configure the FTP transport
+     * @return the properties (as a {@code Map<String, String>} used to configure the FTP transport
+     */
     @SuppressWarnings("unchecked")
     Map<String, String> resolveTransportHints(String transportKey) {
         if (transportKey == null) {
@@ -102,6 +176,40 @@ public class NihmsSubmissionApp {
                     format(MISSING_TRANSPORT_HINTS, transportKey, resource)));
         }
 
+        return resolvePropertiesFromClasspathResource(transportKey, resource, resourceStream);
+    }
+
+    /**
+     * Attempts to load the {@code resourceStream} containing properties into a {@code Map<String, String>}, with
+     * special handling of the {@code nihms.transport.server-fqdn} and {@code nihms.ftp.basedir} properties.
+     * <p>
+     * The value of the {@code nihms.transport.server-fqdn} property is resolved based on the value of the provided
+     * {@code transportKey}.  If the {@code transportKey} value is {@code nih}, then the NIH's production FTP server
+     * will be used as the value of {@code nihms.transport.server-fqdn}.  If the {@code transportKey} value is
+     * {@code local}, then: the value of the environment variable {@code LOCAL_FTP_SERVER} is consulted.  If an
+     * environment variable of that name does not exist or is set to {@code null}, the system property named {@code
+     * LOCAL_FTP_SERVER} is consulted.  If the system property {@code LOCAL_FTP_SERVER} is {@code null} or is not
+     * present, the default value of {@code localhost} is returned.
+     * </p>
+     * <p>
+     * The value of the {@code nihms.ftp.basedir} property is resolved based on the presence or absence of the
+     * environment variable named {@code NIHMS_FTP_BASEDIR}.  If the environment variable {@code NIHMS_FTP_BASEDIR} is
+     * present and non-null, the value of the environment variable is used, overriding the presence of the system
+     * property {@code nihms.ftp.basedir} in the {@code resourceStream}.  If the environment variable {@code
+     * NIHMS_FTP_BASEDIR} is not present, the value of the {@code nihms.ftp.basedir} property is obtained from the
+     * {@code resourceStream}.  If that value is {@code null}, then the default value from {@link
+     * SubmissionEngine#BASE_DIRECTORY} is used.
+     * </p>
+     *
+     * @param transportKey used to set the FTP server used for submission
+     * @param resource the name of the resource, typically a location on the classpath
+     * @param resourceStream the {@code resource}, resolved to an {@code InputStream} from the classpath
+     * @return the resolved properties as a map, with the value of {@code nihms.transport.server-fqdn} and
+     *         {@code nihms.ftp.basedir} resolved as documented above
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, String> resolvePropertiesFromClasspathResource(String transportKey, String resource,
+                                                                       InputStream resourceStream) {
         Properties transportProperties = new Properties();
         try {
             transportProperties.load(new Base64InputStream(resourceStream));
