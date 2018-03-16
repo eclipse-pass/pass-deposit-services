@@ -31,6 +31,8 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
+import static org.dataconservancy.nihms.transport.ftp.FtpUtil.directoryExists;
+import static org.dataconservancy.nihms.transport.ftp.FtpUtil.isPathAbsolute;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.PATH_SEP;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.performSilently;
 import static org.junit.Assert.assertEquals;
@@ -122,14 +124,20 @@ public class FtpTransportIT extends BaseIT {
     @Test
     public void testStoreFileWithDirectory() {
         String expectedFilename = "testStoreFileWithDirectory.jpg";
-        String storeFilename = String.format("%s/%s", FTP_BASE_DIRECTORY, expectedFilename);
-        TransportResponse response = transportSession.storeFile(storeFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        String expectedDirectory = String.format("%s/%s", FTP_BASE_DIRECTORY, "testStoreFileWithDirectory");
+        String storeFilename = String.format("%s/%s", expectedDirectory, expectedFilename);
+        assertFalse("Did not expect the directory '" + expectedDirectory + "' to exist on the FTP server!",
+                directoryExists(ftpClient, expectedDirectory));
 
+        assertTrue("Expected the store filename to be an absolute path.", isPathAbsolute(storeFilename));
+
+        TransportResponse response = transportSession.storeFile(storeFilename, this.getClass().getResourceAsStream("/org.jpg"));
         assertSuccessfulResponse(response);
 
-        assertDirectoryListingContains(FTP_BASE_DIRECTORY);
+        assertTrue("Expected the directory '" + expectedDirectory + "' to be created on the FTP server!",
+                directoryExists(ftpClient, expectedDirectory));
 
-        FtpUtil.setWorkingDirectory(ftpClient, FTP_BASE_DIRECTORY);
+        FtpUtil.setWorkingDirectory(ftpClient, expectedDirectory);
 
         assertFileListingContains(expectedFilename);
     }
