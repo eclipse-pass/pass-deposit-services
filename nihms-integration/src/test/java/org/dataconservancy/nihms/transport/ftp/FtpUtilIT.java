@@ -42,11 +42,14 @@ public class FtpUtilIT extends BaseIT {
         if (!directoryExists(ftpClient, FTP_SUBMISSION_BASE_DIRECTORY)) {
             assertTrue("Unable to create base directory '" + FTP_SUBMISSION_BASE_DIRECTORY + "'",
                     ftpClient.makeDirectory(FTP_SUBMISSION_BASE_DIRECTORY));
+            LOG.trace("Created directory: '{}'", FTP_SUBMISSION_BASE_DIRECTORY);
         }
 
         assertTrue("Unable to set working directory '" + FTP_SUBMISSION_BASE_DIRECTORY + "'",
                 ftpClient.changeWorkingDirectory(FTP_SUBMISSION_BASE_DIRECTORY));
 
+        assertEquals(FTP_SUBMISSION_BASE_DIRECTORY, ftpClient.printWorkingDirectory());
+        LOG.trace(">>> Current working directory: '{}'", ftpClient.printWorkingDirectory());
     }
 
     @Override
