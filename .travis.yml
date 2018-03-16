@@ -2,28 +2,37 @@ language: java
 sudo: required
 cache:
   directories:
-  - $HOME/.m2
+  - "$HOME/.m2"
 
-# - this is the default value assigned by Travis, but included for clarity
-install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script:
-  - sudo service mysql stop
-  - sudo service postgresql stop
-  - sudo service acpid stop
-  - sudo service atd stop
-  - sudo service cron stop
-  - sudo service memcached stop
-  - sudo service ntp stop
-  - sudo service rabbitmq-server stop
-  - sudo service resolvconf stop
-  - sudo service sshguard stop
-  - sudo service ssh stop
-  - sudo ifconfig -a
-  - mvn verify -DtrimStackTrace=false -Ddocker.keepRunning
+before_install:
+- sudo service mysql stop
+- sudo service postgresql stop
+- sudo service acpid stop
+- sudo service atd stop
+- sudo service cron stop
+- sudo service memcached stop
+- sudo service ntp stop
+- sudo service rabbitmq-server stop
+- sudo service resolvconf stop
+- sudo service sshguard stop
+- sudo service ssh stop
+- sudo service rsyslog stop
+- if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then openssl aes-256-cbc -K $encrypted_6f2ab57107e3_key -iv $encrypted_6f2ab57107e3_iv -in settings.tar.enc -out settings.tar -d && tar
+  -xf settings.tar && cat known_hosts >> ~/.ssh/known_hosts ; fi
+
+install: mvn install -Ddocker.skip=true -DskipTests=true -Dmaven.javadoc.skip=true
+  -B -V
+
+script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml deploy
+  -Dexternal -DtrimStackTrace=false -Ddocker.keepRunning; else mvn verify -DtrimStackTrace=false
+  -Ddocker.keepRunning; fi
+
 jdk:
-  - oraclejdk8
+- oraclejdk8
+
 after_failure:
-  - docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
-  - cd nihms-integration && mvn docker:stop
+- docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
+- cd nihms-integration && mvn docker:stop
+
 after_success:
-  - cd nihms-integration && mvn docker:stop
+- cd nihms-integration && mvn docker:stop
