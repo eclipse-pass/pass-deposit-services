@@ -127,23 +127,20 @@ public class FtpTransportSessionTest {
 
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
-        when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.PATHNAME_CREATED) // print working directory
-                .thenReturn(FTPReply.PATHNAME_CREATED) // print working directory
-                .thenReturn(FTPReply.COMMAND_OK) // mkd 'sub'
-                .thenReturn(FTPReply.COMMAND_OK) // cd 'sub'
-                .thenReturn(FTPReply.COMMAND_OK) // mkd 'directory'
-                .thenReturn(FTPReply.COMMAND_OK) // cd 'directory'
-                .thenReturn(FTPReply.COMMAND_OK) // cd '/'
-                .thenReturn(FTPReply.COMMAND_OK) // cd '/'
-                .thenReturn(FTPReply.COMMAND_OK) // set data type
-                .thenReturn(FTPReply.COMMAND_OK) // set pasv
-                .thenReturn(500);                // store file
-
         when(ftpClient.storeFile(anyString(), any(InputStream.class))).thenThrow(expectedException);
+        when(ftpClient.getReplyString()).thenAnswer((invocationOnMock) -> {
+            if (invocationOnMock.getMethod().getName().equals("storeFile")) {
+                return "OK";
+            }
 
-        when(ftpClient.getReplyString()).thenReturn("Transfer failed");
-
+            return "Transfer failed.";
+        });
+        when(ftpClient.getReplyCode()).thenAnswer((invocationOnMock) -> {
+            if (invocationOnMock.getMethod().getName().equals("storeFile")) {
+                return 500;
+            }
+            return 200;
+        });
 
         TransportResponse response = ftpSession.storeFile(destinationResource, content);
 

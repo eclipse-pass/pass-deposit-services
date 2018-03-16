@@ -20,6 +20,7 @@ import com.google.common.net.InetAddresses;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
+import org.dataconservancy.nihms.transport.ftp.FtpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +30,17 @@ import static org.junit.Assert.assertTrue;
 
 public class IntegrationUtil {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOG = LoggerFactory.getLogger(IntegrationUtil.class);
 
     private String ftpHost;
 
     private int ftpPort;
+
+    /**
+     * This is the directory, if not null, that will be set as the current working directory on the FTP server after
+     * a successful {@link #login()}.
+     */
+    private String baseDirectory;
 
     private FTPClient ftpClient;
 
@@ -107,6 +114,22 @@ public class IntegrationUtil {
         assertTrue(ftpClient.login("nihmsftpuser", "nihmsftppass"));
 
         assertPositiveReply();
+
+        if (baseDirectory != null && !FtpUtil.directoryExists(ftpClient, baseDirectory)) {
+            assertTrue("Unable to create base directory '" + baseDirectory + "'",
+                    ftpClient.makeDirectory(baseDirectory));
+            assertTrue("Unable to set working directory to '" + baseDirectory + "'",
+                    ftpClient.changeWorkingDirectory(baseDirectory));
+            LOG.trace("Setting working directory to '{}'", ftpClient.printWorkingDirectory());
+        } else if (baseDirectory != null) {
+            assertTrue("Unable to set working directory to '" + baseDirectory + "'",
+                    ftpClient.changeWorkingDirectory(baseDirectory));
+            LOG.trace("Setting working directory to '{}'", ftpClient.printWorkingDirectory());
+        } else {
+            baseDirectory = ftpClient.printWorkingDirectory();
+        }
+
+        LOG.debug("Working directory is '{}'", ftpClient.printWorkingDirectory());
     }
 
     public void logout() throws IOException {
@@ -120,6 +143,34 @@ public class IntegrationUtil {
         } else {
             return ftpClient.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(ftpClient));
         }
+    }
+
+    /**
+     * This is the directory, if not null, that will be set as the current working directory on the FTP server after
+     * a successful {@link #login()}.
+     *
+     * @return the base directory, may be {@code null}
+     */
+    public String getBaseDirectory() {
+        return baseDirectory;
+    }
+
+    /**
+     * This is the directory that will be set as the current working directory on the FTP server after a successful
+     * {@link #login()}.
+     *
+     * @param baseDirectory the base directory, which must be absolute, and not null.
+     */
+    public void setBaseDirectory(String baseDirectory) {
+        if (baseDirectory == null || baseDirectory.trim().length() == 0) {
+            throw new IllegalArgumentException("Base directory must not be null or the empty string.");
+        }
+
+        if (!baseDirectory.startsWith("/")) {
+            throw new IllegalArgumentException("Base directory must begin with a forward slash (was: '" +
+                    baseDirectory + "'");
+        }
+        this.baseDirectory = baseDirectory;
     }
 
 }

@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
-class FtpUtil {
+public class FtpUtil {
 
     private static final String OVERVIEW_CONNECTION_ATTEMPT = "({}) Connecting to {}:{} ...";
 
@@ -250,14 +250,44 @@ class FtpUtil {
         performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(directoryPath));
     }
 
-    static void makeDirectories(FTPClient ftpClient, String destinationResource) {
-        String[] parts = destinationResource.split(PATH_SEP);
+    /**
+     * Creates the directories specified in {@code directories}.
+     * <h3>Example invocation: <em>FtpUtil.makeDirectories(client, "/foo/bar");</em></h3>
+     * <p>
+     * This method will attempt to create the directory {@code /foo/bar} on the FTP server relative to the root
+     * directory (i.e. {@code /}).
+     * </p>
+     * <h3>Example invocation: <em>FtpUtil.makeDirectories(client, "foo/bar");</em></h3>
+     * <p>
+     * This method will attempt to create the directory {@code foo/bar} on the FTP server, relative to the current
+     * working directory.
+     * </p>
+     * <h3>Example invocation: <em>FtpUtil.makeDirectories(client, "picture.jpg");</em></h3>
+     * <p>
+     * This method attempt to create the directory {@code picture.jpg} on the FTP server, relative to the current
+     * working directory.  The implementation has no way to tell that {@code picture.jpg} probably is a file and
+     * not a directory.
+     * </p>
+     *
+     * @param ftpClient the FTP client, which is connected and logged in to a remote FTP server
+     * @param directories the directory to create, comprised of at least one path element.  Relative directories will
+     *                    be created relative to the current working directory.
+     */
+    static void makeDirectories(FTPClient ftpClient, String directories) {
+        final String origCwd = performSilently(ftpClient, FTPClient::printWorkingDirectory);
+        String[] parts = directories.split(PATH_SEP);
         if (parts.length == 0) {
             return; // destination resource was "/"
         }
 
-        String cwd = performSilently(ftpClient, FTPClient::printWorkingDirectory);
-        LOG.trace("Obtaining current working directory as: '{}'", cwd);
+        LOG.trace("Creating intermediate directories for destination resource '{}' (cwd '{}')",
+                directories, origCwd);
+
+        if (isPathAbsolute(directories)) {
+            performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(PATH_SEP));
+        }
+
+        String cwd = performSilently(ftpClient, ftpClient::printWorkingDirectory);
 
         try {
             for (int i = 0; i < parts.length; i++) {
@@ -265,14 +295,14 @@ class FtpUtil {
                 if ("".equals(part)) {
                     continue;
                 }
-                LOG.trace("Creating intermediate directory '{}'", part);
+                LOG.trace("-> Creating intermediate directory relative to '{}': '{}'", cwd, part);
                 performSilently(ftpClient, () -> ftpClient.makeDirectory(part), ASSERT_MKD_COMPLETION);
-                LOG.trace("Changing to directory '{}'", part);
                 performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(part));
+                cwd = performSilently(ftpClient, FTPClient::printWorkingDirectory);
             }
         } finally {
-            LOG.trace("Changing back to original working directory to '{}'", cwd);
-            performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(cwd));
+            LOG.trace("-> Changing back to original working directory to '{}'", origCwd);
+            performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(origCwd));
         }
     }
 
@@ -415,4 +445,81 @@ class FtpUtil {
         }
     }
 
+    /**
+     * Returns {@code true} if {@code path} is considered absolute.
+     *
+     * @param path a path, which may or may not be absolute
+     * @return {@code true} if the path is absolute
+     */
+    public static boolean isPathAbsolute(String path) {
+        if (path == null || path.trim().length() == 0) {
+            throw new IllegalArgumentException("Path must not be null or an empty string");
+        }
+        return path.trim().startsWith(PATH_SEP);
+    }
+
+    /**
+     * Uses the supplied client to verify the supplied directory exists.  If the supplied directory does not exist, a
+     * {@code RuntimeException} is thrown.  If the directory is relative, then it is interpreted relative to the current
+     * working directory of the {@code client}.
+     *
+     * @param client an FTP client that is connected and logged in
+     * @param directory the directory that must exist
+     * @throws RuntimeException if the supplied {@code directory} does not exist
+     */
+    public static void assertDirectoryExists(FTPClient client, String directory) {
+        if (client == null) {
+            throw new IllegalArgumentException("FTPClient must not be null.");
+        }
+
+        if (directory == null || directory.trim().length() == 0) {
+            throw new IllegalArgumentException("Directory must not be null or an empty string.");
+        }
+
+        if (directory.equals("/")) {
+            LOG.trace("Supplied directory '{}' was the root of the directory hierarchy, returning 'true'",
+                    directory);
+            return;
+        }
+
+        String originalCwd = null;
+        try {
+            originalCwd = client.printWorkingDirectory();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to obtain the current working directory: " + e.getMessage(), e);
+        }
+
+        try {
+            if (!client.changeWorkingDirectory(directory)) {
+                throw new RuntimeException("Directory '" + directory + "' does not exist!");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to change working directory to '" + directory + "': " +
+                    e.getMessage(), e);
+        } finally {
+            try {
+                client.changeWorkingDirectory(originalCwd);
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+    }
+
+    /**
+     * Uses the supplied client to verify the supplied directory exists.  If the directory is relative, then it is
+     * interpreted relative to the current working directory of the {@code client}.
+     *
+     * @param client an FTP client that is connected and logged in
+     * @param directory the directory that may exist
+     * @return true if the directory exists, {@code false} otherwise
+     */
+    public static boolean directoryExists(FTPClient client, String directory) {
+        try {
+            assertDirectoryExists(client, directory);
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
+    }
 }
