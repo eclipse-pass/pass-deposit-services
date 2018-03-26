@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.assembler;
 import org.dataconservancy.nihms.model.NihmsSubmission;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -139,6 +140,20 @@ public interface PackageStream {
          */
         ARCHIVE archive();
 
+        /**
+         * The primary or preferred checksum of the package serialization as returned by {@link #open()}
+         *
+         * @return
+         */
+        Checksum checksum();
+
+        /**
+         * All available checksums of the package serialization as returned by {@link #open()}
+         *
+         * @return
+         */
+        Collection<Checksum> checksums();
+
     }
 
     /**
@@ -167,5 +182,61 @@ public interface PackageStream {
          */
         String name();
 
+        /**
+         * The primary or preferred checksum of the resource
+         *
+         * @return
+         */
+        Checksum checksum();
+
+        /**
+         * All available checksums of the resource
+         *
+         * @return
+         */
+        Collection<Checksum> checksums();
+
+    }
+
+    /**
+     * Represents a checksum: the algorithm used to compute the checksum, and its value.
+     */
+    interface Checksum {
+
+        /**
+         * Algorithm used to compute the checksum
+         *
+         * @return the checksum algorithm
+         */
+        Algo algorithm();
+
+        /**
+         * The value of the checksum, as a byte array
+         *
+         * @return the checksum value, according to the {@link #algorithm()}
+         */
+        byte[] value();
+
+        /**
+         * The value of the checksum, encoded as base64
+         *
+         * @return the checksum value, according to the {@link #algorithm()}, encoded as base 64
+         */
+        String asBase64();
+
+        /**
+         * The value of the checksum, encoded as hexadecimal
+         */
+        String asHex();
+
+    }
+
+    /**
+     * Checksum algorithms
+     */
+    enum Algo {
+        SHA_512,
+        SHA_256,
+        MD5
     }
 }
