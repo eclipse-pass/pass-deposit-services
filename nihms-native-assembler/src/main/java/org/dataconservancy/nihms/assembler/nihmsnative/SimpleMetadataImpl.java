@@ -18,6 +18,10 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Provides metadata for a {@link PackageStream}.  Includes package-private accessors in addition to
  * read-only {@code Metadata} interface methods.  All fields have reasonable defaults except for {@link #name}.  To set
@@ -41,6 +45,8 @@ class SimpleMetadataImpl implements PackageStream.Metadata {
     private boolean archived = true;
 
     private PackageStream.ARCHIVE archive = PackageStream.ARCHIVE.TAR;
+
+    private List<PackageStream.Checksum> checksums = Collections.EMPTY_LIST;
 
     SimpleMetadataImpl() {
 
@@ -93,6 +99,20 @@ class SimpleMetadataImpl implements PackageStream.Metadata {
     @Override
     public PackageStream.ARCHIVE archive() {
         return archive;
+    }
+
+    @Override
+    public PackageStream.Checksum checksum() {
+        if (!checksums.isEmpty()) {
+            return checksums.get(0);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Collection<PackageStream.Checksum> checksums() {
+        return checksums;
     }
 
     String getName() {
