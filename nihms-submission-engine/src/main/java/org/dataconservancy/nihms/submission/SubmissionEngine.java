@@ -27,10 +27,8 @@ import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -102,7 +100,7 @@ public class SubmissionEngine {
      * <p>
      * This instance will be able to {@link SubmissionBuilder#build(String) build} a {@link NihmsSubmission submission
      * model}, {@link Assembler#assemble(NihmsSubmission) generate} a {@link PackageStream package}, and
-     * {@link TransportSession#send(String, InputStream) deposit} the package in a target repository.
+     * {@link TransportSession#send(PackageStream, Map) deposit} the package in a target repository.
      * </p>
      *
      * @param builder the submission model builder
@@ -145,9 +143,7 @@ public class SubmissionEngine {
         try (TransportSession session = transport.open(getTransportHints(transportHints))) {
             PackageStream stream = assembler.assemble(submission);
             resourceName = stream.metadata().name();
-            // this is using the piped input stream (returned from stream.open()).  does this have to occur in a
-            // separate thread?
-            response = session.send(resourceName, stream.open());
+            response = session.send(stream, getTransportHints(transportHints));
         } catch (Exception e) {
             throw new SubmissionFailure(format(SUBMISSION_ERROR, resourceName, e.getMessage()), e);
         }
