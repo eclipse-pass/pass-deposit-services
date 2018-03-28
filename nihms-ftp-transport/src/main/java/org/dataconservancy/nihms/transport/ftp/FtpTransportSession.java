@@ -16,6 +16,7 @@
 package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
 import org.slf4j.Logger;
@@ -85,19 +86,15 @@ public class FtpTransportSession implements TransportSession {
     }
 
     @Override
-    public TransportResponse send(String destinationResource, InputStream content) {
+    public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
 
-        validateDestinationResource(destinationResource);
+        PackageStream.Metadata streamMetadata = packageStream.metadata();
+
+        validateDestinationResource(streamMetadata.name());
 
         this.transfer = new FutureTask<>(() -> {
-            try {
-                return storeFile(destinationResource, content);
-            } finally {
-                try {
-                    content.close();
-                } catch (IOException e) {
-                    // ignore
-                }
+            try (InputStream inputStream = packageStream.open()){
+                return storeFile(streamMetadata.name(), inputStream);
             }
         });
 
@@ -106,7 +103,7 @@ public class FtpTransportSession implements TransportSession {
         try {
             return transfer.get();
         } catch (InterruptedException e) {
-            LOG.info(format(ERR_TRANSFER, destinationResource, "<host>", "<port>", "transfer was cancelled!"));
+            LOG.info(format(ERR_TRANSFER, streamMetadata.name(), "<host>", "<port>", "transfer was cancelled!"));
             return new TransportResponse() {
                 @Override
                 public boolean success() {
@@ -119,7 +116,7 @@ public class FtpTransportSession implements TransportSession {
                 }
             };
         } catch (ExecutionException e) {
-            LOG.info(format(ERR_TRANSFER, destinationResource, "<host>", "<port>", e.getMessage()), e);
+            LOG.info(format(ERR_TRANSFER, streamMetadata.name(), "<host>", "<port>", e.getMessage()), e);
             return new TransportResponse() {
                 @Override
                 public boolean success() {
@@ -133,11 +130,6 @@ public class FtpTransportSession implements TransportSession {
             };
         }
 
-    }
-
-    @Override
-    public TransportResponse send(String destinationResource, Map<String, String> metadata, InputStream content) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

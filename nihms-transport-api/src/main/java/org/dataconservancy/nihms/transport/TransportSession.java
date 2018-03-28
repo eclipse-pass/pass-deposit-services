@@ -16,26 +16,37 @@
 
 package org.dataconservancy.nihms.transport;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.concurrent.Future;
+import org.dataconservancy.nihms.assembler.PackageStream;
 
+import java.util.Map;
+
+/**
+ * Represents an open connection, or the promise of a successful connection, with a service or system that will accept
+ * the bytes of a package.  Instances of {@code TransportSession} that are immediately returned from {@link
+ * Transport#open(Map)} ought to be open (that is, {@link #closed()} should return {@code false}).  If the underlying
+ * implementation allows a {@code TransportSession} to be re-used (i.e. to {@code send(...)} multiple files), {@code
+ * closed()} can be used to check the health of the underlying connection, and whether or not this {@code
+ * TransportSession} is still viable.
+ * <p>
+ * This interface extends {@code AutoCloseable} so it can be used in a {@code try-with-resources} block.
+ * </p>
+ */
 public interface TransportSession extends AutoCloseable {
 
     /**
-     * Streams the supplied {@code content} to a destination associated with this session.  The implementation should
-     * use the supplied {@code destinationResource} to identify the submitted content in the target submission system.
-     * Implementations are responsible for creating the necessary structure on the target system to accept the
-     * {@code content} (e.g. creating a destination directory or collection in the target system that will accept the
-     * named resource).
+     * Transfer the bytes of the supplied package to the remote system.  Metadata can be optionally supplied which may
+     * help the underlying transport correctly configure itself for the transfer.
+     * <p>
+     * Note the {@code PackageStream} carries metadata about the package itself.  However, the supplied {@code metadata}
+     * could be used to <em>augment</em> the {@code PackageStream} metadata, in addition to carrying transport-related
+     * metadata.
+     * </p>
      *
-     * @param destinationResource
-     * @param content
-     * @return
+     * @param packageStream the package and package metadata
+     * @param metadata transport-related metadata, or any "extra" package metadata
+     * @return a response indicating success or failure of the transfer
      */
-    TransportResponse send(String destinationResource, InputStream content);
-
-    TransportResponse send(String destinationResource, Map<String, String> metadata, InputStream content);
+    TransportResponse send(PackageStream packageStream, Map<String, String> metadata);
 
     boolean closed();
 

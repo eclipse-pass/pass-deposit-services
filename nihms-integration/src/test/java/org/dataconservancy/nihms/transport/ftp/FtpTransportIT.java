@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.io.input.BrokenInputStream;
+import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
@@ -28,7 +29,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.directoryExists;
@@ -41,6 +44,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FtpTransportIT extends BaseIT {
 
@@ -163,13 +167,15 @@ public class FtpTransportIT extends BaseIT {
     }
 
     /**
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
      * method.
      */
     @Test
     public void testSendFile() {
         String expectedFilename = "FtpTransportIT-testSendFile.jpg";
-        TransportResponse response = transportSession.send(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        PackageStream stream = resourceAsPackage(expectedFilename,
+                this.getClass().getResourceAsStream("/org.jpg"), -1);
+        TransportResponse response = transportSession.send(stream, Collections.emptyMap());
 
         assertSuccessfulResponse(response);
 
@@ -177,7 +183,7 @@ public class FtpTransportIT extends BaseIT {
     }
 
     /**
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
      * method, which will fail because the file stream cannot be read.  Insure that the underlying exception can be
      * retrieved and that the transport response indicates failure.  Insure that the file is not present on the FTP
      * server.  The underlying FTP connection should still be open even though the file transfer failed.
@@ -187,10 +193,12 @@ public class FtpTransportIT extends BaseIT {
         String expectedFilename = "FtpTransportIT-testSendFileWithException.jpg";
         IOException expectedException = new IOException("Broken stream.");
 
-        TransportResponse response = transportSession.send(expectedFilename, new BrokenInputStream(expectedException));
+        PackageStream brokenStream = resourceAsPackage(expectedFilename,
+                new BrokenInputStream(expectedException), -1);
+        TransportResponse response = transportSession.send(brokenStream, Collections.emptyMap());
 
         assertErrorResponse(response);
-        assertEquals(expectedException, response.error().getCause().getCause().getCause());
+        assertEquals(expectedException, response.error().getCause());
 
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
@@ -206,7 +214,7 @@ public class FtpTransportIT extends BaseIT {
     /**
      * A transport session should not become unusable just because a file transfer failed.
      * <p>
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(String, InputStream)}
+     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
      * method, which will fail because the file stream cannot be read.  Then retry, and send a file that should succeed.
      * </p>
      * Assertions that are redundant with respect to {@link #testSendFileWithException()} are not re-asserted.
@@ -230,12 +238,17 @@ public class FtpTransportIT extends BaseIT {
         String expectedFilename = "FtpTransportIT-testSendFileWithExceptionAndTryAgain.jpg";
         IOException expectedException = new IOException("Broken stream.");
 
-        TransportResponse response = transportSession.send(expectedFilename, new BrokenInputStream(expectedException));
+        PackageStream brokenStream = resourceAsPackage(expectedFilename,
+                new BrokenInputStream(expectedException), -1);
+        TransportResponse response = transportSession.send(brokenStream, Collections.emptyMap());
 
         assertErrorResponse(response);
         assertEquals(expectedException, response.error().getCause().getCause().getCause());
 
-        response = transportSession.send(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        PackageStream stream = resourceAsPackage(expectedFilename,
+                this.getClass().getResourceAsStream("/org.jpg"), -1);
+
+        response = transportSession.send(stream, Collections.emptyMap());
 
         assertSuccessfulResponse(response);
         assertFileListingContains(expectedFilename);
@@ -250,14 +263,16 @@ public class FtpTransportIT extends BaseIT {
         String expectedFilename_02 = "FtpTransportIT-testSendMultipleFiles-02.jpg";
 
 
-        TransportResponse response = transportSession.send(expectedFilename_01,
-                this.getClass().getResourceAsStream("/org.jpg"));
+        TransportResponse response = transportSession.send(
+                resourceAsPackage(expectedFilename_01, this.getClass().getResourceAsStream("/org.jpg"), -1),
+                    Collections.emptyMap());
 
         assertSuccessfulResponse(response);
         assertFileListingContains(expectedFilename_01);
 
-        response = transportSession.send(expectedFilename_02,
-                this.getClass().getResourceAsStream("/org.jpg"));
+        response = transportSession.send(
+                resourceAsPackage(expectedFilename_02, this.getClass().getResourceAsStream("/org.jpg"), -1),
+                        Collections.emptyMap());
 
         assertSuccessfulResponse(response);
         assertFileListingContains(expectedFilename_02);
@@ -346,5 +361,31 @@ public class FtpTransportIT extends BaseIT {
             return pathComponent;
         }
         return PATH_SEP + pathComponent;
+    }
+
+    /**
+     * Wraps a single {@code resource} in a {@code PackageStream}.  The returned PackageStream will use
+     * the supplied {@code name} as the name of the file, and will return the InputStream {@code resource} in
+     * response to {@link PackageStream#open()}.
+     *
+     * @param name the name of the package, used as the filename by the FtpTransport
+     * @param resource the resource which is encapsulated by the PackageStream
+     * @return the resource encapsulated as a PackageStream
+     */
+    private static PackageStream resourceAsPackage(String name, InputStream resource, long length) {
+
+        PackageStream stream = mock(PackageStream.class);
+        PackageStream.Metadata md = mock(PackageStream.Metadata.class);
+
+        when(md.name()).thenReturn(name);
+        when(md.sizeBytes()).thenReturn(length);
+        when(md.mimeType()).thenReturn("application/octet-stream");
+        when(md.compression()).thenReturn(PackageStream.COMPRESSION.NONE);
+        when(md.archive()).thenReturn(PackageStream.ARCHIVE.NONE);
+
+        when(stream.metadata()).thenReturn(md);
+        when(stream.open()).thenReturn(resource);
+
+        return stream;
     }
 }
