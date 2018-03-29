@@ -16,6 +16,7 @@
 package org.dataconservancy.nihms.cli;
 
 import org.dataconservancy.nihms.integration.BaseIT;
+import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
@@ -35,12 +36,12 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class NihmsSubmissionAppIT extends BaseIT {
+public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
 
     private static String SUBMISSION_PROPERTIES_RESOURCE = "FilesystemModelBuilderTest.properties";
 
     private static String NIHMS_FTP_SUBMISSION_BASE_DIRECTORY = String.format("%s%s",
-            BaseIT.FTP_SUBMISSION_BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
+            FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
 
     private URL submissionProperties;
 

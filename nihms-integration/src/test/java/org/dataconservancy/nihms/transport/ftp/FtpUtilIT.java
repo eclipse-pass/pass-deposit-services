@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.dataconservancy.nihms.integration.BaseIT;
+import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class FtpUtilIT extends BaseIT {
+public class FtpUtilIT extends FtpBaseIT {
 
     @Override
     @Before
