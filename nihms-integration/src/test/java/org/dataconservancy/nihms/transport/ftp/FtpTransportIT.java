@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.io.input.BrokenInputStream;
 import org.dataconservancy.nihms.integration.BaseIT;
+import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.junit.After;
@@ -42,14 +43,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class FtpTransportIT extends BaseIT {
+public class FtpTransportIT extends FtpBaseIT {
 
     private static final String EXPECTED_SUCCESS = "Expected successful TransportResponse.  " +
             "Underlying exception was:%n%s";
 
     private static final String FILE_LISTING = "Listing files in directory {}: {}";
 
-    private static final String FTP_BASE_DIRECTORY = String.format("%s/%s", BaseIT.FTP_SUBMISSION_BASE_DIRECTORY,
+    private static final String FTP_BASE_DIRECTORY = String.format("%s/%s", FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY,
             FtpTransportIT.class.getSimpleName());
 
     private FtpTransport transport;

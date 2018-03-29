@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * Insures the FTP docker container is up and running and configured with the proper user credentials. Includes
  * additional tests that verify the use of the {@link FTPClient Apache FTP client}.
  */
-public class SmokeIT extends BaseIT {
+public class FtpSmokeIT extends FtpBaseIT {
 
 
     /**
@@ -53,7 +53,7 @@ public class SmokeIT extends BaseIT {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        itUtil.setBaseDirectory(BaseIT.FTP_SUBMISSION_BASE_DIRECTORY);
+        itUtil.setBaseDirectory(FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY);
         itUtil.connect();
         itUtil.login();
     }
@@ -68,10 +68,10 @@ public class SmokeIT extends BaseIT {
     public void testMakeDirectoryAndChangeDirectory() throws IOException {
         String cwd = ftpClient.printWorkingDirectory();
 
-        assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeDirectoryAndChangeDirectory"));
+        assertTrue(ftpClient.makeDirectory("FtpSmokeIT-testMakeDirectoryAndChangeDirectory"));
         itUtil.assertPositiveReply();
 
-        assertTrue(ftpClient.changeWorkingDirectory("SmokeIT-testMakeDirectoryAndChangeDirectory"));
+        assertTrue(ftpClient.changeWorkingDirectory("FtpSmokeIT-testMakeDirectoryAndChangeDirectory"));
         itUtil.assertPositiveReply();
 
         assertTrue(ftpClient.changeWorkingDirectory(cwd));
@@ -80,10 +80,10 @@ public class SmokeIT extends BaseIT {
 
     @Test
     public void testMakeTheSameDirectoryTwice() throws Exception {
-        assertTrue(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
+        assertTrue(ftpClient.makeDirectory("FtpSmokeIT-testMakeTheSameDirectoryTwice"));
         itUtil.assertPositiveReply();
 
-        assertFalse(ftpClient.makeDirectory("SmokeIT-testMakeTheSameDirectoryTwice"));
+        assertFalse(ftpClient.makeDirectory("FtpSmokeIT-testMakeTheSameDirectoryTwice"));
     }
 
     /**

@@ -30,47 +30,4 @@ public abstract class BaseIT {
 
     protected static final String DOCKER_HOST_PROPERTY = "docker.host.address";
 
-    protected static final String FTP_INTEGRATION_USERNAME = "nihmsftpuser";
-
-    protected static final String FTP_INTEGRATION_PASSWORD = "nihmsftppass";
-
-    /**
-     * A string that is likely to be unique each time ITs are run.  This string will be used as the base directory for
-     * any ITs that create content (directories, files) on the FTP server.
-     */
-    protected static final String FTP_SUBMISSION_BASE_DIRECTORY = String.format("/%s", System.currentTimeMillis());
-
-    protected String ftpHost;
-
-    protected int ftpPort = 21;
-
-    protected FTPClient ftpClient;
-
-    protected IntegrationUtil itUtil;
-
-    @Before
-    public void setUp() throws Exception {
-        ftpHost = System.getProperty(DOCKER_HOST_PROPERTY);
-        assertNotNull("Missing value for system property '" + DOCKER_HOST_PROPERTY + "'", ftpHost);
-
-        ftpClient = new FTPClient();
-
-        itUtil = new IntegrationUtil(ftpHost, ftpPort, ftpClient);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        LOG.debug("({}) Disconnecting ...", ftpClient());
-        itUtil.disconnect();
-        LOG.debug("({}) Successfully disconnected.", ftpClient());
-    }
-
-    protected String ftpClient() {
-        if (ftpClient == null) {
-            return "null";
-        } else {
-            return ftpClient.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(ftpClient));
-        }
-    }
-
 }
