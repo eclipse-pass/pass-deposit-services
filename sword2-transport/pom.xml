@@ -25,16 +25,11 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nihms-transport-api</artifactId>
-    <name>Transport API</name>
+    <artifactId>sword2-transport</artifactId>
+    <name>SWORD v2 Transport</name>
+    <description>SWORD protocol version 2 transport implementation</description>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-assembler-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -43,8 +38,37 @@
 
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-assembler-api</artifactId>
+            <artifactId>nihms-transport-api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.swordapp</groupId>
+            <artifactId>sword2-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

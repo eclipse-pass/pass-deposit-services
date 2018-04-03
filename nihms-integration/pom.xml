@@ -28,6 +28,13 @@
     <artifactId>nihms-integration</artifactId>
     <name>Integration Tests</name>
 
+    <properties>
+        <ftp.skip>false</ftp.skip>
+        <dspace.skip>false</dspace.skip>
+        <postgres.skip>false</postgres.skip>
+    </properties>
+
+
     <profiles>
         <profile>
             <id>external-ftp-server</id>
@@ -38,7 +45,20 @@
             </activation>
             <properties>
                 <docker.host.address>${ftp.server}</docker.host.address>
-                <docker.skip>true</docker.skip>
+                <ftp.skip>true</ftp.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>external-dspace-server</id>
+            <activation>
+                <property>
+                    <name>dspace.server</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.host.address>${dspace.server}</docker.host.address>
+                <dspace.skip>true</dspace.skip>
+                <postgres.skip>true</postgres.skip>
             </properties>
         </profile>
     </profiles>
@@ -48,6 +68,13 @@
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-ftp-transport</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>sword2-transport</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
@@ -107,6 +134,7 @@
                                 <dockerFile>${project.basedir}/src/test/resources/docker/Dockerfile</dockerFile>
                             </build>
                             <run>
+                                <skip>${ftp.skip}</skip>
                                 <wait>
                                     <time>6000</time>
                                 </wait>
@@ -124,6 +152,39 @@
                                     <port>30009:30009</port>
                                     <port>30010:30010</port>
                                 </ports>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>postgres</alias>
+                            <name>oapass/postgres:latest</name>
+                            <run>
+                                <skip>${postgres.skip}</skip>
+                                <wait>
+                                    <time>6000</time>
+                                </wait>
+                                <ports>
+                                    <port>6543:6543</port>
+                                </ports>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>dspace</alias>
+                            <name>oapass/dspace:latest</name>
+                            <run>
+                                <skip>${dspace.skip}</skip>
+                                <wait>
+                                    <url>http://${docker.host.address}:8181/xmlui</url>
+                                    <time>180000</time>
+                                </wait>
+                                <ports>
+                                    <port>8181:8181</port>
+                                </ports>
+                                <links>
+                                    <link>postgres</link>
+                                </links>
+                                <env>
+                                    <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
+                                </env>
                             </run>
                         </image>
                     </images>

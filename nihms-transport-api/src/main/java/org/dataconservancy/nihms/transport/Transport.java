@@ -35,22 +35,22 @@ public interface Transport {
     String TRANSPORT_SERVERID = "nihms.transport.serverid";
 
     /**
-     * Property identifying the username the implementation will use to authenticate
+     * Property key carrying the user name used for authentication when using {@link AUTHMODE#userpass}.
      */
     String TRANSPORT_USERNAME = "nihms.transport.username";
 
     /**
-     * Property identifying the password the implementation will use to authenticate
+     * Property key carrying the password used for authentication when using {@link AUTHMODE#userpass}.
      */
     String TRANSPORT_PASSWORD = "nihms.transport.password";
 
     /**
-     * Property identifying the authentication mode.  {@link AUTHMODE} lists supported modes.
+     * Property key identifying the mode of authentication; value encoded as the {@link Enum#name} form of {@link AUTHMODE}.
      */
     String TRANSPORT_AUTHMODE = "nihms.transport.authmode";
 
     /**
-     * Property identifying the transport protocol.  {@link PROTOCOL} lists supported protocols.
+     * Property key identifying the protocol used for transport, value encoded as the {@link Enum#name} form of {@link PROTOCOL}.
      */
     String TRANSPORT_PROTOCOL = "nihms.transport.protocol";
 
@@ -85,6 +85,20 @@ public interface Transport {
      */
     String TRANSPORT_CHECKSUM_MD5 = "deposit.transport.checksum.md5";
 
+    /**
+     * Property key identifying the mime type of the {@code InputStream} being deposited by
+     * {@link TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the name of
+     * the {@code InputStream} would be {@link PackageStream.Metadata#name()}.
+     */
+    String TRANSPORT_MIME_TYPE = "deposit.transport.mime-type";
+
+    /**
+     * Property key identifying the packaging spect of the {@code InputStream} being deposited by {@link
+     * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the packaging
+     * specification of the {@code InputStream} would be {@link PackageStream.Metadata#spec()}.
+     */
+    String TRANSPORT_PACKAGE_SPEC = "deposit.transport.package-spec";
+
     enum AUTHMODE {
 
         /**
@@ -108,7 +122,8 @@ public interface Transport {
     enum PROTOCOL {
         http,
         https,
-        ftp
+        ftp,
+        swordv2
     }
 
     /**
