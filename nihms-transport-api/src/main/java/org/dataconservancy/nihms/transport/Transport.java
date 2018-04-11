@@ -93,7 +93,7 @@ public interface Transport {
     String TRANSPORT_MIME_TYPE = "deposit.transport.mime-type";
 
     /**
-     * Property key identifying the packaging spect of the {@code InputStream} being deposited by {@link
+     * Property key identifying the packaging spec of the {@code InputStream} being deposited by {@link
      * TransportSession#send(PackageStream, Map)}.  <em>N.B.</em>: The preferred form of obtaining the packaging
      * specification of the {@code InputStream} would be {@link PackageStream.Metadata#spec()}.
      */
