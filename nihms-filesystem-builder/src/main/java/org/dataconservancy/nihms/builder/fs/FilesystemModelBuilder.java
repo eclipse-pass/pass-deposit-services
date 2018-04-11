@@ -112,17 +112,8 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                         break;
 
                     //manuscript metadata
-                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI:
-                        manuscript.setDoi(URI.create(value));                    
-                        break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
                         manuscript.setNihmsId(value);
-                        break;
-                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDID:
-                        manuscript.setPubmedId(value);
-                        break;
-                    case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID:
-                        manuscript.setPubmedCentralId(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL:
                         manuscript.setManuscriptUrl(new URL(value));

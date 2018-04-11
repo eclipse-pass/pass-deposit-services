@@ -59,12 +59,9 @@ public class NihmsMetadataSerializerTest {
         journal.setPubType(NihmsMetadata.JOURNAL_PUBLICATION_TYPE.epub);
 
         //populate manuscript metadata
-        manuscript.setDoi(URI.create("doi:10.1234/smh0000001"));
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
         manuscript.setNihmsId("00001");
         manuscript.setPublisherPdf(true);
-        manuscript.setPubmedCentralId("PMC00001");
-        manuscript.setPubmedId("00001");
         manuscript.setRelativeEmbargoPeriodMonths(0);
         manuscript.setShowPublisherPdf(false);
         manuscript.setTitle("Manuscript Title");

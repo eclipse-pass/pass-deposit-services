@@ -90,16 +90,6 @@ public class FilesystemModelBuilderTest {
         //Manuscript elements
         assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID),
                 submission.getMetadata().getManuscriptMetadata().getNihmsId());
-        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDID),
-                submission.getMetadata().getManuscriptMetadata().getPubmedId());
-        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_PUBMEDCENTRALID),
-                submission.getMetadata().getManuscriptMetadata().getPubmedCentralId());
-        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_URL),
-                submission.getMetadata().getManuscriptMetadata().getManuscriptUrl().toString());
-        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_DOI),
-                submission.getMetadata().getManuscriptMetadata().getDoi().toString());
-        assertEquals(expectedProperties.getProperty(NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_TITLE),
-                submission.getMetadata().getManuscriptMetadata().getTitle());
     }
 
     @Test
