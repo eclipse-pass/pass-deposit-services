@@ -72,26 +72,9 @@ public class NihmsMetadata {
         public String nihmsId;
 
         /**
-         * PubMed ID, if known.
-         * TODO: figure out where PMID comes from, and its significance to NIHMS; difference from {@link #pubmedCentralId}
-         */
-        public String pubmedId;
-
-        /**
-         * PubMed Central ID, if known.
-         * TODO: figure out where id comes from, and its significance to NIHMS; difference from {@link #pubmedId}
-         */
-        public String pubmedCentralId;
-
-        /**
-         * URL to the final version of the article, if known.
+         * URL to the manuscript, if known.
          */
         public URL manuscriptUrl;
-
-        /**
-         * DOI for the final version of the article, if known.
-         */
-        public URI doi;
 
         /**
          * {@code true} if the submission includes the the publisher's final PDF version of the manuscript
@@ -99,17 +82,34 @@ public class NihmsMetadata {
         public boolean publisherPdf;
 
         /**
-         * {@code true} if {@link #publisherPdf} is {@code true} <em>and</em> if the publisher's final PDF version should be
-         * used in lieu of the NIHMS-generated PDF in PubMed Central.
+         * {@code true} if {@link #publisherPdf} is {@code true} <em>and</em> if the publisher's final PDF version
+         * should be used in lieu of the NIHMS-generated PDF in PubMed Central.
          */
         public boolean showPublisherPdf;
 
         /**
-         * The interval between a manuscript's final publication date and when the NIHMS manuscript will appear publicly in PubMed Central
+         * The interval between a manuscript's final publication date and when the NIHMS manuscript will appear publicly
+         * in PubMed Central
          */
         public int relativeEmbargoPeriodMonths;
 
+        /**
+         * The title of the manuscript
+         */
         public String title;
+
+        /**
+         * A brief abstract of the manuscript
+         */
+        public String msAbstract;
+
+        public String getMsAbstract() {
+            return msAbstract;
+        }
+
+        public void setMsAbstract(String msAbstract) {
+            this.msAbstract = msAbstract;
+        }
 
         public String getTitle() { return title; }
 
@@ -123,36 +123,12 @@ public class NihmsMetadata {
             this.nihmsId = nihmsId;
         }
 
-        public String getPubmedId() {
-            return pubmedId;
-        }
-
-        public void setPubmedId(String pubmedId) {
-            this.pubmedId = pubmedId;
-        }
-
-        public String getPubmedCentralId() {
-            return pubmedCentralId;
-        }
-
-        public void setPubmedCentralId(String pubmedCentralId) {
-            this.pubmedCentralId = pubmedCentralId;
-        }
-
         public URL getManuscriptUrl() {
             return manuscriptUrl;
         }
 
         public void setManuscriptUrl(URL manuscriptUrl) {
             this.manuscriptUrl = manuscriptUrl;
-        }
-
-        public URI getDoi() {
-            return doi;
-        }
-
-        public void setDoi(URI doi) {
-            this.doi = doi;
         }
 
         public boolean isPublisherPdf() {
@@ -249,7 +225,55 @@ public class NihmsMetadata {
 
     // TODO: filled in by submitter or for NIHMS?
     public static class Article {
+        /**
+         * PubMed ID, if known.
+         * TODO: figure out where PMID comes from, and its significance to NIHMS; difference from {@link #pubmedCentralId}
+         */
+        public String pubmedId;
 
+        /**
+         * PubMed Central ID, if known.
+         * TODO: figure out where id comes from, and its significance to NIHMS; difference from {@link #pubmedId}
+         */
+        public String pubmedCentralId;
+
+        /**
+         * DOI for the final version of the article, if known.
+         */
+        public URI doi;
+
+        /**
+         * The title of the article
+         */
+        public String title;
+
+        public String getTitle() { return title; }
+
+        public void setTitle(String title) { this.title = title; }
+
+        public String getPubmedId() {
+            return pubmedId;
+        }
+
+        public void setPubmedId(String pubmedId) {
+            this.pubmedId = pubmedId;
+        }
+
+        public String getPubmedCentralId() {
+            return pubmedCentralId;
+        }
+
+        public void setPubmedCentralId(String pubmedCentralId) {
+            this.pubmedCentralId = pubmedCentralId;
+        }
+
+        public URI getDoi() {
+            return doi;
+        }
+
+        public void setDoi(URI doi) {
+            this.doi = doi;
+        }
     }
 
     /**

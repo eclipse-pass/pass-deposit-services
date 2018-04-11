@@ -50,6 +50,7 @@ public class NihmsMetadataSerializerTest {
         //set up metadata snd its fields;
         NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
         NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
+        NihmsMetadata.Article article = new NihmsMetadata.Article();
         List<NihmsMetadata.Person> personList = new ArrayList<>();
 
         //populate journal metadata
@@ -59,15 +60,17 @@ public class NihmsMetadataSerializerTest {
         journal.setPubType(NihmsMetadata.JOURNAL_PUBLICATION_TYPE.epub);
 
         //populate manuscript metadata
-        manuscript.setDoi(URI.create("doi:10.1234/smh0000001"));
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
         manuscript.setNihmsId("00001");
         manuscript.setPublisherPdf(true);
-        manuscript.setPubmedCentralId("PMC00001");
-        manuscript.setPubmedId("00001");
         manuscript.setRelativeEmbargoPeriodMonths(0);
         manuscript.setShowPublisherPdf(false);
         manuscript.setTitle("Manuscript Title");
+
+        // populate article metadata
+        article.setDoi(URI.create("doi:10.1234/smh0000001"));
+        article.setPubmedCentralId("PMC00001");
+        article.setPubmedId("00001");
 
         //populate persons
         NihmsMetadata.Person person1 = new NihmsMetadata.Person();
@@ -113,6 +116,7 @@ public class NihmsMetadataSerializerTest {
         metadata.setJournalMetadata(journal);
         metadata.setManuscriptMetadata(manuscript);
         metadata.setPersons(personList);
+        metadata.setArticleMetadata(article);
 
         underTest = new NihmsMetadataSerializer(metadata);
     }
