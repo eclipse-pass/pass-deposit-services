@@ -16,8 +16,6 @@
 
 package org.dataconservancy.nihms.integration;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,4 +28,9 @@ public abstract class BaseIT {
 
     protected static final String DOCKER_HOST_PROPERTY = "docker.host.address";
 
+    @Before
+    public void verifyDockerHostProperty() throws Exception {
+        assertNotNull("Expected required system property 'docker.host.address' to be set.",
+                System.getProperty("docker.host.address"));
+    }
 }
