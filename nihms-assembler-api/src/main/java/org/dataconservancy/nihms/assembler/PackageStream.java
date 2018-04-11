@@ -80,11 +80,12 @@ public interface PackageStream {
     interface Metadata {
 
         /**
-         * A suggested name for this package.  The {@link #spec() specification} used for {@link Assembler#assemble(NihmsSubmission) assembling} a package may place requirements on the name of the package
-         * file in the target system.  For example, BagIt recommends that the name of the package file be based on the
-         * name of the base directory of the bag.  Submission components responsible for streaming
-         * {@link PackageStream this package} to target systems can use the name returned by this method as the name of
-         * the packaged file.
+         * A suggested name for this package.  The {@link #spec() specification} used for
+         * {@link Assembler#assemble(NihmsSubmission) assembling} a package may place requirements on the name of the
+         * package file in the target system.  For example, BagIt recommends that the name of the package file be based
+         * on the name of the base directory of the bag.  Submission components responsible for streaming {@link
+         * PackageStream this package} to target systems can use the name returned by this method as the name of the
+         * packaged file.
          *
          * @return a suggested name for the package, aligning with any recommendations from the
          *         {@link #spec() packaging specification}
@@ -115,9 +116,10 @@ public interface PackageStream {
         long sizeBytes();
 
         /**
-         * If the package stream returned by {@link #open()} is compressed.
+         * If the package stream returned by {@link #open()} is compressed.  If {@code false}, then {@link
+         * #compression()} should return {@link PackageStream.COMPRESSION#NONE}.
          *
-         * @return
+         * @return true if the package stream returned by {@link #open()} is compressed
          */
         boolean compressed();
 
@@ -129,7 +131,8 @@ public interface PackageStream {
         COMPRESSION compression();
 
         /**
-         * If the package uses to an archive format, such as tar.
+         * If the package uses to an archive format, such as tar.  If {@code false}, then {@link #archive()} should
+         * return {@link PackageStream.ARCHIVE#NONE}.
          */
         boolean archived();
 
@@ -148,7 +151,8 @@ public interface PackageStream {
         Checksum checksum();
 
         /**
-         * All available checksums of the package serialization as returned by {@link #open()}
+         * All available checksums of the package serialization as returned by {@link #open()}.  The primary or
+         * preferred checksum will be at the head of the list.
          *
          * @return
          */
