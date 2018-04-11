@@ -74,6 +74,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
 
             //process manuscript element (except, strangely, for title, which we do after journal)
             NihmsMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
+            NihmsMetadata.Article article = metadata.getArticleMetadata();
             writer.startNode("manuscript");
             if(manuscript.getNihmsId() != null) {
                 writer.addAttribute("id", manuscript.getNihmsId());
@@ -83,6 +84,20 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             writer.addAttribute("publisher_pdf", booleanConvert(manuscript.isPublisherPdf()));
             writer.addAttribute("show_publisher_pdf", booleanConvert(manuscript.isShowPublisherPdf()));
             writer.addAttribute("embargo", String.valueOf(manuscript.getRelativeEmbargoPeriodMonths()));
+
+            if (article.getPubmedId() != null) {
+                writer.addAttribute("pmid", article.getPubmedId());
+            }
+
+            if (article.getPubmedCentralId() != null) {
+                writer.addAttribute("pmcid", article.getPubmedCentralId());
+            }
+            if (manuscript.getManuscriptUrl() != null) {
+                writer.addAttribute("href", manuscript.getManuscriptUrl().toString());
+            }
+            if (article.getDoi() != null) {
+                writer.addAttribute("doi", article.getDoi().toString());
+            }
 
             writer.endNode(); //end manuscript
 

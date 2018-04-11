@@ -35,14 +35,15 @@ public class NihmsBuilderPropertyNames {
     public static final String NIHMS_JOURNAL_TITLE = "nihms.journal.title";
     public static final String NIHMS_JOURNAL_PUBLICATIONTYPE = "nihms.journal.publicationtype";
 
-    public static final String NIHMS_MANUSCRIPT_DOI = "nihms.manuscript.doi";
     public static final String NIHMS_MANUSCRIPT_URL = "nihms.manuscript.url";
     public static final String NIHMS_MANUSCRIPT_ID = "nihms.manuscript.id";
-    public static final String NIHMS_MANUSCRIPT_PUBMEDCENTRALID = "nihms.manuscript.pubmedcentralid";
-    public static final String NIHMS_MANUSCRIPT_PUBMEDID = "nihms.manuscript.pubmedid";
     public static final String NIHMS_MANUSCRIPT_TITLE = "nihms.manuscript.title";
 
     public static final String NIHMS_SUBMISSION_ID = "nihms.submission.id";
     public static final String NIHMS_SUBMISSION_NAME = "nihms.submission.name";
+
+    public static final String NIHMS_ARTICLE_DOI = "nihms.article.doi";
+    public static final String NIHMS_ARTICLE_PUBMEDID = "nihms.article.pubmedid";
+    public static final String NIHMS_ARTICLE_PUBMEDCENTRALID = "nihms.article.pubmedcentralid";
 
 }

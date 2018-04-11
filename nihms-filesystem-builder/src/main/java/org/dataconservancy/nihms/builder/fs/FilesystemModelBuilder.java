@@ -58,6 +58,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
         NihmsMetadata metadata = new NihmsMetadata();
         NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
         NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
+        NihmsMetadata.Article article = new NihmsMetadata.Article();
         NihmsManifest manifest = new NihmsManifest();
 
         //... including the person object and its list
@@ -111,6 +112,17 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                         journal.setJournalTitle(value);
                         break;
 
+                    //article metadata
+                    case NihmsBuilderPropertyNames.NIHMS_ARTICLE_DOI:
+                        article.setDoi(URI.create(value));
+                        break;
+                    case NihmsBuilderPropertyNames.NIHMS_ARTICLE_PUBMEDCENTRALID:
+                        article.setPubmedCentralId(value);
+                        break;
+                    case NihmsBuilderPropertyNames.NIHMS_ARTICLE_PUBMEDID:
+                        article.setPubmedId(value);
+                        break;
+
                     //manuscript metadata
                     case NihmsBuilderPropertyNames.NIHMS_MANUSCRIPT_ID:
                         manuscript.setNihmsId(value);
@@ -156,6 +168,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
 
             metadata.setJournalMetadata(journal);
             metadata.setManuscriptMetadata(manuscript);
+            metadata.setArticleMetadata(article);
 
             submission.setMetadata(metadata);
             submission.setManifest(manifest);
