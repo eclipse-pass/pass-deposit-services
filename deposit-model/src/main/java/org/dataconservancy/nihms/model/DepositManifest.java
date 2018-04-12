@@ -19,25 +19,26 @@ package org.dataconservancy.nihms.model;
 import java.util.List;
 
 /**
- * Accounts for every file in a NIHMS submission.  Each entry in this manifest includes:
+ * Accounts for every file in a submission.  Each entry in this manifest includes:
  * <ol>
- *     <li>the {@link NihmsFile#name name} of the file</li>
- *     <li>the {@link NihmsFileType semantic type} of the file</li>
- *     <li>a label for the file, <em>required</em> for {@link NihmsFileType#figure figures}, {@link NihmsFileType#table tables}, and {@link NihmsFileType#supplement supplements}</li>
+ *     <li>the {@link DepositFile#name name} of the file</li>
+ *     <li>the {@link DepositFileType semantic type} of the file</li>
+ *     <li>a label for the file, <em>required</em> for {@link DepositFileType#figure figures},
+ *     {@link DepositFileType#table tables}, and {@link DepositFileType#supplement supplements}</li>
  * </ol>
  */
-public class NihmsManifest {
+public class DepositManifest {
 
     /**
      * List of files in this manifest
      */
-    private List<NihmsFile> files;
+    private List<DepositFile> files;
 
-    public List<NihmsFile> getFiles() {
+    public List<DepositFile> getFiles() {
         return files;
     }
 
-    public void setFiles(List<NihmsFile> files) {
+    public void setFiles(List<DepositFile> files) {
         this.files = files;
     }
 }

@@ -21,7 +21,7 @@ import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -74,7 +73,7 @@ public class SubmissionEngineTest {
         String expectedFormDataUrl = "file:///tmp/submission.json";
         String expectedPackageName = "package.tar.gz";
         NullInputStream contentStream = new NullInputStream(2 ^ 20);
-        NihmsSubmission submission = mock(NihmsSubmission.class);
+        DepositSubmission submission = mock(DepositSubmission.class);
         TransportSession session = mock(TransportSession.class);
         PackageStream packageStream = mock(PackageStream.class);
         PackageStream.Metadata md = mock(PackageStream.Metadata.class);
@@ -82,7 +81,7 @@ public class SubmissionEngineTest {
 
         when(builder.build(anyString())).thenReturn(submission);
         when(transport.open(anyMap())).thenReturn(session);
-        when(assembler.assemble(any(NihmsSubmission.class))).thenReturn(packageStream);
+        when(assembler.assemble(any(DepositSubmission.class))).thenReturn(packageStream);
         when(packageStream.metadata()).thenReturn(md);
         when(md.name()).thenReturn(expectedPackageName);
         when(packageStream.open()).thenReturn(contentStream);
@@ -137,16 +136,16 @@ public class SubmissionEngineTest {
         RuntimeException expectedException = new RuntimeException("IOE assembling package", expectedCause);
 
         TransportSession session = mock(TransportSession.class);
-        when(builder.build(anyString())).thenReturn(mock(NihmsSubmission.class));
+        when(builder.build(anyString())).thenReturn(mock(DepositSubmission.class));
         when(transport.open(anyMap())).thenReturn(session);
-        when(assembler.assemble(any(NihmsSubmission.class))).thenThrow(expectedException);
+        when(assembler.assemble(any(DepositSubmission.class))).thenThrow(expectedException);
 
         submitAndVerifyExceptionChain(expectedCause, expectedException);
 
         verify(session).close();
         verify(builder).build(anyString());
         verify(transport).open(anyMap());
-        verify(assembler).assemble(any(NihmsSubmission.class));
+        verify(assembler).assemble(any(DepositSubmission.class));
     }
 
     private void submitAndVerifyExceptionChain(Exception expectedCause, Exception expectedException) {

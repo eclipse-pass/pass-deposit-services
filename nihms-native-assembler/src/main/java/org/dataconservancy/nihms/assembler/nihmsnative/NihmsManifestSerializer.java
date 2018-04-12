@@ -15,8 +15,8 @@
  */
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
-import org.dataconservancy.nihms.model.NihmsFile;
-import org.dataconservancy.nihms.model.NihmsManifest;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositManifest;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,9 +40,9 @@ import java.io.PrintWriter;
 
 public class NihmsManifestSerializer implements StreamingSerializer{
 
-    private NihmsManifest manifest;
+    private DepositManifest manifest;
 
-    NihmsManifestSerializer(NihmsManifest manifest){
+    NihmsManifestSerializer(DepositManifest manifest){
         this.manifest = manifest;
     }
 
@@ -50,7 +50,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(os);
 
-        for (NihmsFile file : manifest.getFiles() ){
+        for (DepositFile file : manifest.getFiles() ){
             writer.write(file.getType().toString());
             writer.append("\t");
             if(file.getLabel() != null) {

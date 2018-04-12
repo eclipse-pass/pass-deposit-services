@@ -21,9 +21,9 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * Encapsulates required and optional metadata for submitting a manuscript to NIHMS.
+ * Encapsulates required and optional metadata for submitting a manuscript.
  */
-public class NihmsMetadata {
+public class DepositMetadata {
 
     /**
      * Journal type: electronic or print
@@ -88,7 +88,7 @@ public class NihmsMetadata {
         public boolean showPublisherPdf;
 
         /**
-         * The interval between a manuscript's final publication date and when the NIHMS manuscript will appear publicly
+         * The interval between a manuscript's final publication date and when the manuscript will appear publicly
          * in PubMed Central
          */
         public int relativeEmbargoPeriodMonths;
@@ -392,7 +392,7 @@ public class NihmsMetadata {
 
     @Override
     public String toString() {
-        return "NihmsMetadata{" +
+        return "DepositMetadata{" +
                 "manuscriptMetadata=" + manuscriptMetadata +
                 ", journalMetadata=" + journalMetadata +
                 ", persons=" + persons +

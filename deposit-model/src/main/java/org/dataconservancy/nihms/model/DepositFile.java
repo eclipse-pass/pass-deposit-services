@@ -20,12 +20,12 @@ package org.dataconservancy.nihms.model;
  * Represents a file that was uploaded by a user into PASS; e.g. a manuscript or supplemental material for a specific
  * submission.
  */
-public class NihmsFile {
+public class DepositFile {
 
     /**
      * The type of file
      */
-    private NihmsFileType type;
+    private DepositFileType type;
 
     /**
      * The name of the file in the archive
@@ -35,7 +35,8 @@ public class NihmsFile {
     /**
      * Differentiates between files of the same type
      * <p>
-     * Required field for {@link NihmsFileType#figure}, {@link NihmsFileType#table}, and {@link NihmsFileType#supplement} file types
+     * Required field for {@link DepositFileType#figure}, {@link DepositFileType#table},
+     * and {@link DepositFileType#supplement} file types
      * </p>
      */
     private String label;
@@ -45,11 +46,11 @@ public class NihmsFile {
      */
     private String location;
 
-    public NihmsFileType getType() {
+    public DepositFileType getType() {
         return type;
     }
 
-    public void setType(NihmsFileType type) {
+    public void setType(DepositFileType type) {
         this.type = type;
     }
 
@@ -82,12 +83,12 @@ public class NihmsFile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NihmsFile nihmsFile = (NihmsFile) o;
+        DepositFile depositFile = (DepositFile) o;
 
-        if (type != nihmsFile.type) return false;
-        if (name != null ? !name.equals(nihmsFile.name) : nihmsFile.name != null) return false;
-        if (label != null ? !label.equals(nihmsFile.label) : nihmsFile.label != null) return false;
-        return location != null ? location.equals(nihmsFile.location) : nihmsFile.location == null;
+        if (type != depositFile.type) return false;
+        if (name != null ? !name.equals(depositFile.name) : depositFile.name != null) return false;
+        if (label != null ? !label.equals(depositFile.label) : depositFile.label != null) return false;
+        return location != null ? location.equals(depositFile.location) : depositFile.location == null;
     }
 
     @Override
@@ -101,7 +102,7 @@ public class NihmsFile {
 
     @Override
     public String toString() {
-        return "NihmsFile{" +
+        return "DepositFile{" +
                 "type=" + type +
                 ", name='" + name + '\'' +
                 ", label='" + label + '\'' +

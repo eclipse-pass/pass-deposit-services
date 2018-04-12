@@ -16,17 +16,15 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
-import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.NihmsFile;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
-import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,7 +52,7 @@ public class NihmsAssembler implements Assembler {
      * @return a PackageStream which actually creates the stream for the tar.gz archive
      */
     @Override
-    public PackageStream assemble(NihmsSubmission submission) {
+    public PackageStream assemble(DepositSubmission submission) {
 
         // Prepare manifest and a serialization of the manifest
         StreamingSerializer manifestSerializer = new NihmsManifestSerializer(submission.getManifest());
@@ -63,7 +61,7 @@ public class NihmsAssembler implements Assembler {
         // Locate byte streams for uploaded manuscript and supplemental data
         List<Resource> fileResources = submission.getFiles()
                 .stream()
-                .map(NihmsFile::getLocation)
+                .map(DepositFile::getLocation)
                 .map(location -> {
                             if (location.startsWith(FILE_PREFIX)) {
                                 return new FileSystemResource(location);

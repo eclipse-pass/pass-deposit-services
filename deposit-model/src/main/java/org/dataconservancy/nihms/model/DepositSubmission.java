@@ -18,12 +18,12 @@ package org.dataconservancy.nihms.model;
 import java.util.List;
 
 /**
- * Encapsulates a submission to the NIHMS system, including the manuscript and supplemental files, metadata describing
+ * Encapsulates a submission to the target system, including the manuscript and supplemental files, metadata describing
  * the manuscript, authors, and the journal of publication, and a manifest cataloging every file in the submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class NihmsSubmission {
+public class DepositSubmission {
 
     /**
      * Internal, submission engine, identifier
@@ -33,17 +33,17 @@ public class NihmsSubmission {
     /**
      * Manifest containing an entry for each file in the submission
      */
-    private NihmsManifest manifest;
+    private DepositManifest manifest;
 
     /**
      * Metadata describing the contents of the submission
      */
-    private NihmsMetadata metadata;
+    private DepositMetadata metadata;
 
     /**
      * The files uploaded by the user, including the manuscript and supplemental files.
      */
-    private List<NihmsFile> files;
+    private List<DepositFile> files;
 
     /**
      * Short, human-readable, name of the submission.  Used to generate the file name for the package file.
@@ -58,27 +58,27 @@ public class NihmsSubmission {
         this.id = id;
     }
 
-    public NihmsManifest getManifest() {
+    public DepositManifest getManifest() {
         return manifest;
     }
 
-    public void setManifest(NihmsManifest manifest) {
+    public void setManifest(DepositManifest manifest) {
         this.manifest = manifest;
     }
 
-    public NihmsMetadata getMetadata() {
+    public DepositMetadata getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(NihmsMetadata metadata) {
+    public void setMetadata(DepositMetadata metadata) {
         this.metadata = metadata;
     }
 
-    public List<NihmsFile> getFiles() {
+    public List<DepositFile> getFiles() {
         return files;
     }
 
-    public void setFiles(List<NihmsFile> files) {
+    public void setFiles(List<DepositFile> files) {
         this.files = files;
     }
 
@@ -95,7 +95,7 @@ public class NihmsSubmission {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NihmsSubmission that = (NihmsSubmission) o;
+        DepositSubmission that = (DepositSubmission) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (manifest != null ? !manifest.equals(that.manifest) : that.manifest != null) return false;
@@ -116,7 +116,7 @@ public class NihmsSubmission {
 
     @Override
     public String toString() {
-        return "NihmsSubmission{" +
+        return "DepositSubmission{" +
                 "id='" + id + '\'' +
                 ", manifest=" + manifest +
                 ", metadata=" + metadata +

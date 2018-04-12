@@ -18,11 +18,11 @@ package org.dataconservancy.nihms.builder.fs;
 
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
-import org.dataconservancy.nihms.model.NihmsFile;
-import org.dataconservancy.nihms.model.NihmsFileType;
-import org.dataconservancy.nihms.model.NihmsManifest;
-import org.dataconservancy.nihms.model.NihmsMetadata;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.nihms.model.DepositManifest;
+import org.dataconservancy.nihms.model.DepositMetadata;
+import org.dataconservancy.nihms.model.DepositSubmission;
 
 
 import java.io.FileInputStream;
@@ -44,26 +44,26 @@ import java.util.Properties;
 public class FilesystemModelBuilder implements SubmissionBuilder {
 
     @Override
-    public NihmsSubmission build(String formDataUrl) throws InvalidModel {
+    public DepositSubmission build(String formDataUrl) throws InvalidModel {
         Properties properties = new Properties();
       
         //The submission object to populate
-        NihmsSubmission submission = new NihmsSubmission();
+        DepositSubmission submission = new DepositSubmission();
 
         //The file to add, and its list to add to submission
-        NihmsFile file = new NihmsFile();
-        List<NihmsFile> files = new ArrayList<>();
+        DepositFile file = new DepositFile();
+        List<DepositFile> files = new ArrayList<>();
 
         //The metadata object, and components to add to it ...
-        NihmsMetadata metadata = new NihmsMetadata();
-        NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
-        NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
-        NihmsMetadata.Article article = new NihmsMetadata.Article();
-        NihmsManifest manifest = new NihmsManifest();
+        DepositMetadata metadata = new DepositMetadata();
+        DepositMetadata.Journal journal = new DepositMetadata.Journal();
+        DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
+        DepositMetadata.Article article = new DepositMetadata.Article();
+        DepositManifest manifest = new DepositManifest();
 
         //... including the person object and its list
-        NihmsMetadata.Person person = new NihmsMetadata.Person();
-        List<NihmsMetadata.Person> persons = new ArrayList<>();
+        DepositMetadata.Person person = new DepositMetadata.Person();
+        List<DepositMetadata.Person> persons = new ArrayList<>();
 
         try (InputStream is = new FileInputStream(formDataUrl)){
             if (is == null) {
@@ -98,7 +98,7 @@ public class FilesystemModelBuilder implements SubmissionBuilder {
                         file.setLocation(value);
                         break;
                     case NihmsBuilderPropertyNames.NIHMS_FILE_TYPE:
-                        file.setType(NihmsFileType.valueOf(value));
+                        file.setType(DepositFileType.valueOf(value));
                         break;
 
                     //journal metadata

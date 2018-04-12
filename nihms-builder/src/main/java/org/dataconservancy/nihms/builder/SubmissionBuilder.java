@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.nihms.builder;
 
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 
 /**
- * Responsible for creating an instance of a NIHMS {@link NihmsSubmission submission}.  Knowledgeable of the
+ * Responsible for creating an instance of a {@link DepositSubmission submission}.  Knowledgeable of the
  * view model (i.e. the model used by the forms collecting submission information), the {@link org.dataconservancy.nihms.model submission model}, and the required metadata needed for building a submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -35,6 +35,6 @@ public interface SubmissionBuilder {
      * @return a submission for the NIHMS system based on the form data
      * @throws InvalidModel if the form data cannot be successfully parsed into a valid submission model
      */
-    NihmsSubmission build(final String formDataUrl) throws InvalidModel;
+    DepositSubmission build(final String formDataUrl) throws InvalidModel;
 
 }

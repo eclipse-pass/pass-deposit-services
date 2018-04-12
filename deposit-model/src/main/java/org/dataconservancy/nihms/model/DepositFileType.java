@@ -17,12 +17,12 @@
 package org.dataconservancy.nihms.model;
 
 /**
- * The semantic type of a {@link NihmsFile file}.
+ * The semantic type of a {@link DepositFile file}.
  */
-public enum NihmsFileType {
+public enum DepositFileType {
 
     /**
-     * Metadata required by the NIHMS submission process.
+     * Metadata required by the submission process.
      */
     bulksub_meta_xml,
 

@@ -25,7 +25,7 @@
     <name>NIH Package and Submission Parent Project</name>
 
     <modules>
-        <module>nihms-model</module>
+        <module>deposit-model</module>
         <module>nihms-builder</module>
         <module>nihms-filesystem-builder</module>
         <module>nihms-assembler-api</module>

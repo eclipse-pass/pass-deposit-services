@@ -37,7 +37,7 @@
 
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-model</artifactId>
+            <artifactId>deposit-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

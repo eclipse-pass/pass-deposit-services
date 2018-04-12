@@ -16,8 +16,7 @@
 
 package org.dataconservancy.nihms.builder.fs;
 
-import org.dataconservancy.nihms.model.NihmsMetadata;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
@@ -29,7 +28,7 @@ import java.util.Properties;
 
 public class FilesystemModelBuilderTest {
 
-    private NihmsSubmission submission;
+    private DepositSubmission submission;
     private Properties expectedProperties = new Properties();
     private  FilesystemModelBuilder underTest = new FilesystemModelBuilder();
 

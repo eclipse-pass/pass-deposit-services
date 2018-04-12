@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.nihms.assembler;
 
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 
 /**
- * Responsible for assembling the components of a {@link NihmsSubmission submission} into a serialized package.  This
+ * Responsible for assembling the components of a {@link DepositSubmission submission} into a serialized package.  This
  * includes de-referencing byte streams associated with the submission, creating or assembling the metadata describing
  * the submission, and providing a serialization of the package.  Implementations of this interface are knowledgeable of
  * the specific packaging requirements (e.g. comporting with BagIt, or profile of BagIt) of a submission destination ,
@@ -38,6 +38,6 @@ public interface Assembler {
      * @param submission the custodial content being packaged
      * @return a streamable package containing the custodial content being packaged
      */
-    PackageStream assemble(NihmsSubmission submission);
+    PackageStream assemble(DepositSubmission submission);
 
 }

@@ -24,7 +24,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
-import org.dataconservancy.nihms.model.NihmsMetadata;
+import org.dataconservancy.nihms.model.DepositMetadata;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,9 +39,9 @@ import java.util.List;
  */
 public class NihmsMetadataSerializer implements StreamingSerializer{
 
-    private NihmsMetadata metadata;
+    private DepositMetadata metadata;
 
-    NihmsMetadataSerializer(NihmsMetadata metadata){
+    NihmsMetadataSerializer(DepositMetadata metadata){
         this.metadata = metadata;
     }
 
@@ -49,7 +49,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
         XStream xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("_-", "_")));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         xstream.registerConverter(new MetadataConverter());
-        xstream.alias("nihms-submit", NihmsMetadata.class);
+        xstream.alias("nihms-submit", DepositMetadata.class);
         xstream.toXML(metadata, os);
 
         byte[] bytes = os.toByteArray();
@@ -65,16 +65,16 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
 
     private class MetadataConverter implements Converter {
         public boolean canConvert(Class clazz) {
-            return NihmsMetadata.class == clazz;
+            return DepositMetadata.class == clazz;
         }
 
         public void marshal(Object value, HierarchicalStreamWriter writer,
                             MarshallingContext context) {
-            NihmsMetadata metadata = (NihmsMetadata) value;
+            DepositMetadata metadata = (DepositMetadata) value;
 
             //process manuscript element (except, strangely, for title, which we do after journal)
-            NihmsMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
-            NihmsMetadata.Article article = metadata.getArticleMetadata();
+            DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
+            DepositMetadata.Article article = metadata.getArticleMetadata();
             writer.startNode("manuscript");
             if(manuscript.getNihmsId() != null) {
                 writer.addAttribute("id", manuscript.getNihmsId());
@@ -102,7 +102,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             writer.endNode(); //end manuscript
 
             //process journal
-            NihmsMetadata.Journal journal = metadata.getJournalMetadata();
+            DepositMetadata.Journal journal = metadata.getJournalMetadata();
             writer.startNode("journal-meta");
             if (journal.getJournalId() != null) {
                 writer.startNode("journal-id");
@@ -136,10 +136,10 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             }
 
             //process contacts
-            List<NihmsMetadata.Person> persons = metadata.getPersons();
+            List<DepositMetadata.Person> persons = metadata.getPersons();
             if (persons.size()>0) {
                 writer.startNode("contacts");
-                for (NihmsMetadata.Person person : persons){
+                for (DepositMetadata.Person person : persons){
                     writer.startNode("person");
                     if (person.getFirstName() != null) {
                         writer.addAttribute("fname",person.getFirstName());
