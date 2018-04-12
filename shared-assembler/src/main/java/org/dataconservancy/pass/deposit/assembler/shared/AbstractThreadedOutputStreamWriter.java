@@ -27,7 +27,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -65,7 +65,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private ResourceBuilderFactory rbf;
 
-    private NihmsSubmission submission;
+    private DepositSubmission submission;
 
     protected static final int THIRTY_TWO_KIB = 32 * 2 ^ 10;
 
@@ -83,7 +83,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      *            package resources}
      */
     public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
-                                              NihmsSubmission submission, List<Resource> packageFiles,
+                                              DepositSubmission submission, List<Resource> packageFiles,
                                               ResourceBuilderFactory rbf) {
         super(threadName);
         this.archiveOut = archiveOut;

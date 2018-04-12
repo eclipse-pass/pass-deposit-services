@@ -16,22 +16,32 @@
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.apache.commons.io.IOUtils;
-import org.dataconservancy.nihms.util.function.FunctionUtil;
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.dataconservancy.nihms.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -39,6 +49,23 @@ import static org.junit.Assert.assertTrue;
 public class NihmsPackageStreamTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageStreamTest.class);
+
+    private StreamingSerializer manifestSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the manifest.", "UTF-8"));
+
+    private StreamingSerializer metadataSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the metadata", "UTF-8"));
+
+    private List<Resource> custodialContent = Arrays.asList(
+            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
+            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
+
+    private MetadataBuilder mb = mock(MetadataBuilder.class);
+    private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
+    private ResourceBuilder rb = mock(ResourceBuilder.class);
+
+    @Before
+    public void setUp() throws Exception {
+        when(rbf.newInstance()).thenReturn(rb);
+    }
 
     /**
      * when commons-io creates an inputstream from a string, it cannot be re-read.
@@ -56,15 +83,11 @@ public class NihmsPackageStreamTest {
 
     @Test
     public void assembleSimplePackage() throws Exception {
-        NihmsPackageStream stream = new NihmsPackageStream(
-                () -> performSilently(() -> IOUtils.toInputStream("This is the manifest.", "UTF-8")),
-                () -> performSilently(() -> IOUtils.toInputStream("This is the metadata", "UTF-8")),
-                Arrays.asList(
-                        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-                        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg")),
-                new SimpleMetadataImpl("testpackage.tar.gz"));
+        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf);
+        underTest.setManifestSerializer(manifestSerializer);
+        underTest.setMetadataSerializer(metadataSerializer);
 
-        final InputStream packageStream = stream.open();
+        final InputStream packageStream = underTest.open();
         assertNotNull(packageStream);
         packageStream.close();
     }
@@ -72,23 +95,24 @@ public class NihmsPackageStreamTest {
     @Test
     public void writeSimplePackage() throws Exception {
         final String expectedFilename = "testpackage.tar.gz";
-        NihmsPackageStream stream = new NihmsPackageStream(
-                () -> IOUtils.toInputStream("This is the manifest."),
-                () -> IOUtils.toInputStream("This is the metadata"),
-                Arrays.asList(
-                        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-                        new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg")),
-                new SimpleMetadataImpl(expectedFilename));
 
+        when(mb.name(anyString())).thenReturn(mb);
+        PackageStream.Resource pr = mock(PackageStream.Resource.class);
+        when(pr.name()).thenReturn(custodialContent.get(0).getFilename());
 
-        File tmpFile = new File(System.getProperty("java.io.tmpdir"), stream.metadata().name());
+        when(rb.build()).thenReturn(pr);
+
+        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf);
+        underTest.setManifestSerializer(manifestSerializer);
+        underTest.setMetadataSerializer(metadataSerializer);
+
+        File tmpFile = new File(System.getProperty("java.io.tmpdir"), expectedFilename);
         LOG.debug("Writing package file {}", tmpFile);
 
         try (FileOutputStream output = new FileOutputStream(tmpFile)) {
-            IOUtils.copy(stream.open(), output);
+            IOUtils.copy(underTest.open(), output);
         }
 
-        assertEquals(expectedFilename, tmpFile.getName()); // duh
         assertTrue(tmpFile.length() > 0);
     }
 }

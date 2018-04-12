@@ -19,8 +19,8 @@ package org.dataconservancy.pass.deposit.assembler.shared;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.NihmsFile;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -73,7 +73,7 @@ public abstract class AbstractAssembler implements Assembler {
      * @return a PackageStream which actually creates the stream for the tar.gz archive
      */
     @Override
-    public PackageStream assemble(NihmsSubmission submission) {
+    public PackageStream assemble(DepositSubmission submission) {
         MetadataBuilder metadataBuilder = mbf.newInstance();
         metadataBuilder.name(sanitizeFilename(submission.getName()));
 
@@ -134,7 +134,7 @@ public abstract class AbstractAssembler implements Assembler {
         // metadata such as bagit tag files, or mets xml files)
         return manifest
                 .stream()
-                .map(NihmsFile::getLocation)
+                .map(DepositFile::getLocation)
                 .map(location -> {
                     if (location.startsWith(FILE_PREFIX)) {
                         return new FileSystemResource(location.substring(FILE_PREFIX.length()));
