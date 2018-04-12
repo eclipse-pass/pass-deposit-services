@@ -16,6 +16,8 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import org.apache.abdera.model.Element;
+import org.apache.abdera.model.Link;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BrokenInputStream;
 import org.dataconservancy.nihms.assembler.PackageStream;
@@ -25,20 +27,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.ClientConfiguration;
+import org.swordapp.client.DepositReceipt;
 import org.swordapp.client.ProtocolViolationException;
 import org.swordapp.client.SWORDClient;
 import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDError;
 import org.swordapp.client.ServiceDocument;
+import org.swordapp.client.SwordIdentifier;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
@@ -51,20 +57,58 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class Sword2TransportSessionIT extends BaseIT {
 
     /**
+     * Property used by the user or test framework to specify a non-default username and password for logging into the
+     * DSpace SWORD endpoint, in the form {@code username:password}.
+     * <p>
+     * Example usage: {@code -Ddspace.auth=adminuser:adminpass}
+     * </p>
+     */
+    private static final String DSPACE_AUTH_PROPERTY = "dspace.auth";
+
+    /**
+     * Property used by the user or test framework to specify a non-default SWORD service document URL.
+     * <p>
+     * Example usage: {@code -Dsword.servicedoc=https://dspace-stage.mse.jhu.edu/swordv2/servicedocument}
+     * </p>
+     */
+    private static final String SWORD_SERVICEDOC_PROPERTY = "sword.servicedoc";
+
+    /**
+     * Property used by the user or test framework to specify a non-default SWORD collection URL for deposit.
+     * <p>
+     * Example usage: {@code -Dsword.collection=https://dspace-stage.mse.jhu.edu/swordv2/collection/1774.2/46194}
+     * </p>
+     */
+    private static final String SWORD_COLLECTION_PROPERTY = "sword.collection";
+
+    /**
+     * Property used by the user or test framework to specify an on-behalf-of user for the SWORD deposit.
+     * <p>
+     * Example usage: {@code -Dsword.onbehalfof=emetsger@jhu.edu}
+     * </p>
+     */
+    private static final String SWORD_ON_BEHALF_OF_PROEPRTY = "sword.onbehalfof";
+
+    /**
      * User the SWORD client will authenticate as
      */
-    private static final String DSPACE_ADMIN_USER = "dspace-admin@oapass.org";
+    private static final String DSPACE_ADMIN_USER = getAdminUser();
 
     /**
      * Password the SWORD client will authenticate with
      */
-    private static final String DSPACE_ADMIN_PASSWORD = "foobar";
+    private static final String DSPACE_ADMIN_PASSWORD = getAdminPassword();
+
+    /**
+     * The format string used to format the <em>default</em> SWORD service document URL.  The default SWORD service
+     * document URL can be overridden by defining a value for {@link #SWORD_SERVICEDOC_PROPERTY}.
+     */
+    private static final String DEFAULT_SERVICEDOC_URL_FORMAT = "http://%s:8181/swordv2/servicedocument";
 
     /**
      * A hard-coded classpath resource that resolves to a package composed of a simple zip file according to the
@@ -73,9 +117,20 @@ public class Sword2TransportSessionIT extends BaseIT {
     private static final String SIMPLE_ZIP_PACKAGE_RESOURCE = "simplezippackage.zip";
 
     /**
+     * A hard-coded classpath resource that resolves to a package composed of a simple zip file according to the
+     * packaging specification {@link #SPEC_SIMPLE_ZIP}.
+     */
+    private static final String METS_PACKAGE_RESOURCE = "dspace-mets-01.zip";
+
+    /**
      * Package specification URI identifying a simple zip file.
      */
     private static final String SPEC_SIMPLE_ZIP = "http://purl.org/net/sword/package/SimpleZip";
+
+    /**
+     * Package specification URI identifying a DSpace METS SIP.
+     */
+    private static final String SPEC_DSPACE_METS = "http://purl.org/net/sword/package/METSDSpaceSIP";
 
     /**
      * Mime type of zip files.
@@ -85,14 +140,14 @@ public class Sword2TransportSessionIT extends BaseIT {
     /**
      * SWORD Service Document endpoint
      */
-    private static final String SERVICEDOC_ENDPOINT = String.format("http://%s:8181/swordv2/servicedocument",
-            System.getProperty(DOCKER_HOST_PROPERTY, "localhost"));
+    private static final String SERVICEDOC_ENDPOINT = getServiceDocumentUrl();
 
     /**
-     * SWORD Collection being deposited to
+     * The <em>default</em> SWORD Collection being deposited to.  The default SWORD collection URL can be overridden
+     * by defining a value or {@link #SWORD_COLLECTION_PROPERTY}.
      */
-    private static final String SWORD_COLLECTION_URL = String.format("http://%s:8181/swordv2/collection/123456789/2",
-            System.getProperty(DOCKER_HOST_PROPERTY, "localhost"));
+    private static final String DEFAULT_SWORD_COLLECTION_URL = formatSwordUrl(
+            "http://%s:8181/swordv2/collection/123456789/2");
 
     /**
      * Configured SWORD client
@@ -116,6 +171,11 @@ public class Sword2TransportSessionIT extends BaseIT {
     private File sampleZipPackage;
 
     /**
+     * Resolved package identified by {@link #METS_PACKAGE_RESOURCE}
+     */
+    private File dspaceMetsPackage;
+
+    /**
      * Performs basic IT setup:
      * <ul>
      *     <li>Discovers and makes available sample packages as {@code File} objects.</li>
@@ -130,12 +190,20 @@ public class Sword2TransportSessionIT extends BaseIT {
         assertTrue("Missing sample package; cannot resolve '" + SIMPLE_ZIP_PACKAGE_RESOURCE +
                         "' as a class path resource.", sampleZipPackage.exists());
 
+        dspaceMetsPackage = new File(this.getClass().getResource(METS_PACKAGE_RESOURCE).getPath());
+        assertNotNull(dspaceMetsPackage);
+        assertTrue("Missing sample package; cannot resolve '" + METS_PACKAGE_RESOURCE +
+                "' as a class path resource.", dspaceMetsPackage.exists());
 
         ClientConfiguration swordConfig = new ClientConfiguration();
         swordConfig.setReturnDepositReceipt(true);
         swordConfig.setUserAgent("oapass/SWORDv2");
 
-        authCreds = new AuthCredentials(DSPACE_ADMIN_USER, DSPACE_ADMIN_PASSWORD);
+        if (onBehalfOf() == null) {
+            authCreds = new AuthCredentials(DSPACE_ADMIN_USER, DSPACE_ADMIN_PASSWORD);
+        } else {
+            authCreds = new AuthCredentials(DSPACE_ADMIN_USER, DSPACE_ADMIN_PASSWORD, onBehalfOf());
+        }
 
         swordClient = new SWORDClient(swordConfig);
 
@@ -155,13 +223,70 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                SWORD_COLLECTION_URL);
+                getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         Sword2DepositReceiptResponse response = (Sword2DepositReceiptResponse)
                 underTest.send(packageStream, transportMd);
         assertNotNull(response);
         assertTrue(response.success());
         assertNotNull(response.getReceipt());
+    }
+
+    /**
+     * Deposits a package using the 'METSDSpaceSIP' packaging specification.  The response should be successful, and the
+     * {@link org.swordapp.client.DepositReceipt} non-null.
+     */
+    @Test
+    public void testDspaceMets() throws FileNotFoundException, SWORDClientException {
+        PackageStream.Metadata md = preparePackageMd(dspaceMetsPackage, SPEC_DSPACE_METS, APPLICATION_ZIP);
+        PackageStream packageStream = preparePackageStream(md, dspaceMetsPackage);
+
+        Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
+
+        Map<String, String> transportMd = new HashMap<>();
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
+                getSwordCollection(serviceDoc, APPLICATION_ZIP));
+
+        TransportResponse response = underTest.send(packageStream, transportMd);
+        assertNotNull(response);
+        assertTrue(response.success());
+        assertTrue(response instanceof Sword2DepositReceiptResponse);
+
+        assertNotNull(((Sword2DepositReceiptResponse)response).getReceipt());
+
+        DepositReceipt receipt = ((Sword2DepositReceiptResponse)response).getReceipt();
+
+        String desc = null;
+        try {
+            desc = receipt.getVerboseDescription();
+            assertNotNull(desc);
+        } catch (NullPointerException e) {
+            LOG.debug("**** DepositReceipt verbose description was null!");
+        }
+        SwordIdentifier content = receipt.getContentLink();
+        String treatement = receipt.getTreatment();
+        List<Element> dc = receipt.getDublinCore();
+        SwordIdentifier atomStatement = receipt.getAtomStatementLink();
+        Link alt = receipt.getEntry().getAlternateLink();
+
+
+        assertNotNull(content);
+        assertNotNull(treatement);
+        assertNotNull(dc);
+        assertFalse(dc.isEmpty());
+        assertNotNull(atomStatement);
+        assertNotNull(alt);
+
+        System.err.println(">>>> (Receipt?) Location: " + receipt.getLocation());
+        System.err.println(">>>> Content link: " + content.getHref());
+        System.err.println(">>>> Atom Statement (Atom): " + atomStatement.getHref());
+        System.err.println(">>>> Atom Statement (RDF): " + receipt.getOREStatementLink().getHref());
+        System.err.println(">>>> Alt link: " + receipt.getEntry().getAlternateLink().getHref().toASCIIString());
+        System.err.println(">>>> Verbose description: " + desc);
+        System.err.println(">>>> Treatment: " + treatement);
+        System.err.println(">>>> DC fields: ");
+        dc.forEach(e -> System.err.println("    " + String.format("{%s}%s: %s", e.getQName().getNamespaceURI(), e.getQName().getLocalPart(), e.getText())));
+
     }
 
     /**
@@ -202,7 +327,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                SWORD_COLLECTION_URL);
+                getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -227,7 +352,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                SWORD_COLLECTION_URL);
+                getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -247,7 +372,7 @@ public class Sword2TransportSessionIT extends BaseIT {
         PackageStream packageStream = preparePackageStream(md, sampleZipPackage);
 
         Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
-        String invalidCollectionUrl = SWORD_COLLECTION_URL + "/123456";
+        String invalidCollectionUrl = DEFAULT_SWORD_COLLECTION_URL + "/123456";
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, invalidCollectionUrl);
@@ -276,7 +401,7 @@ public class Sword2TransportSessionIT extends BaseIT {
         Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
 
         Map<String, String> transportMd = new HashMap<>();
-        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, SWORD_COLLECTION_URL);
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -306,7 +431,7 @@ public class Sword2TransportSessionIT extends BaseIT {
         Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
 
         Map<String, String> transportMd = new HashMap<>();
-        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, SWORD_COLLECTION_URL);
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -408,7 +533,7 @@ public class Sword2TransportSessionIT extends BaseIT {
         try {
             serviceDoc = swordClient.getServiceDocument(serviceDocEndpoint, authCreds);
             assertNotNull("SWORD Service Document obtained from '" + serviceDocEndpoint + "' (auth creds: " +
-                    "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "') was null.", serviceDoc);
+                    "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "' (on-behalf-of: '" + authCreds.getOnBehalfOf() + "') was null.", serviceDoc);
         } catch (Exception e) {
             String msg = String.format("Failed to connect to %s: %s", serviceDocEndpoint, e.getMessage());
             LOG.error(msg, e);
@@ -416,4 +541,92 @@ public class Sword2TransportSessionIT extends BaseIT {
         }
         return serviceDoc;
     }
+
+    /**
+     * Returns the user from the system property {@link #DSPACE_AUTH_PROPERTY}, or a default value if the system
+     * property is not present.
+     *
+     * @return the DSpace admin user
+     */
+    private static String getAdminUser() {
+        return System.getProperty(DSPACE_AUTH_PROPERTY,
+                "dspace-admin@oapass.org").split(":")[0];
+    }
+
+    /**
+     * Returns the password from the system property {@link #DSPACE_AUTH_PROPERTY}, or a default value if the system
+     * property is not present or does not contain a password.
+     *
+     * @return the DSpace admin password
+     */
+    private static String getAdminPassword() {
+
+        String value = System.getProperty(DSPACE_AUTH_PROPERTY, "foobar");
+        if (value.contains(":")) {
+            return value.split(":")[1];
+        }
+
+        return value;
+    }
+
+    /**
+     * Returns the SWORD service document URL from the system property {@link #SWORD_SERVICEDOC_PROPERTY}, or a default
+     * value if the system property is not present.
+     * <p>
+     * The default SWORD service document URL can be overridden by defining a value for
+     * {@link #SWORD_SERVICEDOC_PROPERTY}.
+     * </p>
+     *
+     * @return the SWORD service document URL
+     */
+    private static String getServiceDocumentUrl() {
+        if (System.getProperty(SWORD_SERVICEDOC_PROPERTY) != null) {
+            return System.getProperty(SWORD_SERVICEDOC_PROPERTY);
+        }
+
+        return formatSwordUrl(DEFAULT_SERVICEDOC_URL_FORMAT);
+    }
+
+    /**
+     * Returns the SWORD collection URL from the system property {@link #SWORD_COLLECTION_PROPERTY}, or discovers the
+     * collection based on the supplied {@code packaging}.
+     *
+     * @param packaging the string identifying the packaging that the collection must accept
+     * @return the SWORD collection URL
+     */
+    private static String getSwordCollection(ServiceDocument serviceDoc, String packaging) {
+        if (System.getProperty(SWORD_COLLECTION_PROPERTY) != null) {
+            return System.getProperty(SWORD_COLLECTION_PROPERTY);
+        }
+
+        Collection<SWORDCollection> collections = serviceDoc.getCollectionsThatAccept(packaging);
+        if (collections.isEmpty()) {
+            fail(String.format("Unable to discover a collection from %s that supports packaging %s",
+                    serviceDoc.getService().getBaseUri(), packaging));
+        }
+
+        return collections.iterator().next().getHref().toASCIIString();
+    }
+
+    /**
+     * Replaces the placeholder for the hostname in the format string with the value from {@link #DOCKER_HOST_PROPERTY}
+     * or {@code localhost}.
+     *
+     * @param format format string for a SWORD url, containing single placeholder for the hostname
+     * @return the formatted URL string
+     */
+    private static String formatSwordUrl(String format) {
+        return String.format(format,
+                System.getProperty(DOCKER_HOST_PROPERTY, "localhost"));
+    }
+
+    /**
+     * Returns the SWORD on-behalf-of user from the system property {@link #SWORD_ON_BEHALF_OF_PROEPRTY}.
+     *
+     * @return the on-behalf-of user, or {@code null}
+     */
+    private static String onBehalfOf() {
+        return System.getProperty(SWORD_ON_BEHALF_OF_PROEPRTY);
+    }
+
 }

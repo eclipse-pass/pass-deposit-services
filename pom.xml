@@ -39,6 +39,7 @@
         <module>nihms-util</module>
         <module>nihms-cli</module>
         <module>sword2-transport</module>
+        <module>dspace-mets-assembler</module>
         <module>shared-assembler</module>
     </modules>
 
@@ -88,6 +89,7 @@
         <xstream.version>1.4.10</xstream.version>
         <commons-codec.version>1.11</commons-codec.version>
         <sword2-client.version>0.9.3</sword2-client.version>
+        <mets-api.version>1.3.0</mets-api.version>
         <tika.version>1.17</tika.version>
     </properties>
 
@@ -297,6 +299,12 @@
                 <groupId>org.swordapp</groupId>
                 <artifactId>sword2-client</artifactId>
                 <version>${sword2-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass</groupId>
+                <artifactId>mets-api</artifactId>
+                <version>${mets-api.version}</version>
             </dependency>
 
             <dependency>

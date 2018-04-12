@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nihms-submit>
+	<manuscript publisher_pdf="yes" show_publisher_pdf="yes" embargo="12" />
+	<journal-meta>
+		<journal-id journal-id-type="nlm-ta">Am J of XYZ Res</journal-id>
+		<issn pub-type="ppub">1236-5678</issn>
+		<journal-title>American Journal of XYZ Research</journal-title>
+	</journal-meta>
+	<title>Sed consequat, ante ac pretium mattis, nisi libero ultricies augue,
+dictum semper nisl nisi non velit</title>
+	<contacts>
+		<person fname="John" lname="Public" email="jpublic@hotmail.com" author="yes">
+		</person>
+	</contacts>
+</nihms-submit>
