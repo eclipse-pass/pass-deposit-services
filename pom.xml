@@ -26,8 +26,8 @@
 
     <modules>
         <module>deposit-model</module>
-        <module>builder-api</module>
-        <module>fedora-builder</module>
+        <module>nihms-builder</module>
+        <module>nihms-filesystem-builder</module>
         <module>nihms-assembler-api</module>
         <module>nihms-native-assembler</module>
         <!-- nihms-bagit-assembler -->
