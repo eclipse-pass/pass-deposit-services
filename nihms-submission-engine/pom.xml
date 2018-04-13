@@ -49,7 +49,7 @@
 
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>fedora-builder</artifactId>
+            <artifactId>filesystem-builder</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
