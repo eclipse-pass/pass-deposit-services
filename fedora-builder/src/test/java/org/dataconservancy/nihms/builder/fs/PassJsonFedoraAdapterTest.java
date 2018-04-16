@@ -39,11 +39,13 @@ import static org.junit.Assert.fail;
 
 public class PassJsonFedoraAdapterTest {
 
+    private String SAMPLE_DATA_FILE = "SampleSubmissionData.json";
     private URL sampleDataUrl;
     private PassJsonFedoraAdapter reader;
 
     @Before
     public void setup() {
+        sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_DATA_FILE);
         reader = new PassJsonFedoraAdapter();
     }
 
@@ -65,6 +67,8 @@ public class PassJsonFedoraAdapterTest {
 
             // Read the two files into JSON models
             is = new FileInputStream(sampleDataUrl.getPath());
+            final String origString = IOUtils.toString(is, Charset.defaultCharset());
+            final JsonArray origJson = new JsonParser().parse(origString).getAsJsonArray();
             is.close();
             is = new FileInputStream(tempFilePath);
             final String resultString = IOUtils.toString(is, Charset.defaultCharset());
@@ -72,7 +76,17 @@ public class PassJsonFedoraAdapterTest {
             is.close();
 
             // Compare the two files.  Array contents may be in a different order, and URIs have changed,
+            // so find objects with same @type field and compare the values of their first properties.
+            assertEquals(origJson.size(), resultJson.size());
+            for (JsonElement origElement : origJson) {
                 boolean found = false;
+                final JsonObject origObj = origElement.getAsJsonObject();
+                final String origType = origObj.get("@type").getAsString();
+                final String firstPropName = origObj.keySet().iterator().next();
+                for (JsonElement resultElement : resultJson) {
+                    final JsonObject resObj = resultElement.getAsJsonObject();
+                    if (origType.equals(resObj.get("@type").getAsString()) &&
+                        origObj.get(firstPropName).getAsString().equals(resObj.get(firstPropName).getAsString())) {
                         found = true;
                         break;
                     }

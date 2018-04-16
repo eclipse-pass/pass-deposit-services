@@ -49,6 +49,7 @@ import java.util.HashMap;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
+abstract class ModelBuilder {
     // This method is intended to allow authors to be added as people.  Unfortunately, the author
     // name information is incomplete and we don't know if they are PIs (they probably are).
     // Note that there is currently protection for adding a person twice as an author and then PI.
@@ -102,6 +103,7 @@ import java.util.HashMap;
 
     // Walk the tree of PassEntity objects, starting with the Submission entity,
     // to copy the desired source data into a new DepositSubmission data model.
+    DepositSubmission createDepositSubmission(
             final Submission submissionEntity, final HashMap<URI, PassEntity> entities) throws URISyntaxException {
 
         // The submission object to populate
