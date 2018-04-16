@@ -107,7 +107,7 @@ public class SubmissionEngine {
      * @param assembler the submission package assembler
      * @param transport the TCP transport used to deposit the package to the target repository
      */
-    public SubmissionEngine(SubmissionBuilder builder, Assembler assembler, Transport transport) {
+    public SubmissionEngine(final SubmissionBuilder builder, final Assembler assembler, final Transport transport) {
         this.builder = builder;
         this.assembler = assembler;
         this.transport = transport;
@@ -123,7 +123,7 @@ public class SubmissionEngine {
      * @param formDataUrl a URL to a resource containing key-value pairs representing a submission
      * @throws SubmissionFailure if the submission fails for any reason
      */
-    public void submit(String formDataUrl) throws SubmissionFailure {
+    public void submit(final String formDataUrl) throws SubmissionFailure {
 
         // Build the submission
         DepositSubmission submission = null;
@@ -141,7 +141,7 @@ public class SubmissionEngine {
         // Assemble the package
         // Stream it to the target system
         try (TransportSession session = transport.open(getTransportHints(transportHints))) {
-            PackageStream stream = assembler.assemble(submission);
+            final PackageStream stream = assembler.assemble(submission);
             resourceName = stream.metadata().name();
             response = session.send(stream, getTransportHints(transportHints));
         } catch (Exception e) {
@@ -171,9 +171,9 @@ public class SubmissionEngine {
      * @param submissionProperties contains key-value pairs representing a submission
      * @throws SubmissionFailure if the submission fails for any reason
      */
-    public void submit(Properties submissionProperties) throws SubmissionFailure {
+    public void submit(final Properties submissionProperties) throws SubmissionFailure {
 
-        File properties;
+        final File properties;
         try {
             properties = File.createTempFile("SubmissionEngine-", ".properties");
             properties.deleteOnExit();
@@ -199,14 +199,14 @@ public class SubmissionEngine {
         return transportHints;
     }
 
-    public <T> void setTransportHints(Supplier<Map<String, String>> transportHints) {
+    public <T> void setTransportHints(final Supplier<Map<String, String>> transportHints) {
         this.transportHints = transportHints;
     }
 
-    private Map<String, String> getTransportHints(Supplier<Map<String, String>> transportHints) {
+    private Map<String, String> getTransportHints(final Supplier<Map<String, String>> transportHints) {
 
         if (transportHints != null) {
-            Map<String, String> hints = transportHints.get();
+            final Map<String, String> hints = transportHints.get();
             return hints;
         }
 

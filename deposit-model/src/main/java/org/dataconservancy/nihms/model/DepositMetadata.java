@@ -107,19 +107,19 @@ public class DepositMetadata {
             return msAbstract;
         }
 
-        public void setMsAbstract(String msAbstract) {
+        public void setMsAbstract(final String msAbstract) {
             this.msAbstract = msAbstract;
         }
 
         public String getTitle() { return title; }
 
-        public void setTitle(String title) { this.title = title; }
+        public void setTitle(final String title) { this.title = title; }
 
         public String getNihmsId() {
             return nihmsId;
         }
 
-        public void setNihmsId(String nihmsId) {
+        public void setNihmsId(final String nihmsId) {
             this.nihmsId = nihmsId;
         }
 
@@ -127,7 +127,7 @@ public class DepositMetadata {
             return manuscriptUrl;
         }
 
-        public void setManuscriptUrl(URL manuscriptUrl) {
+        public void setManuscriptUrl(final URL manuscriptUrl) {
             this.manuscriptUrl = manuscriptUrl;
         }
 
@@ -135,7 +135,7 @@ public class DepositMetadata {
             return publisherPdf;
         }
 
-        public void setPublisherPdf(boolean publisherPdf) {
+        public void setPublisherPdf(final boolean publisherPdf) {
             this.publisherPdf = publisherPdf;
         }
 
@@ -143,7 +143,7 @@ public class DepositMetadata {
             return showPublisherPdf;
         }
 
-        public void setShowPublisherPdf(boolean showPublisherPdf) {
+        public void setShowPublisherPdf(final boolean showPublisherPdf) {
             this.showPublisherPdf = showPublisherPdf;
         }
 
@@ -151,7 +151,7 @@ public class DepositMetadata {
             return relativeEmbargoPeriodMonths;
         }
 
-        public void setRelativeEmbargoPeriodMonths(int relativeEmbargoPeriodMonths) {
+        public void setRelativeEmbargoPeriodMonths(final int relativeEmbargoPeriodMonths) {
             this.relativeEmbargoPeriodMonths = relativeEmbargoPeriodMonths;
         }
     }
@@ -190,7 +190,7 @@ public class DepositMetadata {
             return journalId;
         }
 
-        public void setJournalId(String journalId) {
+        public void setJournalId(final String journalId) {
             this.journalId = journalId;
         }
 
@@ -202,7 +202,7 @@ public class DepositMetadata {
             return journalTitle;
         }
 
-        public void setJournalTitle(String journalTitle) {
+        public void setJournalTitle(final String journalTitle) {
             this.journalTitle = journalTitle;
         }
 
@@ -210,7 +210,7 @@ public class DepositMetadata {
             return pubType;
         }
 
-        public void setPubType(JOURNAL_PUBLICATION_TYPE pubType) {
+        public void setPubType(final JOURNAL_PUBLICATION_TYPE pubType) {
             this.pubType = pubType;
         }
 
@@ -218,7 +218,7 @@ public class DepositMetadata {
             return issn;
         }
 
-        public void setIssn(String issn) {
+        public void setIssn(final String issn) {
             this.issn = issn;
         }
     }
@@ -249,13 +249,13 @@ public class DepositMetadata {
 
         public String getTitle() { return title; }
 
-        public void setTitle(String title) { this.title = title; }
+        public void setTitle(final String title) { this.title = title; }
 
         public String getPubmedId() {
             return pubmedId;
         }
 
-        public void setPubmedId(String pubmedId) {
+        public void setPubmedId(final String pubmedId) {
             this.pubmedId = pubmedId;
         }
 
@@ -263,7 +263,7 @@ public class DepositMetadata {
             return pubmedCentralId;
         }
 
-        public void setPubmedCentralId(String pubmedCentralId) {
+        public void setPubmedCentralId(final String pubmedCentralId) {
             this.pubmedCentralId = pubmedCentralId;
         }
 
@@ -271,7 +271,7 @@ public class DepositMetadata {
             return doi;
         }
 
-        public void setDoi(URI doi) {
+        public void setDoi(final URI doi) {
             this.doi = doi;
         }
     }
@@ -305,7 +305,7 @@ public class DepositMetadata {
             return firstName;
         }
 
-        public void setFirstName(String firstName) {
+        public void setFirstName(final String firstName) {
             this.firstName = firstName;
         }
 
@@ -313,7 +313,7 @@ public class DepositMetadata {
             return middleName;
         }
 
-        public void setMiddleName(String middleName) {
+        public void setMiddleName(final String middleName) {
             this.middleName = middleName;
         }
 
@@ -321,7 +321,7 @@ public class DepositMetadata {
             return lastName;
         }
 
-        public void setLastName(String lastName) {
+        public void setLastName(final String lastName) {
             this.lastName = lastName;
         }
 
@@ -329,7 +329,7 @@ public class DepositMetadata {
             return email;
         }
 
-        public void setEmail(String email) {
+        public void setEmail(final String email) {
             this.email = email;
         }
 
@@ -337,7 +337,7 @@ public class DepositMetadata {
             return pi;
         }
 
-        public void setPi(boolean pi) {
+        public void setPi(final boolean pi) {
             this.pi = pi;
         }
 
@@ -345,7 +345,7 @@ public class DepositMetadata {
             return correspondingPi;
         }
 
-        public void setCorrespondingPi(boolean correspondingPi) {
+        public void setCorrespondingPi(final boolean correspondingPi) {
             this.correspondingPi = correspondingPi;
         }
 
@@ -353,7 +353,7 @@ public class DepositMetadata {
             return author;
         }
 
-        public void setAuthor(boolean author) {
+        public void setAuthor(final boolean author) {
             this.author = author;
         }
     }
@@ -362,7 +362,7 @@ public class DepositMetadata {
         return manuscriptMetadata;
     }
 
-    public void setManuscriptMetadata(Manuscript manuscriptMetadata) {
+    public void setManuscriptMetadata(final Manuscript manuscriptMetadata) {
         this.manuscriptMetadata = manuscriptMetadata;
     }
 
@@ -370,7 +370,7 @@ public class DepositMetadata {
         return journalMetadata;
     }
 
-    public void setJournalMetadata(Journal journalMetadata) {
+    public void setJournalMetadata(final Journal journalMetadata) {
         this.journalMetadata = journalMetadata;
     }
 
@@ -378,7 +378,7 @@ public class DepositMetadata {
         return persons;
     }
 
-    public void setPersons(List<Person> persons) {
+    public void setPersons(final List<Person> persons) {
         this.persons = persons;
     }
 
@@ -386,7 +386,7 @@ public class DepositMetadata {
         return articleMetadata;
     }
 
-    public void setArticleMetadata(Article articleMetadata) {
+    public void setArticleMetadata(final Article articleMetadata) {
         this.articleMetadata = articleMetadata;
     }
 
