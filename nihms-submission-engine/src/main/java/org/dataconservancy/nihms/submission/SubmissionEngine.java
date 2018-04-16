@@ -18,7 +18,7 @@ package org.dataconservancy.nihms.submission;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
-import org.dataconservancy.nihms.model.NihmsSubmission;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
@@ -57,7 +57,7 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
  * A {@code SubmissionEngine} instance requires three collaborators:
  * <dl>
  *     <dt>{@link SubmissionBuilder Submission Builder}</dt>
- *     <dd>Responsible for building a {@link NihmsSubmission submission model}.  This component, therefore, is
+ *     <dd>Responsible for building a {@link DepositSubmission submission model}.  This component, therefore, is
  *         influenced by the type and version of the model being employed.  Different versions or model types may
  *         require a builder specific to that model.</dd>
  *     <dt>{@link Assembler Package Assembler}</dt>
@@ -98,8 +98,8 @@ public class SubmissionEngine {
     /**
      * Instantiate a {@code SubmissionEngine} that is associated with a specific model, packaging format, and transport.
      * <p>
-     * This instance will be able to {@link SubmissionBuilder#build(String) build} a {@link NihmsSubmission submission
-     * model}, {@link Assembler#assemble(NihmsSubmission) generate} a {@link PackageStream package}, and
+     * This instance will be able to {@link SubmissionBuilder#build(String) build} a {@link DepositSubmission submission
+     * model}, {@link Assembler#assemble(DepositSubmission) generate} a {@link PackageStream package}, and
      * {@link TransportSession#send(PackageStream, Map) deposit} the package in a target repository.
      * </p>
      *
@@ -126,7 +126,7 @@ public class SubmissionEngine {
     public void submit(String formDataUrl) throws SubmissionFailure {
 
         // Build the submission
-        NihmsSubmission submission = null;
+        DepositSubmission submission = null;
 
         try {
             submission = builder.build(formDataUrl);

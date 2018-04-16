@@ -25,20 +25,32 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nihms-transport-api</artifactId>
-    <name>Transport API</name>
+    <artifactId>fedora-builder</artifactId>
+    <name>File System Submission Model Builder</name>
 
     <dependencies>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-assembler-api</artifactId>
+            <artifactId>deposit-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>builder-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

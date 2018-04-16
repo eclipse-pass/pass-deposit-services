@@ -16,7 +16,7 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
-import org.dataconservancy.nihms.model.NihmsMetadata;
+import org.dataconservancy.nihms.model.DepositMetadata;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
@@ -43,21 +43,21 @@ import static org.junit.Assert.assertTrue;
 public class NihmsMetadataSerializerTest {
 
     private static NihmsMetadataSerializer underTest;
-    private static NihmsMetadata metadata= new NihmsMetadata();
+    private static DepositMetadata metadata= new DepositMetadata();
 
     @BeforeClass
     public static void setup() throws Exception {
         //set up metadata snd its fields;
-        NihmsMetadata.Journal journal = new NihmsMetadata.Journal();
-        NihmsMetadata.Manuscript manuscript = new NihmsMetadata.Manuscript();
-        NihmsMetadata.Article article = new NihmsMetadata.Article();
-        List<NihmsMetadata.Person> personList = new ArrayList<>();
+        DepositMetadata.Journal journal = new DepositMetadata.Journal();
+        DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
+        DepositMetadata.Article article = new DepositMetadata.Article();
+        List<DepositMetadata.Person> personList = new ArrayList<>();
 
         //populate journal metadata
         journal.setIssn("1234-5678");
         journal.setJournalId("FJ001");
         journal.setJournalTitle("Dairy Cow Monthly");
-        journal.setPubType(NihmsMetadata.JOURNAL_PUBLICATION_TYPE.epub);
+        journal.setPubType(DepositMetadata.JOURNAL_PUBLICATION_TYPE.epub);
 
         //populate manuscript metadata
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
@@ -73,7 +73,7 @@ public class NihmsMetadataSerializerTest {
         article.setPubmedId("00001");
 
         //populate persons
-        NihmsMetadata.Person person1 = new NihmsMetadata.Person();
+        DepositMetadata.Person person1 = new DepositMetadata.Person();
         person1.setAuthor(true);
         person1.setCorrespondingPi(false);
         person1.setEmail("person@farm.com");
@@ -83,7 +83,7 @@ public class NihmsMetadataSerializerTest {
         person1.setPi(true);
         personList.add(person1);
 
-        NihmsMetadata.Person person2 = new NihmsMetadata.Person();
+        DepositMetadata.Person person2 = new DepositMetadata.Person();
         person2.setAuthor(false);
         person2.setCorrespondingPi(true);
         person2.setEmail("person@farm.com");
@@ -93,7 +93,7 @@ public class NihmsMetadataSerializerTest {
         person2.setPi(false);
         personList.add(person2);
 
-        NihmsMetadata.Person person3 = new NihmsMetadata.Person();
+        DepositMetadata.Person person3 = new DepositMetadata.Person();
         person3.setAuthor(false);
         person3.setCorrespondingPi(false);
         person3.setEmail("person@farm.com");
@@ -103,7 +103,7 @@ public class NihmsMetadataSerializerTest {
         person3.setPi(false);
         personList.add(person3);
 
-        NihmsMetadata.Person person4 = new NihmsMetadata.Person();
+        DepositMetadata.Person person4 = new DepositMetadata.Person();
         person4.setAuthor(false);
         person4.setCorrespondingPi(false);
         person4.setEmail("person@farm.com");

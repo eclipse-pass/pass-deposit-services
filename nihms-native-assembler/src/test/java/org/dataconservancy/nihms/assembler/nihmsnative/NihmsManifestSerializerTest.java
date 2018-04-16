@@ -18,9 +18,9 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 
 
 import org.apache.commons.io.IOUtils;
-import org.dataconservancy.nihms.model.NihmsFile;
-import org.dataconservancy.nihms.model.NihmsFileType;
-import org.dataconservancy.nihms.model.NihmsManifest;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.nihms.model.DepositManifest;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -36,29 +36,29 @@ public class NihmsManifestSerializerTest {
 
     @Test
     public void testManifestSerialization(){
-        NihmsManifest manifest = new NihmsManifest();
+        DepositManifest manifest = new DepositManifest();
 
-        NihmsFile file1 = new NihmsFile();
+        DepositFile file1 = new DepositFile();
         file1.setLabel("File One Label");
         file1.setName("File One name");
-        file1.setType(NihmsFileType.figure);
+        file1.setType(DepositFileType.figure);
 
-        NihmsFile file2 = new NihmsFile();
+        DepositFile file2 = new DepositFile();
         file2.setLabel("File Two Label");
         file2.setName("File Two name");
-        file2.setType(NihmsFileType.bulksub_meta_xml);
+        file2.setType(DepositFileType.bulksub_meta_xml);
 
-        NihmsFile file3 = new NihmsFile();
+        DepositFile file3 = new DepositFile();
         file3.setLabel("File Three Label");
         file3.setName("File Three name");
-        file3.setType(NihmsFileType.table);
+        file3.setType(DepositFileType.table);
 
-        NihmsFile file4 = new NihmsFile();
+        DepositFile file4 = new DepositFile();
         //label not always required
         file4.setName("File Four name");
-        file4.setType(NihmsFileType.manuscript);
+        file4.setType(DepositFileType.manuscript);
 
-        List<NihmsFile> files = new ArrayList<>();
+        List<DepositFile> files = new ArrayList<>();
         files.add(file1);
         files.add(file2);
         files.add(file3);
