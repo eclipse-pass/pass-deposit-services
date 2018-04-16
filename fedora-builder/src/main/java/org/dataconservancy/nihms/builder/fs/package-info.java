@@ -15,7 +15,9 @@
  */
 
 /**
- * Implementation capable of building a {@link org.dataconservancy.nihms.model.NihmsSubmission} from submission metadata
+ * Implementation capable of building a
+ * {@link org.dataconservancy.nihms.model.DepositSubmission} from submission metadata
  * mounted on the local filesystem.
+ * @author Elliot Metsger (emetsger@jhu.edu)
  */
 package org.dataconservancy.nihms.builder.fs;

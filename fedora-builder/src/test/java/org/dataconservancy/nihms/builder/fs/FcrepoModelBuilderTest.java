@@ -34,17 +34,21 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 
-public class FilesystemModelBuilderTest {
+public class FcrepoModelBuilderTest {
 
     private DepositSubmission submission;
-    private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
+    private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
     private String sampleDataFile = "SampleSubmissionData.json";
 
     @Before
-    public void setup() throws Exception{
-        // Create submission data from sample data file
-        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
-        submission = underTest.build(sampleDataUrl.getPath());
+    public void setup() throws Exception {
+        // Upload sample data to Fedora repository to get its URI.
+        final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+        URL sampleDataUrl = FcrepoModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
+        InputStream is = new FileInputStream(sampleDataUrl.getPath());
+        final URI submissionUri = reader.jsonToFcrepo(is);
+        is.close();
+        submission = underTest.build(submissionUri.toString());
     }
 
     @Test
@@ -75,7 +79,7 @@ public class FilesystemModelBuilderTest {
         assertNotNull(submission.getFiles());
         assertNotNull(submission.getMetadata().getPersons());
 
-        assertEquals(submission.getId(), submissionEntity.getId().toString());
+        // Cannot compare ID strings, as they change when uploading to a Fedora server.
         assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), submissionEntity.getTitle());
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), submissionEntity.getDoi());
     }

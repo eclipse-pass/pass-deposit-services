@@ -54,7 +54,7 @@ public class DepositSubmission {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -62,7 +62,7 @@ public class DepositSubmission {
         return manifest;
     }
 
-    public void setManifest(DepositManifest manifest) {
+    public void setManifest(final DepositManifest manifest) {
         this.manifest = manifest;
     }
 
@@ -70,7 +70,7 @@ public class DepositSubmission {
         return metadata;
     }
 
-    public void setMetadata(DepositMetadata metadata) {
+    public void setMetadata(final DepositMetadata metadata) {
         this.metadata = metadata;
     }
 
@@ -78,7 +78,7 @@ public class DepositSubmission {
         return files;
     }
 
-    public void setFiles(List<DepositFile> files) {
+    public void setFiles(final List<DepositFile> files) {
         this.files = files;
     }
 
@@ -86,16 +86,16 @@ public class DepositSubmission {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DepositSubmission that = (DepositSubmission) o;
+        final DepositSubmission that = (DepositSubmission) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (manifest != null ? !manifest.equals(that.manifest) : that.manifest != null) return false;
