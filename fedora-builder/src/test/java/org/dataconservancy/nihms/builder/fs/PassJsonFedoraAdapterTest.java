@@ -49,7 +49,7 @@ public class PassJsonFedoraAdapterTest {
         reader = new PassJsonFedoraAdapter();
     }
 
-    @Test
+    //@Test
     public void roundTrip() {
         try {
             // Upload the sample data to the Fedora repo.

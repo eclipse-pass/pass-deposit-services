@@ -51,7 +51,7 @@ public class FcrepoModelBuilderTest {
         submission = underTest.build(submissionUri.toString());
     }
 
-    @Test
+    //@Test
     public void testElementValues() {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
