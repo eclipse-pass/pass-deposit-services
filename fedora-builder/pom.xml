@@ -67,4 +67,21 @@
 
     </dependencies>
 
+    <repositories>
+
+        <repository>
+            <id>dc.public.snapshots</id>
+            <name>Data Conservancy Public Maven Repository (snapshots)</name>
+            <layout>default</layout>
+            <url>http://maven.dataconservancy.org/public/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
+    </repositories>
+
 </project>
