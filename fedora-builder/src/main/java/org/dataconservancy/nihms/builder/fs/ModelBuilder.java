@@ -135,6 +135,7 @@ abstract class ModelBuilder {
         article.setDoi(new URI(submissionEntity.getDoi()));
         persons.add(createDepositAuthor(submissionEntity.getCorrAuthorName(),
                 submissionEntity.getCorrAuthorEmail()));
+        // The deposit model requires a name - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
         // Available data for which there is no place in the existing model:
         //      status (enum), abstract, submitted date, source (enum), volume, issue

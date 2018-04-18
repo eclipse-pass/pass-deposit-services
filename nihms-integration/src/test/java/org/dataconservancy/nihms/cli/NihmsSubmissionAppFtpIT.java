@@ -71,6 +71,7 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
             }
         };
 
+        sampleDataSource = this.getClass().getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
         assertNotNull("Unable to locate " + SAMPLE_SUBMISSION_RESOURCE + " as a classpath resource", sampleDataSource);
         itUtil.connect();
         itUtil.login();
