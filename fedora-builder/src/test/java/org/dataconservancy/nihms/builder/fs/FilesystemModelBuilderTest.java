@@ -38,12 +38,12 @@ public class FilesystemModelBuilderTest {
 
     private DepositSubmission submission;
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
-    private String sampleDataFile = "SampleSubmissionData.json";
+    private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
 
     @Before
     public void setup() throws Exception{
         // Create submission data from sample data file
-        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
+        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
         submission = underTest.build(sampleDataUrl.getPath());
     }
 
@@ -52,7 +52,8 @@ public class FilesystemModelBuilderTest {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         try {
-            URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
+            URL sampleDataUrl =
+                    FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
             final InputStream is = new FileInputStream(sampleDataUrl.getPath());
             final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             final HashMap<URI, PassEntity> entities = new HashMap<>();

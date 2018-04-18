@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.nihms.cli;
 
-import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
 import org.dataconservancy.nihms.transport.Transport;
@@ -38,12 +37,12 @@ import static org.junit.Assert.assertTrue;
  */
 public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
 
-    private static String SUBMISSION_PROPERTIES_RESOURCE = "FilesystemModelBuilderTest.properties";
+    private static String SAMPLE_SUBMISSION_RESOURCE = "org/dataconservancy/nihms/cli/SampleSubmissionData.json";
 
     private static String NIHMS_FTP_SUBMISSION_BASE_DIRECTORY = String.format("%s%s",
             FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
 
-    private URL submissionProperties;
+    private URL sampleDataSource;
 
     private Map<String, String> transportHints;
 
@@ -72,9 +71,7 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
             }
         };
 
-        submissionProperties = this.getClass().getResource(SUBMISSION_PROPERTIES_RESOURCE);
-        assertNotNull("Unable to locate " + SUBMISSION_PROPERTIES_RESOURCE + " as a classpath resource",
-                submissionProperties);
+        assertNotNull("Unable to locate " + SAMPLE_SUBMISSION_RESOURCE + " as a classpath resource", sampleDataSource);
         itUtil.connect();
         itUtil.login();
     }
@@ -98,7 +95,7 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
                 ftpClient.changeWorkingDirectory(NIHMS_FTP_SUBMISSION_BASE_DIRECTORY));
         itUtil.logout();
 
-        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(submissionProperties.getPath()), transportHints);
+        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(sampleDataSource.getPath()), transportHints);
         app.run();
 
         itUtil.connect();

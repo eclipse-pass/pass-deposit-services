@@ -51,14 +51,9 @@ public class NihmsSubmissionApp {
     private static final Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
 
     /**
-     * Reference to a File that contains the submission properties used to compose the submission
+     * Reference to a File that contains the sample data used to compose the submission
      */
-    private File propertiesFile;
-
-    /**
-     * Properties object that contains the submission properties used to compose the submission
-     */
-    private Properties properties;
+    private File sampleDataFile;
 
     /**
      * Key used to resolve FTP transport configuration hints
@@ -71,29 +66,19 @@ public class NihmsSubmissionApp {
     private Map<String, String> transportHints;
 
 
-    NihmsSubmissionApp(File propertiesFile, String transportKey) {
-        this.propertiesFile = propertiesFile;
+    NihmsSubmissionApp(final File sampleDataFile, final String transportKey) {
+        this.sampleDataFile = sampleDataFile;
         this.transportKey = transportKey;
     }
 
-    NihmsSubmissionApp(Properties properties, String transportKey) {
-        this.properties = properties;
-        this.transportKey = transportKey;
-    }
-
-    NihmsSubmissionApp(Properties properties, Map<String, String> transportHints) {
-        this.properties = properties;
-        this.transportHints = transportHints;
-    }
-
-    NihmsSubmissionApp(File propertiesFile, Map<String, String> transportHints) {
-        this.propertiesFile = propertiesFile;
+    NihmsSubmissionApp(final File sampleDataFile, final Map<String, String> transportHints) {
+        this.sampleDataFile = sampleDataFile;
         this.transportHints = transportHints;
     }
 
     void run() throws NihmsCliException {
         try {
-            SubmissionEngine engine = new SubmissionEngine(
+            final SubmissionEngine engine = new SubmissionEngine(
                     new FilesystemModelBuilder(),
                     new NihmsAssembler(),
                     new FtpTransport(new DefaultFtpClientFactory()));
@@ -102,7 +87,7 @@ public class NihmsSubmissionApp {
             // transport key to resolve the transport hints
             if (transportHints == null) {
                 engine.setTransportHints(() -> {
-                    Map<String, String> hints = resolveTransportHints(transportKey);
+                    final Map<String, String> hints = resolveTransportHints(transportKey);
                     if (LOG.isDebugEnabled()) {
                         hints.forEach((k, v) -> LOG.debug("Resolved transport key '{}' property '{}' to '{}'",
                                 transportKey, k, v));
@@ -129,16 +114,12 @@ public class NihmsSubmissionApp {
         }
     }
 
-    void run(SubmissionEngine engine) throws NihmsCliException {
+    void run(final SubmissionEngine engine) throws NihmsCliException {
         try {
-            // Prefer the use of the file referencing the submission properties.  If the file isn't available, use
-            // the Properties object.
-            if (propertiesFile != null) {
-                engine.submit(propertiesFile.getCanonicalPath());
-            } else if (properties != null) {
-                engine.submit(properties);
+            if (sampleDataFile != null) {
+                engine.submit(sampleDataFile.getCanonicalPath());
             } else {
-                throw new NihmsCliException("No properties were supplied for the submission!");
+                throw new NihmsCliException("No data was supplied for the submission!");
             }
         } catch (Exception e) {
             throw new NihmsCliException(e.getMessage(), e);
@@ -162,14 +143,14 @@ public class NihmsSubmissionApp {
      * @return the properties (as a {@code Map<String, String>} used to configure the FTP transport
      */
     @SuppressWarnings("unchecked")
-    Map<String, String> resolveTransportHints(String transportKey) {
+    Map<String, String> resolveTransportHints(final String transportKey) {
         if (transportKey == null) {
             return null;
         }
 
-        String resource = "/" + transportKey + ".properties";
+        final String resource = "/" + transportKey + ".properties";
 
-        InputStream resourceStream = this.getClass().getResourceAsStream(resource);
+        final InputStream resourceStream = this.getClass().getResourceAsStream(resource);
 
         if (resourceStream == null) {
             throw new RuntimeException(new NihmsCliException(
@@ -208,14 +189,14 @@ public class NihmsSubmissionApp {
      *         {@code nihms.ftp.basedir} resolved as documented above
      */
     @SuppressWarnings("unchecked")
-    private Map<String, String> resolvePropertiesFromClasspathResource(String transportKey, String resource,
-                                                                       InputStream resourceStream) {
-        Properties transportProperties = new Properties();
+    private Map<String, String> resolvePropertiesFromClasspathResource(final String transportKey, final String resource,
+                                                                       final InputStream resourceStream) {
+        final Properties transportProperties = new Properties();
         try {
             transportProperties.load(new Base64InputStream(resourceStream));
             if (!transportProperties.containsKey(TRANSPORT_SERVER_FQDN)) {
                 if ("nih".equals(transportKey)) {
-                    String nihFtpHost = "ftp-private.ncbi.nlm.nih.gov";
+                    final String nihFtpHost = "ftp-private.ncbi.nlm.nih.gov";
                     LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey, TRANSPORT_SERVER_FQDN, nihFtpHost));
                     transportProperties.put(TRANSPORT_SERVER_FQDN, nihFtpHost);
                 }
@@ -231,7 +212,8 @@ public class NihmsSubmissionApp {
             }
 
             if (!transportProperties.containsKey(BASE_DIRECTORY)) {
-                LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey, BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY));
+                LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey,
+                        BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY));
                 transportProperties.put(BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
             }
         } catch (IOException e) {

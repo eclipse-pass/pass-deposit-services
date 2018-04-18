@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,13 +37,13 @@ public class FcrepoModelBuilderTest {
 
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
-    private String sampleDataFile = "SampleSubmissionData.json";
+    private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
 
     @Before
     public void setup() throws Exception {
         // Upload sample data to Fedora repository to get its URI.
         final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-        URL sampleDataUrl = FcrepoModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
+        URL sampleDataUrl = FcrepoModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
         InputStream is = new FileInputStream(sampleDataUrl.getPath());
         final URI submissionUri = reader.jsonToFcrepo(is);
         is.close();
@@ -56,7 +55,8 @@ public class FcrepoModelBuilderTest {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         try {
-            URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(sampleDataFile);
+            URL sampleDataUrl =
+                    FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
             final InputStream is = new FileInputStream(sampleDataUrl.getPath());
             final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             final HashMap<URI, PassEntity> entities = new HashMap<>();

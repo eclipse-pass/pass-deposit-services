@@ -135,10 +135,11 @@ abstract class ModelBuilder {
         article.setDoi(new URI(submissionEntity.getDoi()));
         persons.add(createDepositAuthor(submissionEntity.getCorrAuthorName(),
                 submissionEntity.getCorrAuthorEmail()));
+        submission.setName(submissionEntity.getId().toString());
         // Available data for which there is no place in the existing model:
         //      status (enum), abstract, submitted date, source (enum), volume, issue
         // Existing model members that are no longer set:
-        //      name, article.pubmedcentralid, article.pubmedid, manuscript.id, manuscript.url
+        //      article.pubmedcentralid, article.pubmedid, manuscript.id, manuscript.url
 
         // Data from the Journal and Publisher resources
         final Journal journalEntity = (Journal)entities.get(submissionEntity.getJournal());
