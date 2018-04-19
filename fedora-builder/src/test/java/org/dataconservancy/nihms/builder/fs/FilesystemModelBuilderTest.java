@@ -54,9 +54,9 @@ public class FilesystemModelBuilderTest {
         try {
             URL sampleDataUrl =
                     FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-            final InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            final HashMap<URI, PassEntity> entities = new HashMap<>();
+            InputStream is = new FileInputStream(sampleDataUrl.getPath());
+            PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+            HashMap<URI, PassEntity> entities = new HashMap<>();
             submissionEntity = reader.jsonToPass(is, entities);
             is.close();
         } catch (FileNotFoundException e) {

@@ -38,7 +38,7 @@ public class DepositManifest {
         return files;
     }
 
-    public void setFiles(final List<DepositFile> files) {
+    public void setFiles(List<DepositFile> files) {
         this.files = files;
     }
 }

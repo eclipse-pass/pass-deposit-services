@@ -80,12 +80,12 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
 public class SubmissionEngine {
 
     // TODO verify timezone with NIHMS
-    public static final String BASE_DIRECTORY = format("/logs/upload/%s",
+    public static String BASE_DIRECTORY = format("/logs/upload/%s",
             OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE));
 
-    private static final String MODEL_ERROR = "Error building submission model: %s";
+    private static String MODEL_ERROR = "Error building submission model: %s";
 
-    private static final String SUBMISSION_ERROR = "Submission of package %s failed: %s";
+    private static String SUBMISSION_ERROR = "Submission of package %s failed: %s";
 
     private SubmissionBuilder builder;
 
@@ -107,7 +107,7 @@ public class SubmissionEngine {
      * @param assembler the submission package assembler
      * @param transport the TCP transport used to deposit the package to the target repository
      */
-    public SubmissionEngine(final SubmissionBuilder builder, final Assembler assembler, final Transport transport) {
+    public SubmissionEngine(SubmissionBuilder builder, Assembler assembler, Transport transport) {
         this.builder = builder;
         this.assembler = assembler;
         this.transport = transport;
@@ -123,7 +123,7 @@ public class SubmissionEngine {
      * @param formDataUrl a URL to a resource containing key-value pairs representing a submission
      * @throws SubmissionFailure if the submission fails for any reason
      */
-    public void submit(final String formDataUrl) throws SubmissionFailure {
+    public void submit(String formDataUrl) throws SubmissionFailure {
 
         // Build the submission
         DepositSubmission submission = null;
@@ -134,14 +134,14 @@ public class SubmissionEngine {
             throw new SubmissionFailure(format(MODEL_ERROR, e.getMessage()), e);
         }
 
-        final TransportResponse response;
+        TransportResponse response;
         String resourceName = null;
 
         // Open the underlying transport (FTP for NIHMS)
         // Assemble the package
         // Stream it to the target system
         try (TransportSession session = transport.open(getTransportHints(transportHints))) {
-            final PackageStream stream = assembler.assemble(submission);
+            PackageStream stream = assembler.assemble(submission);
             resourceName = stream.metadata().name();
             response = session.send(stream, getTransportHints(transportHints));
         } catch (Exception e) {
@@ -171,9 +171,9 @@ public class SubmissionEngine {
      * @param submissionProperties contains key-value pairs representing a submission
      * @throws SubmissionFailure if the submission fails for any reason
      */
-    public void submit(final Properties submissionProperties) throws SubmissionFailure {
+    public void submit(Properties submissionProperties) throws SubmissionFailure {
 
-        final File properties;
+        File properties;
         try {
             properties = File.createTempFile("SubmissionEngine-", ".properties");
             properties.deleteOnExit();
@@ -199,14 +199,14 @@ public class SubmissionEngine {
         return transportHints;
     }
 
-    public <T> void setTransportHints(final Supplier<Map<String, String>> transportHints) {
+    public <T> void setTransportHints(Supplier<Map<String, String>> transportHints) {
         this.transportHints = transportHints;
     }
 
-    private Map<String, String> getTransportHints(final Supplier<Map<String, String>> transportHints) {
+    private Map<String, String> getTransportHints(Supplier<Map<String, String>> transportHints) {
 
         if (transportHints != null) {
-            final Map<String, String> hints = transportHints.get();
+            Map<String, String> hints = transportHints.get();
             return hints;
         }
 

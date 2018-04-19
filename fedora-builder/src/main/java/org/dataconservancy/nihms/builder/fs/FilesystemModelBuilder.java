@@ -46,12 +46,12 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      * @throws InvalidModel if the JSON data cannot be successfully parsed into a valid submission model
      */
     @Override
-    public DepositSubmission build(final String formDataUrl) throws InvalidModel {
+    public DepositSubmission build(String formDataUrl) throws InvalidModel {
         try {
-            final InputStream is = new FileInputStream(formDataUrl);
-            final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            final HashMap<URI, PassEntity> entities = new HashMap<>();
-            final Submission submissionEntity = reader.jsonToPass(is, entities);
+            InputStream is = new FileInputStream(formDataUrl);
+            PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+            HashMap<URI, PassEntity> entities = new HashMap<>();
+            Submission submissionEntity = reader.jsonToPass(is, entities);
             is.close();
             return createDepositSubmission(submissionEntity, entities);
         } catch (FileNotFoundException e) {

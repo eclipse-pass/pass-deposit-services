@@ -39,16 +39,16 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIR
  */
 public class NihmsSubmissionApp {
 
-    private static final String MISSING_TRANSPORT_HINTS = "No classpath resource found for transport configuration " +
+    private static String MISSING_TRANSPORT_HINTS = "No classpath resource found for transport configuration " +
             "key '%s': '%s' not found on class path.";
 
-    private static final String ERR_LOADING_TRANSPORT_HINTS = "Error loading classpath resource '%s': %s";
+    private static String ERR_LOADING_TRANSPORT_HINTS = "Error loading classpath resource '%s': %s";
 
-    private static final String SETTING_TRANSPORT_HINT = "Transport hint key: '%s' -> Setting '%s' to '%s'";
+    private static String SETTING_TRANSPORT_HINT = "Transport hint key: '%s' -> Setting '%s' to '%s'";
 
-    private static final String LOCAL_FTP_SERVER_KEY = "LOCAL_FTP_SERVER";
+    private static String LOCAL_FTP_SERVER_KEY = "LOCAL_FTP_SERVER";
 
-    private static final Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
+    private static Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
 
     /**
      * Reference to a File that contains the sample data used to compose the submission
@@ -66,19 +66,19 @@ public class NihmsSubmissionApp {
     private Map<String, String> transportHints;
 
 
-    NihmsSubmissionApp(final File sampleDataFile, final String transportKey) {
+    NihmsSubmissionApp(File sampleDataFile, String transportKey) {
         this.sampleDataFile = sampleDataFile;
         this.transportKey = transportKey;
     }
 
-    NihmsSubmissionApp(final File sampleDataFile, final Map<String, String> transportHints) {
+    NihmsSubmissionApp(File sampleDataFile, Map<String, String> transportHints) {
         this.sampleDataFile = sampleDataFile;
         this.transportHints = transportHints;
     }
 
     void run() throws NihmsCliException {
         try {
-            final SubmissionEngine engine = new SubmissionEngine(
+            SubmissionEngine engine = new SubmissionEngine(
                     new FilesystemModelBuilder(),
                     new NihmsAssembler(),
                     new FtpTransport(new DefaultFtpClientFactory()));
@@ -87,7 +87,7 @@ public class NihmsSubmissionApp {
             // transport key to resolve the transport hints
             if (transportHints == null) {
                 engine.setTransportHints(() -> {
-                    final Map<String, String> hints = resolveTransportHints(transportKey);
+                    Map<String, String> hints = resolveTransportHints(transportKey);
                     if (LOG.isDebugEnabled()) {
                         hints.forEach((k, v) -> LOG.debug("Resolved transport key '{}' property '{}' to '{}'",
                                 transportKey, k, v));
@@ -114,7 +114,7 @@ public class NihmsSubmissionApp {
         }
     }
 
-    void run(final SubmissionEngine engine) throws NihmsCliException {
+    void run(SubmissionEngine engine) throws NihmsCliException {
         try {
             if (sampleDataFile != null) {
                 engine.submit(sampleDataFile.getCanonicalPath());
@@ -143,14 +143,14 @@ public class NihmsSubmissionApp {
      * @return the properties (as a {@code Map<String, String>} used to configure the FTP transport
      */
     @SuppressWarnings("unchecked")
-    Map<String, String> resolveTransportHints(final String transportKey) {
+    Map<String, String> resolveTransportHints(String transportKey) {
         if (transportKey == null) {
             return null;
         }
 
-        final String resource = "/" + transportKey + ".properties";
+        String resource = "/" + transportKey + ".properties";
 
-        final InputStream resourceStream = this.getClass().getResourceAsStream(resource);
+        InputStream resourceStream = this.getClass().getResourceAsStream(resource);
 
         if (resourceStream == null) {
             throw new RuntimeException(new NihmsCliException(
@@ -189,14 +189,14 @@ public class NihmsSubmissionApp {
      *         {@code nihms.ftp.basedir} resolved as documented above
      */
     @SuppressWarnings("unchecked")
-    private Map<String, String> resolvePropertiesFromClasspathResource(final String transportKey, final String resource,
-                                                                       final InputStream resourceStream) {
-        final Properties transportProperties = new Properties();
+    private Map<String, String> resolvePropertiesFromClasspathResource(String transportKey, String resource,
+                                                                       InputStream resourceStream) {
+        Properties transportProperties = new Properties();
         try {
             transportProperties.load(new Base64InputStream(resourceStream));
             if (!transportProperties.containsKey(TRANSPORT_SERVER_FQDN)) {
                 if ("nih".equals(transportKey)) {
-                    final String nihFtpHost = "ftp-private.ncbi.nlm.nih.gov";
+                    String nihFtpHost = "ftp-private.ncbi.nlm.nih.gov";
                     LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey, TRANSPORT_SERVER_FQDN, nihFtpHost));
                     transportProperties.put(TRANSPORT_SERVER_FQDN, nihFtpHost);
                 }

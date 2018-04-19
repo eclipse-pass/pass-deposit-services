@@ -54,7 +54,7 @@ public class PassJsonFedoraAdapterTest {
         try {
             // Upload the sample data to the Fedora repo.
             InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            final URI submissionUri = reader.jsonToFcrepo(is);
+            URI submissionUri = reader.jsonToFcrepo(is);
             is.close();
 
             // Download the data from the server to a temporary JSON file
@@ -67,12 +67,12 @@ public class PassJsonFedoraAdapterTest {
 
             // Read the two files into JSON models
             is = new FileInputStream(sampleDataUrl.getPath());
-            final String origString = IOUtils.toString(is, Charset.defaultCharset());
-            final JsonArray origJson = new JsonParser().parse(origString).getAsJsonArray();
+            String origString = IOUtils.toString(is, Charset.defaultCharset());
+            JsonArray origJson = new JsonParser().parse(origString).getAsJsonArray();
             is.close();
             is = new FileInputStream(tempFilePath);
-            final String resultString = IOUtils.toString(is, Charset.defaultCharset());
-            final JsonArray resultJson = new JsonParser().parse(resultString).getAsJsonArray();
+            String resultString = IOUtils.toString(is, Charset.defaultCharset());
+            JsonArray resultJson = new JsonParser().parse(resultString).getAsJsonArray();
             is.close();
 
             // Compare the two files.  Array contents may be in a different order, and URIs have changed,
@@ -80,11 +80,11 @@ public class PassJsonFedoraAdapterTest {
             assertEquals(origJson.size(), resultJson.size());
             for (JsonElement origElement : origJson) {
                 boolean found = false;
-                final JsonObject origObj = origElement.getAsJsonObject();
-                final String origType = origObj.get("@type").getAsString();
-                final String firstPropName = origObj.keySet().iterator().next();
+                JsonObject origObj = origElement.getAsJsonObject();
+                String origType = origObj.get("@type").getAsString();
+                String firstPropName = origObj.keySet().iterator().next();
                 for (JsonElement resultElement : resultJson) {
-                    final JsonObject resObj = resultElement.getAsJsonObject();
+                    JsonObject resObj = resultElement.getAsJsonObject();
                     if (origType.equals(resObj.get("@type").getAsString()) &&
                         origObj.get(firstPropName).getAsString().equals(resObj.get(firstPropName).getAsString())) {
                         found = true;

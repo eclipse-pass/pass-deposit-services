@@ -42,10 +42,10 @@ public class FcrepoModelBuilderTest {
     @Before
     public void setup() throws Exception {
         // Upload sample data to Fedora repository to get its URI.
-        final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+        PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
         URL sampleDataUrl = FcrepoModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
         InputStream is = new FileInputStream(sampleDataUrl.getPath());
-        final URI submissionUri = reader.jsonToFcrepo(is);
+        URI submissionUri = reader.jsonToFcrepo(is);
         is.close();
         submission = underTest.build(submissionUri.toString());
     }
@@ -57,9 +57,9 @@ public class FcrepoModelBuilderTest {
         try {
             URL sampleDataUrl =
                     FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-            final InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            final PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            final HashMap<URI, PassEntity> entities = new HashMap<>();
+            InputStream is = new FileInputStream(sampleDataUrl.getPath());
+            PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+            HashMap<URI, PassEntity> entities = new HashMap<>();
             submissionEntity = reader.jsonToPass(is, entities);
             is.close();
         } catch (FileNotFoundException e) {
