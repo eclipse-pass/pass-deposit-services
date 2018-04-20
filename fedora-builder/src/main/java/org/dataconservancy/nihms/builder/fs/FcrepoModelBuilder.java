@@ -22,10 +22,6 @@ import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -37,7 +33,7 @@ import java.util.HashMap;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
-public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder {
+public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilder {
 
     /***
      * Build a DepositSubmission from the JSON data in named file.
@@ -48,18 +44,10 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
     @Override
     public DepositSubmission build(String formDataUrl) throws InvalidModel {
         try {
-            InputStream is = new FileInputStream(formDataUrl);
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             HashMap<URI, PassEntity> entities = new HashMap<>();
-            Submission submissionEntity = reader.jsonToPass(is, entities);
-            is.close();
+            Submission submissionEntity = reader.fcrepoToPass(new URI(formDataUrl), entities);
             return createDepositSubmission(submissionEntity, entities);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Could not open the specified data file.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Failed to close the data file.");
         } catch (URISyntaxException e) {
             e.printStackTrace();
             throw new InvalidModel("Data file contained an invalid URI.");

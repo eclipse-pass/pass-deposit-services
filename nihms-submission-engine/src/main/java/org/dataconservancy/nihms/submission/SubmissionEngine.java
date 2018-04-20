@@ -80,12 +80,12 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
 public class SubmissionEngine {
 
     // TODO verify timezone with NIHMS
-    public static final String BASE_DIRECTORY = format("/logs/upload/%s",
+    public static String BASE_DIRECTORY = format("/logs/upload/%s",
             OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE));
 
-    private static final String MODEL_ERROR = "Error building submission model: %s";
+    private static String MODEL_ERROR = "Error building submission model: %s";
 
-    private static final String SUBMISSION_ERROR = "Submission of package %s failed: %s";
+    private static String SUBMISSION_ERROR = "Submission of package %s failed: %s";
 
     private SubmissionBuilder builder;
 
@@ -134,7 +134,7 @@ public class SubmissionEngine {
             throw new SubmissionFailure(format(MODEL_ERROR, e.getMessage()), e);
         }
 
-        final TransportResponse response;
+        TransportResponse response;
         String resourceName = null;
 
         // Open the underlying transport (FTP for NIHMS)

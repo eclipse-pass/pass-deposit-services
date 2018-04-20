@@ -39,26 +39,21 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIR
  */
 public class NihmsSubmissionApp {
 
-    private static final String MISSING_TRANSPORT_HINTS = "No classpath resource found for transport configuration " +
+    private static String MISSING_TRANSPORT_HINTS = "No classpath resource found for transport configuration " +
             "key '%s': '%s' not found on class path.";
 
-    private static final String ERR_LOADING_TRANSPORT_HINTS = "Error loading classpath resource '%s': %s";
+    private static String ERR_LOADING_TRANSPORT_HINTS = "Error loading classpath resource '%s': %s";
 
-    private static final String SETTING_TRANSPORT_HINT = "Transport hint key: '%s' -> Setting '%s' to '%s'";
+    private static String SETTING_TRANSPORT_HINT = "Transport hint key: '%s' -> Setting '%s' to '%s'";
 
-    private static final String LOCAL_FTP_SERVER_KEY = "LOCAL_FTP_SERVER";
+    private static String LOCAL_FTP_SERVER_KEY = "LOCAL_FTP_SERVER";
 
-    private static final Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
-
-    /**
-     * Reference to a File that contains the submission properties used to compose the submission
-     */
-    private File propertiesFile;
+    private static Logger LOG = LoggerFactory.getLogger(NihmsSubmissionApp.class);
 
     /**
-     * Properties object that contains the submission properties used to compose the submission
+     * Reference to a File that contains the sample data used to compose the submission
      */
-    private Properties properties;
+    private File sampleDataFile;
 
     /**
      * Key used to resolve FTP transport configuration hints
@@ -71,23 +66,13 @@ public class NihmsSubmissionApp {
     private Map<String, String> transportHints;
 
 
-    NihmsSubmissionApp(File propertiesFile, String transportKey) {
-        this.propertiesFile = propertiesFile;
+    NihmsSubmissionApp(File sampleDataFile, String transportKey) {
+        this.sampleDataFile = sampleDataFile;
         this.transportKey = transportKey;
     }
 
-    NihmsSubmissionApp(Properties properties, String transportKey) {
-        this.properties = properties;
-        this.transportKey = transportKey;
-    }
-
-    NihmsSubmissionApp(Properties properties, Map<String, String> transportHints) {
-        this.properties = properties;
-        this.transportHints = transportHints;
-    }
-
-    NihmsSubmissionApp(File propertiesFile, Map<String, String> transportHints) {
-        this.propertiesFile = propertiesFile;
+    NihmsSubmissionApp(File sampleDataFile, Map<String, String> transportHints) {
+        this.sampleDataFile = sampleDataFile;
         this.transportHints = transportHints;
     }
 
@@ -131,14 +116,10 @@ public class NihmsSubmissionApp {
 
     void run(SubmissionEngine engine) throws NihmsCliException {
         try {
-            // Prefer the use of the file referencing the submission properties.  If the file isn't available, use
-            // the Properties object.
-            if (propertiesFile != null) {
-                engine.submit(propertiesFile.getCanonicalPath());
-            } else if (properties != null) {
-                engine.submit(properties);
+            if (sampleDataFile != null) {
+                engine.submit(sampleDataFile.getCanonicalPath());
             } else {
-                throw new NihmsCliException("No properties were supplied for the submission!");
+                throw new NihmsCliException("No data was supplied for the submission!");
             }
         } catch (Exception e) {
             throw new NihmsCliException(e.getMessage(), e);
@@ -231,7 +212,8 @@ public class NihmsSubmissionApp {
             }
 
             if (!transportProperties.containsKey(BASE_DIRECTORY)) {
-                LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey, BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY));
+                LOG.debug(format(SETTING_TRANSPORT_HINT, transportKey,
+                        BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY));
                 transportProperties.put(BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
             }
         } catch (IOException e) {

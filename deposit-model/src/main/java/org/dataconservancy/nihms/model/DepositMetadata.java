@@ -169,7 +169,7 @@ public class DepositMetadata {
         /**
          * Journal type, always set to {@literal nlm-ta}
          */
-        public final String journalType = "nlm-ta";
+        public String journalType = "nlm-ta";
 
         /**
          * NLM full journal title
