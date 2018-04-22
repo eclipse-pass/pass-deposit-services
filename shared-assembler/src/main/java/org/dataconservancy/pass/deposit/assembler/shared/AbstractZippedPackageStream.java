@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -70,7 +69,15 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         // Create a pipe: bytes written to the PipedOutputStream will be the source of bytes read from the
         // PipedInputStream.  As the caller reads bytes from the PipedInputStream, bytes will be read from the
         // PipedOutputStream.
-        PipedInputStream pipedIn = new PipedInputStream(ONE_MIB);
+        ExHandingPipedInputStream pipedIn = new ExHandingPipedInputStream(ONE_MIB);
+
+        // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
+        // stack trace of the exception will be reported when it is encountered by the reader
+        Thread.UncaughtExceptionHandler exceptionHandler = (t, e) -> {
+            // Make the exception caught by the writer available to the reader; set it on the PipedInputStream
+            pipedIn.setWriterEx(e);
+        };
+
         PipedOutputStream pipedOut;
         try {
             pipedOut = new PipedOutputStream(pipedIn);
@@ -89,11 +96,10 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         }
 
 
-        // put below in a thread, and start
-        // then return pipedIn
 
         AbstractThreadedOutputStreamWriter streamWriter = getStreamWriter(archiveOut, rbf);
         streamWriter.setCloseStreamHandler(getCloseOutputstreamHandler(pipedOut, archiveOut));
+        streamWriter.setUncaughtExceptionHandler(exceptionHandler);
         streamWriter.start();
 
         return pipedIn;
@@ -124,10 +130,12 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
     private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback getCloseOutputstreamHandler(
             PipedOutputStream pipedOut, ZipArchiveOutputStream archiveOut) {
         return () -> {
+            LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
             try {
+
                 pipedOut.close();
             } catch (IOException e) {
-                LOG.info("Error closing piped output stream: {}", e.getMessage(), e);
+                LOG.trace("Error closing piped output stream: {}", e.getMessage(), e);
             }
 
             try {
@@ -136,14 +144,14 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
                 try {
                     archiveOut.closeArchiveEntry();
                 } catch (IOException e1) {
-                    LOG.info("Error closing archive entry: {}", e1.getMessage(), e1);
+                    LOG.trace("Error closing archive entry: {}", e1.getMessage(), e1);
                 }
 
                 try {
                     archiveOut.close();
                 } catch (IOException e1) {
                     // too bad
-                    LOG.info("Error closing the archive output stream: {}", e1.getMessage(), e1);
+                    LOG.trace("Error closing the archive output stream: {}", e1.getMessage(), e1);
                 }
             }
         };
