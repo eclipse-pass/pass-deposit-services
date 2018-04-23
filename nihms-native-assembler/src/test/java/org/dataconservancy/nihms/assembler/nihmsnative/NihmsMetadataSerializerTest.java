@@ -63,7 +63,6 @@ public class NihmsMetadataSerializerTest {
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));
         manuscript.setNihmsId("00001");
         manuscript.setPublisherPdf(true);
-        manuscript.setRelativeEmbargoPeriodMonths(0);
         manuscript.setShowPublisherPdf(false);
         manuscript.setTitle("Manuscript Title");
 

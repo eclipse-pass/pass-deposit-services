@@ -89,12 +89,6 @@ public class DepositMetadata {
         public boolean showPublisherPdf;
 
         /**
-         * The interval between a manuscript's final publication date and when the manuscript will appear publicly
-         * in PubMed Central
-         */
-        public int relativeEmbargoPeriodMonths;
-
-        /**
          * The title of the manuscript
          */
         public String title;
@@ -148,13 +142,6 @@ public class DepositMetadata {
             this.showPublisherPdf = showPublisherPdf;
         }
 
-        public int getRelativeEmbargoPeriodMonths() {
-            return relativeEmbargoPeriodMonths;
-        }
-
-        public void setRelativeEmbargoPeriodMonths(int relativeEmbargoPeriodMonths) {
-            this.relativeEmbargoPeriodMonths = relativeEmbargoPeriodMonths;
-        }
     }
 
     /**
