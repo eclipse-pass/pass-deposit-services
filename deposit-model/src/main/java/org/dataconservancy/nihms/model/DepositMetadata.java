@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.model;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
@@ -88,12 +89,6 @@ public class DepositMetadata {
         public boolean showPublisherPdf;
 
         /**
-         * The interval between a manuscript's final publication date and when the manuscript will appear publicly
-         * in PubMed Central
-         */
-        public int relativeEmbargoPeriodMonths;
-
-        /**
          * The title of the manuscript
          */
         public String title;
@@ -147,13 +142,6 @@ public class DepositMetadata {
             this.showPublisherPdf = showPublisherPdf;
         }
 
-        public int getRelativeEmbargoPeriodMonths() {
-            return relativeEmbargoPeriodMonths;
-        }
-
-        public void setRelativeEmbargoPeriodMonths(int relativeEmbargoPeriodMonths) {
-            this.relativeEmbargoPeriodMonths = relativeEmbargoPeriodMonths;
-        }
     }
 
     /**
@@ -247,6 +235,8 @@ public class DepositMetadata {
          */
         public String title;
 
+        public ZonedDateTime embargoLiftDate;
+
         public String getTitle() { return title; }
 
         public void setTitle(String title) { this.title = title; }
@@ -273,6 +263,14 @@ public class DepositMetadata {
 
         public void setDoi(URI doi) {
             this.doi = doi;
+        }
+
+        public ZonedDateTime getEmbargoLiftDate() {
+            return embargoLiftDate;
+        }
+
+        public void setEmbargoLiftDate(ZonedDateTime embargoLiftDate) {
+            this.embargoLiftDate = embargoLiftDate;
         }
     }
 
