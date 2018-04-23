@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Johns Hopkins University
+ * Copyright 2018 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.assembler.nihmsnative;
+package org.dataconservancy.pass.deposit.assembler.shared;
 
-class ThreadedInputStreamReader extends Thread {
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
+
+/**
+ * Default implementation of {@link MetadataBuilderFactory}.
+ *
+ * @author Elliot Metsger (emetsger@jhu.edu)
+ */
+public class DefaultMetadataBuilderFactory implements MetadataBuilderFactory {
+
+    @Override
+    public MetadataBuilder newInstance() {
+        return new MetadataBuilderImpl();
+    }
+
 }

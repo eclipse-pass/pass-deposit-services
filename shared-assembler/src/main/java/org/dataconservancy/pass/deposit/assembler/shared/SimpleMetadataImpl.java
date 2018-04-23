@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Johns Hopkins University
+ * Copyright 2018 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.assembler.nihmsnative;
+package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,8 +27,10 @@ import java.util.List;
  * read-only {@code Metadata} interface methods.  All fields have reasonable defaults except for {@link #name}.  To set
  * the suggested file name and/or stream length consider using the {@link #SimpleMetadataImpl(String) convenience}
  * {@link #SimpleMetadataImpl(String, long) constructors}.
+ *
+ * @author Elliot Metsger (emetsger@jhu.edu)
  */
-class SimpleMetadataImpl implements PackageStream.Metadata {
+public class SimpleMetadataImpl implements PackageStream.Metadata {
 
     private String name;
 
@@ -46,17 +48,17 @@ class SimpleMetadataImpl implements PackageStream.Metadata {
 
     private PackageStream.ARCHIVE archive = PackageStream.ARCHIVE.TAR;
 
-    private List<PackageStream.Checksum> checksums = Collections.EMPTY_LIST;
+    private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
-    SimpleMetadataImpl() {
+    public SimpleMetadataImpl() {
 
     }
 
-    SimpleMetadataImpl(String name) {
+    public SimpleMetadataImpl(String name) {
         this.name = name;
     }
 
-    SimpleMetadataImpl(String name, long sizeBytes) {
+    public SimpleMetadataImpl(String name, long sizeBytes) {
         this.name = name;
         this.sizeBytes = sizeBytes;
     }
@@ -177,5 +179,9 @@ class SimpleMetadataImpl implements PackageStream.Metadata {
 
     void setArchive(PackageStream.ARCHIVE archive) {
         this.archive = archive;
+    }
+
+    void addChecksum(PackageStream.Checksum checksum) {
+        checksums.add(checksum);
     }
 }

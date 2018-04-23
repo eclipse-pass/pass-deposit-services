@@ -25,8 +25,8 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nihms-native-assembler</artifactId>
-    <name>Native NIHMS Package Assembler</name>
+    <artifactId>shared-assembler</artifactId>
+    <name>Shared Package Assembler implementation</name>
 
     <dependencies>
 
@@ -50,12 +50,6 @@
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-util</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>shared-assembler</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

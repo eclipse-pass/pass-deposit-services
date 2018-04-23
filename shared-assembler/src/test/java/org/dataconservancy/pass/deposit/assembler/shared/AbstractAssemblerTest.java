@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Johns Hopkins University
+ * Copyright 2018 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.assembler.nihmsnative;
+package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NihmsAssemblerTest {
+public class AbstractAssemblerTest {
 
     /**
-     * Insures that that {@link NihmsAssembler#sanitize(String)} filters out non alphanumeric characters, and non
+     * Insures that that {@link AbstractAssembler#sanitizeFilename(String)} filters out non alphanumeric characters, and non
      * latin-1 characters.
      */
     @Test
     public void testSanitize() {
-        assertEquals("foo", NihmsAssembler.sanitize("foo"));
-        assertEquals("foo", NihmsAssembler.sanitize("f.o.o"));
-        assertEquals("foo", NihmsAssembler.sanitize("foo" + '\u00F6'));
-        assertEquals("foo", NihmsAssembler.sanitize("../foo"));
-        assertEquals("foo", NihmsAssembler.sanitize("f o o"));
+        assertEquals("foo", AbstractAssembler.sanitizeFilename("foo"));
+        assertEquals("foo", AbstractAssembler.sanitizeFilename("f.o.o"));
+        assertEquals("foo", AbstractAssembler.sanitizeFilename("foo" + '\u00F6'));
+        assertEquals("foo", AbstractAssembler.sanitizeFilename("../foo"));
+        assertEquals("foo", AbstractAssembler.sanitizeFilename("f o o"));
     }
 }

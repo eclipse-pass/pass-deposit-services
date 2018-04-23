@@ -39,6 +39,7 @@
         <module>nihms-util</module>
         <module>nihms-cli</module>
         <module>sword2-transport</module>
+        <module>shared-assembler</module>
     </modules>
 
     <profiles>
@@ -87,6 +88,7 @@
         <xstream.version>1.4.10</xstream.version>
         <commons-codec.version>1.11</commons-codec.version>
         <sword2-client.version>0.9.3</sword2-client.version>
+        <tika.version>1.17</tika.version>
     </properties>
 
     <build>
@@ -295,6 +297,12 @@
                 <groupId>org.swordapp</groupId>
                 <artifactId>sword2-client</artifactId>
                 <version>${sword2-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-core</artifactId>
+                <version>${tika.version}</version>
             </dependency>
 
         </dependencies>
