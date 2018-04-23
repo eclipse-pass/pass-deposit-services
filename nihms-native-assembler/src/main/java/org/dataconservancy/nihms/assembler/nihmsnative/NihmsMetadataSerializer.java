@@ -83,6 +83,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             //primitive types
             writer.addAttribute("publisher_pdf", booleanConvert(manuscript.isPublisherPdf()));
             writer.addAttribute("show_publisher_pdf", booleanConvert(manuscript.isShowPublisherPdf()));
+            if (metadata.getArticleMetadata() != null && metadata.getArticleMetadata().getEmbargoLiftDate() != null) {
+                // TODO: resolve the calculation of the embargo offset
+            }
 
             if (article.getPubmedId() != null) {
                 writer.addAttribute("pmid", article.getPubmedId());
