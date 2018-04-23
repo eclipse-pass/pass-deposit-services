@@ -17,7 +17,9 @@ package org.dataconservancy.nihms.assembler;
 
 /**
  * Allows for various components to contribute to the state of {@link PackageStream.Resource}s without the requirement
- * to share knowledge of the underlying implementation.
+ * to share knowledge of the underlying implementation.  Clients of this builder must call {@link #reset()} to clear
+ * the internal state of this builder, allowing for a new {@link org.dataconservancy.nihms.assembler.PackageStream.Resource}
+ * to be built.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -62,10 +64,16 @@ public interface ResourceBuilder {
     ResourceBuilder sizeBytes(long sizeBytes);
 
     /**
-     * Builds the Resource object from the state set on this builder.
+     * Builds the Resource object from the state set on this builder.  This is an idempotent operation.  To clear the
+     * internal state of this builder and create a new {@code Resource}, {@link #reset()} must be invoked.
      *
      * @return the Resource object
      */
     PackageStream.Resource build();
+
+    /**
+     * Reset the internal state of this builder, allowing it to be re-used for building a new Resource.
+     */
+    void reset();
 
 }
