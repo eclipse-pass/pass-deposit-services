@@ -36,10 +36,12 @@ import org.swordapp.client.SWORDError;
 import org.swordapp.client.ServiceDocument;
 import org.swordapp.client.SwordIdentifier;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Collections;
@@ -249,7 +251,8 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         TransportResponse response = underTest.send(packageStream, transportMd);
         assertNotNull(response);
-        assertTrue(response.success());
+        assertTrue("Expected a successful response, but it errored with: " + asString(response.error()),
+                response.success());
         assertTrue(response instanceof Sword2DepositReceiptResponse);
 
         assertNotNull(((Sword2DepositReceiptResponse)response).getReceipt());
@@ -627,6 +630,15 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     private static String onBehalfOf() {
         return System.getProperty(SWORD_ON_BEHALF_OF_PROEPRTY);
+    }
+
+    private static String asString(Throwable t) {
+        if (t == null) {
+            return "Throwable was null!";
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        t.printStackTrace(new PrintStream(out, true));
+        return new String(out.toByteArray());
     }
 
 }
