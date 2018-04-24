@@ -333,6 +333,20 @@
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
 
+        <repository>
+            <id>dc.public.releases</id>
+            <name>Data Conservancy Release Maven Repository</name>
+            <url>http://maven.dataconservancy.org/public/releases/</url>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+
+        <repository>
+            <id>dc.public.snapshots</id>
+            <name>Data Conservancy Snapshot Maven Repository</name>
+            <url>http://maven.dataconservancy.org/public/snapshots/</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+
     </repositories>
 
     <distributionManagement>
