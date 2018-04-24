@@ -39,6 +39,7 @@
         <module>nihms-util</module>
         <module>nihms-cli</module>
         <module>sword2-transport</module>
+        <module>dspace-mets-assembler</module>
         <module>shared-assembler</module>
     </modules>
 
@@ -88,6 +89,7 @@
         <xstream.version>1.4.10</xstream.version>
         <commons-codec.version>1.11</commons-codec.version>
         <sword2-client.version>0.9.3</sword2-client.version>
+        <mets-api.version>1.3.0</mets-api.version>
         <tika.version>1.17</tika.version>
     </properties>
 
@@ -300,6 +302,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.dataconservancy.pass</groupId>
+                <artifactId>mets-api</artifactId>
+                <version>${mets-api.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>${tika.version}</version>
@@ -322,6 +330,20 @@
             <id>spring-libs-snap</id>
             <name>Spring Snapshots</name>
             <url>https://repo.spring.io/libs-snapshot</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+
+        <repository>
+            <id>dc.public.releases</id>
+            <name>Data Conservancy Release Maven Repository</name>
+            <url>http://maven.dataconservancy.org/public/releases/</url>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+
+        <repository>
+            <id>dc.public.snapshots</id>
+            <name>Data Conservancy Snapshot Maven Repository</name>
+            <url>http://maven.dataconservancy.org/public/snapshots/</url>
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
 
