@@ -144,7 +144,6 @@ class DepositTestUtil {
             fail(e.getMessage());
         }
         when(manuscript.isPublisherPdf()).thenReturn(false);
-        when(manuscript.getRelativeEmbargoPeriodMonths()).thenReturn(12);
         when(manuscript.getMsAbstract()).thenReturn("This is an abstract for the manuscript, provided by the" +
                 " submitter.");
 

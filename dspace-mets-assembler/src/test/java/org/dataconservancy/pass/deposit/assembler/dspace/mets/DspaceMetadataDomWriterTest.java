@@ -174,7 +174,6 @@ public class DspaceMetadataDomWriterTest {
         when(manuscript.getManuscriptUrl()).thenReturn(
                 URI.create("https://pass.library.johnshopkins.edu/fcrepo/rest/manuscripts/1234").toURL());
         when(manuscript.isPublisherPdf()).thenReturn(false);
-        when(manuscript.getRelativeEmbargoPeriodMonths()).thenReturn(12);
         when(manuscript.getMsAbstract()).thenReturn("This is an abstract for the manuscript, provided by the" +
                 " submitter.");
 
