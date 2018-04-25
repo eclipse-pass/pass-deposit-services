@@ -63,6 +63,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback closeStreamHandler;
 
+    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+
     private ResourceBuilderFactory rbf;
 
     private DepositSubmission submission;
@@ -167,12 +169,16 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
             assembleResources(submission, assembledResources);
 
-            // TODO: archiveOut is closed and finished by the parent thread?
+            // TODO: archiveOut should be closed and finished by the parent thread?
             archiveOut.finish();
             archiveOut.close();
         } catch (Exception e) {
-            LOG.info("Exception encountered streaming package, cleaning up by closing the archive output stream: {}",
-                    e.getMessage(), e);
+            LOG.warn("Exception encountered streaming package, cleaning up by closing the archive output stream ({}) " +
+                            "and any underlying output streams", archiveOut);
+
+            if (uncaughtExceptionHandler != null) {
+                uncaughtExceptionHandler.uncaughtException(this, e);
+            }
 
             // special care needs to be taken when exceptions are encountered.  it is essential that the underlying
             // pipedoutputstream be closed. (1) the archive output stream prevents the underlying output streams from
@@ -242,6 +248,11 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      */
     public void setCloseStreamHandler(AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback callback) {
         this.closeStreamHandler = callback;
+    }
+
+    @Override
+    public void setUncaughtExceptionHandler(UncaughtExceptionHandler uncaughtExceptionHandler) {
+        this.uncaughtExceptionHandler = uncaughtExceptionHandler;
     }
 
     /**

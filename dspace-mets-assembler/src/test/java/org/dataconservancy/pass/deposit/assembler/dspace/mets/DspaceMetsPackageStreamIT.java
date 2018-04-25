@@ -19,6 +19,7 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
@@ -34,8 +35,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DepositTestUtil.composeSubmission;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -68,9 +71,18 @@ public class DspaceMetsPackageStreamIT {
 
     @Test
     public void testStream() throws Exception {
+
+        DepositSubmission submission = composeSubmission(this.getClass().getName() + "_testStream",
+                new HashMap<File, DepositFileType>() {
+                    {
+                        put(custodialContent.get(0).getFile(), DepositFileType.manuscript);
+                        put(custodialContent.get(1).getFile(), DepositFileType.supplement);
+                    }
+
+                });
         // Construct a package stream using mocks and two example files
         DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriter);
+                new DspaceMetsZippedPackageStream(submission, custodialContent, mb, rbf, metsWriter);
 
         File outFile = new File(tempDir, "testStream.tar.gz");
         FileOutputStream out = new FileOutputStream(outFile);
