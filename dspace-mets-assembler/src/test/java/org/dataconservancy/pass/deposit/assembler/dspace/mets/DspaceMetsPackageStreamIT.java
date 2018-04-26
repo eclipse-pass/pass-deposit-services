@@ -38,11 +38,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DepositTestUtil.composeSubmission;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class DspaceMetsPackageStreamIT {
 

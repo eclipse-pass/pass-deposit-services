@@ -24,6 +24,7 @@ import org.apache.tika.io.IOUtils;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.DepositTestUtil;
 import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -269,7 +270,7 @@ public class DspaceMetadataDomWriterTest {
 
         // Writing out and re-parsing allows the test to be somewhat independent of parsing model used by
         // the DspaceMetadataDomWriter
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
 
         assertEquals(1, result.getDocumentElement().getElementsByTagNameNS(METS_NS, METS_FILESEC).getLength());
         Element fileSec = (Element) result.getDocumentElement().getElementsByTagNameNS(METS_NS, METS_FILESEC).item(0);
@@ -335,7 +336,7 @@ public class DspaceMetadataDomWriterTest {
         underTest.addResource(resource3);
         underTest.addResource(resource4);
 
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
 
         assertEquals(5, result.getElementsByTagNameNS(METS_NS, METS_FILE).getLength());
         Element file1 = (Element) result.getDocumentElement().getElementsByTagNameNS(METS_NS, METS_FILE).item(0);
@@ -375,7 +376,7 @@ public class DspaceMetadataDomWriterTest {
 
         verify(resource, atLeastOnce()).checksum();
 
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
 
         Element file1 = (Element) result.getDocumentElement().getElementsByTagNameNS(METS_NS, METS_FILE).item(0);
         assertEquals(checksumShaVal, file1.getAttribute(METS_CHECKSUM));
@@ -413,7 +414,7 @@ public class DspaceMetadataDomWriterTest {
 
         underTest.mapDmdSec(submission);
 
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
 
         Element dmdSec = (Element) result.getDocumentElement().getFirstChild();
         assertNotNull(dmdSec);
@@ -488,7 +489,7 @@ public class DspaceMetadataDomWriterTest {
 
         underTest.mapDmdSec(submission);
 
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
         NodeList dmdSecList = result.getElementsByTagNameNS(METS_NS, METS_DMDSEC);
         List<String> dmdSecGroupIds = new ArrayList<>();
         Element dim = null;
@@ -574,7 +575,7 @@ public class DspaceMetadataDomWriterTest {
 
         underTest.mapStructMap(submission, Arrays.asList(dmdSec1, dmdSec2), fileSec);
 
-        Document result = DepositTestUtil.writeAndParseResults(dbf, underTest);
+        Document result = DspaceDepositTestUtil.writeAndParseResults(dbf, underTest);
 
         List<Element> structMaps = DepositTestUtil.asList(result.getElementsByTagNameNS(METS_NS, METS_STRUCTMAP));
         assertEquals(1, structMaps.size());
