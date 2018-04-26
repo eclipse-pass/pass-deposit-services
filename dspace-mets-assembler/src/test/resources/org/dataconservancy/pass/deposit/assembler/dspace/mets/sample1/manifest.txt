@@ -1,3 +1,0 @@
-bulksub_meta_xml		meta.xml
-manuscript		Sample2.doc
-Figure	1	Figure1.tif
