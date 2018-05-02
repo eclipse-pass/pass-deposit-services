@@ -21,9 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import org.dataconservancy.pass.model.Journal;
 import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,12 +57,12 @@ public class FcrepoModelBuilderTest {
     public void testElementValues() {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
+        HashMap<URI, PassEntity> entities = new HashMap<>();
         try {
             URL sampleDataUrl =
                     FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
             InputStream is = new FileInputStream(sampleDataUrl.getPath());
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            HashMap<URI, PassEntity> entities = new HashMap<>();
             submissionEntity = reader.jsonToPass(is, entities);
             is.close();
         } catch (FileNotFoundException e) {
@@ -80,8 +83,11 @@ public class FcrepoModelBuilderTest {
         assertNotNull(submission.getMetadata().getPersons());
 
         // Cannot compare ID strings, as they change when uploading to a Fedora server.
-        assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), submissionEntity.getTitle());
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), submissionEntity.getDoi());
+        Publication publication = (Publication)entities.get(submissionEntity.getPublication());
+        assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), publication.getTitle());
+        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
+        Journal journal = (Journal)entities.get(publication.getJournal());
+        assertEquals(submission.getMetadata().getJournalMetadata().getJournalTitle(), journal.getName());
     }
 
 }
