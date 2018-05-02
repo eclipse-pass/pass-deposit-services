@@ -22,19 +22,18 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.client.PassClientFactory;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
-import org.dataconservancy.pass.client.fedora.FedoraPassClient;
-import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Journal;
 import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Person;
 import org.dataconservancy.pass.model.Policy;
+import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Publisher;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Workflow;
+import org.dataconservancy.pass.model.User;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -169,7 +168,7 @@ class PassJsonFedoraAdapter {
      * @return the URI on the Fedora server of the newly created Submission resource.
      */
     URI passToFcrepo(HashMap<URI, PassEntity> entities) {
-        PassClient client = new FedoraPassClient();
+        PassClient client = PassClientFactory.getPassClient();
         HashMap<URI, URI> uriMap = new HashMap<>();
         URI submissionUri = null;
 
@@ -189,32 +188,30 @@ class PassJsonFedoraAdapter {
             if (entity instanceof Submission) {
                 submissionUri = uriMap.get(oldUri);
                 Submission submission = (Submission)entity;
-                submission.setJournal(uriMap.get(submission.getJournal()));
-                submission.setDeposits(getUpdatedUris(uriMap, submission.getDeposits()));
+                submission.setPublication(uriMap.get(submission.getPublication()));
+                submission.setUser(uriMap.get(submission.getUser()));
+                submission.setRepositories(getUpdatedUris(uriMap, submission.getRepositories()));
                 submission.setGrants(getUpdatedUris(uriMap, submission.getGrants()));
-                submission.setWorkflows(getUpdatedUris(uriMap, submission.getWorkflows()));
-            } else if (entity instanceof Deposit) {
-                Deposit deposit = (Deposit)entity;
-                deposit.setSubmission(uriMap.get(deposit.getSubmission()));
             } else if (entity instanceof Grant) {
                 Grant grant = (Grant)entity;
                 grant.setPrimaryFunder(uriMap.get(grant.getPrimaryFunder()));
                 grant.setDirectFunder(uriMap.get(grant.getDirectFunder()));
                 grant.setPi(uriMap.get(grant.getPi()));
                 grant.setCoPis(getUpdatedUris(uriMap, grant.getCoPis()));
-                grant.setSubmissions(getUpdatedUris(uriMap, grant.getSubmissions()));
             } else if (entity instanceof Funder) {
                 Funder funder = (Funder)entity;
                 funder.setPolicy(uriMap.get(funder.getPolicy()));
             } else if (entity instanceof Policy) {
                 Policy policy = (Policy)entity;
+                policy.setInstitution(uriMap.get(policy.getInstitution()));
+                policy.setFunder(uriMap.get(policy.getFunder()));
                 policy.setRepositories(getUpdatedUris(uriMap, policy.getRepositories()));
-            } else if (entity instanceof Publisher) {
-                Publisher publisher = (Publisher)entity;
-                publisher.setJournals(getUpdatedUris(uriMap, publisher.getJournals()));
             } else if (entity instanceof Journal) {
                 Journal journal = (Journal)entity;
                 journal.setPublisher(uriMap.get(journal.getPublisher()));
+            } else if (entity instanceof Publication) {
+                Publication publication = (Publication)entity;
+                publication.setJournal(uriMap.get(publication.getJournal()));
             } else {
                 needUpdate = false;
             }
@@ -224,6 +221,21 @@ class PassJsonFedoraAdapter {
         }
 
         return submissionUri;
+    }
+
+    // If not already added to the entity list, process the Funder at the provide URI
+    // and do the same for its referenced Policy.
+    private void funderFcrepoToPass(HashMap<URI, PassEntity> entities, PassClient client, URI funderURI) {
+        // Make sure each funder and policy is only added once.
+        if (! entities.containsKey(funderURI)) {
+            Funder funder = client.readResource(funderURI, Funder.class);
+            entities.put(funderURI, funder);
+            if (! entities.containsKey(funder.getPolicy())) {
+                Policy policy = client.readResource(funder.getPolicy(), Policy.class);
+                entities.put(funder.getPolicy(), policy);
+                // Ignore the repositories listed for the policy - they are added from the Submission's list.
+            }
+        }
     }
 
     /***
@@ -239,60 +251,43 @@ class PassJsonFedoraAdapter {
      * @return the Submission entity that corresponds to the provided URI.
      */
     Submission fcrepoToPass(URI submissionUri, HashMap<URI, PassEntity> entities) {
-        PassClient client = new FedoraPassClient();
+        PassClient client = PassClientFactory.getPassClient();
 
         Submission submission = client.readResource(submissionUri, Submission.class);
         entities.put(submissionUri, submission);
+        User user = client.readResource(submission.getUser(), User.class);
+        entities.put(submission.getUser(), user);
 
-        Journal journal = client.readResource(submission.getJournal(), Journal.class);
-        entities.put(submission.getJournal(), journal);
+        Publication publication = client.readResource(submission.getPublication(), Publication.class);
+        entities.put(submission.getPublication(), publication);
+        Journal journal = client.readResource(publication.getJournal(), Journal.class);
+        entities.put(publication.getJournal(), journal);
         Publisher publisher = client.readResource(journal.getPublisher(), Publisher.class);
         entities.put(journal.getPublisher(), publisher);
 
-        // Assume all deposits are unique, but repositories may be duplicated.
-        for (URI depositUri : submission.getDeposits()) {
-            Deposit deposit = client.readResource(depositUri, Deposit.class);
-            entities.put(depositUri, deposit);
-            if (! entities.containsKey(deposit.getRepository())) {
-                Repository repository = client.readResource(deposit.getRepository(), Repository.class);
-                entities.put(deposit.getRepository(), repository);
-            }
+        // Assume all repositories are unique
+        for (URI repoURI : submission.getRepositories()) {
+            Repository repository = client.readResource(repoURI, Repository.class);
+            entities.put(repoURI, repository);
         }
 
         // Assume all grants are unique, but funders, policies and people may be duplicated.
         for (URI grantUri : submission.getGrants()) {
             Grant grant = client.readResource(grantUri, Grant.class);
             entities.put(grantUri, grant);
-            if (! entities.containsKey(grant.getPrimaryFunder())) {
-                Funder funder = client.readResource(grant.getPrimaryFunder(), Funder.class);
-                entities.put(grant.getPrimaryFunder(), funder);
-                if (! entities.containsKey(funder.getPolicy())) {
-                    Policy policy = client.readResource(funder.getPolicy(), Policy.class);
-                    entities.put(funder.getPolicy(), policy);
-                }
-            }
-            if (! entities.containsKey(grant.getDirectFunder())) {
-                Funder funder = client.readResource(grant.getDirectFunder(), Funder.class);
-                entities.put(grant.getDirectFunder(), funder);
-                if (!entities.containsKey(funder.getPolicy())) {
-                    Policy policy = client.readResource(funder.getPolicy(), Policy.class);
-                    entities.put(funder.getPolicy(), policy);
-                }
-            }
-            Person pi = client.readResource(grant.getPi(), Person.class);
+            funderFcrepoToPass(entities, client, grant.getPrimaryFunder());
+            funderFcrepoToPass(entities, client, grant.getDirectFunder());
+            User pi = client.readResource(grant.getPi(), User.class);
             entities.put(grant.getPi(), pi);
             for (URI copiUri : grant.getCoPis()) {
                 if (! entities.containsKey(copiUri)) {
-                    Person copi = client.readResource(copiUri, Person.class);
+                    User copi = client.readResource(copiUri, User.class);
                     entities.put(copiUri, copi);
                 }
             }
         }
 
-        for (URI workflowUri : submission.getWorkflows()) {
-            Workflow workflow = client.readResource(workflowUri, Workflow.class);
-            entities.put(workflowUri, workflow);
-        }
+        // TODO - Search for Files resources that reference this Submission and include them in the entity list.
 
         return submission;
     }
