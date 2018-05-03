@@ -32,6 +32,11 @@
         <ftp.skip>false</ftp.skip>
         <dspace.skip>false</dspace.skip>
         <postgres.skip>false</postgres.skip>
+        <fcrepo.skip>false</fcrepo.skip>
+        <fcrepo.server>${docker.host.address}</fcrepo.server>
+        <pass.fedora.user>admin</pass.fedora.user>
+        <pass.fedora.password>moo</pass.fedora.password>
+        <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
     </properties>
 
 
@@ -59,6 +64,18 @@
                 <docker.host.address>${dspace.server}</docker.host.address>
                 <dspace.skip>true</dspace.skip>
                 <postgres.skip>true</postgres.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>external-fcrepo-server</id>
+            <activation>
+                <property>
+                    <name>fcrepo.server</name>
+                </property>
+            </activation>
+            <properties>
+                <fcrepo.skip>true</fcrepo.skip>
+                <pass.fedora.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
             </properties>
         </profile>
     </profiles>
@@ -121,6 +138,27 @@
     <build>
 
         <plugins>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>fcrepo.http.port</portName>
+                                <portName>fcrepo.jms.port</portName>
+                                <portName>fcrepo.stomp.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>io.fabric8</groupId>
@@ -187,6 +225,32 @@
                                 </env>
                             </run>
                         </image>
+                        <image>
+                            <alias>fcrepo</alias>
+                            <name>oapass/fcrepo:4.7.5-2.0-SNAPSHOT</name>
+                            <run>
+                                <skip>${fcrepo.skip}</skip>
+                                <wait>
+                                    <!-- Should use ${pass.fedora.baseurl}, but need to add authentication params to the URL -->
+                                    <url>http://${pass.fedora.user}:${pass.fedora.password}@${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</url>
+                                    <time>180000</time>
+                                </wait>
+                                <ports>
+                                    <port>${fcrepo.http.port}:${fcrepo.http.port}</port>
+                                    <port>${fcrepo.jms.port}:${fcrepo.jms.port}</port>
+                                    <port>${fcrepo.stomp.port}:${fcrepo.stomp.port}</port>
+                                </ports>
+                                <env>
+                                    <FCREPO_HOST>fcrepo</FCREPO_HOST>
+                                    <FCREPO_PORT>${fcrepo.http.port}</FCREPO_PORT>
+                                    <FCREPO_JMS_PORT>${fcrepo.jms.port}</FCREPO_JMS_PORT>
+                                    <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
+                                    <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
+                                    <FCREPO_JMS_BASEURL>${pass.fedora.baseurl}</FCREPO_JMS_BASEURL>
+                                    <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.0.jsonld</COMPACTION_URI>
+                                </env>
+                            </run>
+                        </image>
                     </images>
                 </configuration>
                 <executions>
@@ -215,6 +279,9 @@
                     <systemProperties>
                         <docker.host.address>${docker.host.address}</docker.host.address>
                         <LOCAL_FTP_SERVER>${docker.host.address}</LOCAL_FTP_SERVER>
+                        <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
+                        <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
+                        <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
                     </systemProperties>
                 </configuration>
                 <executions>

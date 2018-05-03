@@ -58,7 +58,7 @@ import java.util.List;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
-class PassJsonFedoraAdapter {
+public class PassJsonFedoraAdapter {
 
     /**
      * Extract PassEntity data from a JSON input stream and fill a collection of PassEntity objects.
@@ -66,7 +66,7 @@ class PassJsonFedoraAdapter {
      * @param entities the map that will contain the parsed PassEntity objects, indexed by their IDs.
      * @return the PassEntity Submission object that is the root of the data tree.
      */
-    Submission jsonToPass(InputStream is, HashMap<URI, PassEntity> entities) {
+    public Submission jsonToPass(InputStream is, HashMap<URI, PassEntity> entities) {
         Submission submission = null;
         try {
             // Read JSON stream that defines the sample repo data
@@ -116,7 +116,7 @@ class PassJsonFedoraAdapter {
      * @param entities the map that contains the PassEntity objects to serialize.
      * @param os the output stream carrying the JSON representing the PassEntity objects.
      */
-    void passToJson(HashMap<URI, PassEntity> entities, OutputStream os) {
+    public void passToJson(HashMap<URI, PassEntity> entities, OutputStream os) {
         PassJsonAdapterBasic adapter = new PassJsonAdapterBasic();
         ArrayList<URI> printedUris = new ArrayList<>();
         PrintWriter pw = new PrintWriter(os);
@@ -167,7 +167,7 @@ class PassJsonFedoraAdapter {
      * @param entities the PassEntity objects to upload.
      * @return the URI on the Fedora server of the newly created Submission resource.
      */
-    URI passToFcrepo(HashMap<URI, PassEntity> entities) {
+    public URI passToFcrepo(HashMap<URI, PassEntity> entities) {
         PassClient client = PassClientFactory.getPassClient();
         HashMap<URI, URI> uriMap = new HashMap<>();
         URI submissionUri = null;
@@ -250,7 +250,7 @@ class PassJsonFedoraAdapter {
      * @param entities the collection of PassEntity objects that is created.
      * @return the Submission entity that corresponds to the provided URI.
      */
-    Submission fcrepoToPass(URI submissionUri, HashMap<URI, PassEntity> entities) {
+    public Submission fcrepoToPass(URI submissionUri, HashMap<URI, PassEntity> entities) {
         PassClient client = PassClientFactory.getPassClient();
 
         Submission submission = client.readResource(submissionUri, Submission.class);
@@ -306,7 +306,7 @@ class PassJsonFedoraAdapter {
      * @param is the stream containing the JSON data.
      * @return the RUI of the root Submission resource on the Fedora server.
      */
-    URI jsonToFcrepo(InputStream is) {
+    public URI jsonToFcrepo(InputStream is) {
         HashMap<URI, PassEntity> entities = new HashMap<>();
         jsonToPass(is, entities);
         return passToFcrepo(entities);
@@ -322,7 +322,7 @@ class PassJsonFedoraAdapter {
      * @param submissionUri the URI for the root Submission resource to download.
      * @param os the output stream containing the serialized data.
      */
-    void fcrepoToJson(URI submissionUri, OutputStream os) {
+    public void fcrepoToJson(URI submissionUri, OutputStream os) {
         HashMap<URI, PassEntity> entities = new HashMap<>();
         fcrepoToPass(submissionUri, entities);
         passToJson(entities, os);

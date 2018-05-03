@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.builder.fs;
+package org.dataconservancy.pass.deposit.builder.fedora;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
+import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class PassJsonFedoraAdapterTest {
+public class PassJsonFedoraAdapterIT {
 
     private String SAMPLE_DATA_FILE = "SampleSubmissionData.json";
     private URL sampleDataUrl;
@@ -45,11 +46,11 @@ public class PassJsonFedoraAdapterTest {
 
     @Before
     public void setup() {
-        sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_DATA_FILE);
+        sampleDataUrl = this.getClass().getResource(SAMPLE_DATA_FILE);
         reader = new PassJsonFedoraAdapter();
     }
 
-    //@Test
+    @Test
     public void roundTrip() {
         try {
             // Upload the sample data to the Fedora repo.
