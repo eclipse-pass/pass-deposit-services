@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.dataconservancy.nihms.builder.fs;
+package org.dataconservancy.pass.deposit.builder.fedora;
 
+import org.dataconservancy.nihms.builder.fs.FcrepoModelBuilder;
+import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +38,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 
-public class FcrepoModelBuilderTest {
+public class FcrepoModelBuilderIT {
 
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
@@ -46,21 +48,20 @@ public class FcrepoModelBuilderTest {
     public void setup() throws Exception {
         // Upload sample data to Fedora repository to get its URI.
         PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-        URL sampleDataUrl = FcrepoModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE);
         InputStream is = new FileInputStream(sampleDataUrl.getPath());
         URI submissionUri = reader.jsonToFcrepo(is);
         is.close();
         submission = underTest.build(submissionUri.toString());
     }
 
-    //@Test
+    @Test
     public void testElementValues() {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         HashMap<URI, PassEntity> entities = new HashMap<>();
         try {
-            URL sampleDataUrl =
-                    FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
+            URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE);
             InputStream is = new FileInputStream(sampleDataUrl.getPath());
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             submissionEntity = reader.jsonToPass(is, entities);
