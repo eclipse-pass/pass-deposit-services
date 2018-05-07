@@ -92,6 +92,7 @@
         <sword2-client.version>0.9.3</sword2-client.version>
         <mets-api.version>1.3.0</mets-api.version>
         <tika.version>1.17</tika.version>
+        <pass.client.version>0.2.0-SNAPSHOT</pass.client.version>
     </properties>
 
     <build>
@@ -318,6 +319,18 @@
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>${tika.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass</groupId>
+                <artifactId>pass-model</artifactId>
+                <version>${pass.client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass</groupId>
+                <artifactId>pass-data-client</artifactId>
+                <version>${pass.client.version}</version>
             </dependency>
 
         </dependencies>
