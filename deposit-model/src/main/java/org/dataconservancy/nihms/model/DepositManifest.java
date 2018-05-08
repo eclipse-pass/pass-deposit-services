@@ -24,7 +24,7 @@ import java.util.List;
  *     <li>the {@link DepositFile#name name} of the file</li>
  *     <li>the {@link DepositFileType semantic type} of the file</li>
  *     <li>a label for the file, <em>required</em> for {@link DepositFileType#figure figures},
- *     {@link DepositFileType#table tables}, and {@link DepositFileType#supplement supplements}</li>
+ *     {@link DepositFileType#table tables}, and {@link DepositFileType#supplemental supplements}</li>
  * </ol>
  */
 public class DepositManifest {

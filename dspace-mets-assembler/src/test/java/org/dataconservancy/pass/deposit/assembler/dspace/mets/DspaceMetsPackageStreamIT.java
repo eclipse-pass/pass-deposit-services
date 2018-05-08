@@ -73,7 +73,7 @@ public class DspaceMetsPackageStreamIT {
                 new HashMap<File, DepositFileType>() {
                     {
                         put(custodialContent.get(0).getFile(), DepositFileType.manuscript);
-                        put(custodialContent.get(1).getFile(), DepositFileType.supplement);
+                        put(custodialContent.get(1).getFile(), DepositFileType.supplemental);
                     }
 
                 });

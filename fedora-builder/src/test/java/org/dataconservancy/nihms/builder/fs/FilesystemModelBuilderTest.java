@@ -75,7 +75,6 @@ public class FilesystemModelBuilderTest {
         assertNotNull(submission.getMetadata().getManuscriptMetadata());
         assertNotNull(submission.getMetadata().getJournalMetadata());
         assertNotNull(submission.getMetadata().getArticleMetadata());
-        assertNotNull(submission.getFiles());
         assertNotNull(submission.getMetadata().getPersons());
 
         assertEquals(submission.getId(), submissionEntity.getId().toString());
@@ -84,6 +83,9 @@ public class FilesystemModelBuilderTest {
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
         Journal journal = (Journal)entities.get(publication.getJournal());
         assertEquals(submission.getMetadata().getJournalMetadata().getJournalTitle(), journal.getName());
+
+        assertNotNull(submission.getFiles());
+        assertEquals(2, submission.getFiles().size());
     }
 
 }
