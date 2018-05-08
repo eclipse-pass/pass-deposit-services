@@ -36,7 +36,7 @@ public class DepositFile {
      * Differentiates between files of the same type
      * <p>
      * Required field for {@link DepositFileType#figure}, {@link DepositFileType#table},
-     * and {@link DepositFileType#supplement} file types
+     * and {@link DepositFileType#supplemental} file types
      * </p>
      */
     private String label;
