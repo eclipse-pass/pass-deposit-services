@@ -21,9 +21,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URIUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientFactory;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
+import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Journal;
@@ -45,6 +49,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Converts and transports PassEntity data between local JSON files, indexed lists and Fedora repositories.
@@ -212,6 +217,9 @@ public class PassJsonFedoraAdapter {
             } else if (entity instanceof Publication) {
                 Publication publication = (Publication)entity;
                 publication.setJournal(uriMap.get(publication.getJournal()));
+            } else if (entity instanceof File) {
+                File file = (File)entity;
+                file.setSubmission(uriMap.get(file.getSubmission()));
             } else {
                 needUpdate = false;
             }
@@ -287,7 +295,24 @@ public class PassJsonFedoraAdapter {
             }
         }
 
-        // TODO - Search for Files resources that reference this Submission and include them in the entity list.
+        // Search for File resources that reference this Submission and include them in the entity list.
+        // URIs are returned at "localhost" and must be adjusted for actual Fedora server host.
+        try {
+            Set<URI> fileUris2 = client.findAllByAttribute(File.class, "submission", submissionUri);
+            Set<URI> fileUris = client.findAllByAttribute(File.class, "submission", submissionUri);
+            URI fedoraURI = new URI(System.getProperty("pass.fedora.baseurl"));
+            String fedoraHost = URIUtils.extractHost(fedoraURI).getHostName();
+            for (URI fileUri : fileUris) {
+                URIBuilder builder = new URIBuilder(fileUri);
+                builder.setHost(fedoraHost);
+                fileUri = builder.build();
+                File file = client.readResource(fileUri, File.class);
+                entities.put(fileUri, file);
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         return submission;
     }

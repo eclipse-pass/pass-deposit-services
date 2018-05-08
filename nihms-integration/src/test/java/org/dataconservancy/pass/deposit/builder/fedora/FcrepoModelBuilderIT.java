@@ -80,7 +80,6 @@ public class FcrepoModelBuilderIT {
         assertNotNull(submission.getMetadata().getManuscriptMetadata());
         assertNotNull(submission.getMetadata().getJournalMetadata());
         assertNotNull(submission.getMetadata().getArticleMetadata());
-        assertNotNull(submission.getFiles());
         assertNotNull(submission.getMetadata().getPersons());
 
         // Cannot compare ID strings, as they change when uploading to a Fedora server.
@@ -89,6 +88,9 @@ public class FcrepoModelBuilderIT {
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
         Journal journal = (Journal)entities.get(publication.getJournal());
         assertEquals(submission.getMetadata().getJournalMetadata().getJournalTitle(), journal.getName());
+
+        assertNotNull(submission.getFiles());
+        assertEquals(2, submission.getFiles().size());
     }
 
 }
