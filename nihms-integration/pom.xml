@@ -241,7 +241,7 @@
                         </image>
                         <image>
                             <alias>fcrepo</alias>
-                            <name>oapass/fcrepo:4.7.5-2.0-SNAPSHOT-2</name>
+                            <name>oapass/fcrepo:4.7.5-2.0-SNAPSHOT-3</name>
                             <run>
                                 <skip>${fcrepo.skip}</skip>
                                 <wait>
@@ -281,7 +281,7 @@
                         </image>
                         <image>
                             <alias>indexer</alias>
-                            <name>oapass/indexer:0.0.5-2.0-SNAPSHOT</name>
+                            <name>oapass/indexer:0.0.6-2.0-SNAPSHOT</name>
                             <run>
                                 <skip>${indexer.skip}</skip>
                                 <links>
