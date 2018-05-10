@@ -126,8 +126,10 @@ public class DepositTestUtil {
 
         contributorOne.setFirstName("Albert");
         contributorOne.setLastName("Einstien");
+        contributorOne.setEmail("aeinstien@foo.org");
         contributorTwo.setFirstName("Stephen");
         contributorTwo.setLastName("Hawking");
+        contributorTwo.setEmail("shawking@bar.org");
 
         manuscript.setTitle("Two stupendous minds.");
         try {
