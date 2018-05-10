@@ -37,7 +37,8 @@
         <pass.fedora.user>admin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
-        <pass.elasticsearch.url>http://${docker.host.address}:${es.port}/pass/</pass.elasticsearch.url>
+        <pass.elasticsearch.host>${docker.host.address}</pass.elasticsearch.host>
+        <pass.elasticsearch.url>http://${pass.elasticsearch.host}:${es.port}/pass/</pass.elasticsearch.url>
     </properties>
 
 
@@ -261,6 +262,7 @@
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
                                     <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
                                     <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.0.jsonld</COMPACTION_URI>
+                                    <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
                                 </env>
                             </run>
                         </image>
@@ -269,6 +271,12 @@
                             <name>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</name>
                             <run>
                                 <skip>${indexer.skip}</skip>
+                                <wait>
+                                    <http>
+                                        <url>http://${pass.elasticsearch.host}:${es.port}/</url>
+                                    </http>
+                                    <time>120000</time>
+                                </wait>
                                 <ports>
                                     <port>${es.port}:9200</port>
                                 </ports>
@@ -293,7 +301,7 @@
                                     <PI_FEDORA_PASS>${pass.fedora.password}</PI_FEDORA_PASS>
                                     <PI_FEDORA_INTERNAL_BASE>http://fcrepo:${fcrepo.http.port}/fcrepo/rest/</PI_FEDORA_INTERNAL_BASE>
                                     <PI_ES_BASE>http://elasticsearch:9200/</PI_ES_BASE>
-                                    <PI_LOG_LEVEL>info</PI_LOG_LEVEL>
+                                    <PI_LOG_LEVEL>debug</PI_LOG_LEVEL>
                                     <PI_ES_INDEX>http://elasticsearch:9200/pass/</PI_ES_INDEX>
                                     <PI_FEDORA_JMS_BROKER>tcp://fcrepo:${fcrepo.jms.port}</PI_FEDORA_JMS_BROKER>
                                     <PI_FEDORA_JMS_QUEUE>fedora</PI_FEDORA_JMS_QUEUE>
@@ -332,7 +340,7 @@
                         <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
                         <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
                         <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
-                        <pass.elasticsearch.url>${pass.elasticsearch.url}}</pass.elasticsearch.url>
+                        <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
                     </systemProperties>
                 </configuration>
                 <executions>
