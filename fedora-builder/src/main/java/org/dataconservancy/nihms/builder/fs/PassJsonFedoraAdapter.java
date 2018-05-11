@@ -321,7 +321,7 @@ public class PassJsonFedoraAdapter {
                 }
                 if (! tolerate) {
                     // There was some other kind of exception
-                    e.printStackTrace();
+                    throw e;
                 }
             }
         }
