@@ -16,6 +16,7 @@
 
 package org.dataconservancy.nihms.builder.fs;
 
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -308,7 +309,20 @@ public class PassJsonFedoraAdapter {
                 File file = client.readResource(uri, File.class);
                 entities.put(uri, file);
             } catch (RuntimeException e) {
-                // Ignore entities that are not Files, which will cause exceptions
+                // Ignore non-File entities, which throw invalid type exceptions.
+                boolean tolerate = false;
+                Throwable cause = e.getCause();
+                while (cause != null) {
+                    if (cause instanceof InvalidTypeIdException) {
+                        tolerate = true;
+                        break;
+                    }
+                    cause = cause.getCause();
+                }
+                if (! tolerate) {
+                    // There was some other kind of exception
+                    e.printStackTrace();
+                }
             }
         }
 
