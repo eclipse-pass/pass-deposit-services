@@ -27,6 +27,7 @@ import org.dataconservancy.pass.model.Journal;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,36 +44,33 @@ public class FcrepoModelBuilderIT {
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
     private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+    private HashMap<URI, PassEntity> entities = new HashMap<>();
+    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
+    private Submission submissionEntity = null;
 
     @Before
     public void setup() throws Exception {
-        // Upload sample data to Fedora repository to get its URI.
-        PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+        // Upload sample data to Fedora repository to get its Submission URI.
         URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE);
         InputStream is = new FileInputStream(sampleDataUrl.getPath());
-        URI submissionUri = reader.jsonToFcrepo(is);
+        URI submissionUri = adapter.jsonToFcrepo(is, entities);
         is.close();
+
+        // Find the Submission entity that was uploaded
+        for (URI key : entities.keySet()) {
+            PassEntity entity = entities.get(key);
+            if (entity.getId() == submissionUri) {
+                submissionEntity = (Submission)entity;
+                break;
+            }
+        }
+
         submission = underTest.build(submissionUri.toString());
     }
 
     @Test
     public void testElementValues() {
-        // Load the PassEntity version of the sample data file
-        Submission submissionEntity = null;
-        HashMap<URI, PassEntity> entities = new HashMap<>();
-        try {
-            URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE);
-            InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-            submissionEntity = reader.jsonToPass(is, entities);
-            is.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            fail("Could not load sample data file");
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("Could not close the sample data file");
-        }
+        assertNotNull("Could not find Submission entity", submissionEntity);
 
         // Until the data model is finalized, just check that some basic things are in order
         assertNotNull(submission.getManifest());
@@ -91,6 +89,12 @@ public class FcrepoModelBuilderIT {
 
         assertNotNull(submission.getFiles());
         assertEquals(2, submission.getFiles().size());
+    }
+
+    @After
+    public void tearDown() {
+        // Clean up the server
+        adapter.deleteFromFcrepo(entities);
     }
 
 }

@@ -21,9 +21,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.client.utils.URIUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientFactory;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -47,9 +44,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Converts and transports PassEntity data between local JSON files, indexed lists and Fedora repositories.
@@ -169,7 +168,7 @@ public class PassJsonFedoraAdapter {
      * Credentials on the server are specified with the
      * pass.fedora.user and pass.fedora.password system properties.
      *
-     * @param entities the PassEntity objects to upload.
+     * @param entities the PassEntity objects to upload.  Keys are updated to be URIs on the Fedora server.
      * @return the URI on the Fedora server of the newly created Submission resource.
      */
     public URI passToFcrepo(HashMap<URI, PassEntity> entities) {
@@ -226,6 +225,12 @@ public class PassJsonFedoraAdapter {
             if (needUpdate) {
                 client.updateResource(entity);
             }
+        }
+
+        // Update URIs in entities list
+        for (URI oldUri : uriMap.keySet()) {
+            entities.put(uriMap.get(oldUri), entities.get(oldUri));
+            entities.remove(oldUri);
         }
 
         return submissionUri;
@@ -295,23 +300,16 @@ public class PassJsonFedoraAdapter {
             }
         }
 
-        // Search for File resources that reference this Submission and include them in the entity list.
-        // URIs are returned at "localhost" and must be adjusted for actual Fedora server host.
-        try {
-            Set<URI> fileUris2 = client.findAllByAttribute(File.class, "submission", submissionUri);
-            Set<URI> fileUris = client.findAllByAttribute(File.class, "submission", submissionUri);
-            URI fedoraURI = new URI(System.getProperty("pass.fedora.baseurl"));
-            String fedoraHost = URIUtils.extractHost(fedoraURI).getHostName();
-            for (URI fileUri : fileUris) {
-                URIBuilder builder = new URIBuilder(fileUri);
-                builder.setHost(fedoraHost);
-                fileUri = builder.build();
-                File file = client.readResource(fileUri, File.class);
-                entities.put(fileUri, file);
+        // Add File resources that reference this Submission to the entity list.
+        Map<String, Collection<URI>> incomingLinks = client.getIncoming(submissionUri);
+        Collection<URI> uris = incomingLinks.get(Submission.class.getSimpleName().toLowerCase());
+        for (URI uri : uris) {
+            try {
+                File file = client.readResource(uri, File.class);
+                entities.put(uri, file);
+            } catch (Exception e) {
+                // Ignore entities that are not Files, which will cause exceptions
             }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return null;
         }
 
         return submission;
@@ -333,6 +331,26 @@ public class PassJsonFedoraAdapter {
      */
     public URI jsonToFcrepo(InputStream is) {
         HashMap<URI, PassEntity> entities = new HashMap<>();
+        return jsonToFcrepo(is, entities);
+    }
+
+    /***
+     * Upload JSON PassEntity data to a Fedora repository.
+     *
+     * The JSON must contain exactly one Submission entity.  All other entities
+     * referenced by this Submission (and further entities referenced by them) must
+     * be present in the JSON.  All entities must have unique IDs.
+     *
+     * The target Fedora server is specified with the pass.fedora.baseurl system property.
+     * Credentials on the server are specified with the
+     * pass.fedora.user and pass.fedora.password system properties.
+     *
+     * @param is the stream containing the JSON data.
+     * @param entities a map which will be filled with all uploaded PassEntities.
+     * @return the RUI of the root Submission resource on the Fedora server.
+     */
+    public URI jsonToFcrepo(InputStream is, HashMap<URI, PassEntity> entities) {
+        entities.clear();
         jsonToPass(is, entities);
         return passToFcrepo(entities);
     }
@@ -351,5 +369,18 @@ public class PassJsonFedoraAdapter {
         HashMap<URI, PassEntity> entities = new HashMap<>();
         fcrepoToPass(submissionUri, entities);
         passToJson(entities, os);
+    }
+
+    /***
+     * Remove the provided set of PassEntity resources from the Fedora server.
+     *
+     * @param entities
+     */
+    public void deleteFromFcrepo(HashMap<URI, PassEntity> entities) {
+        PassClient client = PassClientFactory.getPassClient();
+        for (URI key : entities.keySet()) {
+            PassEntity entity = entities.get(key);
+            client.deleteResource(entity.getId());
+        }
     }
 }

@@ -22,6 +22,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.model.PassEntity;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +35,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,12 +45,13 @@ public class PassJsonFedoraAdapterIT {
 
     private String SAMPLE_DATA_FILE = "SampleSubmissionData.json";
     private URL sampleDataUrl;
-    private PassJsonFedoraAdapter reader;
+    private PassJsonFedoraAdapter adapter;
+    private HashMap<URI, PassEntity> entities = new HashMap<>();
 
     @Before
     public void setup() {
         sampleDataUrl = this.getClass().getResource(SAMPLE_DATA_FILE);
-        reader = new PassJsonFedoraAdapter();
+        adapter = new PassJsonFedoraAdapter();
     }
 
     @Test
@@ -55,7 +59,7 @@ public class PassJsonFedoraAdapterIT {
         try {
             // Upload the sample data to the Fedora repo.
             InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            URI submissionUri = reader.jsonToFcrepo(is);
+            URI submissionUri = adapter.jsonToFcrepo(is, entities);
             is.close();
 
             // Download the data from the server to a temporary JSON file
@@ -63,7 +67,7 @@ public class PassJsonFedoraAdapterIT {
             tempFile.deleteOnExit();
             String tempFilePath = tempFile.getCanonicalPath();
             FileOutputStream fos = new FileOutputStream(tempFile);
-            reader.fcrepoToJson(submissionUri, fos);
+            adapter.fcrepoToJson(submissionUri, fos);
             fos.close();
 
             // Read the two files into JSON models
@@ -92,13 +96,19 @@ public class PassJsonFedoraAdapterIT {
                         break;
                     }
                 }
-                assertTrue("Could not find source object in result array.", found);
+                assertTrue("Could not find source entity in target collection.", found);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
             fail("Could not close the sample data file");
         }
+    }
+
+    @After
+    public void tearDown() {
+        // Clean up the server
+        adapter.deleteFromFcrepo(entities);
     }
 
 }

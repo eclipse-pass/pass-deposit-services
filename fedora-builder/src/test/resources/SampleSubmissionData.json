@@ -151,15 +151,5 @@
     "submission" : "fake:submission1",
     "@id" : "fake:file2",
     "@type" : "File"
-  },
-  {
-    "name" : "test_pdf_not_used",
-    "uri" : "http://www.africau.edu/images/default/sample.pdf",
-    "description" : "File resource that doesn't reference this submission",
-    "fileRole" : "manuscript",
-    "mimeType" : "application/pdf",
-    "submission" : "fake:submission2",
-    "@id" : "fake:file3",
-    "@type" : "File"
-}
+  }
 ]
