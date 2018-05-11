@@ -34,7 +34,7 @@ public enum DepositFileType {
     /**
      * Supplemental data uploaded by an end-user; not a {@link #manuscript}, {@link #table}, or {@link #figure}.
      */
-    supplement,
+    supplemental,
 
     /**
      * Manuscript figure uploaded by an end-user.

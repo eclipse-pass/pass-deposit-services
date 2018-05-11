@@ -19,10 +19,12 @@ package org.dataconservancy.nihms.builder.fs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 
+import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Journal;
@@ -86,13 +88,8 @@ abstract class ModelBuilder {
         // The submission object to populate
         DepositSubmission submission = new DepositSubmission();
 
-        // Prepare for binary Files
-        ArrayList<DepositFile> files = new ArrayList<>();
-        submission.setFiles(files);
-
         // Prepare Manifest
         DepositManifest manifest = new DepositManifest();
-        manifest.setFiles(files);
         submission.setManifest(manifest);
 
         // Prepare for Metadata
@@ -203,7 +200,26 @@ abstract class ModelBuilder {
         }
 
         // Add Files
-        // TODO: We do not yet search the repository for Files that reference this Submission.
+        ArrayList<DepositFile> files = new ArrayList<>();
+        submission.setFiles(files);
+        manifest.setFiles(files);
+
+        for (URI key : entities.keySet()) {
+            PassEntity entity = entities.get(key);
+            if (entity instanceof File) {
+                File file = (File)entity;
+                // Ignore any Files that do not reference this Submission
+                if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
+                    DepositFile depositFile = new DepositFile();
+                    depositFile.setName(file.getName());
+                    depositFile.setLocation(file.getUri().toString());
+                    // TODO - The client model currently only has "manuscript" and "supplemental" roles.
+                    depositFile.setType(DepositFileType.valueOf(file.getFileRole().name().toLowerCase()));
+                    depositFile.setLabel(""); // TODO - What value should this take?
+                    files.add(depositFile);
+                }
+            }
+        }
 
         return submission;
     }

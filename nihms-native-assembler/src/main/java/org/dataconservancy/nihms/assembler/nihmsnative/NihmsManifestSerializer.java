@@ -33,7 +33,7 @@ import java.io.PrintWriter;
  *
  * where the file type is one of
  *
- * “bulksub_meta_xml”, “manuscript”, “supplement”, “figure”, or “table”
+ * “bulksub_meta_xml”, “manuscript”, “supplemental”, “figure”, or “table”
  *
  * @author Jim Martino (jrm@jhu.edu)
  */
