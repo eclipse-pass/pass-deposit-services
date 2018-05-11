@@ -131,5 +131,25 @@
     "roles" : [ "admin" ],
     "@id" : "fake:user3",
     "@type" : "User"
+  },
+  {
+    "name" : "test_image",
+    "uri" : "https://s7.postimg.cc/62hbdkvx7/hopkins.png",
+    "description" : "A logo to test supplemental type",
+    "fileRole" : "supplemental",
+    "mimeType" : "image/png",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file1",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_pdf",
+    "uri" : "http://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf",
+    "description" : "PDF hype to test manuscript type",
+    "fileRole" : "manuscript",
+    "mimeType" : "application/pdf",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file2",
+    "@type" : "File"
   }
 ]
