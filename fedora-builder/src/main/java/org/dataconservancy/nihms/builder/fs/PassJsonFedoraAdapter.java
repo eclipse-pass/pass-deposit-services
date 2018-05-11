@@ -307,7 +307,7 @@ public class PassJsonFedoraAdapter {
             try {
                 File file = client.readResource(uri, File.class);
                 entities.put(uri, file);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 // Ignore entities that are not Files, which will cause exceptions
             }
         }
