@@ -50,7 +50,7 @@ public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilde
             return createDepositSubmission(submissionEntity, entities);
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            throw new InvalidModel("Data file contained an invalid URI.");
+            throw new InvalidModel("Data file location is an invalid URI.");
         }
     }
 

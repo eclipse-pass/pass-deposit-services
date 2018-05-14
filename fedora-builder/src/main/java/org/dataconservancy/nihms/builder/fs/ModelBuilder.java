@@ -17,7 +17,10 @@
 package org.dataconservancy.nihms.builder.fs;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
@@ -38,9 +41,14 @@ import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
 import org.joda.time.DateTime;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 /***
@@ -80,17 +88,110 @@ abstract class ModelBuilder {
         return person;
     }
 
+    // Convenience method for retrieving a boolean property.  Should the default be true or false?
+    private boolean getBooleanProperty(JsonObject parent, String name) {
+        if (parent.has(name)) {
+            return parent.get(name).getAsBoolean();
+        }
+        else {
+            return false;
+        }
+    }
+
+    // Convenience method for retrieving a string property.  Should the default be empty or null?
+    private String getStringProperty(JsonObject parent, String name) {
+        if (parent.has(name)) {
+            return parent.get(name).getAsString();
+        }
+        else {
+            return "";
+        }
+    }
+
+    // The following four methods are based on a single sample of PASS submission metadata at
+    // https://github.com/OA-PASS/pass-ember/issues/194.
+    private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData)
+            throws InvalidModel {
+        String title = getStringProperty(submissionData, "title");
+        metadata.getManuscriptMetadata().setTitle(title);
+        metadata.getArticleMetadata().setTitle(title); // Is this tile for manuscript or article or both?
+
+        String abstractTxt = getStringProperty(submissionData, "abstract");
+        metadata.getManuscriptMetadata().setMsAbstract(abstractTxt);
+
+        String journalTitle = getStringProperty(submissionData, "journal-title");
+        metadata.getJournalMetadata().setJournalTitle(journalTitle);
+
+        String journalTitleShort = getStringProperty(submissionData, "journal-title-short");
+        String volume = getStringProperty(submissionData, "volume");
+        String issue = getStringProperty(submissionData, "issue");
+        String subjects = getStringProperty(submissionData, "subjects");
+
+        String url = getStringProperty(submissionData, "URL");
+        try {
+            metadata.getManuscriptMetadata().setManuscriptUrl(new URL(url));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new InvalidModel("Data file contained an invalid URL.");
+        }
+
+        JsonArray authors = submissionData.get("authors").getAsJsonArray();
+        for (JsonElement element : authors) {
+            JsonObject author = element.getAsJsonObject();
+            String name = getStringProperty(author, "author");
+            String orcid = getStringProperty(author, "orcid");
+        }
+    }
+
+    private void processNihMetadata(DepositMetadata metadata, JsonObject submissionData) {
+        String journalId = getStringProperty(submissionData, "journal-NLMTA-ID");
+        metadata.getJournalMetadata().setJournalId(journalId);
+        String issn = getStringProperty(submissionData, "ISSN");
+        metadata.getJournalMetadata().setIssn(issn);
+    }
+
+    private void processJScholarshipMetadata(DepositMetadata metadata, JsonObject submissionData)
+            throws InvalidModel {
+        try {
+            boolean underEmbargo = submissionData.get("under-embargo").getAsBoolean();
+            String embargoEndDate = getStringProperty(submissionData, "Embargo-end-date");
+            // TODO - Resolve incompatible data formats in metadata and deposit data model
+            Date embargoEndDateTime = new SimpleDateFormat("MM/DD/YY").parse(embargoEndDate);
+            //metadata.getArticleMetadata().setEmbargoLiftDate(embargoEndDateTime);
+            String embargo = getStringProperty(submissionData, "embargo");
+            boolean agreementToEmbargo = getBooleanProperty(submissionData, "agreement-to-embargo");
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new InvalidModel("Data file contained an invalid Date.");
+        }
+    }
+
+    private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
+            throws InvalidModel {
+        JsonArray metadataJson = new JsonParser().parse(metadataStr).getAsJsonArray();
+        for (JsonElement element : metadataJson) {
+            JsonObject obj = element.getAsJsonObject();
+            String type = obj.get("id").getAsString();
+            JsonObject data = obj.get("data").getAsJsonObject();
+            if (type.equals("common")) {
+                processCommonMetadata(depositMetadata, data);
+            }
+            else if (type.equals("nih")) {
+                processNihMetadata(depositMetadata, data);
+            }
+            else if (type.equals("JScholarship")) {
+                processJScholarshipMetadata(depositMetadata, data);
+            }
+        }
+    }
+
     // Walk the tree of PassEntity objects, starting with the Submission entity,
     // to copy the desired source data into a new DepositSubmission data model.
-    DepositSubmission createDepositSubmission(
-            Submission submissionEntity, HashMap<URI, PassEntity> entities) throws URISyntaxException {
+    DepositSubmission createDepositSubmission(Submission submissionEntity, HashMap<URI, PassEntity> entities)
+            throws InvalidModel {
 
         // The submission object to populate
         DepositSubmission submission = new DepositSubmission();
-
-        // Prepare Manifest
-        DepositManifest manifest = new DepositManifest();
-        submission.setManifest(manifest);
 
         // Prepare for Metadata
         DepositMetadata metadata = new DepositMetadata();
@@ -99,6 +200,8 @@ abstract class ModelBuilder {
         metadata.setManuscriptMetadata(manuscript);
         DepositMetadata.Article article = new DepositMetadata.Article();
         metadata.setArticleMetadata(article);
+        DepositMetadata.Journal journal = new DepositMetadata.Journal();
+        metadata.setJournalMetadata(journal);
         ArrayList<DepositMetadata.Person> persons = new ArrayList<>();
         metadata.setPersons(persons);
 
@@ -106,15 +209,13 @@ abstract class ModelBuilder {
         submission.setId(submissionEntity.getId().toString());
         // The deposit data model requires a "name" - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
-        JsonArray metadataJson = new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonArray();
-        // TODO - Extract property values from the JsonArray (or whatever JSON structure is used)
         // Available Submission data for which there is no place in the existing DepositSubmission:
         Submission.Source source = submissionEntity.getSource();
         Boolean submitted = submissionEntity.getSubmitted();
         DateTime submittedDate = submissionEntity.getSubmittedDate();
         Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
         // Existing DepositSubmission members that are not being set:
-        //      article.pubmedcentralid, article.pubmedid, manuscript.id, manuscript.url
+        //      article.pubmedcentralid, article.pubmedid, manuscript.id
 
         // Data from the Submission's user resource
         User userEntity = (User)entities.get(submissionEntity.getUser());
@@ -123,25 +224,29 @@ abstract class ModelBuilder {
         // Data from the Submission's Publication resource and its referenced Journal and Publisher resources
         Publication publicationEntity = (Publication)entities.get(submissionEntity.getPublication());
         manuscript.setTitle(publicationEntity.getTitle());
-        article.setDoi(new URI(publicationEntity.getDoi()));
+        try {
+            article.setDoi(new URI(publicationEntity.getDoi()));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new InvalidModel("Data file contained an invalid URI.");
+        }
         // Available Publication data for which there is no place in the existing deposit model:
+        // Some of these properties are ignored because they are overwritten by the metadata, below.
         String publicationAbstract = publicationEntity.getPublicationAbstract();
         String pmid = publicationEntity.getPmid();
         String volume = publicationEntity.getVolume();
         String issue = publicationEntity.getIssue();
-        
+
         Journal journalEntity = (Journal)entities.get(publicationEntity.getJournal());
-        DepositMetadata.Journal journal = new DepositMetadata.Journal();
-        metadata.setJournalMetadata(journal);
-        journal.setJournalTitle(journalEntity.getName());
+        //journal.setJournalTitle(journalEntity.getName());
         for (String issn : journalEntity.getIssns()) {
             // Note: the current model only has room for one ISSN, but Fedora provides multiples
             if (issn == journalEntity.getIssns().get(0)) {
-                journal.setIssn(issn);
+                //journal.setIssn(issn);
             }
         }
         // Is the model's ID the nlmta value?
-        journal.setJournalId(journalEntity.getNlmta());
+        //journal.setJournalId(journalEntity.getNlmta());
         // Available data for which there is no place in the existing deposit model:
         PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
 
@@ -149,6 +254,13 @@ abstract class ModelBuilder {
         // Available data for which there is no place in the existing deposit model:
         String publisherName = publisherEntity.getName();
         PmcParticipation publisherParticipation = publisherEntity.getPmcParticipation();
+
+        // As of 5/14/18, the following data is available from both the Submission metadata
+        // and as a member of one of the PassEntity objects referenced by the Submission:
+        //      manuscript: title, abstract, volume, issue
+        //      journal: title, issn, NLMTA-ID
+        // The metadata values are processed after the PassEntity objects and are
+        processMetadata(metadata, submissionEntity.getMetadata());
 
         // Data from the Submission's Repository resources
         for (URI repositoryUri : submissionEntity.getRepositories()) {
@@ -184,7 +296,7 @@ abstract class ModelBuilder {
             String policyTitle = primaryPolicyEntity.getTitle();
             String description = primaryPolicyEntity.getDescription();
             URI policyUrl = primaryPolicyEntity.getPolicyUrl();
-            // Policies also have a lists of repositories, we we ignore in favor of the submission's list.
+            // Policies also have a lists of repositories, which we ignore in favor of the submission's list.
 
             // Data from Direct Funder and its Policy has the same properties as for the Primary Funder
             Funder directFunderEntity = (Funder)entities.get(grantEntity.getDirectFunder());
@@ -199,7 +311,9 @@ abstract class ModelBuilder {
             }
         }
 
-        // Add Files
+        // Add Manifest and Files
+        DepositManifest manifest = new DepositManifest();
+        submission.setManifest(manifest);
         ArrayList<DepositFile> files = new ArrayList<>();
         submission.setFiles(files);
         manifest.setFiles(files);
