@@ -131,8 +131,7 @@ abstract class ModelBuilder {
         try {
             metadata.getManuscriptMetadata().setManuscriptUrl(new URL(url));
         } catch (MalformedURLException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Data file contained an invalid URL.");
+            throw new InvalidModel(String.format("Data file '%s' contained an invalid URL.", url), e);
         }
 
         JsonArray authors = submissionData.get("authors").getAsJsonArray();
@@ -152,17 +151,16 @@ abstract class ModelBuilder {
 
     private void processJScholarshipMetadata(DepositMetadata metadata, JsonObject submissionData)
             throws InvalidModel {
+        String embargoEndDate = getStringProperty(submissionData, "Embargo-end-date");
         try {
             boolean underEmbargo = submissionData.get("under-embargo").getAsBoolean();
-            String embargoEndDate = getStringProperty(submissionData, "Embargo-end-date");
             // TODO - Resolve incompatible data formats in metadata and deposit data model
             Date embargoEndDateTime = new SimpleDateFormat("MM/DD/YY").parse(embargoEndDate);
             //metadata.getArticleMetadata().setEmbargoLiftDate(embargoEndDateTime);
             String embargo = getStringProperty(submissionData, "embargo");
             boolean agreementToEmbargo = getBooleanProperty(submissionData, "agreement-to-embargo");
         } catch (ParseException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Data file contained an invalid Date.");
+            throw new InvalidModel(String.format("Data file contained an invalid Date: '%s'.", embargoEndDate), e);
         }
     }
 
@@ -227,8 +225,8 @@ abstract class ModelBuilder {
         try {
             article.setDoi(new URI(publicationEntity.getDoi()));
         } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Data file contained an invalid URI.");
+            String msg = String.format("Data file '%s' contained an invalid URI.", publicationEntity.getDoi());
+            throw new InvalidModel(msg, e);
         }
         // Available Publication data for which there is no place in the existing deposit model:
         // Some of these properties are ignored because they are overwritten by the metadata, below.

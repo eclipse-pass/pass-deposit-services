@@ -54,19 +54,17 @@ public class FilesystemModelBuilderTest {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         HashMap<URI, PassEntity> entities = new HashMap<>();
+        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
+        String sampleDataPath = sampleDataUrl.getPath();
         try {
-            URL sampleDataUrl =
-                    FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-            InputStream is = new FileInputStream(sampleDataUrl.getPath());
+            InputStream is = new FileInputStream(sampleDataPath);
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             submissionEntity = reader.jsonToPass(is, entities);
             is.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            fail("Could not load sample data file");
+            fail(String.format("Could not load sample data file '%s'", sampleDataPath));
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Could not close the sample data file");
+            fail(String.format("Could not close the sample data file '%s'", sampleDataPath));
         }
 
         // Check that some basic things are in order

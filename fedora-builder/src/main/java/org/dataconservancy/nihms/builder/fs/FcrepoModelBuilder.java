@@ -49,8 +49,7 @@ public class FcrepoModelBuilder extends ModelBuilder implements SubmissionBuilde
             Submission submissionEntity = reader.fcrepoToPass(new URI(formDataUrl), entities);
             return createDepositSubmission(submissionEntity, entities);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Data file location is an invalid URI.");
+            throw new InvalidModel(String.format("Data file location '%s' is an invalid URI.", formDataUrl), e);
         }
     }
 
