@@ -248,16 +248,21 @@ abstract class ModelBuilder {
         // Available data for which there is no place in the existing deposit model:
         PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
 
-        Publisher publisherEntity = (Publisher)entities.get(journalEntity.getPublisher());
-        // Available data for which there is no place in the existing deposit model:
-        String publisherName = publisherEntity.getName();
-        PmcParticipation publisherParticipation = publisherEntity.getPmcParticipation();
+        // Publishers are not currently used in deposits, and may be missing from Journal resources.
+        /*
+        if (journalEntity.getPublisher() != null) {
+            Publisher publisherEntity = (Publisher) entities.get(journalEntity.getPublisher());
+            // Available data for which there is no place in the existing deposit model:
+            String publisherName = publisherEntity.getName();
+            PmcParticipation publisherParticipation = publisherEntity.getPmcParticipation();
+        }
+        */
 
         // As of 5/14/18, the following data is available from both the Submission metadata
         // and as a member of one of the PassEntity objects referenced by the Submission:
         //      manuscript: title, abstract, volume, issue
         //      journal: title, issn, NLMTA-ID
-        // The metadata values are processed after the PassEntity objects and are
+        // The metadata values are processed AFTER the PassEntity objects so they have precedence.
         processMetadata(metadata, submissionEntity.getMetadata());
 
         // Data from the Submission's Repository resources

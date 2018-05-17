@@ -276,8 +276,12 @@ public class PassJsonFedoraAdapter {
         entities.put(submission.getPublication(), publication);
         Journal journal = client.readResource(publication.getJournal(), Journal.class);
         entities.put(publication.getJournal(), journal);
-        Publisher publisher = client.readResource(journal.getPublisher(), Publisher.class);
-        entities.put(journal.getPublisher(), publisher);
+
+        // It is valid for a Journal to not link to a Publisher
+        if (journal.getPublisher() != null) {
+            Publisher publisher = client.readResource(journal.getPublisher(), Publisher.class);
+            entities.put(journal.getPublisher(), publisher);
+        }
 
         // Assume all repositories are unique
         for (URI repoURI : submission.getRepositories()) {

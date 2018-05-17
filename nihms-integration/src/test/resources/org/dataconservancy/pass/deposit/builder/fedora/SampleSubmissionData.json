@@ -28,15 +28,9 @@
     "issns" : [ "issn123", "issn456" ],
     "nlmta" : "AAPS PharmSci",
     "pmcParticipation" : "A",
-    "publisher" : "fake:publisher1",
+    "publisher" : "",
     "@id" : "fake:journal1",
     "@type" : "Journal"
-  },
-  {
-    "name" : "American Association of Pharmaceutical Scientists",
-    "pmcParticipation" : "A",
-    "@id" : "fake:publisher1",
-    "@type" : "Publisher"
   },
   {
     "name" : "PubMed Central",
