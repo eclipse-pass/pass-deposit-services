@@ -16,12 +16,12 @@
 
 package org.dataconservancy.nihms.builder.fs;
 
+import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.dataconservancy.pass.model.Journal;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
@@ -54,22 +54,20 @@ public class FilesystemModelBuilderTest {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         HashMap<URI, PassEntity> entities = new HashMap<>();
+        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
+        String sampleDataPath = sampleDataUrl.getPath();
         try {
-            URL sampleDataUrl =
-                    FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-            InputStream is = new FileInputStream(sampleDataUrl.getPath());
+            InputStream is = new FileInputStream(sampleDataPath);
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             submissionEntity = reader.jsonToPass(is, entities);
             is.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            fail("Could not load sample data file");
+            fail(String.format("Could not load sample data file '%s'", sampleDataPath));
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Could not close the sample data file");
+            fail(String.format("Could not close the sample data file '%s'", sampleDataPath));
         }
 
-        // Until the data model is finalized, just check that some basic things are in order
+        // Check that some basic things are in order
         assertNotNull(submission.getManifest());
         assertNotNull(submission.getMetadata());
         assertNotNull(submission.getMetadata().getManuscriptMetadata());
@@ -79,13 +77,19 @@ public class FilesystemModelBuilderTest {
 
         assertEquals(submission.getId(), submissionEntity.getId().toString());
         Publication publication = (Publication)entities.get(submissionEntity.getPublication());
-        assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), publication.getTitle());
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
-        Journal journal = (Journal)entities.get(publication.getJournal());
-        assertEquals(submission.getMetadata().getJournalMetadata().getJournalTitle(), journal.getName());
 
         assertNotNull(submission.getFiles());
         assertEquals(2, submission.getFiles().size());
+
+        // Confirm that some values were set correctly from the Submission metadata
+        DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
+        assertEquals("Food Funct.", journalMetadata.getJournalTitle());
+        assertEquals("TD452689", journalMetadata.getJournalId());
+        assertEquals("2042-6496,2042-650X", journalMetadata.getIssn());
+
+        DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
+        assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
     }
 
 }

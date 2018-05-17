@@ -27,7 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
 /**
@@ -55,14 +54,9 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
             is.close();
             return createDepositSubmission(submissionEntity, entities);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Could not open the specified data file.");
+            throw new InvalidModel(String.format("Could not open the data file '%s'.", formDataUrl), e);
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Failed to close the data file.");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new InvalidModel("Data file contained an invalid URI.");
+            throw new InvalidModel(String.format("Failed to close the data file '%s'.", formDataUrl), e);
         }
     }
 
