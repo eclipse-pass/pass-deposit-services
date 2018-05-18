@@ -35,7 +35,6 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.PmcParticipation;
 import org.dataconservancy.pass.model.Policy;
 import org.dataconservancy.pass.model.Publication;
-import org.dataconservancy.pass.model.Publisher;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
@@ -45,10 +44,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 /***
@@ -151,16 +152,25 @@ abstract class ModelBuilder {
 
     private void processJScholarshipMetadata(DepositMetadata metadata, JsonObject submissionData)
             throws InvalidModel {
-        String embargoEndDate = getStringProperty(submissionData, "Embargo-end-date");
-        try {
-            boolean underEmbargo = submissionData.get("under-embargo").getAsBoolean();
-            // TODO - Resolve incompatible data formats in metadata and deposit data model
-            Date embargoEndDateTime = new SimpleDateFormat("MM/DD/YY").parse(embargoEndDate);
-            //metadata.getArticleMetadata().setEmbargoLiftDate(embargoEndDateTime);
-            String embargo = getStringProperty(submissionData, "embargo");
-            boolean agreementToEmbargo = getBooleanProperty(submissionData, "agreement-to-embargo");
-        } catch (ParseException e) {
-            throw new InvalidModel(String.format("Data file contained an invalid Date: '%s'.", embargoEndDate), e);
+        if (submissionData.has("under-embargo")) {
+            String embargoEndDateStr = getStringProperty(submissionData, "Embargo-end-date");
+            try {
+                boolean underEmbargo = submissionData.get("under-embargo").getAsBoolean();
+                metadata.getArticleMetadata().setUnderEmbargo(underEmbargo);
+                String embargoTerms = getStringProperty(submissionData, "embargo");
+                metadata.getArticleMetadata().setEmbargoTerms(embargoTerms);
+                boolean agreementToEmbargo = getBooleanProperty(submissionData, "agreement-to-embargo");
+                metadata.getArticleMetadata().setAgreementToEmbargo(agreementToEmbargo);
+
+                // TODO - Resolve inconsistent date/date-time formats in metadata and deposit data model
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+                LocalDateTime localEndDate = LocalDate.parse(embargoEndDateStr, formatter).atStartOfDay();
+                ZonedDateTime zonedEndDate = localEndDate.atZone(ZoneId.of("America/New_York"));
+                metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
+            } catch (Exception e) {
+                throw new InvalidModel(String.format("Data file contained an invalid Date: '%s'.",
+                        embargoEndDateStr), e);
+            }
         }
     }
 
