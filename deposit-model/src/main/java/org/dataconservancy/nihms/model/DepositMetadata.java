@@ -235,7 +235,13 @@ public class DepositMetadata {
          */
         public String title;
 
-        public ZonedDateTime embargoLiftDate;
+        public boolean underEmbargo = false;
+
+        public boolean agreementToEmbargo = false;
+
+        public String embargoTerms = "";
+
+        public ZonedDateTime embargoLiftDate = null;
 
         public String getTitle() { return title; }
 
@@ -265,13 +271,21 @@ public class DepositMetadata {
             this.doi = doi;
         }
 
-        public ZonedDateTime getEmbargoLiftDate() {
-            return embargoLiftDate;
-        }
+        public boolean getUnderEmbargo() { return underEmbargo; }
 
-        public void setEmbargoLiftDate(ZonedDateTime embargoLiftDate) {
-            this.embargoLiftDate = embargoLiftDate;
-        }
+        public void setUnderEmbargo(boolean underEmbargo) { this.underEmbargo = underEmbargo; }
+
+        public boolean getAgreementToEmbargo() { return agreementToEmbargo; }
+
+        public void setAgreementToEmbargo(boolean underEmbargo) { this.agreementToEmbargo = agreementToEmbargo; }
+
+        public void setEmbargoTerms(String embargoTerms) { this.embargoTerms = embargoTerms; }
+
+        public String getEmbargoTerms() { return embargoTerms; }
+
+        public ZonedDateTime getEmbargoLiftDate() { return embargoLiftDate; }
+
+        public void setEmbargoLiftDate(ZonedDateTime embargoLiftDate) { this.embargoLiftDate = embargoLiftDate; }
     }
 
     /**
