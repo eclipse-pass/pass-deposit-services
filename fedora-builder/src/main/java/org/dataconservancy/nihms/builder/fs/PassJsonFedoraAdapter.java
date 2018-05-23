@@ -36,11 +36,17 @@ import org.dataconservancy.pass.model.Publisher;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -49,7 +55,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Converts and transports PassEntity data between local JSON files, indexed lists and Fedora repositories.
@@ -64,6 +69,8 @@ import java.util.Vector;
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
 public class PassJsonFedoraAdapter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PassJsonFedoraAdapter.class);
 
     /**
      * Extract PassEntity data from a JSON input stream and fill a collection of PassEntity objects.
@@ -89,7 +96,13 @@ public class PassJsonFedoraAdapter {
 
                 // Create and save the PassEntity object
                 byte[] entityJsonBytes = entityJson.toString().getBytes();
-                PassEntity entity = adapter.toModel(entityJsonBytes, type);
+                PassEntity entity = null;
+                try {
+                    entity = adapter.toModel(entityJsonBytes, type);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to adapt the following JSON to a " + type.getName() + ": " +
+                            new String(entityJsonBytes), e);
+                }
                 URI uri = new URI(entityJson.getAsJsonObject().get("@id").getAsString());
                 entities.put(uri, entity);
                 if (entity instanceof Submission) {
@@ -184,6 +197,10 @@ public class PassJsonFedoraAdapter {
             URI newUri = client.createResource(entity);
             entity.setId(newUri);
             uriMap.put(oldUri, newUri);
+
+            if (entity instanceof File) {
+                uploadBinary((File) entity, client);
+            }
         }
 
         // Update links between resources using collected information
@@ -235,6 +252,64 @@ public class PassJsonFedoraAdapter {
         }
 
         return submissionUri;
+    }
+
+    /**
+     * Resolves the content referenced by {@link File#getUri()}, uploads the binary to Fedora, and then updates the
+     * {@code File uri} with the location of the binary in the repository.
+     *
+     * @param f a File entity that may have a URI that links to binary content
+     * @param client client used to update the File URI in the repository
+     */
+    private void uploadBinary(File f, PassClient client) {
+        // attempt to upload binary content to fedora
+        if (f.getUri() == null) {
+            return;
+        }
+
+        String contentUri = f.getUri().toString();
+
+        Resource contentResource = null;
+        if (contentUri.startsWith("http") || contentUri.startsWith("file:")) {
+            try {
+                contentResource = new UrlResource(f.getUri());
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+
+        if (contentUri.startsWith("classpath*:")) {
+            contentResource = new ClassPathResource(
+                    contentUri.substring("classpath*:".length()), this.getClass().getClassLoader());
+        }
+
+        if (contentUri.startsWith("classpath:")) {
+            contentResource = new ClassPathResource(contentUri.substring("classpath:".length()));
+        }
+
+        if (contentResource == null) {
+            return;
+        }
+
+        HashMap<String, String> params = new HashMap<>();
+
+        if (f.getName() != null) {
+            params.put("filename", f.getName());
+        }
+
+        if (f.getMimeType() != null) {
+            params.put("content-type", f.getMimeType());
+        }
+
+        try (InputStream in = contentResource.getInputStream()) {
+            URI binaryUri = client.upload(f.getId(), in, params);
+            LOG.debug("Uploaded binary {} for {}.  Updating 'uri' field to {} from {}",
+                    contentUri, f.getId(), contentUri, binaryUri);
+            f.setUri(binaryUri);
+        } catch (Exception e) {
+            throw new RuntimeException("Error uploading resource " + contentResource + " to " + f.getId() +
+                    ": " + e.getMessage(), e);
+        }
     }
 
     // If not already added to the entity list, process the Funder at the provide URI
