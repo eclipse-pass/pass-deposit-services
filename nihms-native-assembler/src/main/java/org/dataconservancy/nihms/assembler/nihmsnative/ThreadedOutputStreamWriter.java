@@ -19,6 +19,7 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
@@ -60,6 +61,9 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
 
     private void debugResources(List<PackageStream.Resource> resources) {
         resources.forEach(r -> LOG.debug(">>>> Assembling resource: {}", r));
+    }
+
+    protected String nameResource(Resource resource) {
     }
 
 }

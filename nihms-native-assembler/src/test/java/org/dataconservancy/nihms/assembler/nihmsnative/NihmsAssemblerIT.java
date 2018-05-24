@@ -17,6 +17,7 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata.Person;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
@@ -88,9 +89,10 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         Map<String, File> packageFiles = Arrays.stream(extractedPackageDir.listFiles())
                 .collect(Collectors.toMap((File::getName), Function.identity()));
 
-        packageFiles.keySet().stream()
-                .filter(fileName -> !fileName.equals(manifest.getName()) && !fileName.equals(metadata.getName()))
-                .forEach(fileName -> assertTrue(custodialResourcesMap.containsKey(fileName)));
+        custodialResourcesMap.keySet().stream()
+                .forEach(fileName -> {
+                    assertTrue(packageFiles.containsKey(fileName));
+                });
 
         assertTrue(packageFiles.keySet().contains(manifest.getName()));
         assertTrue(packageFiles.keySet().contains(metadata.getName()));
@@ -181,6 +183,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             assertTypeIsPresent();
             assertLabelIsPresent();
             assertFileIsPresent();
+            assertNameIsValid();
         }
 
         void assertTypeIsPresent() {
@@ -214,6 +217,13 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             } catch (ArrayIndexOutOfBoundsException e) {
                 fail(String.format(ERR, manifestFile, lineNo, "a file name"));
             }
+        }
+
+        void assertNameIsValid() {
+            assertFalse(String.format("File %s, line %s: Name cannot be same as metadata file.", manifestFile, lineNo),
+                    manifestFile.getName() == NihmsZippedPackageStream.METADATA_ENTRY_NAME);
+            assertFalse(String.format("File %s, line %s: Name cannot be same as manifest file.", manifestFile, lineNo),
+                    manifestFile.getName() == NihmsZippedPackageStream.MANIFEST_ENTRY_NAME);
         }
     }
 
