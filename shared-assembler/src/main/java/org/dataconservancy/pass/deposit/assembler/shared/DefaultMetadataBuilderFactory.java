@@ -17,12 +17,14 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.springframework.stereotype.Component;
 
 /**
  * Default implementation of {@link MetadataBuilderFactory}.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class DefaultMetadataBuilderFactory implements MetadataBuilderFactory {
 
     @Override

@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import org.springframework.stereotype.Component;
 import org.swordapp.client.ClientConfiguration;
 import org.swordapp.client.SWORDClient;
 
@@ -25,6 +26,7 @@ import java.util.Map;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class DefaultSword2ClientFactory implements Sword2ClientFactory {
 
     @Override

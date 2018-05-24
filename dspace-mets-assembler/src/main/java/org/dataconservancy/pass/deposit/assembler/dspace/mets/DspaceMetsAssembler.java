@@ -22,14 +22,18 @@ import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class DspaceMetsAssembler extends AbstractAssembler {
 
     private DspaceMetadataDomWriter metsWriter;
 
+    @Autowired
     public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriter metsWriter) {
         super(mbf, rbf);
         this.metsWriter = metsWriter;

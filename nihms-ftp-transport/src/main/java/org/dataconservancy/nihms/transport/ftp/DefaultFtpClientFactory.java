@@ -17,12 +17,14 @@ package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.dataconservancy.nihms.transport.Transport;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class DefaultFtpClientFactory implements FtpClientFactory {
 
     @Override

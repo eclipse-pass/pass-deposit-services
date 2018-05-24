@@ -24,10 +24,13 @@ import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class NihmsAssembler extends AbstractAssembler {
 
     private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to a Spring Resource type.";
@@ -42,6 +45,7 @@ public class NihmsAssembler extends AbstractAssembler {
 
     private static final String HTTPS_PREFIX = "https:";
 
+    @Autowired
     public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
         super(mbf, rbf);
     }
