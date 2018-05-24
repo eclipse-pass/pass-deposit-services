@@ -186,7 +186,6 @@ public class Sword2TransportSession implements TransportSession {
     /**
      * Selects the APP Collection that the SWORD deposit is being submitted to.
      *
-     * TODO: see how DSpace communities and collections map to APP workspaces and collections
      * @param serviceDoc
      * @param metadata
      * @return

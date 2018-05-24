@@ -41,6 +41,7 @@
         <module>sword2-transport</module>
         <module>dspace-mets-assembler</module>
         <module>shared-assembler</module>
+        <module>deposit-messaging</module>
     </modules>
 
     <profiles>
@@ -64,8 +65,12 @@
         <scp.port>22</scp.port>
 
         <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>2.20.1</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>2.20.1</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+        <!-- see:
+            - https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.4-Release-Notes#integration-tests-with-the-maven-failsafe-plugin
+            - https://issues.apache.org/jira/browse/SUREFIRE-1198
+        -->
+        <maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
         <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
@@ -77,13 +82,13 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback-classic.version>1.2.3</logback-classic.version>
         <junit.version>4.12</junit.version>
-        <spring-framework.version>5.0.1.RELEASE</spring-framework.version>
-        <spring-boot.version>2.0.0.M6</spring-boot.version>
+        <spring-framework.version>5.0.5.RELEASE</spring-framework.version>
+        <spring-boot.version>2.0.1.RELEASE</spring-boot.version>
         <commons-net.version>3.6</commons-net.version>
         <commons-compress.version>1.15</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
         <mockito.version>2.12.0</mockito.version>
-        <okhttp.version>3.9.0</okhttp.version>
+        <okhttp.version>3.10.0</okhttp.version>
         <guava.version>23.5-jre</guava.version>
         <args4j.version>2.33</args4j.version>
         <xmlunit.version>2.3.0</xmlunit.version>
@@ -195,6 +200,12 @@
                     <version>${maven.remote-resources.plugin.version}</version>
                 </plugin>
 
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+
             </plugins>
 
         </pluginManagement>
@@ -243,6 +254,12 @@
 
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring-framework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring-framework.version}</version>
                 <exclusions>
@@ -251,6 +268,20 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
 
             <dependency>
@@ -341,6 +372,24 @@
                 <groupId>org.dataconservancy.pass</groupId>
                 <artifactId>pass-data-client</artifactId>
                 <version>${pass-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass</groupId>
+                <artifactId>pass-json-adapter</artifactId>
+                <version>${pass-client.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>logging-interceptor</artifactId>
+                <version>${okhttp.version}</version>
             </dependency>
 
         </dependencies>
