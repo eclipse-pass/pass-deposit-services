@@ -73,6 +73,7 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
         this.metadataSerializer = metadataSerializer;
     }
 
+    public static String getNonCollidingFilename(String fileName, DepositFileType fileType) {
         if ((fileName.contentEquals(NihmsZippedPackageStream.METADATA_ENTRY_NAME) &&
             fileType != DepositFileType.bulksub_meta_xml) ||
             fileName.contentEquals(NihmsZippedPackageStream.MANIFEST_ENTRY_NAME)) {

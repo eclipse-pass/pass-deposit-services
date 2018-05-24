@@ -57,6 +57,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
                 writer.write(file.getLabel());
             }
             writer.append("\t");
+            String name = NihmsZippedPackageStream.getNonCollidingFilename(file.getName(), file.getType());
             writer.write(name);
             writer.append("\n");
         }

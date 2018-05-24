@@ -91,6 +91,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
         custodialResourcesMap.keySet().stream()
                 .forEach(fileName -> {
+                    fileName = NihmsZippedPackageStream.getNonCollidingFilename(fileName, DepositFileType.supplemental);
                     assertTrue(packageFiles.containsKey(fileName));
                 });
 
