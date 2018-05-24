@@ -109,8 +109,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         while (lines.hasNext()) {
             new ManifestLine(manifest, lines.nextLine(), lineCount++).assertAll();
         }
-        assertEquals("Expected one line per custodial resource in NIHMS manifest file " + manifest,
-                custodialResources.size(), lineCount);
+        assertEquals("Expected one line per custodial resource plus metadata file in NIHMS manifest file " + manifest,
+                custodialResources.size() + 1, lineCount);
     }
 
     @Test

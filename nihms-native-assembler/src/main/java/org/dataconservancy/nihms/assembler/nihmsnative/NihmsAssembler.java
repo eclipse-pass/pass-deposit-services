@@ -17,6 +17,8 @@
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
@@ -46,6 +48,13 @@ public class NihmsAssembler extends AbstractAssembler {
 
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
+        // Add manifest entry for metadata file
+        DepositFile metadataFile = new DepositFile();
+        metadataFile.setName(NihmsZippedPackageStream.METADATA_ENTRY_NAME);
+        metadataFile.setType(DepositFileType.bulksub_meta_xml);
+        metadataFile.setLabel("Metadata");
+        submission.getManifest().getFiles().add(metadataFile);
+
         NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
