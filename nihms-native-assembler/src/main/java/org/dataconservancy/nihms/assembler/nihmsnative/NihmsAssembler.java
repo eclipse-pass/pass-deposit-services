@@ -16,11 +16,11 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
@@ -45,6 +45,19 @@ public class NihmsAssembler extends AbstractAssembler {
 
     private static final String HTTPS_PREFIX = "https:";
 
+    // TODO: find a better place for these constants.
+
+    /**
+     * Package specification URI identifying the NIHMS native packaging spec, as specified by their 07/2017
+     * bulk publishing pdf.
+     */
+    public static final String SPEC_NIHMS_NATIVE_2017_07 = "nihms-native-2017-07";
+
+    /**
+     * Mime type of zip files.
+     */
+    public static final String APPLICATION_ZIP = "application/zip";
+
     @Autowired
     public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
         super(mbf, rbf);
@@ -52,6 +65,14 @@ public class NihmsAssembler extends AbstractAssembler {
 
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
+
+        mb.spec(SPEC_NIHMS_NATIVE_2017_07);
+        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archived(true);
+        mb.compressed(true);
+        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.mimeType("application/zip");
+
         // Add manifest entry for metadata file
         DepositFile metadataFile = new DepositFile();
         metadataFile.setName(NihmsZippedPackageStream.METADATA_ENTRY_NAME);

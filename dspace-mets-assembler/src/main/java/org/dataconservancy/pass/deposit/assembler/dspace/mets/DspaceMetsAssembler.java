@@ -31,6 +31,24 @@ import java.util.List;
 @Component
 public class DspaceMetsAssembler extends AbstractAssembler {
 
+    // TODO: find a better place for these constants.
+
+    /**
+     * Package specification URI identifying a DSpace METS SIP.
+     */
+    public static final String SPEC_DSPACE_METS = "http://purl.org/net/sword/package/METSDSpaceSIP";
+
+    /**
+     * Package specification URI identifying a simple zip file.
+     */
+    public static final String SPEC_SIMPLE_ZIP = "http://purl.org/net/sword/package/SimpleZip";
+
+    /**
+     * Mime type of zip files.
+     */
+    public static final String APPLICATION_ZIP = "application/zip";
+
+
     private DspaceMetadataDomWriter metsWriter;
 
     @Autowired
@@ -42,6 +60,12 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources,
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf) {
+        mb.spec(SPEC_DSPACE_METS);
+        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archived(true);
+        mb.compressed(true);
+        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.mimeType("application/zip");
         return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriter);
     }
 
