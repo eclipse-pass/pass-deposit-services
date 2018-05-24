@@ -32,37 +32,37 @@ public interface Transport {
      * Property identifying the value that can be used to look up authentication credentials by reference (i.e. the
      * value of this property serves as a key for an implementation to look up authentication credentials)
      */
-    String TRANSPORT_SERVERID = "nihms.transport.serverid";
+    String TRANSPORT_SERVERID = "deposit.transport.serverid";
 
     /**
      * Property key carrying the user name used for authentication when using {@link AUTHMODE#userpass}.
      */
-    String TRANSPORT_USERNAME = "nihms.transport.username";
+    String TRANSPORT_USERNAME = "deposit.transport.username";
 
     /**
      * Property key carrying the password used for authentication when using {@link AUTHMODE#userpass}.
      */
-    String TRANSPORT_PASSWORD = "nihms.transport.password";
+    String TRANSPORT_PASSWORD = "deposit.transport.password";
 
     /**
      * Property key identifying the mode of authentication; value encoded as the {@link Enum#name} form of {@link AUTHMODE}.
      */
-    String TRANSPORT_AUTHMODE = "nihms.transport.authmode";
+    String TRANSPORT_AUTHMODE = "deposit.transport.authmode";
 
     /**
      * Property key identifying the protocol used for transport, value encoded as the {@link Enum#name} form of {@link PROTOCOL}.
      */
-    String TRANSPORT_PROTOCOL = "nihms.transport.protocol";
+    String TRANSPORT_PROTOCOL = "deposit.transport.protocol";
 
     /**
      * Property identifying the server (or IP address) that the package will be deposited to
      */
-    String TRANSPORT_SERVER_FQDN = "nihms.transport.server-fqdn";
+    String TRANSPORT_SERVER_FQDN = "deposit.transport.server-fqdn";
 
     /**
      * Property identifying the TCP port that will be used by the transport to deposit the package
      */
-    String TRANSPORT_SERVER_PORT = "nihms.transport.server-port";
+    String TRANSPORT_SERVER_PORT = "deposit.transport.server-port";
 
     /**
      * Property key identifying the base64 encoded checksum of the {@code InputStream} being deposited by {@link

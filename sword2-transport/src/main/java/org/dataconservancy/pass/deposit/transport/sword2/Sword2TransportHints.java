@@ -23,26 +23,26 @@ public interface Sword2TransportHints {
     /**
      * Property identifying the SWORD service document URL
      */
-    String SWORD_SERVICE_DOC_URL = "deposit.transport.sword.service-doc";
+    String SWORD_SERVICE_DOC_URL = "deposit.transport.protocol.swordv2.service-doc";
 
     /**
      * Property identifying the Atom Publishing Protocol Collection to deposit the package to
      */
-    String SWORD_COLLECTION_URL = "deposit.transport.sword.target-collection";
+    String SWORD_COLLECTION_URL = "deposit.transport.protocol.swordv2.target-collection";
 
     /**
      * Property identifying the On-Behalf-Of user
      */
-    String SWORD_ON_BEHALF_OF_USER = "deposit.transport.sword.on-behalf-of";
+    String SWORD_ON_BEHALF_OF_USER = "deposit.transport.protocol.swordv2.on-behalf-of";
 
     /**
      * Property identifying whether or not a deposit receipt is requested
      */
-    String SWORD_DEPOSIT_RECEIPT_FLAG = "deposit.transport.sword.deposit-receipt";
+    String SWORD_DEPOSIT_RECEIPT_FLAG = "deposit.transport.protocol.swordv2.deposit-receipt";
 
     /**
      * Property identifying the user agent string used by this client when opening transport sessions
      */
-    String SWORD_CLIENT_USER_AGENT = "deposit.transport.sword.user-agent-string";
+    String SWORD_CLIENT_USER_AGENT = "deposit.transport.protocol.swordv2.user-agent-string";
 
 }
