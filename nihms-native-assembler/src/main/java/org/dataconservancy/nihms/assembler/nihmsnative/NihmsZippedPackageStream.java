@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractZippedPackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
@@ -70,5 +71,13 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     public void setMetadataSerializer(StreamingSerializer metadataSerializer) {
         this.metadataSerializer = metadataSerializer;
+    }
+
+        if ((fileName.contentEquals(NihmsZippedPackageStream.METADATA_ENTRY_NAME) &&
+            fileType != DepositFileType.bulksub_meta_xml) ||
+            fileName.contentEquals(NihmsZippedPackageStream.MANIFEST_ENTRY_NAME)) {
+            fileName = "SUBMISSION-" + fileName;
+        }
+        return fileName;
     }
 }
