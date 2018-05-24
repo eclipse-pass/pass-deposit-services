@@ -64,6 +64,7 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
     }
 
     protected String nameResource(Resource resource) {
+        return NihmsZippedPackageStream.getNonCollidingFilename(resource.getFilename(), DepositFileType.supplemental);
     }
 
 }
