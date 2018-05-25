@@ -183,7 +183,7 @@
                     <images>
                         <image>
                             <alias>ftpserver</alias>
-                            <name>pass/ftpserver-demo:${project.parent.version}</name>
+                            <name>${docker.ftp.version}</name>
                             <build>
                                 <dockerFile>${project.basedir}/src/test/resources/docker/Dockerfile</dockerFile>
                             </build>
@@ -210,7 +210,7 @@
                         </image>
                         <image>
                             <alias>postgres</alias>
-                            <name>oapass/postgres:latest</name>
+                            <name>${docker.postgres.version}</name>
                             <run>
                                 <skip>${postgres.skip}</skip>
                                 <wait>
@@ -223,7 +223,7 @@
                         </image>
                         <image>
                             <alias>dspace</alias>
-                            <name>oapass/dspace:latest</name>
+                            <name>${docker.dspace.version}</name>
                             <run>
                                 <skip>${dspace.skip}</skip>
                                 <wait>
@@ -243,7 +243,7 @@
                         </image>
                         <image>
                             <alias>fcrepo</alias>
-                            <name>oapass/fcrepo:4.7.5-2.0-SNAPSHOT-6</name>
+                            <name>${docker.fcrepo.version}</name>
                             <run>
                                 <skip>${fcrepo.skip}</skip>
                                 <wait>
@@ -269,7 +269,7 @@
                         </image>
                         <image>
                             <alias>elasticsearch</alias>
-                            <name>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</name>
+                            <name>${docker.elasticsearch.version}</name>
                             <run>
                                 <skip>${indexer.skip}</skip>
                                 <wait>
@@ -290,7 +290,7 @@
                         </image>
                         <image>
                             <alias>indexer</alias>
-                            <name>oapass/indexer:0.0.6-2.0-SNAPSHOT</name>
+                            <name>${docker.indexer.version}</name>
                             <run>
                                 <skip>${indexer.skip}</skip>
                                 <links>
