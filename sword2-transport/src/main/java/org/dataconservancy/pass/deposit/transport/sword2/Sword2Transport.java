@@ -18,6 +18,8 @@ package org.dataconservancy.pass.deposit.transport.sword2;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.ProtocolViolationException;
 import org.swordapp.client.SWORDClient;
@@ -66,12 +68,14 @@ import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportH
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class Sword2Transport implements Transport {
 
     static final String MISSING_REQUIRED_HINT = "Missing required transport hint '%s'";
 
     private Sword2ClientFactory clientFactory;
 
+    @Autowired
     public Sword2Transport(Sword2ClientFactory clientFactory) {
         if (clientFactory == null) {
             throw new IllegalArgumentException("SWORD client factory must not be null.");

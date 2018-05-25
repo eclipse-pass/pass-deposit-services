@@ -20,6 +20,8 @@ import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.TransportSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -60,6 +62,7 @@ import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setWorkingDirector
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class FtpTransport implements Transport {
 
     private static Logger LOG = LoggerFactory.getLogger(FtpTransport.class);
@@ -72,6 +75,7 @@ public class FtpTransport implements Transport {
      *
      * @param ftpClientFactory used to create instances of {@link FTPClient}
      */
+    @Autowired
     public FtpTransport(FtpClientFactory ftpClientFactory) {
         this.ftpClientFactory = ftpClientFactory;
     }

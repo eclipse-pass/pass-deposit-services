@@ -17,12 +17,14 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.springframework.stereotype.Component;
 
 /**
  * Default implementation of {@link ResourceBuilderFactory}.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class DefaultResourceBuilderFactory implements ResourceBuilderFactory {
 
     @Override
