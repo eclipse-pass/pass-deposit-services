@@ -111,6 +111,20 @@
                                 <portName>fcrepo.jms.port</portName>
                                 <portName>fcrepo.stomp.port</portName>
                                 <portName>es.port</portName>
+                                <portName>postgres.port</portName>
+                                <portName>dspace.port</portName>
+                                <portName>ftp-control.port</portName>
+                                <portName>ftp-data-01.port</portName>
+                                <portName>ftp-data-02.port</portName>
+                                <portName>ftp-data-03.port</portName>
+                                <portName>ftp-data-04.port</portName>
+                                <portName>ftp-data-05.port</portName>
+                                <portName>ftp-data-06.port</portName>
+                                <portName>ftp-data-07.port</portName>
+                                <portName>ftp-data-08.port</portName>
+                                <portName>ftp-data-09.port</portName>
+                                <portName>ftp-data-10.port</portName>
+                                <portName>ftp-data-11.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -189,18 +203,18 @@
                                     <time>6000</time>
                                 </wait>
                                 <ports>
-                                    <port>21:21</port>
-                                    <port>40000:30000</port>
-                                    <port>40001:30001</port>
-                                    <port>40002:30002</port>
-                                    <port>40003:30003</port>
-                                    <port>40004:30004</port>
-                                    <port>40005:30005</port>
-                                    <port>40006:30006</port>
-                                    <port>40007:30007</port>
-                                    <port>40008:30008</port>
-                                    <port>40009:30009</port>
-                                    <port>40010:30010</port>
+                                    <port>${ftp-control.port}:21</port>
+                                    <port>${ftp-data-01.port}:30000</port>
+                                    <port>${ftp-data-02.port}:30001</port>
+                                    <port>${ftp-data-03.port}:30002</port>
+                                    <port>${ftp-data-04.port}:30003</port>
+                                    <port>${ftp-data-05.port}:30004</port>
+                                    <port>${ftp-data-06.port}:30005</port>
+                                    <port>${ftp-data-07.port}:30006</port>
+                                    <port>${ftp-data-08.port}:30007</port>
+                                    <port>${ftp-data-09.port}:30008</port>
+                                    <port>${ftp-data-10.port}:30009</port>
+                                    <port>${ftp-data-11.port}:30010</port>
                                 </ports>
                             </run>
                         </image>
@@ -213,8 +227,11 @@
                                     <time>6000</time>
                                 </wait>
                                 <ports>
-                                    <port>6543:6543</port>
+                                    <port>${postgres.port}:${postgres.port}</port>
                                 </ports>
+                                <env>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
+                                </env>
                             </run>
                         </image>
                         <image>
@@ -223,17 +240,19 @@
                             <run>
                                 <skip>${dspace.skip}</skip>
                                 <wait>
-                                    <url>http://${docker.host.address}:8181/xmlui</url>
+                                    <url>http://${docker.host.address}:${dspace.port}/xmlui</url>
                                     <time>180000</time>
                                 </wait>
                                 <ports>
-                                    <port>8181:8181</port>
+                                    <port>${dspace.port}:${dspace.port}</port>
                                 </ports>
                                 <links>
                                     <link>postgres</link>
                                 </links>
                                 <env>
                                     <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
+                                    <DSPACE_PORT>${dspace.port}</DSPACE_PORT>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
                                 </env>
                             </run>
                         </image>
@@ -267,6 +286,10 @@
                         <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
                         <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
                         <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
+                        <transport.nihms.deposit.transport.server-port>${ftp-control.port}</transport.nihms.deposit.transport.server-port>
+                        <transport.js.deposit.transport.protocol.swordv2.service-doc>http://${docker.host.address}:${dspace.port}/swordv2/servicedocument</transport.js.deposit.transport.protocol.swordv2.service-doc>
+                        <transport.js.deposit.transport.protocol.swordv2.target-collection>http://${docker.host.address}:${dspace.port}/swordv2/collection/123456789/2</transport.js.deposit.transport.protocol.swordv2.target-collection>
+                        <transport.js.deposit.transport.server-port>${dspace.port}</transport.js.deposit.transport.server-port>
                     </systemProperties>
                 </configuration>
                 <executions>
