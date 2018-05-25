@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.junit.Before;
@@ -37,6 +38,7 @@ import java.util.List;
 
 import static org.dataconservancy.nihms.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -114,5 +116,26 @@ public class NihmsPackageStreamTest {
         }
 
         assertTrue(tmpFile.length() > 0);
+    }
+
+    @Test
+    public void nonCollidingFilename() throws Exception {
+        String nameIn, nameOut;
+
+        nameIn = "test.txt";
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
+
+        nameIn = "manifest.txt";
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
+
+        nameIn = "bulk_meta.xml";
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
+
+        nameIn = "bulk_meta.xml";
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
+        assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
     }
 }
