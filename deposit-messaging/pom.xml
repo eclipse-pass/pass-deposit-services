@@ -190,17 +190,17 @@
                                 </wait>
                                 <ports>
                                     <port>21:21</port>
-                                    <port>30000:30000</port>
-                                    <port>30001:30001</port>
-                                    <port>30002:30002</port>
-                                    <port>30003:30003</port>
-                                    <port>30004:30004</port>
-                                    <port>30005:30005</port>
-                                    <port>30006:30006</port>
-                                    <port>30007:30007</port>
-                                    <port>30008:30008</port>
-                                    <port>30009:30009</port>
-                                    <port>30010:30010</port>
+                                    <port>40000:30000</port>
+                                    <port>40001:30001</port>
+                                    <port>40002:30002</port>
+                                    <port>40003:30003</port>
+                                    <port>40004:30004</port>
+                                    <port>40005:30005</port>
+                                    <port>40006:30006</port>
+                                    <port>40007:30007</port>
+                                    <port>40008:30008</port>
+                                    <port>40009:30009</port>
+                                    <port>40010:30010</port>
                                 </ports>
                             </run>
                         </image>
