@@ -63,6 +63,19 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
         resources.forEach(r -> LOG.debug(">>>> Assembling resource: {}", r));
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * Returns the file name for the resource, or a modified version thereof if the name matches that of
+     * one of the default files that are included in a NIHMS deposit.  The file type is not known at this
+     * point in the code, but we do know that it must be user-supplied and therefore not "bulksub_meta_xml"
+     * (the only type that warrants special treatment in getNoncollidingFilename()).  So, the type is
+     * always passed as "supplemental" to avoid that special treatment.
+     *
+     * @param resource the resource for which a safe file name will be returned.
+     * @return a collision-free name for the provided resource file.
+     */
+    @Override
     protected String nameResource(Resource resource) {
         return NihmsZippedPackageStream.getNonCollidingFilename(resource.getFilename(), DepositFileType.supplemental);
     }

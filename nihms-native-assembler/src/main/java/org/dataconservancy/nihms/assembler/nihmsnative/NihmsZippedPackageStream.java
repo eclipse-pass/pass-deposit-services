@@ -30,6 +30,8 @@ import java.util.List;
 
 public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
+    static final String REMEDIATED_FILE_PREFIX = "SUBMISSION-";
+
     static final String MANIFEST_ENTRY_NAME = "manifest.txt";
 
     static final String METADATA_ENTRY_NAME = "bulk_meta.xml";
@@ -73,11 +75,22 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
         this.metadataSerializer = metadataSerializer;
     }
 
+    /**
+     * Given a file name and type, returns a file name that can safely be used in a NIHMS deposit
+     * without causing a collision with the names of files that are automatically included in the deposit package.
+     * If a collision is detected, the returned name is a modification of the supplied name.
+     * Since multiple files in a submission may already have the same name, no effort is made to ensure that
+     * the collision-free name is unique.
+     *
+     * @param fileName the name of a file to be included in the deposit, which may conflict with a reserved name.
+     * @param fileType the type of the file whose name is being validated.
+     * @return the existing file name, or a modified version if the existing name collides with a reserved name.
+     */
     public static String getNonCollidingFilename(String fileName, DepositFileType fileType) {
         if ((fileName.contentEquals(NihmsZippedPackageStream.METADATA_ENTRY_NAME) &&
             fileType != DepositFileType.bulksub_meta_xml) ||
             fileName.contentEquals(NihmsZippedPackageStream.MANIFEST_ENTRY_NAME)) {
-            fileName = "SUBMISSION-" + fileName;
+            fileName = REMEDIATED_FILE_PREFIX + fileName;
         }
         return fileName;
     }
