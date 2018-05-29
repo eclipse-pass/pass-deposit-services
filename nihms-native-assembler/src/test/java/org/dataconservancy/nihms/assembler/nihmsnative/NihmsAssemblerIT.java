@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsZippedPackageStream.REMEDIATED_FILE_PREFIX;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -79,18 +80,34 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         assertTrue("Missing NIHMS package manifest (expected: " + manifest + ")", manifest.exists());
         assertTrue("Missing NIHMS bulk metadata (expected: " + metadata + ")", metadata.exists());
 
-        // Each custodial resource is present in the package
+        // Each custodial resource is present in the package.  The tested filenames need to be remediated, in case
+        // a custodial resource uses a reserved file name.
         custodialResources.forEach(custodialResource -> {
-            assertTrue(extractedPackageDir.toPath().resolve(custodialResource.getFilename()).toFile().exists());
+            String filename = NihmsZippedPackageStream.getNonCollidingFilename(custodialResource.getFilename(),
+                    custodialResourcesTypeMap.get(custodialResource.getFilename()));
+            assertTrue(extractedPackageDir.toPath().resolve(filename).toFile().exists());
         });
 
-        // Each file in the package is accounted for as a custodial resource or as a metadata file
         Map<String, File> packageFiles = Arrays.stream(extractedPackageDir.listFiles())
                 .collect(Collectors.toMap((File::getName), Function.identity()));
 
+        // Each file in the package is accounted for as a custodial resource or as a metadata file
+        // Remediated resources are detected by their file prefix
         packageFiles.keySet().stream()
                 .filter(fileName -> !fileName.equals(manifest.getName()) && !fileName.equals(metadata.getName()))
-                .forEach(fileName -> assertTrue(custodialResourcesMap.containsKey(fileName)));
+                .forEach(fileName -> {
+                    String remediatedFilename = NihmsZippedPackageStream.getNonCollidingFilename(fileName,
+                            custodialResourcesTypeMap.get(fileName));
+
+                    if (!remediatedFilename.startsWith(REMEDIATED_FILE_PREFIX)) {
+                        assertTrue("Missing file from custodial resources: '" + remediatedFilename + "'",
+                                custodialResourcesMap.containsKey(remediatedFilename));
+                    } else {
+                        assertTrue("Missing remediated file from custodial resources: '" + remediatedFilename + "'",
+                                custodialResourcesMap.containsKey(
+                                        remediatedFilename.substring(REMEDIATED_FILE_PREFIX.length())));
+                    }
+                });
 
         assertTrue(packageFiles.keySet().contains(manifest.getName()));
         assertTrue(packageFiles.keySet().contains(metadata.getName()));
@@ -181,6 +198,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             assertTypeIsPresent();
             assertLabelIsPresent();
             assertFileIsPresent();
+            assertNameIsValid();
         }
 
         void assertTypeIsPresent() {
@@ -214,6 +232,13 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             } catch (ArrayIndexOutOfBoundsException e) {
                 fail(String.format(ERR, manifestFile, lineNo, "a file name"));
             }
+        }
+
+        void assertNameIsValid() {
+            assertFalse(String.format("File %s, line %s: Name cannot be same as metadata file.", manifestFile, lineNo),
+                    manifestFile.getName() == NihmsZippedPackageStream.METADATA_ENTRY_NAME);
+            assertFalse(String.format("File %s, line %s: Name cannot be same as manifest file.", manifestFile, lineNo),
+                    manifestFile.getName() == NihmsZippedPackageStream.MANIFEST_ENTRY_NAME);
         }
     }
 
