@@ -18,49 +18,40 @@ package org.dataconservancy.pass.deposit.messaging.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.commons.httpclient.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
-import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.fs.FcrepoModelBuilder;
-import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.nihms.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
+import org.dataconservancy.pass.deposit.messaging.model.FcrepoRepositoriesSource;
+import org.dataconservancy.pass.deposit.messaging.model.InMemoryMapRegistry;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
-import org.dataconservancy.pass.deposit.messaging.model.InMemoryMapRegistry;
-import org.dataconservancy.pass.deposit.messaging.model.FcrepoRepositoriesSource;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
-import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
-import org.dataconservancy.pass.model.Policy;
 import org.dataconservancy.pass.model.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -70,14 +61,10 @@ import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -234,7 +221,7 @@ public class DepositConfig {
     }
 
     @Bean
-    public Map<String, Map<String, String>> transportRegistries() {
+    public Map<String, Map<String, String>> transportRegistries(Environment env) {
         Properties properties = new Properties();
         try {
             properties.load(transportResource.getInputStream());
@@ -254,7 +241,7 @@ public class DepositConfig {
             Map<String, String> registryMap = registries.getOrDefault(repoName, new HashMap<>());
 
             String registryKey = Arrays.stream(keyParts, 2, keyParts.length).collect(Collectors.joining("."));
-            String registryValue = properties.getProperty(key);
+            String registryValue = env.resolveRequiredPlaceholders(properties.getProperty(key));
             LOG.debug(">>>> key: '{}' -> registryKey: '{}', registryValue: '{}'", key, registryKey, registryValue);
             registryMap.put(registryKey, registryValue);
             registries.putIfAbsent(repoName, registryMap);

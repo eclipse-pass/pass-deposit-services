@@ -70,6 +70,8 @@
 
     <properties>
         <fcrepo.server>${docker.host.address}</fcrepo.server>
+        <dspace.server>${docker.host.address}</dspace.server>
+        <ftp.server>${docker.host.address}</ftp.server>
         <pass.fedora.user>admin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
@@ -286,10 +288,10 @@
                         <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
                         <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
                         <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
-                        <transport.nihms.deposit.transport.server-port>${ftp-control.port}</transport.nihms.deposit.transport.server-port>
-                        <transport.js.deposit.transport.protocol.swordv2.service-doc>http://${docker.host.address}:${dspace.port}/swordv2/servicedocument</transport.js.deposit.transport.protocol.swordv2.service-doc>
-                        <transport.js.deposit.transport.protocol.swordv2.target-collection>http://${docker.host.address}:${dspace.port}/swordv2/collection/123456789/2</transport.js.deposit.transport.protocol.swordv2.target-collection>
-                        <transport.js.deposit.transport.server-port>${dspace.port}</transport.js.deposit.transport.server-port>
+                        <dspace.host>${dspace.server}</dspace.host>
+                        <dspace.port>${dspace.port}</dspace.port>
+                        <ftp.host>${ftp.server}</ftp.host>
+                        <ftp.port>${ftp-control.port}</ftp.port>
                     </systemProperties>
                 </configuration>
                 <executions>
