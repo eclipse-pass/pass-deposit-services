@@ -108,7 +108,7 @@
         <dependency>
             <groupId>org.dataconservancy.pass</groupId>
             <artifactId>pass-data-client</artifactId>
-            <version>${pass.client.version}</version>
+            <version>${pass-client.version}</version>
             <scope>test</scope>
         </dependency>
 
