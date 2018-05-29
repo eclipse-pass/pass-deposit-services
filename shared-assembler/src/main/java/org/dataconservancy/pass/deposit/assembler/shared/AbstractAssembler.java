@@ -21,12 +21,17 @@ import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +40,8 @@ import java.util.stream.Collectors;
  * {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory)}.
  */
 public abstract class AbstractAssembler implements Assembler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAssembler.class);
 
     private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to a Spring Resource type.";
 
@@ -51,6 +58,12 @@ public abstract class AbstractAssembler implements Assembler {
     private MetadataBuilderFactory mbf;
 
     private ResourceBuilderFactory rbf;
+
+    private String fedoraBaseUrl;
+
+    private String fedoraUser;
+
+    private String fedoraPassword;
 
     /**
      * Constructs a new assembler that provides {@link MetadataBuilderFactory} and {@link ResourceBuilderFactory} for
@@ -136,9 +149,11 @@ public abstract class AbstractAssembler implements Assembler {
                 .stream()
                 .map(DepositFile::getLocation)
                 .map(location -> {
+
                     if (location.startsWith(FILE_PREFIX)) {
                         return new FileSystemResource(location.substring(FILE_PREFIX.length()));
                     }
+
                     if (location.startsWith(CLASSPATH_PREFIX) ||
                             location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
                         if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
@@ -146,8 +161,21 @@ public abstract class AbstractAssembler implements Assembler {
                         }
                         return new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
                     }
-                    // TODO: when fedora binaries are referenced here, we will need to instantiate a custom
-                    // resource that can authenticate to Fedora
+
+                    // Defend against callers that have not specified Fedora auth creds, or repositories that
+                    // do not require authentication
+                    // TODO: a more flexible mechanism for authenticating to origin servers when retrieving resources
+                    if (fedoraBaseUrl != null && location.startsWith(fedoraBaseUrl)) {
+                        if (fedoraUser != null) {
+                            try {
+                                LOG.trace(">>>> Returning AuthenticatedResource for {}", location);
+                                return new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
+                            } catch (MalformedURLException e) {
+                                throw new RuntimeException(e.getMessage(), e);
+                            }
+                        }
+                    }
+
                     if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX)) {
                         try {
                             return new UrlResource(location);
@@ -155,6 +183,7 @@ public abstract class AbstractAssembler implements Assembler {
                             throw new RuntimeException(e.getMessage(), e);
                         }
                     }
+
                     if (location.contains("/") || location.contains("\\")) {
                         // assume it is a file
                         return new FileSystemResource(location);
@@ -192,6 +221,33 @@ public abstract class AbstractAssembler implements Assembler {
         }
 
         return result;
+    }
+
+    public String getFedoraBaseUrl() {
+        return fedoraBaseUrl;
+    }
+
+    @Value("${pass.fedora.baseurl}")
+    public void setFedoraBaseUrl(String fedoraBaseUrl) {
+        this.fedoraBaseUrl = fedoraBaseUrl;
+    }
+
+    public String getFedoraUser() {
+        return fedoraUser;
+    }
+
+    @Value("${pass.fedora.user}")
+    public void setFedoraUser(String fedoraUser) {
+        this.fedoraUser = fedoraUser;
+    }
+
+    public String getFedoraPassword() {
+        return fedoraPassword;
+    }
+
+    @Value("${pass.fedora.password}")
+    public void setFedoraPassword(String fedoraPassword) {
+        this.fedoraPassword = fedoraPassword;
     }
 
     /**
