@@ -286,8 +286,9 @@
                     <systemProperties>
                         <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
                         <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
-                        <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
-                        <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
+                        <fcrepo.host>${fcrepo.server}</fcrepo.host>
+                        <fcrepo.port>${fcrepo.http.port}</fcrepo.port>
+                        <fcrepo.jms.port>${fcrepo.jms.port}</fcrepo.jms.port>
                         <dspace.host>${dspace.server}</dspace.host>
                         <dspace.port>${dspace.port}</dspace.port>
                         <ftp.host>${ftp.server}</ftp.host>
