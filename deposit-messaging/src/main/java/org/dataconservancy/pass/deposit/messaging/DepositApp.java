@@ -17,8 +17,10 @@ package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.deposit.messaging.config.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.JmsConfig;
+import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.DirtyDepositRunner;
+import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +60,7 @@ public class DepositApp {
 
         switch (args[0]) {
             case "listen": {
-                app = new SpringApplication(DepositApp.class, JmsConfig.class);
+                app = new SpringApplication(DepositApp.class, ListenerRunner.class);
                 break;
             }
             case "update": {
