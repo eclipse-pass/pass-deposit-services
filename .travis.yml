@@ -23,15 +23,7 @@ before_install:
 install: mvn -U install -Ddocker.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml deploy
-  -Dexternal -DtrimStackTrace=false -Ddocker.keepRunning; else mvn verify -DtrimStackTrace=false
-  -Ddocker.keepRunning; fi
+  -Dexternal -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false; fi
 
 jdk:
 - oraclejdk8
-
-after_failure:
-- docker exec `docker ps|awk '{print $1}'|grep -v CONTAINER` cat /var/log/pure-ftpd/pureftpd.log
-- cd nihms-integration && mvn docker:stop
-
-after_success:
-- cd nihms-integration && mvn docker:stop

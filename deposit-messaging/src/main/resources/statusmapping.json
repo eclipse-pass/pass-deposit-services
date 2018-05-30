@@ -1,0 +1,15 @@
+{
+  "RepositoryCopyv2": {
+    "COMPLETE": "ACCEPTED",
+    "*": "SUBMITTED"
+  },
+  "SWORDv2DspaceStatement": {
+    "SWORD_STATE_ARCHIVED": "ACCEPTED",
+    "SWORD_STATE_WITHDRAWN": "REJECTED",
+    "*": "SUBMITTED"
+  },
+  "SubmissionAggregatedStatusv2": {
+    "ACCEPTED": "ACCEPTED",
+    "*": "SUBMITTED"
+  }
+}

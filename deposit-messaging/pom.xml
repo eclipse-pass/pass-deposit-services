@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2017 Johns Hopkins University
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.dataconservancy.nihms</groupId>
+        <artifactId>nihms-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>deposit-messaging</artifactId>
+    <name>PASS messaging integration</name>
+
+    <profiles>
+        <profile>
+            <id>external-fcrepo-server</id>
+            <activation>
+                <property>
+                    <name>fcrepo.server</name>
+                </property>
+            </activation>
+            <properties>
+                <fcrepo.skip>true</fcrepo.skip>
+                <pass.fedora.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
+            </properties>
+        </profile>
+        <profile>
+            <id>external-ftp-server</id>
+            <activation>
+                <property>
+                    <name>ftp.server</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.host.address>${ftp.server}</docker.host.address>
+                <ftp.skip>true</ftp.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>external-dspace-server</id>
+            <activation>
+                <property>
+                    <name>dspace.server</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.host.address>${dspace.server}</docker.host.address>
+                <dspace.skip>true</dspace.skip>
+                <postgres.skip>true</postgres.skip>
+            </properties>
+        </profile>
+    </profiles>
+
+    <properties>
+        <fcrepo.server>${docker.host.address}</fcrepo.server>
+        <dspace.server>${docker.host.address}</dspace.server>
+        <ftp.server>${docker.host.address}</ftp.server>
+        <pass.fedora.user>admin</pass.fedora.user>
+        <pass.fedora.password>moo</pass.fedora.password>
+        <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
+        <pass.elasticsearch.url>http://${docker.host.address}:${es.port}/pass/</pass.elasticsearch.url>
+    </properties>
+
+    <build>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <!--<configuration>-->
+                    <!--<classifier>exec</classifier>-->
+                <!--</configuration>-->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>fcrepo.http.port</portName>
+                                <portName>fcrepo.jms.port</portName>
+                                <portName>fcrepo.stomp.port</portName>
+                                <portName>es.port</portName>
+                                <portName>postgres.port</portName>
+                                <portName>dspace.port</portName>
+                                <portName>ftp-control.port</portName>
+                                <portName>ftp-data-01.port</portName>
+                                <portName>ftp-data-02.port</portName>
+                                <portName>ftp-data-03.port</portName>
+                                <portName>ftp-data-04.port</portName>
+                                <portName>ftp-data-05.port</portName>
+                                <portName>ftp-data-06.port</portName>
+                                <portName>ftp-data-07.port</portName>
+                                <portName>ftp-data-08.port</portName>
+                                <portName>ftp-data-09.port</portName>
+                                <portName>ftp-data-10.port</portName>
+                                <portName>ftp-data-11.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <alias>fcrepo</alias>
+                            <name>${docker.fcrepo.version}</name>
+                            <run>
+                                <skip>${fcrepo.skip}</skip>
+                                <wait>
+                                    <url>http://${pass.fedora.user}:${pass.fedora.password}@${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</url>
+                                    <time>180000</time>
+                                </wait>
+                                <ports>
+                                    <port>${fcrepo.http.port}:${fcrepo.http.port}</port>
+                                    <port>${fcrepo.jms.port}:${fcrepo.jms.port}</port>
+                                    <port>${fcrepo.stomp.port}:${fcrepo.stomp.port}</port>
+                                </ports>
+                                <env>
+                                    <FCREPO_HOST>fcrepo</FCREPO_HOST>
+                                    <FCREPO_PORT>${fcrepo.http.port}</FCREPO_PORT>
+                                    <FCREPO_JMS_PORT>${fcrepo.jms.port}</FCREPO_JMS_PORT>
+                                    <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
+                                    <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
+                                    <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.0.jsonld</COMPACTION_URI>
+                                    <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
+                                </env>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>elasticsearch</alias>
+                            <name>${docker.elasticsearch.version}</name>
+                            <run>
+                                <skip>${indexer.skip}</skip>
+                                <ports>
+                                    <port>${es.port}:${es.port}</port>
+                                </ports>
+                                <env>
+                                    <discovery.type>single-node</discovery.type>
+                                    <bootstrap.memory_lock>true</bootstrap.memory_lock>
+                                    <ES_JAVA_OPTS>-Xms512m -Xmx512m</ES_JAVA_OPTS>
+                                </env>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>indexer</alias>
+                            <name>${docker.indexer.version}</name>
+                            <run>
+                                <skip>${indexer.skip}</skip>
+                                <env>
+                                    <PI_FEDORA_USER>${pass.fedora.user}</PI_FEDORA_USER>
+                                    <PI_FEDORA_PASS>${pass.fedora.password}</PI_FEDORA_PASS>
+                                    <PI_FEDORA_INTERNAL_BASE>http://fcrepo:8080/fcrepo/rest/</PI_FEDORA_INTERNAL_BASE>
+                                    <PI_ES_BASE>http://elasticsearch:9200/</PI_ES_BASE>
+                                    <PI_LOG_LEVEL>info</PI_LOG_LEVEL>
+                                    <PI_ES_INDEX>http://elasticsearch:9200/pass/</PI_ES_INDEX>
+                                    <PI_FEDORA_JMS_BROKER>tcp://fcrepo:61616</PI_FEDORA_JMS_BROKER>
+                                    <PI_FEDORA_JMS_QUEUE>fedora</PI_FEDORA_JMS_QUEUE>
+                                    <PI_TYPE_PREFIX>http://example.org/pass/</PI_TYPE_PREFIX>
+                                </env>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>ftpserver</alias>
+                            <name>${docker.ftp.version}</name>
+                            <run>
+                                <skip>${ftp.skip}</skip>
+                                <wait>
+                                    <time>6000</time>
+                                </wait>
+                                <ports>
+                                    <port>${ftp-control.port}:21</port>
+                                    <port>${ftp-data-01.port}:30000</port>
+                                    <port>${ftp-data-02.port}:30001</port>
+                                    <port>${ftp-data-03.port}:30002</port>
+                                    <port>${ftp-data-04.port}:30003</port>
+                                    <port>${ftp-data-05.port}:30004</port>
+                                    <port>${ftp-data-06.port}:30005</port>
+                                    <port>${ftp-data-07.port}:30006</port>
+                                    <port>${ftp-data-08.port}:30007</port>
+                                    <port>${ftp-data-09.port}:30008</port>
+                                    <port>${ftp-data-10.port}:30009</port>
+                                    <port>${ftp-data-11.port}:30010</port>
+                                </ports>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>postgres</alias>
+                            <name>${docker.postgres.version}</name>
+                            <run>
+                                <skip>${postgres.skip}</skip>
+                                <wait>
+                                    <time>6000</time>
+                                </wait>
+                                <ports>
+                                    <port>${postgres.port}:${postgres.port}</port>
+                                </ports>
+                                <env>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
+                                </env>
+                            </run>
+                        </image>
+                        <image>
+                            <alias>dspace</alias>
+                            <name>${docker.dspace.version}</name>
+                            <run>
+                                <skip>${dspace.skip}</skip>
+                                <wait>
+                                    <url>http://${docker.host.address}:${dspace.port}/xmlui</url>
+                                    <time>180000</time>
+                                </wait>
+                                <ports>
+                                    <port>${dspace.port}:${dspace.port}</port>
+                                </ports>
+                                <links>
+                                    <link>postgres</link>
+                                </links>
+                                <env>
+                                    <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
+                                    <DSPACE_PORT>${dspace.port}</DSPACE_PORT>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
+                                </env>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start-docker-its</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-docker-its</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
+                        <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
+                        <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
+                        <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
+                        <dspace.host>${dspace.server}</dspace.host>
+                        <dspace.port>${dspace.port}</dspace.port>
+                        <ftp.host>${ftp.server}</ftp.host>
+                        <ftp.port>${ftp-control.port}</ftp.port>
+                    </systemProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-configuration-processor</artifactId>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-autoconfigure</artifactId>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>geronimo-jms_1.1_spec</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>deposit-model</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-data-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-json-adapter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-assembler-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>fedora-builder</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>builder-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-transport-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>dspace-mets-assembler</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>sword2-transport</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>nihms-ftp-transport</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-activemq</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <!--<scope>test</scope>-->
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.springframework</groupId>-->
+            <!--<artifactId>spring-test</artifactId>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
