@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.deposit.messaging;
+package org.dataconservancy.pass.deposit.messaging.support;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +192,8 @@ public class Condition<T> {
                 failureException = e;
                 try {
                     Thread.sleep(backoffMs);
+                    // must re-submit after catching an exception, because Future.get will perpetually return the exception unless the Future is re-executed
+                    submitInternal();
                 } catch (InterruptedException ie) {
                     LOG.debug("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
                     result = false;
