@@ -76,7 +76,7 @@ public class JmsSubmissionProcessorTest extends AbstractSubmissionProcessorTest 
         critical = mock(CriticalRepositoryInteraction.class);
 
         underTest = new JmsSubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                repoRegistry, submissionPolicy, dirtyDepositPolicy, messagePolicy, taskExecutor, dspaceStatusMapper,
+                submissionPolicy, dirtyDepositPolicy, messagePolicy, taskExecutor, dspaceStatusMapper,
                 atomStatusParser, critical);
     }
 

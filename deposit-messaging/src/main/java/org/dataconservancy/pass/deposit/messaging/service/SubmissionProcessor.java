@@ -71,8 +71,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected Registry<Packager> packagerRegistry;
 
-    protected Registry<Repository> repositoryRegistry;
-
     protected SubmissionPolicy submissionPolicy;
 
     protected JmsMessagePolicy messagePolicy;
@@ -89,7 +87,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     @Autowired
     public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
-                               Registry<Packager> packagerRegistry, Registry<Repository> repositoryRegistry,
+                               Registry<Packager> packagerRegistry,
                                @Qualifier("alwaysTrueSubmissionPolicy") SubmissionPolicy submissionPolicy,
                                @Qualifier("dirtyDepositPolicy") Policy<Deposit.DepositStatus> dirtyDepositPolicy,
                                JmsMessagePolicy messagePolicy, TaskExecutor taskExecutor,
@@ -101,7 +99,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.jsonParser = jsonParser;
         this.submissionBuilder = submissionBuilder;
         this.packagerRegistry = packagerRegistry;
-        this.repositoryRegistry = repositoryRegistry;
         this.submissionPolicy = submissionPolicy;
         this.messagePolicy = messagePolicy;
         this.taskExecutor = taskExecutor;

@@ -47,8 +47,6 @@ public abstract class AbstractSubmissionProcessorTest {
 
     SubmissionBuilder submissionBuilder;
 
-    Registry<Repository> repoRegistry;
-
     Registry<Packager> packagerRegistry;
 
     SubmissionPolicy submissionPolicy;
@@ -71,7 +69,6 @@ public abstract class AbstractSubmissionProcessorTest {
         passClient = mock(PassClient.class);
         jsonParser = mock(JsonParser.class);
         submissionBuilder = mock(SubmissionBuilder.class);
-        repoRegistry = mock(Registry.class);
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);
         dirtyDepositPolicy = mock(Policy.class);
