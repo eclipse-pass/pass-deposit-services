@@ -222,8 +222,6 @@ abstract class ModelBuilder {
         Boolean submitted = submissionEntity.getSubmitted();
         DateTime submittedDate = submissionEntity.getSubmittedDate();
         Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
-        // Existing DepositSubmission members that are not being set:
-        //      article.pubmedcentralid, article.pubmedid, manuscript.id
 
         // Data from the Submission's user resource
         User userEntity = (User)entities.get(submissionEntity.getUser());

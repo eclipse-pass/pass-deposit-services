@@ -214,18 +214,6 @@ public class DepositMetadata {
     // TODO: filled in by submitter or for NIHMS?
     public static class Article {
         /**
-         * PubMed ID, if known.
-         * TODO: figure out where PMID comes from, and its significance to NIHMS; difference from {@link #pubmedCentralId}
-         */
-        public String pubmedId;
-
-        /**
-         * PubMed Central ID, if known.
-         * TODO: figure out where id comes from, and its significance to NIHMS; difference from {@link #pubmedId}
-         */
-        public String pubmedCentralId;
-
-        /**
          * DOI for the final version of the article, if known.
          */
         public URI doi;
@@ -246,22 +234,6 @@ public class DepositMetadata {
         public String getTitle() { return title; }
 
         public void setTitle(String title) { this.title = title; }
-
-        public String getPubmedId() {
-            return pubmedId;
-        }
-
-        public void setPubmedId(String pubmedId) {
-            this.pubmedId = pubmedId;
-        }
-
-        public String getPubmedCentralId() {
-            return pubmedCentralId;
-        }
-
-        public void setPubmedCentralId(String pubmedCentralId) {
-            this.pubmedCentralId = pubmedCentralId;
-        }
 
         public URI getDoi() {
             return doi;
