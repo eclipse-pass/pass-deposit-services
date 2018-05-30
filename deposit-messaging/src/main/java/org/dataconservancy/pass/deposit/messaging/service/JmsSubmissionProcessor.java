@@ -16,8 +16,8 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
+import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.fedora.UpdateConflictException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
@@ -28,12 +28,10 @@ import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.messaging.support.Constants;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,14 +45,9 @@ import org.springframework.stereotype.Component;
 import javax.jms.Session;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.ackMessage;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toMessageContext;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
 
 /**
  * Filters and processes incoming JMS messages, and then forwards to the {@link SubmissionProcessor}.
@@ -68,19 +61,19 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
 
 
     /**
+     * Processes incoming JMS messages from the "deposit" queue, which describe the creation or updating of {@code Submission} resources in Fedora.  The {@code Submission} is resolved, and sent to the {@link SubmissionProcessor} for further processing.
      *
-     *
-     * @param passClient
-     * @param jsonParser
-     * @param submissionBuilder
-     * @param packagerRegistry
-     * @param repositoryRegistry
-     * @param submissionPolicy
-     * @param dirtyDepositPolicy
-     * @param messagePolicy
-     * @param taskExecutor
-     * @param depositStatusMapper
-     * @param atomStatusParser
+     * @param passClient used to resolve {@code Submission} resources from the Fedora repository
+     * @param jsonParser used to parse the {@code Submission} URI from the JMS message
+     * @param submissionBuilder used to build a {@link DepositSubmission} from a {@code Submission}
+     * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote repositories
+     * @param repositoryRegistry not used
+     * @param submissionPolicy whether or not a {@code Submission} should be accepted for processing
+     * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
+     * @param messagePolicy whether or not a JMS message should be accepted for processing
+     * @param taskExecutor used to manage and execute deposits to remote repositories
+     * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em> status
+     * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
     public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
                                   Registry<Packager> packagerRegistry, Registry<Repository> repositoryRegistry,
