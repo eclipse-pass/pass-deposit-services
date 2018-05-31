@@ -383,24 +383,26 @@ public class PassJsonFedoraAdapter {
         // Add File resources that reference this Submission to the entity list.
         Map<String, Collection<URI>> incomingLinks = client.getIncoming(submissionUri);
         Collection<URI> uris = incomingLinks.get(Submission.class.getSimpleName().toLowerCase());
-        for (URI uri : uris) {
-            try {
-                File file = client.readResource(uri, File.class);
-                entities.put(uri, file);
-            } catch (RuntimeException e) {
-                // Ignore non-File entities, which throw invalid type exceptions.
-                boolean tolerate = false;
-                Throwable cause = e.getCause();
-                while (cause != null) {
-                    if (cause instanceof InvalidTypeIdException) {
-                        tolerate = true;
-                        break;
+        if (uris != null) {
+            for (URI uri : uris) {
+                try {
+                    File file = client.readResource(uri, File.class);
+                    entities.put(uri, file);
+                } catch (RuntimeException e) {
+                    // Ignore non-File entities, which throw invalid type exceptions.
+                    boolean tolerate = false;
+                    Throwable cause = e.getCause();
+                    while (cause != null) {
+                        if (cause instanceof InvalidTypeIdException) {
+                            tolerate = true;
+                            break;
+                        }
+                        cause = cause.getCause();
                     }
-                    cause = cause.getCause();
-                }
-                if (! tolerate) {
-                    // There was some other kind of exception
-                    throw e;
+                    if (!tolerate) {
+                        // There was some other kind of exception
+                        throw e;
+                    }
                 }
             }
         }
