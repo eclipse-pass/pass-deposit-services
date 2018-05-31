@@ -180,8 +180,6 @@ public class DspaceMetadataDomWriterTest {
 
         when(article.getTitle()).thenReturn("Two stupendous minds.");
         when(article.getDoi()).thenReturn(URI.create("https://dx.doi.org/123/456"));
-        when(article.getPubmedId()).thenReturn("pmid:1234");
-        when(article.getPubmedCentralId()).thenReturn("pmcid:5678");
         when(article.getEmbargoLiftDate()).thenReturn(ZonedDateTime.now());
 
         when(journal.getIssn()).thenReturn("1236-5678");

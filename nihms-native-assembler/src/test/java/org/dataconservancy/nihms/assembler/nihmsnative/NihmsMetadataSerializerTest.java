@@ -19,10 +19,13 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Node;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,9 +70,7 @@ public class NihmsMetadataSerializerTest {
         manuscript.setTitle("Manuscript Title");
 
         // populate article metadata
-        article.setDoi(URI.create("doi:10.1234/smh0000001"));
-        article.setPubmedCentralId("PMC00001");
-        article.setPubmedId("00001");
+        article.setDoi(URI.create("10.1234/smh0000001"));
 
         //populate persons
         DepositMetadata.Person person1 = new DepositMetadata.Person();
@@ -144,7 +145,31 @@ public class NihmsMetadataSerializerTest {
         StreamSource s = new StreamSource("MetadataSerializerTest.xml");
         ValidationResult r = v.validateInstance(s);
         assertTrue(r.isValid());
+    }
 
+
+    @Test
+    // DOI must be in "raw" format (no leading http://domain/ or https://domain/)
+    public void testSerializedMetadataDoi() throws Exception {
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        String path = "10.1234/smh0000001";
+        InputStream is;
+        Node node;
+        String doi;
+
+        metadata.getArticleMetadata().setDoi(URI.create(path));
+        is = underTest.serialize();
+        node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
+        doi = node.getAttributes().getNamedItem("doi").getTextContent();
+        is.close();
+        assertTrue("Valid DOI was modified during export.", doi.contentEquals(path));
+
+        metadata.getArticleMetadata().setDoi(URI.create("http://dx.doi.org/" + path));
+        is = underTest.serialize();
+        node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
+        doi = node.getAttributes().getNamedItem("doi").getTextContent();
+        is.close();
+        assertTrue("http:// prefix and/or domain not stripped from DOI during export.", doi.contentEquals(path));
     }
 
 }

@@ -87,18 +87,16 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                 // TODO: resolve the calculation of the embargo offset
             }
 
-            if (article.getPubmedId() != null) {
-                writer.addAttribute("pmid", article.getPubmedId());
-            }
-
-            if (article.getPubmedCentralId() != null) {
-                writer.addAttribute("pmcid", article.getPubmedCentralId());
-            }
             if (manuscript.getManuscriptUrl() != null) {
                 writer.addAttribute("href", manuscript.getManuscriptUrl().toString());
             }
             if (article.getDoi() != null) {
-                writer.addAttribute("doi", article.getDoi().toString());
+                // DOI may not include UTI's scheme or host, only path
+                String path = article.getDoi().getPath();
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                writer.addAttribute("doi", path);
             }
 
             writer.endNode(); //end manuscript
