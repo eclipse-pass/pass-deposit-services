@@ -46,9 +46,9 @@ public class ListenerRunner implements ApplicationContextAware {
     @Bean
     ApplicationRunner runListeners(@Value("${pass.fedora.baseurl}") String fcrepoBaseUrl, OkHttpClient okHttpClient) {
         Condition<Integer> fcrepoUp = new Condition<>(() -> {
-            Request head = new Request.Builder().head().url(fcrepoBaseUrl).build();
-            LOG.trace(">>>> Executing HEAD {}", fcrepoBaseUrl);
-            try (Response res = okHttpClient.newCall(head).execute()) {
+            Request get = new Request.Builder().get().url(fcrepoBaseUrl).build();
+            LOG.trace(">>>> Executing GET {}", fcrepoBaseUrl);
+            try (Response res = okHttpClient.newCall(get).execute()) {
                 return res.code();
             }
         }, "Fedora Repository Up");
@@ -60,6 +60,7 @@ public class ListenerRunner implements ApplicationContextAware {
                         "Any exceptions thrown after this message can be ignored.", fcrepoBaseUrl);
                 SpringApplication.exit(appCtx, () -> 1);
             }
+            LOG.info("Fedora repository is up at '{}'", fcrepoBaseUrl);
         };
     }
 
