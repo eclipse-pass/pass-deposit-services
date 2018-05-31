@@ -89,7 +89,7 @@ public class FilesystemModelBuilderTest {
         assertEquals("2042-6496,2042-650X", journalMetadata.getIssn());
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
-        assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
+        assertEquals("10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
     }
 
 }
