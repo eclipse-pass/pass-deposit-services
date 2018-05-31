@@ -67,7 +67,6 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * @param jsonParser used to parse the {@code Submission} URI from the JMS message
      * @param submissionBuilder used to build a {@link DepositSubmission} from a {@code Submission}
      * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote repositories
-     * @param repositoryRegistry not used
      * @param submissionPolicy whether or not a {@code Submission} should be accepted for processing
      * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
      * @param messagePolicy whether or not a JMS message should be accepted for processing
@@ -76,7 +75,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
     public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
-                                  Registry<Packager> packagerRegistry, Registry<Repository> repositoryRegistry,
+                                  Registry<Packager> packagerRegistry,
                                   @Qualifier("passUserSubmittedPolicy") SubmissionPolicy submissionPolicy,
                                   Policy<Deposit.DepositStatus> dirtyDepositPolicy, JmsMessagePolicy messagePolicy,
                                   TaskExecutor taskExecutor,
@@ -84,7 +83,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                   DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                   CriticalRepositoryInteraction critical) {
 
-        super(passClient, jsonParser, submissionBuilder, packagerRegistry, repositoryRegistry, submissionPolicy,
+        super(passClient, jsonParser, submissionBuilder, packagerRegistry, submissionPolicy,
                 dirtyDepositPolicy, messagePolicy, taskExecutor, depositStatusMapper, atomStatusParser, critical);
 
     }

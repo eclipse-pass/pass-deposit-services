@@ -15,10 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.Condition;
+import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
@@ -32,15 +31,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;

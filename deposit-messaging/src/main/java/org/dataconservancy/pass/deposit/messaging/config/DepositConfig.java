@@ -194,13 +194,6 @@ public class DepositConfig {
     }
 
     @Bean
-    public Registry<Repository> repositoryRegistry(FcrepoRepositoriesSource fcrepoRepositoriesSource) {
-        return new InMemoryMapRegistry<>(
-                fcrepoRepositoriesSource.repositories().stream()
-                        .collect(Collectors.toMap(repo -> repo.getId().toString(), repo -> repo)));
-    }
-
-    @Bean
     public Map<String, Packager> packagers(DspaceMetsAssembler dspaceAssembler, Sword2Transport swordTransport,
                                            NihmsAssembler nihmsAssembler, FtpTransport ftpTransport,
                                            Map<String, Map<String, String>> transportRegistries) {

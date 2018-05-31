@@ -56,7 +56,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry, repoRegistry,
+        underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
                 submissionPolicy, dirtyDepositPolicy, messagePolicy, taskExecutor, dspaceStatusMapper,
                 atomStatusParser, critical);
     }
@@ -120,16 +120,12 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         when(submissionPolicy.accept(submission)).thenReturn(true);
         when(dirtyDepositPolicy.accept(deposit.getDepositStatus())).thenReturn(true);
-        // this expectation is here to prevent exceptions from occurring after the builder has created a
-        // DepositSubmission
-        when(repoRegistry.get(deposit.getRepository().toString())).thenReturn(repo);
 
         underTest.accept(submission);
 
         verify(submissionPolicy).accept(submission);
         verify(dirtyDepositPolicy).accept(deposit.getDepositStatus());
         verify(submissionBuilder).build(submission.getId().toString());
-        verify(repoRegistry).get(repoUri.toString());
     }
 
     /**
@@ -202,7 +198,6 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(submissionPolicy.accept(submission)).thenReturn(true);
         when(dirtyDepositPolicy.accept(deposit.getDepositStatus())).thenReturn(true);
         when(submissionBuilder.build(submission.getId().toString())).thenReturn(new DepositSubmission());
-        when(repoRegistry.get(deposit.getRepository().toString())).thenReturn(repo);
         when(packagerRegistry.get(repo.getName())).thenReturn(null);
 
         underTest.accept(submission);
@@ -210,7 +205,6 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         verify(submissionPolicy).accept(submission);
         verify(dirtyDepositPolicy).accept(deposit.getDepositStatus());
         verify(submissionBuilder).build(submission.getId().toString());
-        verify(repoRegistry).get(repoUri.toString());
         verify(packagerRegistry).get(repo.getName());
         verifyZeroInteractions(taskExecutor);
     }
@@ -249,7 +243,6 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(submissionPolicy.accept(submission)).thenReturn(true);
         when(dirtyDepositPolicy.accept(deposit.getDepositStatus())).thenReturn(true);
         when(submissionBuilder.build(submission.getId().toString())).thenReturn(new DepositSubmission());
-        when(repoRegistry.get(deposit.getRepository().toString())).thenReturn(repo);
         when(packagerRegistry.get(repo.getName())).thenReturn(packager);
 
         underTest.accept(submission);
@@ -257,7 +250,6 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         verify(submissionPolicy).accept(submission);
         verify(dirtyDepositPolicy).accept(deposit.getDepositStatus());
         verify(submissionBuilder).build(submission.getId().toString());
-        verify(repoRegistry).get(repoUri.toString());
         verify(packagerRegistry).get(repo.getName());
         verify(taskExecutor).execute(any(DepositTask.class));
     }
