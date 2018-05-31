@@ -142,9 +142,7 @@ public class DepositTestUtil {
         manuscript.setMsAbstract("This is an abstract for the manuscript, provided by the submitter.");
 
         article.setTitle("Two stupendous minds.");
-        article.setDoi(URI.create("https://dx.doi.org/123/456"));
-        article.setPubmedId("pmid:1234");
-        article.setPubmedCentralId("pmcid:5678");
+        article.setDoi(URI.create("123/456"));
         article.setEmbargoLiftDate(ZonedDateTime.now().plusDays(10));
 
         journal.setIssn("1236-5678");
