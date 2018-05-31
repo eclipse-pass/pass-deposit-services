@@ -32,7 +32,7 @@
     }
   ],
   "@context": {
-    "pass": "http://example.org/pass/",
+    "pass": "http://oapass.org/ns/pass#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "Deposit": "pass:Deposit",
     "Funder": "pass:Funder",

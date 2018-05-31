@@ -2,7 +2,7 @@
   "id": "http://fcrepo:8080/fcrepo/rest/submissions/92/42/2a/d3/92422ad3-6384-46cf-98ff-332ff151000b",
   "type": [
     "http://www.w3.org/ns/ldp#Container",
-    "http://example.org/pass/Submission",
+    "http://oapass.org/ns/pass#Submission",
     "http://fedora.info/definitions/v4/repository#Resource",
     "http://fedora.info/definitions/v4/repository#Container",
     "http://www.w3.org/ns/ldp#RDFSource",

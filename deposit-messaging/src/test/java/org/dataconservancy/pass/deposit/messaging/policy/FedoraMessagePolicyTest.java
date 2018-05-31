@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
  */
 public class FedoraMessagePolicyTest {
 
-    private static final String DEPOSIT_RESOURCE = "http://example.org/pass/Deposit";
+    private static final String DEPOSIT_RESOURCE = "http://oapass.org/ns/pass#Deposit";
 
     private FedoraMessagePolicy underTest;
 

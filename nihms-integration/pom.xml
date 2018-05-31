@@ -306,7 +306,7 @@
                                     <PI_ES_INDEX>http://elasticsearch:9200/pass/</PI_ES_INDEX>
                                     <PI_FEDORA_JMS_BROKER>tcp://fcrepo:${fcrepo.jms.port}</PI_FEDORA_JMS_BROKER>
                                     <PI_FEDORA_JMS_QUEUE>fedora</PI_FEDORA_JMS_QUEUE>
-                                    <PI_TYPE_PREFIX>http://example.org/pass/</PI_TYPE_PREFIX>
+                                    <PI_TYPE_PREFIX>http://oapass.org/ns/pass#</PI_TYPE_PREFIX>
                                 </env>
                             </run>
                         </image>
