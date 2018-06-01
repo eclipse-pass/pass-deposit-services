@@ -262,7 +262,7 @@
                                     <FCREPO_JMS_PORT>${fcrepo.jms.port}</FCREPO_JMS_PORT>
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
                                     <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
-                                    <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.0.jsonld</COMPACTION_URI>
+                                    <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.2.jsonld</COMPACTION_URI>
                                     <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
                                 </env>
                             </run>
