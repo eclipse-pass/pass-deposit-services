@@ -91,8 +91,7 @@ public class Constants {
      */
     public static class PassType {
 
-        // TODO update name space?
-        public static final String SUBMISSION_RESOURCE = "http://example.org/pass/Submission";
+        public static final String SUBMISSION_RESOURCE = "http://oapass.org/ns/pass#Submission";
     }
 
     /**
