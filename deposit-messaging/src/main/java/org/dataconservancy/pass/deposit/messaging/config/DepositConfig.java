@@ -149,7 +149,7 @@ public class DepositConfig {
     }
 
     @Bean
-    public OkHttpClient fedoraClient() {
+    public OkHttpClient okHttpClient() {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         String builderName = builder.getClass().getSimpleName();
@@ -159,6 +159,9 @@ public class DepositConfig {
             LOG.trace(">>>> {}:{} adding Authorization interceptor", builderName, builderHashcode);
             builder.addInterceptor((chain) -> {
                 Request request = chain.request();
+                if (!request.url().toString().startsWith(fedoraBaseUrl)) {
+                    return chain.proceed(request);
+                }
                 Request.Builder reqBuilder = request.newBuilder();
                 byte[] bytes = String.format("%s:%s", fedoraUser, fedoraPass).getBytes();
                 return chain.proceed(reqBuilder
@@ -170,6 +173,9 @@ public class DepositConfig {
         LOG.trace(">>>> {}:{} adding Accept interceptor", builderName, builderHashcode);
         builder.addInterceptor((chain) -> {
             Request request = chain.request();
+            if (!request.url().toString().startsWith(fedoraBaseUrl)) {
+                return chain.proceed(request);
+            }
             Request.Builder reqBuilder = request.newBuilder();
             return chain.proceed(reqBuilder
                     .addHeader("Accept", "application/ld+json").build());
@@ -180,6 +186,14 @@ public class DepositConfig {
             HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::debug);
             builder.addInterceptor(httpLogger);
         }
+
+        LOG.trace(">>>> {}:{} adding User-Agent interceptor", builderName, builderHashcode);
+        builder.addInterceptor((chain) -> {
+            Request.Builder reqBuilder = chain.request().newBuilder();
+            reqBuilder.removeHeader("User-Agent");
+            reqBuilder.addHeader("User-Agent", passHttpAgent);
+            return chain.proceed(reqBuilder.build());
+        });
 
         OkHttpClient client = builder.build();
         LOG.trace(">>>> {}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
