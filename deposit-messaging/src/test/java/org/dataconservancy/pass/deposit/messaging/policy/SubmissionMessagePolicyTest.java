@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -99,7 +100,13 @@ public class SubmissionMessagePolicyTest {
     @Test
     public void denyFromSameUserAgent() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
+
+        AgentPolicy agentPolicy = mock(AgentPolicy.class);
+        when(agentPolicy.accept(mc)).thenReturn(false);
+        underTest = new SubmissionMessagePolicy(agentPolicy);
+
         assertFalse(underTest.accept(mc));
+        verify(agentPolicy).accept(mc);
     }
 
     @Test
