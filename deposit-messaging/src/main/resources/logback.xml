@@ -17,7 +17,7 @@
   <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        %d{HH:mm:ss.SSS} [%10.30thread] %-5level [%15.-30C{0}] - %msg%n
+        %d{HH:mm:ss.SSS} [%20.20thread] %-5level [%20.-20C{0}] - %msg%n
       </pattern>
     </encoder>
     <target>System.err</target>
@@ -25,7 +25,7 @@
   <root level="WARN">
     <appender-ref ref="STDERR"/>
   </root>
-  <logger name="org.springframework" additivity="false" level="INFO">
+  <logger name="org.springframework" additivity="false" level="WARN">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
