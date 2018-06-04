@@ -15,138 +15,110 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.messaging.Message;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.SUBMISSION_RESOURCE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class FedoraMessagePolicyTest {
+public class SubmissionMessagePolicyTest {
 
     private static final String DEPOSIT_RESOURCE = "http://oapass.org/ns/pass#Deposit";
 
-    private FedoraMessagePolicy underTest;
+    private SubmissionMessagePolicy underTest;
 
     @Before
     public void setUp() throws Exception {
-        underTest = new FedoraMessagePolicy(new ObjectMapper(), "pass-deposit/x.y.z");
+        AgentPolicy agentPolicy = mock(AgentPolicy.class);
+        when(agentPolicy.accept(any())).thenReturn(true);
+        underTest = new SubmissionMessagePolicy(agentPolicy);
     }
 
     @Test
     public void acceptCreationOfSubmission() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
         assertTrue(underTest.accept(mc));
     }
 
     @Test
     public void acceptModificationOfSubmission() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
         assertTrue(underTest.accept(mc));
     }
 
     @Test
     public void acceptCreationOfSubmissionWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", SUBMISSION_RESOURCE, "http://biz/baz");
-        DepositUtil.MessageContext mc = withResourceAndEventType(resource, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_CREATION);
         assertTrue(underTest.accept(mc));
     }
 
     @Test
     public void acceptModificationOfSubmissionWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", SUBMISSION_RESOURCE, "http://biz/baz");
-        DepositUtil.MessageContext mc = withResourceAndEventType(resource, RESOURCE_MODIFICATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_MODIFICATION);
         assertTrue(underTest.accept(mc));
     }
 
     @Test
     public void denyModificationOfNonSubmissions() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
         assertFalse(underTest.accept(mc));
     }
 
     @Test
     public void denyCreationOfNonSubmissions() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
         assertFalse(underTest.accept(mc));
     }
 
     @Test
     public void denyCreationOfNonSubmissionsWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", DEPOSIT_RESOURCE, "http://biz/baz");
-        DepositUtil.MessageContext mc = withResourceAndEventType(resource, RESOURCE_CREATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_CREATION);
         assertFalse(underTest.accept(mc));
     }
 
     @Test
     public void denyModificationsOfNonSubmissionsWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", DEPOSIT_RESOURCE, "http://biz/baz");
-        DepositUtil.MessageContext mc = withResourceAndEventType(resource, RESOURCE_MODIFICATION);
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_MODIFICATION);
         assertFalse(underTest.accept(mc));
     }
 
     @Test
     public void denyFromSameUserAgent() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
+
+        AgentPolicy agentPolicy = mock(AgentPolicy.class);
+        when(agentPolicy.accept(mc)).thenReturn(false);
+        underTest = new SubmissionMessagePolicy(agentPolicy);
+
         assertFalse(underTest.accept(mc));
+        verify(agentPolicy).accept(mc);
     }
 
     @Test
     public void acceptFromMissingAgentName() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
         assertTrue(underTest.accept(mc));
     }
 
     @Test
     public void acceptWhenMissingAttribution() throws Exception {
-        DepositUtil.MessageContext mc = withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
         assertTrue(underTest.accept(mc));
     }
-
-    private static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType) throws IOException {
-        return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");
-    }
-
-    private static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType,
-                                                                       String messageBodyResource) throws IOException {
-        DepositUtil.MessageContext mc = mock(DepositUtil.MessageContext.class);
-
-        when(mc.eventType()).thenReturn(eventType);
-        when(mc.resourceType()).thenReturn(resourceType);
-
-        Instant now = Instant.now();
-        when(mc.timestamp()).thenReturn(now.toEpochMilli());
-        String formattedNow = DateTimeFormatter.ISO_DATE_TIME.format(now.atZone(ZoneId.of("UTC")));
-        when(mc.dateTime()).thenReturn(formattedNow);
-
-        when(mc.id()).thenReturn(UUID.randomUUID().toString());
-
-        Message message = mock(Message.class);
-        when(mc.message()).thenReturn(message);
-
-        when(message.getPayload()).thenReturn(
-                IOUtils.toString(
-                        FedoraMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
-
-        return mc;
-    }
-
 
 }

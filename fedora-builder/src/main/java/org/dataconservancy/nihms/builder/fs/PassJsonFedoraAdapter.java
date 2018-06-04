@@ -226,7 +226,6 @@ public class PassJsonFedoraAdapter {
             } else if (entity instanceof Policy) {
                 Policy policy = (Policy)entity;
                 policy.setInstitution(uriMap.get(policy.getInstitution()));
-                policy.setFunder(uriMap.get(policy.getFunder()));
                 policy.setRepositories(getUpdatedUris(uriMap, policy.getRepositories()));
             } else if (entity instanceof Journal) {
                 Journal journal = (Journal)entity;

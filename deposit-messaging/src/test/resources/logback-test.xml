@@ -17,7 +17,7 @@
   <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        %d{HH:mm:ss.SSS} [%10.30thread] %-5level [%15.-30C{0}] - %msg%n
+        %d{HH:mm:ss.SSS} [%20.20thread] %-5level [%20.-20C{0}] - %msg%n
       </pattern>
     </encoder>
     <target>System.err</target>

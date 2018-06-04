@@ -15,89 +15,75 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
-import org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent;
-import org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoHeader;
-import org.dataconservancy.pass.deposit.messaging.support.Constants.PassType;
-import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Objects;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.isMessageA;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.SUBMISSION_RESOURCE;
 
 /**
- * Accepts messages that represent the creation or modification of a PASS {@link Submission}.  Messages that do not meet
- * this {@code Policy} should be acknowledged immediately, with no further processing taking place.
+ * Provides common logic for accepting JMS messages from Fedora based on the resource and event type.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
-public class FedoraMessagePolicy implements JmsMessagePolicy {
+public abstract class FedoraMessagePolicy implements JmsMessagePolicy {
 
     private static final Logger LOG = LoggerFactory.getLogger(FedoraMessagePolicy.class);
 
-    private ObjectMapper objectMapper;
-
-    private String depositServicesUserAgent;
-
-    public FedoraMessagePolicy(ObjectMapper objectMapper, @Value("${pass.deposit.http.agent}") String depositServicesUserAgent) {
-        if (depositServicesUserAgent == null || depositServicesUserAgent.trim().length() == 0) {
-            throw new IllegalArgumentException("Deposit Services User Agent String must not be null or empty.");
-        }
-        this.objectMapper = objectMapper;
-        this.depositServicesUserAgent = depositServicesUserAgent;
-    }
-
     /**
-     * Accepts a message if the {@link JmsFcrepoHeader#FCREPO_RESOURCE_TYPE} is a {@link PassType#SUBMISSION_RESOURCE}
-     * and the {@link JmsFcrepoHeader#FCREPO_EVENT_TYPE} is a {@link JmsFcrepoEvent#RESOURCE_MODIFICATION} or {@link
-     * JmsFcrepoEvent#RESOURCE_CREATION}.
+     * Accepts a message if the JMS message is one of the {@link #acceptableFedoraResourceEventTypes() acceptable}
+     * {@link FedoraResourceEventType}.
      *
      * @param messageContext the {@code MessageContext} which carries the original JMS message
-     * @return {@code true} if the message represents the creation or modification of a {@code Submission}
+     * @return {@code true} if the message is one of the acceptable {@code FedoraResourceEventType}s
      */
     @Override
     public boolean accept(DepositUtil.MessageContext messageContext) {
-        if (!isMessageA(RESOURCE_CREATION, SUBMISSION_RESOURCE, messageContext) &&
-                !isMessageA(RESOURCE_MODIFICATION, SUBMISSION_RESOURCE, messageContext)) {
-            LOG.trace(">>>> Dropping message (not a ({} or {}) or {}): {} {}",
-                    RESOURCE_CREATION, RESOURCE_MODIFICATION, SUBMISSION_RESOURCE,
-                    messageContext.dateTime(), messageContext.id());
+        // the message must be one of these FedoraResourceEventTypes
+        boolean result = acceptableFedoraResourceEventTypes().stream().anyMatch((ret) ->
+                isMessageA(ret.EVENT_TYPE, ret.RESOURCE_TYPE, messageContext));
+
+        if (!result) {
+            LOG.trace(">>>> Dropping message, it did not match any of the acceptable " +
+                            "FedoraResourceEventTypes {}: was {}",
+                    acceptableFedoraResourceEventTypes().stream().map(Objects::toString).collect(joining(",")),
+                    format(FedoraResourceEventType.FMT, messageContext.resourceType(), messageContext.eventType()));
             return false;
         }
 
-        JsonNode attribution = null;
-        try {
-            attribution = objectMapper.readTree(messageContext.message().getPayload().toString()).findValue
-                    ("wasAttributedTo");
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to parse JMS message body: " + e.getMessage(), e);
-        }
-
-        if (attribution != null) {
-            for (Iterator<JsonNode> itr = attribution.elements(); itr.hasNext();) {
-                JsonNode node = itr.next();
-                if (node.has("type") && node.findValue("type").textValue().equals(Constants.Prov.SOFTWARE_AGENT)) {
-                    if (node.has("name") && node.findValue("name").textValue().equals(depositServicesUserAgent)) {
-                        LOG.trace(">>>> Dropping message that originated from this agent: {}", depositServicesUserAgent);
-                        return false;
-                    }
-                }
-            }
-        }
-
         return true;
+    }
+
+    /**
+     * Subclasses are expected to return a {@code Collection} of {@link FedoraResourceEventType}s that this message
+     * policy should accept.
+     *
+     * @return acceptable {@code FedoraResourceEventType}s, may be empty but never {@code null}
+     */
+    public abstract Collection<FedoraResourceEventType> acceptableFedoraResourceEventTypes();
+
+    /**
+     * Tuple representing a Fedora resource type and event type.
+     */
+    public static class FedoraResourceEventType {
+        private static final String FMT = "[%s, %s]";
+        public String RESOURCE_TYPE;
+        public String EVENT_TYPE;
+
+        public FedoraResourceEventType(String RESOURCE_TYPE, String EVENT_TYPE) {
+            this.RESOURCE_TYPE = RESOURCE_TYPE;
+            this.EVENT_TYPE = EVENT_TYPE;
+        }
+
+        @Override
+        public String toString() {
+            return format(FMT, RESOURCE_TYPE, EVENT_TYPE);
+        }
     }
 
 }

@@ -92,6 +92,9 @@ public class Constants {
     public static class PassType {
 
         public static final String SUBMISSION_RESOURCE = "http://oapass.org/ns/pass#Submission";
+
+        public static final String DEPOSIT_RESOURCE = "http://oapass.org/ns/pass#Deposit";
+
     }
 
     /**

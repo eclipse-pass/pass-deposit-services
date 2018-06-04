@@ -90,7 +90,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                Registry<Packager> packagerRegistry,
                                @Qualifier("alwaysTrueSubmissionPolicy") SubmissionPolicy submissionPolicy,
                                @Qualifier("dirtyDepositPolicy") Policy<Deposit.DepositStatus> dirtyDepositPolicy,
-                               JmsMessagePolicy messagePolicy, TaskExecutor taskExecutor,
+                               @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
+                               TaskExecutor taskExecutor,
                                DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                CriticalRepositoryInteraction critical) {
