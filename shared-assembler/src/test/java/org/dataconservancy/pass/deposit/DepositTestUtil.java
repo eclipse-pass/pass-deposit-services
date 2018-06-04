@@ -127,6 +127,8 @@ public class DepositTestUtil {
         contributorOne.setFirstName("Albert");
         contributorOne.setLastName("Einstien");
         contributorOne.setEmail("aeinstien@foo.org");
+        contributorOne.setCorrespondingPi(true);
+        contributorOne.setPi(true);
         contributorTwo.setFirstName("Stephen");
         contributorTwo.setLastName("Hawking");
         contributorTwo.setEmail("shawking@bar.org");
