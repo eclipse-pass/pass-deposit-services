@@ -39,7 +39,7 @@ public class ListenerRunner implements ApplicationContextAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListenerRunner.class);
 
-    private static final int TEN_MINUTES = 60 * 60 * 1000 * 10;
+    private static final int TEN_MINUTES = 60 * 1000 * 10;
 
     private ApplicationContext appCtx;
 
@@ -60,6 +60,7 @@ public class ListenerRunner implements ApplicationContextAware {
                         "Any exceptions thrown after this message can be ignored.", fcrepoBaseUrl);
                 SpringApplication.exit(appCtx, () -> 1);
             }
+
             LOG.info("Fedora repository is up at '{}'", fcrepoBaseUrl);
         };
     }
