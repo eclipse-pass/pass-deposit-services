@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
 import org.junit.Before;
@@ -33,21 +32,24 @@ import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFc
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.SUBMISSION_RESOURCE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class FedoraMessagePolicyTest {
+public class SubmissionMessagePolicyTest {
 
     private static final String DEPOSIT_RESOURCE = "http://oapass.org/ns/pass#Deposit";
 
-    private FedoraMessagePolicy underTest;
+    private SubmissionMessagePolicy underTest;
 
     @Before
     public void setUp() throws Exception {
-        underTest = new FedoraMessagePolicy(new ObjectMapper(), "pass-deposit/x.y.z");
+        AgentPolicy agentPolicy = mock(AgentPolicy.class);
+        when(agentPolicy.accept(any())).thenReturn(true);
+        underTest = new SubmissionMessagePolicy(agentPolicy);
     }
 
     @Test
@@ -143,7 +145,7 @@ public class FedoraMessagePolicyTest {
 
         when(message.getPayload()).thenReturn(
                 IOUtils.toString(
-                        FedoraMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
+                        SubmissionMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
 
         return mc;
     }

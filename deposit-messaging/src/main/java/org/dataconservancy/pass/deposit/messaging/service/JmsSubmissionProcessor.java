@@ -61,23 +61,28 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
 
 
     /**
-     * Processes incoming JMS messages from the "deposit" queue, which describe the creation or updating of {@code Submission} resources in Fedora.  The {@code Submission} is resolved, and sent to the {@link SubmissionProcessor} for further processing.
+     * Processes incoming JMS messages from the "deposit" queue, which describe the creation or updating of
+     * {@code Submission} resources in Fedora.  The {@code Submission} is resolved, and sent to the
+     * {@link SubmissionProcessor} for further processing.
      *
      * @param passClient used to resolve {@code Submission} resources from the Fedora repository
      * @param jsonParser used to parse the {@code Submission} URI from the JMS message
      * @param submissionBuilder used to build a {@link DepositSubmission} from a {@code Submission}
-     * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote repositories
+     * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote
+     *                         repositories
      * @param submissionPolicy whether or not a {@code Submission} should be accepted for processing
      * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
      * @param messagePolicy whether or not a JMS message should be accepted for processing
      * @param taskExecutor used to manage and execute deposits to remote repositories
-     * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em> status
+     * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em>
+     *                            status
      * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
     public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
                                   Registry<Packager> packagerRegistry,
                                   @Qualifier("passUserSubmittedPolicy") SubmissionPolicy submissionPolicy,
-                                  Policy<Deposit.DepositStatus> dirtyDepositPolicy, JmsMessagePolicy messagePolicy,
+                                  Policy<Deposit.DepositStatus> dirtyDepositPolicy,
+                                  @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
                                   TaskExecutor taskExecutor,
                                   DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                   DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
@@ -88,7 +93,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
 
     }
 
-    @JmsListener(destination = "deposit")
+    @JmsListener(destination = "submission")
     public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
                                @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
                                @Header(JmsHeaders.TIMESTAMP) long timeStamp,
@@ -98,7 +103,8 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                javax.jms.Message jmsMessage) {
 
 
-        DepositUtil.MessageContext mc = toMessageContext(resourceType, eventType, timeStamp, id, session, message, jmsMessage);
+        DepositUtil.MessageContext mc =
+                toMessageContext(resourceType, eventType, timeStamp, id, session, message, jmsMessage);
         LOG.trace(">>>> Processing message (ack mode: {}): {} {}", mc.ackMode(), mc.dateTime(), mc.id());
         LOG.trace(">>>> Message {} body:{}", mc.id(), mc.message().getPayload());
         processInternal(mc);
