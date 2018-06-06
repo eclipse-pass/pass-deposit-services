@@ -84,8 +84,8 @@ public class JmsDepositProcessor {
 
         DepositUtil.MessageContext mc = toMessageContext(
                 resourceType, eventType, timeStamp, id, session, message, jmsMessage);
-        LOG.trace(">>>> Processing message (ack mode: {}): {} {}", mc.ackMode(), mc.dateTime(), mc.id());
-        LOG.trace(">>>> Message {} body:{}", mc.id(), mc.message().getPayload());
+        LOG.trace(">>>> Processing message (ack mode: {}) {} body:\n{}",
+                mc.ackMode(), mc.id(), mc.message().getPayload());
 
         // verify the message is one we want, otherwise ack it right away and return
         if (!messagePolicy.accept(mc)) {

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Map;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
@@ -133,8 +134,9 @@ public class DepositTask implements Runnable {
                 (deposit) -> {
                     Packager packager = dc.packager();
                     PackageStream packageStream = packager.getAssembler().assemble(dc.depositSubmission());
-                    try (TransportSession transport = packager.getTransport().open(packager.getConfiguration())) {
-                        TransportResponse tr = transport.send(packageStream, packager.getConfiguration());
+                    Map<String, String> packagerConfig = packager.getConfiguration();
+                    try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
+                        TransportResponse tr = transport.send(packageStream, packagerConfig);
                         deposit.setDepositStatus(SUBMITTED);
                         return tr;
                     } catch (Exception e) {
