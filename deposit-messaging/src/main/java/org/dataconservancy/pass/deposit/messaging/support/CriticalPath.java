@@ -163,13 +163,9 @@ public class CriticalPath implements CriticalRepositoryInteraction {
                 try {
                     // If the ConflictHandler is successful, the resource with its updated state is returned
                     // (presumably a merge of the state in the repository with the state from the critical function)
-                    resource = conflictHandler.handleConflict(resource, clazz);
+                    updateResult = conflictHandler.handleConflict(resource, clazz, precondition, critical);
                 } catch (Exception handlerE) {
-                    // If the ConflictHandler fails, wrap the exception with an explanation
-                    RuntimeException rte = new RuntimeException(
-                            format("Error resolving conflict attempting critical update: %s",
-                                    handlerE.getMessage()), e);
-                    return new CriticalResult<>(updateResult, resource, false, rte);
+                    return new CriticalResult<>(updateResult, resource, false, handlerE);
                 }
             } catch (Exception e) {
                 return new CriticalResult<>(updateResult, resource, false, e);

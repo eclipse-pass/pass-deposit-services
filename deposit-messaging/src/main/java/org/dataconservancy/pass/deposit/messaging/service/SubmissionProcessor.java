@@ -152,7 +152,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         DepositSubmission depositSubmission = result.result().orElseThrow(
                 () -> new RuntimeException("Missing expected DepositSubmission"));
 
-        LOG.debug(">>>> Processing Submission {}", submission);
+        LOG.debug(">>>> Processing Submission {}", submission.getId());
 
         updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
                 .forEach(repo -> {
@@ -181,8 +181,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     packager);
             DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper, dirtyDepositPolicy, critical);
 
-            LOG.debug(">>>> Submitting task ({}@{}) to the deposit worker queue: {}",
-                    depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)), depositTask);
+            LOG.debug(">>>> Submitting task ({}@{}) to the deposit worker queue for submission {}",
+                    depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)), updatedS.getId());
             taskExecutor.execute(depositTask);
         });
 

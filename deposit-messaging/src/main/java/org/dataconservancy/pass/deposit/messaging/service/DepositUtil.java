@@ -89,7 +89,6 @@ public class DepositUtil {
             JmsProperties.AcknowledgeMode mode = asAcknowledgeMode(session.getAcknowledgeMode());
             ackMode = mode.name();
         } catch (Exception e) {
-            LOG.trace("Unknown acknowledgement mode for message received {}, id: {}", dateTime, id);
             ackMode = "UNKNOWN";
         }
         return ackMode;
