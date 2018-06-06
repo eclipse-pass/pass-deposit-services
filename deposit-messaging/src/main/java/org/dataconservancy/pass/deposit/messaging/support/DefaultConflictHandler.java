@@ -21,7 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 /**
+ * Resolves {@code 412 Precondition Failed} responses by re-retrieving the latest state of the resource from the
+ * repository, insuring the pre-condition for applying the update still holds, and then applying the update.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
@@ -35,18 +41,51 @@ public class DefaultConflictHandler implements ConflictHandler {
         this.passClient = passClient;
     }
 
+    /**
+     * {@inheritDoc}
+     * <h4>Implementation notes</h4>
+     * Resolves {@code 412 Precondition Failed} responses by re-retrieving the latest state of the resource from the
+     * repository, insuring the pre-condition for applying the update still holds, and then applying the update.
+     *
+     * @param conflictedResource the resource with the state to be updated
+     * @param resourceClass the runtime class of the resource
+     * @param preCondition the precondition that must be satisfied in order for the {@code criticalUpdate} to be applied
+     * @param criticalUpdate the update to be applied to the resource
+     * @param <T> {@inheritDoc}
+     * @param <R> {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
-    public <T extends PassEntity> T handleConflict(T resource, Class<? extends T> resourceClass) {
-        LOG.debug(">>>> Retrying update for {}", resource.getId());
+    public <T extends PassEntity, R> R handleConflict(T conflictedResource, Class<T> resourceClass, Predicate<T>
+            preCondition, Function<T, R> criticalUpdate) {
 
+        LOG.debug(">>>> Retrying update for {}, version {}",
+                conflictedResource.getId(), conflictedResource.getVersionTag());
+
+        T toUpdate = null;
         try {
-            passClient.updateResource(resource);
+            toUpdate = passClient.readResource(conflictedResource.getId(), resourceClass);
         } catch (Exception e) {
-            LOG.warn(">>>> Update retry failed for {}: {}", resource.getId(), e.getMessage(), e);
-            throw new RuntimeException(e.getMessage(), e);
+            throw new RuntimeException(String.format("Update retry failed for %s (version %s): Unable to " +
+                    "successfully re-read the latest version of the resource when retrying: %s",
+                    conflictedResource.getId(), conflictedResource.getVersionTag(), e.getMessage()), e);
         }
 
-        return passClient.readResource(resource.getId(), resourceClass);
+        try {
+            if (!preCondition.test(toUpdate)) {
+                String msg = String.format("Update retry failed for %s (version %s to %s): does "
+                        + "not the satisfy the precondition for update.",
+                        conflictedResource.getId(), conflictedResource.getVersionTag(), toUpdate.getVersionTag());
+                throw new RuntimeException(msg);
+            }
+            R toReturn = criticalUpdate.apply(toUpdate);
+            passClient.updateResource(toUpdate);
+            return toReturn;
+        } catch (Exception e) {
+            String msg = String.format("Update retry failed for %s (version %s to %s): %s",
+                    conflictedResource.getId(), conflictedResource.getVersionTag(), toUpdate.getVersionTag(),
+                    e.getMessage());
+            throw new RuntimeException(msg, e);
+        }
     }
-
 }
