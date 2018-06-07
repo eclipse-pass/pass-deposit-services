@@ -296,22 +296,22 @@ abstract class ModelBuilder {
             DateTime endDate = grantEntity.getEndDate();
 
             // Data from the Primary Funder and its Policy resources
-            Funder primaryFunderEntity = (Funder)entities.get(grantEntity.getPrimaryFunder());
-            // Available Funder data for which there is no place in the existing deposit model:
-            String funderName = primaryFunderEntity.getName();
-            URI funderUrl = primaryFunderEntity.getUrl();
-            String funderLocalKey = primaryFunderEntity.getLocalKey();
+//            Funder primaryFunderEntity = (Funder)entities.get(grantEntity.getPrimaryFunder());
+//            // Available Funder data for which there is no place in the existing deposit model:
+//            String funderName = primaryFunderEntity.getName();
+//            URI funderUrl = primaryFunderEntity.getUrl();
+//            String funderLocalKey = primaryFunderEntity.getLocalKey();
 
-            Policy primaryPolicyEntity = (Policy)entities.get(primaryFunderEntity.getPolicy());
-            // Available Policy data for which there is no place in the existing deposit model:
-            String policyTitle = primaryPolicyEntity.getTitle();
-            String description = primaryPolicyEntity.getDescription();
-            URI policyUrl = primaryPolicyEntity.getPolicyUrl();
-            // Policies also have a lists of repositories, which we ignore in favor of the submission's list.
+//            Policy primaryPolicyEntity = (Policy)entities.get(primaryFunderEntity.getPolicy());
+//            // Available Policy data for which there is no place in the existing deposit model:
+//            String policyTitle = primaryPolicyEntity.getTitle();
+//            String description = primaryPolicyEntity.getDescription();
+//            URI policyUrl = primaryPolicyEntity.getPolicyUrl();
+//            // Policies also have a lists of repositories, which we ignore in favor of the submission's list.
 
             // Data from Direct Funder and its Policy has the same properties as for the Primary Funder
             Funder directFunderEntity = (Funder)entities.get(grantEntity.getDirectFunder());
-            Policy directPolicy = (Policy)entities.get(directFunderEntity.getPolicy());
+//            Policy directPolicy = (Policy)entities.get(directFunderEntity.getPolicy());
 
             // Data from the User resources for the PI and CoPIs
             User piEntity = (User)entities.get(grantEntity.getPi());
