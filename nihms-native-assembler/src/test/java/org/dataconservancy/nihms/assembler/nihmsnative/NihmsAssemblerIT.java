@@ -143,11 +143,14 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         Element title = asList(root.getElementsByTagName("title")).get(0);
         assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), title.getTextContent());
 
-        // Insure each <person> element corresponds to a Person in the Submission metadata
+        // Insure that only one <person> element is present in the submission metadata
+        // and insure that the <person> is a corresponding PI.
 
         List<Element> personElements = asList(root.getElementsByTagName("person"));
+        // Assert that there is only one Person present in the metadata
+        assertEquals(1, personElements.size());
 
-        // Collect persons from the metadata
+        // Map persons from the metadata to Person objects
         List<Person> asPersons = personElements.stream().map(element -> {
             Person asPerson = new Person();
             asPerson.setFirstName(element.getAttribute("fname"));
@@ -158,17 +161,14 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             return asPerson;
         }).collect(Collectors.toList());
 
-        // Assert that each person present in the Submission is present in the metadata
-        assertEquals(1, personElements.size());
-        submission.getMetadata().getPersons().forEach(p -> {
-            if (p.isCorrespondingPi()) {
-                assertTrue(asPersons.stream().anyMatch(candidate ->
-                        candidate.getFirstName().equals(p.getFirstName()) &&
-                                candidate.getLastName().equals(p.getLastName()) &&
-                                candidate.isAuthor() == p.isAuthor() &&
-                                candidate.isPi() == p.isPi() &&
-                                candidate.isCorrespondingPi() == p.isCorrespondingPi()));
-            }
+        // Insure that the Person in the metadata matches a Person on the Submission, and that the person is a corresponding pi
+        asPersons.stream().forEach(person -> {
+            assertTrue(submission.getMetadata().getPersons().stream().anyMatch(candidate ->
+                    candidate.getFirstName().equals(person.getFirstName()) &&
+                    candidate.getLastName().equals(person.getLastName()) &&
+                    candidate.isAuthor() == person.isAuthor() &&
+                    candidate.isPi() == person.isPi() &&
+                    candidate.isCorrespondingPi() == person.isCorrespondingPi()));
         });
 
         // Assert that the DOI is present in the metadata
