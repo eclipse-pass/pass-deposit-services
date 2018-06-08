@@ -19,8 +19,10 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.nihms.model.DepositSubmission;
@@ -53,9 +55,7 @@ public class DspaceMetsPackageStreamIT {
 
     private DspaceMetadataDomWriter metsWriter = new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance());
 
-    private List<Resource> custodialContent = Arrays.asList(
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
+    private List<DepositFileResource> custodialContent;
 
     @Before
     public void setUp() throws Exception {
@@ -64,6 +64,25 @@ public class DspaceMetsPackageStreamIT {
         tempDir = new File(tempDir.getParent(), tempDir.getName());
         assertTrue("Unable to create directory '" + tempDir + "'", tempDir.mkdirs());
 //        tempDir.deleteOnExit();
+
+        String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
+        String figureLocation = this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg";
+
+        DepositFile manuscript = new DepositFile();
+        manuscript.setName("manuscript.txt");
+        manuscript.setType(DepositFileType.manuscript);
+        manuscript.setLabel("Manuscript");
+        manuscript.setLocation(manuscriptLocation);
+
+        DepositFile figure = new DepositFile();
+        figure.setName("figure.jpg");
+        figure.setType(DepositFileType.figure);
+        figure.setLabel("Figure");
+        figure.setLocation(figureLocation);
+
+        custodialContent = Arrays.asList(
+                new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
+                new DepositFileResource(figure, new ClassPathResource(figureLocation)));
     }
 
     @Test

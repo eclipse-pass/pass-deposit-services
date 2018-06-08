@@ -22,6 +22,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +46,13 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
     protected static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
     protected static final String ERR_NO_ARCHIVE_FORMAT = "No supported archive format was specified in the metadata builder";
 
-    protected List<org.springframework.core.io.Resource> custodialContent;
+    protected List<DepositFileResource> custodialContent;
 
     private MetadataBuilder metadataBuilder;
 
     private ResourceBuilderFactory rbf;
 
-    public AbstractZippedPackageStream(List<org.springframework.core.io.Resource> custodialContent,
+    public AbstractZippedPackageStream(List<DepositFileResource> custodialContent,
                                        MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf) {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;

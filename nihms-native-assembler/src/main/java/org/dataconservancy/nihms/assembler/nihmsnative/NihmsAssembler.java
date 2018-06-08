@@ -22,10 +22,10 @@ import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -64,7 +64,7 @@ public class NihmsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
+    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
 
         mb.spec(SPEC_NIHMS_NATIVE_2017_07);
         mb.archive(PackageStream.ARCHIVE.TAR);

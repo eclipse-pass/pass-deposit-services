@@ -20,10 +20,10 @@ import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -58,7 +58,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources,
+    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf) {
         mb.spec(SPEC_DSPACE_METS);
         mb.archive(PackageStream.ARCHIVE.ZIP);

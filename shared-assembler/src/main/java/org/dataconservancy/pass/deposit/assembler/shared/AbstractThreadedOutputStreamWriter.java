@@ -61,7 +61,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractThreadedOutputStreamWriter.class);
 
-    private List<Resource> packageFiles;
+    private List<DepositFileResource> packageFiles;
 
     private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback closeStreamHandler;
 
@@ -89,7 +89,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      *            package resources}
      */
     public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
-                                              DepositSubmission submission, List<Resource> packageFiles,
+                                              DepositSubmission submission, List<DepositFileResource> packageFiles,
                                               ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder) {
         super(threadName);
         this.archiveOut = archiveOut;
@@ -210,7 +210,11 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param resource the resource
      * @return the name of the resource
      */
-    protected String nameResource(Resource resource) {
+    protected String nameResource(DepositFileResource resource) {
+        if (resource.getDepositFile() != null && resource.getDepositFile().getName() != null) {
+            return resource.getDepositFile().getName();
+        }
+
         return resource.getFilename();
     }
 
