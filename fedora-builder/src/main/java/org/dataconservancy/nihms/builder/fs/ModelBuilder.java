@@ -225,7 +225,7 @@ abstract class ModelBuilder {
 
         // Data from the Submission's user resource
         User userEntity = (User)entities.get(submissionEntity.getUser());
-        persons.add(createPerson(userEntity, false, false, true));
+        persons.add(createPerson(userEntity, true, true, false));
 
         // Data from the Submission's Publication resource and its referenced Journal and Publisher resources
         Publication publicationEntity = (Publication)entities.get(submissionEntity.getPublication());
@@ -318,7 +318,7 @@ abstract class ModelBuilder {
             persons.add(createPerson(piEntity, true, false, false));
             for (URI copiUri : grantEntity.getCoPis()) {
                 User copiEntity = (User)entities.get(copiUri);
-                persons.add(createPerson(copiEntity, false, true, false));
+                persons.add(createPerson(copiEntity, true, false, false));
             }
         }
 

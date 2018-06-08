@@ -159,14 +159,16 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         }).collect(Collectors.toList());
 
         // Assert that each person present in the Submission is present in the metadata
-        assertEquals(submission.getMetadata().getPersons().size(), personElements.size());
+        assertEquals(1, personElements.size());
         submission.getMetadata().getPersons().forEach(p -> {
-            assertTrue(asPersons.stream().anyMatch(candidate ->
-                    candidate.getFirstName().equals(p.getFirstName()) &&
-                    candidate.getLastName().equals(p.getLastName()) &&
-                    candidate.isAuthor() == p.isAuthor() &&
-                    candidate.isPi() == p.isPi() &&
-                    candidate.isCorrespondingPi() == p.isCorrespondingPi()));
+            if (p.isCorrespondingPi()) {
+                assertTrue(asPersons.stream().anyMatch(candidate ->
+                        candidate.getFirstName().equals(p.getFirstName()) &&
+                                candidate.getLastName().equals(p.getLastName()) &&
+                                candidate.isAuthor() == p.isAuthor() &&
+                                candidate.isPi() == p.isPi() &&
+                                candidate.isCorrespondingPi() == p.isCorrespondingPi()));
+            }
         });
 
         // Assert that the DOI is present in the metadata

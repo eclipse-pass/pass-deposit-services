@@ -140,24 +140,28 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             if (persons.size()>0) {
                 writer.startNode("contacts");
                 for (DepositMetadata.Person person : persons){
-                    writer.startNode("person");
-                    if (person.getFirstName() != null) {
-                        writer.addAttribute("fname",person.getFirstName());
+                    // There should be exactly one corresponding PI per deposit.
+                    if (person.isCorrespondingPi()) {
+                        writer.startNode("person");
+                        if (person.getFirstName() != null) {
+                            writer.addAttribute("fname", person.getFirstName());
+                        }
+                        if (person.getMiddleName() != null) {
+                            writer.addAttribute("mname", person.getMiddleName());
+                        }
+                        if (person.getLastName() != null) {
+                            writer.addAttribute("lname", person.getLastName());
+                        }
+                        if (person.getEmail() != null) {
+                            writer.addAttribute("email", person.getEmail());
+                        }
+                        //primitive types
+                        writer.addAttribute("pi", booleanConvert(person.isPi()));
+                        writer.addAttribute("corrpi", booleanConvert(person.isCorrespondingPi()));
+                        // Author status is not known from Submission data and is optional, so do not include it.
+                        writer.endNode(); // end person
+                        break; // Make sure we only write one person to the metadata
                     }
-                    if (person.getMiddleName() != null) {
-                        writer.addAttribute("mname",person.getMiddleName());
-                    }
-                    if (person.getLastName() != null) {
-                        writer.addAttribute("lname",person.getLastName());
-                    }
-                    if (person.getEmail() != null) {
-                        writer.addAttribute("email",person.getEmail());
-                    }
-                    //primitive types
-                    writer.addAttribute("pi", booleanConvert(person.isPi()));
-                    writer.addAttribute("corrpi", booleanConvert(person.isCorrespondingPi()));
-                    writer.addAttribute("author", booleanConvert(person.isAuthor()));
-                    writer.endNode(); // end person
                 }
                 writer.endNode(); //end contacts
             }
