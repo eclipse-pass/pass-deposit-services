@@ -17,7 +17,9 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.slf4j.Logger;
@@ -29,7 +31,8 @@ import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.commons.compress.archivers.ArchiveStreamFactory.TAR;
+import static org.dataconservancy.nihms.assembler.PackageStream.ARCHIVE.TAR;
+import static org.dataconservancy.nihms.assembler.PackageStream.ARCHIVE.ZIP;
 
 public abstract class AbstractZippedPackageStream implements PackageStream {
 
@@ -40,6 +43,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
     private static final int ONE_MIB = 2 ^ 20;
 
     protected static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
+    protected static final String ERR_NO_ARCHIVE_FORMAT = "No supported archive format was specified in the metadata builder";
 
     protected List<org.springframework.core.io.Resource> custodialContent;
 
@@ -85,16 +89,30 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
             throw new RuntimeException(e.getMessage(), e);
         }
 
-        // Wrap the output stream in a ZipArchiveOutputStream
-        // TODO: make this configurable (e.g. allow GZip etc)
-        ZipArchiveOutputStream archiveOut;
+        // Wrap the output stream in an ArchiveOutputStream
+        // we support zip, tar and tar.gz so far
+        ArchiveOutputStream archiveOut;
+        PackageStream.Metadata metadata = metadata();
 
-        try {
-            archiveOut = new ZipArchiveOutputStream(pipedOut);
-        } catch (Exception e) {
-            throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
+        if(metadata.archive().equals(TAR)) {
+            try {
+                if(metadata.compression().equals(COMPRESSION.GZIP)) {
+                    archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
+                } else {
+                    archiveOut = new TarArchiveOutputStream(pipedOut);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
+            }
+        } else if (metadata.archive().equals(ZIP)) {
+            try {
+                archiveOut = new ZipArchiveOutputStream(pipedOut);
+            } catch (Exception e) {
+                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, ZIP, e.getMessage()), e);
+            }
+        } else {
+            throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);
         }
-
 
 
         AbstractThreadedOutputStreamWriter streamWriter = getStreamWriter(archiveOut, rbf);
@@ -128,7 +146,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
      * @return the callback providing an orderly closure of the output streams being written to
      */
     private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback getCloseOutputstreamHandler(
-            PipedOutputStream pipedOut, ZipArchiveOutputStream archiveOut) {
+            PipedOutputStream pipedOut, ArchiveOutputStream archiveOut) {
         return () -> {
             LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
             try {

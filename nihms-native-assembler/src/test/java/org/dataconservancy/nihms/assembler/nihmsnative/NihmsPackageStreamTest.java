@@ -21,6 +21,7 @@ import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler.APPLICATION_GZIP;
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
 import static org.dataconservancy.nihms.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -64,9 +67,19 @@ public class NihmsPackageStreamTest {
     private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
     private ResourceBuilder rb = mock(ResourceBuilder.class);
 
+    private MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
+
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(rb);
+        MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
+        metadataBuilder.spec(SPEC_NIHMS_NATIVE_2017_07);
+        metadataBuilder.archive(PackageStream.ARCHIVE.TAR);
+        metadataBuilder.archived(true);
+        metadataBuilder.compressed(true);
+        metadataBuilder.compression(PackageStream.COMPRESSION.GZIP);
+        metadataBuilder.mimeType(APPLICATION_GZIP);
+
     }
 
     /**
@@ -85,7 +98,8 @@ public class NihmsPackageStreamTest {
 
     @Test
     public void assembleSimplePackage() throws Exception {
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf);
+
+        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, metadataBuilder, rbf);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
 
@@ -104,7 +118,7 @@ public class NihmsPackageStreamTest {
 
         when(rb.build()).thenReturn(pr);
 
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf);
+        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, metadataBuilder, rbf);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
 
