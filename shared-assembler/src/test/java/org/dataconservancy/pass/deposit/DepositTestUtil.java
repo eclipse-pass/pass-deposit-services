@@ -16,8 +16,12 @@
 package org.dataconservancy.pass.deposit;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
+import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
@@ -49,8 +53,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -215,17 +217,27 @@ public class DepositTestUtil {
      * @return the directory that the package file was extracted to
      * @throws IOException if an error occurs opening the file or extracting its contents
      */
-    public static File openArchive(File packageFile) throws IOException {
+    public static File openArchive(File packageFile, PackageStream.ARCHIVE archive, PackageStream.COMPRESSION compression) throws IOException {
         File tmpDir = tmpDir();
 
-        if (!packageFile.getName().endsWith(".zip")) {
-            throw new RuntimeException("Do not know how to open archive file '" + packageFile + "'");
-        }
+     //   if (!packageFile.getName().endsWith(".zip")) {
+       //     throw new RuntimeException("Do not know how to open archive file '" + packageFile + "'");
+        //}
+
 
         DepositTestUtil.LOG.debug(">>>> Extracting {} to {} ...", packageFile, tmpDir);
 
-        try (InputStream packageFileIn = Files.newInputStream(packageFile.toPath());
-             ZipArchiveInputStream zipIn = new ZipArchiveInputStream(packageFileIn)) {
+        try (InputStream packageFileIn = Files.newInputStream(packageFile.toPath())) {
+            ArchiveInputStream zipIn = null;
+            if(archive.equals(PackageStream.ARCHIVE.TAR)) {
+                if(compression.equals(PackageStream.COMPRESSION.GZIP)){
+                    zipIn = new TarArchiveInputStream(new GzipCompressorInputStream(packageFileIn));
+                } else {
+                    zipIn = new TarArchiveInputStream(packageFileIn);
+                }
+            } else if (archive.equals(PackageStream.ARCHIVE.ZIP)) {
+                zipIn = new ZipArchiveInputStream(packageFileIn);
+            }
 
             ArchiveEntry entry;
             while ((entry = zipIn.getNextEntry()) != null ) {

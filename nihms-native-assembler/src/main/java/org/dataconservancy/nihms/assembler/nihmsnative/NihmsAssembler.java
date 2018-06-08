@@ -56,7 +56,7 @@ public class NihmsAssembler extends AbstractAssembler {
     /**
      * Mime type of zip files.
      */
-    public static final String APPLICATION_ZIP = "application/zip";
+    public static final String APPLICATION_GZIP = "application/gzip";
 
     @Autowired
     public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
@@ -67,11 +67,11 @@ public class NihmsAssembler extends AbstractAssembler {
     protected PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
 
         mb.spec(SPEC_NIHMS_NATIVE_2017_07);
-        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archive(PackageStream.ARCHIVE.TAR);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.ZIP);
-        mb.mimeType("application/zip");
+        mb.compression(PackageStream.COMPRESSION.GZIP);
+        mb.mimeType(APPLICATION_GZIP);
 
         // Add manifest entry for metadata file
         DepositFile metadataFile = new DepositFile();

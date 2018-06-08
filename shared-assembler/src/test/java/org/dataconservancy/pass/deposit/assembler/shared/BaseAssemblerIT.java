@@ -134,7 +134,7 @@ public abstract class BaseAssemblerIT {
 
         File packageArchive = savePackage(stream);
 
-        extractPackage(packageArchive);
+        extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
     }
 
     /**
@@ -179,8 +179,8 @@ public abstract class BaseAssemblerIT {
      * @param packageArchive the package archive file to open
      * @throws IOException if there is an error opening the package
      */
-    protected void extractPackage(File packageArchive) throws IOException {
-        extractedPackageDir = openArchive(packageArchive);
+    protected void extractPackage(File packageArchive, PackageStream.ARCHIVE archive, PackageStream.COMPRESSION compression) throws IOException {
+        extractedPackageDir = openArchive(packageArchive, archive, compression);
 
         LOG.debug(">>>> Extracted package to '{}'", extractedPackageDir);
     }

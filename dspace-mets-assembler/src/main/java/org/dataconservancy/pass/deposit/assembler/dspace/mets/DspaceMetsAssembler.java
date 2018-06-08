@@ -65,7 +65,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
         mb.archived(true);
         mb.compressed(true);
         mb.compression(PackageStream.COMPRESSION.ZIP);
-        mb.mimeType("application/zip");
+        mb.mimeType(APPLICATION_ZIP);
         return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriter);
     }
 

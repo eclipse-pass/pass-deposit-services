@@ -16,8 +16,9 @@
 
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
@@ -41,19 +42,23 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
 
     private StreamingSerializer metadataSerializer;
 
+    private MetadataBuilder metadataBuilder;
+
+
     public ThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                      List<Resource> packageFiles, ResourceBuilderFactory rbf,
+                                      List<Resource> packageFiles, ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder,
                                       StreamingSerializer manifestSerializer, StreamingSerializer metadataSerializer) {
-        super(threadName, archiveOut, submission, packageFiles, rbf);
+        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
         this.manifestSerializer = manifestSerializer;
         this.metadataSerializer = metadataSerializer;
+        this.metadataBuilder = metadataBuilder;
     }
 
     @Override
     public void assembleResources(DepositSubmission submission, List<PackageStream.Resource> resources)
             throws IOException {
-        ZipArchiveEntry manifestEntry = new ZipArchiveEntry(MANIFEST_ENTRY_NAME);
-        ZipArchiveEntry metadataEntry = new ZipArchiveEntry(METADATA_ENTRY_NAME);
+        ArchiveEntry manifestEntry = createEntry(MANIFEST_ENTRY_NAME, -1);
+        ArchiveEntry metadataEntry = createEntry(METADATA_ENTRY_NAME, -1);
         putResource(archiveOut, manifestEntry, updateLength(manifestEntry, manifestSerializer.serialize()));
         putResource(archiveOut, metadataEntry, updateLength(metadataEntry, metadataSerializer.serialize()));
         debugResources(resources);

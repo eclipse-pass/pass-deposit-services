@@ -31,6 +31,8 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
 
     private DepositSubmission submission;
 
+    private MetadataBuilder metadataBuilder;
+
     public DspaceMetsZippedPackageStream(DepositSubmission submission,
                                          List<org.springframework.core.io.Resource> custodialResources,
                                          MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
@@ -48,12 +50,13 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
 
         this.metsWriter = metsWriter;
         this.submission = submission;
+        this.metadataBuilder = metadataBuilder;
     }
 
     @Override
     public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
                                                               ResourceBuilderFactory rbf) {
         return new DspaceMetsThreadedOutputStreamWriter("DSpace Archive Writer", archiveOutputStream,
-                submission, custodialContent, rbf, metsWriter);
+                submission, custodialContent, rbf, metadataBuilder, metsWriter);
     }
 }

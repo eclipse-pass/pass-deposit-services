@@ -15,8 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
@@ -41,8 +44,9 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
     public DspaceMetsThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
                                                 DepositSubmission submission,
                                                 List<Resource> packageFiles, ResourceBuilderFactory rbf,
+                                                MetadataBuilder metadataBuilder,
                                                 DspaceMetadataDomWriter metsWriter) {
-        super(threadName, archiveOut, submission, packageFiles, rbf);
+        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
 
         if (metsWriter == null) {
             throw new IllegalArgumentException("DspaceMetadataDomWriter must not be null.");
@@ -63,8 +67,7 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
         metsWriter.write(metsOut);
         ByteArrayInputStream metsIn = new ByteArrayInputStream(metsOut.toByteArray());
 
-        ZipArchiveEntry metsEntry = new ZipArchiveEntry(METS_XML);
-        metsEntry.setSize(metsOut.size());
+        ArchiveEntry metsEntry = createEntry(METS_XML, metsOut.size());
 
         putResource(archiveOut, metsEntry, metsIn);
     }

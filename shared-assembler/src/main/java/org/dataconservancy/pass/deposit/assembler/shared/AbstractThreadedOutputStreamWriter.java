@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ContentLengthObserver;
@@ -25,6 +26,7 @@ import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
@@ -67,6 +69,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private ResourceBuilderFactory rbf;
 
+    private MetadataBuilder metadataBuilder;
+
     private DepositSubmission submission;
 
     protected static final int THIRTY_TWO_KIB = 32 * 2 ^ 10;
@@ -86,12 +90,13 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      */
     public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
                                               DepositSubmission submission, List<Resource> packageFiles,
-                                              ResourceBuilderFactory rbf) {
+                                              ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder) {
         super(threadName);
         this.archiveOut = archiveOut;
         this.packageFiles = packageFiles;
         this.rbf = rbf;
         this.submission = submission;
+        this.metadataBuilder = metadataBuilder;
     }
 
     /**
@@ -123,7 +128,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                      BufferedInputStream buffIn = resourceIn.markSupported() ?
                              null : new BufferedInputStream(resourceIn)) {
 
-                    InputStream in = null;
+                    InputStream in;
 
                     if (buffIn != null) {
                         in = buffIn;
@@ -148,8 +153,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
                         rb.name(nameResource(resource));
                         PackageStream.Resource packageResource = rb.build();
-                        ZipArchiveEntry archiveEntry = createEntry(packageResource);
-                        archiveEntry.setSize(resource.contentLength());
+                        long length = resource.contentLength();
+                        ArchiveEntry archiveEntry = createEntry(packageResource.name(), length);
                         putResource(archiveOut, archiveEntry, observableIn);
                     }
 
@@ -197,20 +202,35 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * Useful to override if sub-classes want to include a path in the name, otherwise this implementation defaults
      * to {@link Resource#getFilename()}
      *
-     * @param resource
-     * @return
+     * @param resource the resource
+     * @return the name of the resource
      */
     protected String nameResource(Resource resource) {
         return resource.getFilename();
     }
 
     /**
-     * Create a ZipArchiveEntry from a {@code PackageStream.Resource}
-     * @param resource
-     * @return
+     * Create an ArchiveEntry from a {@code String} name and a {@code long} length
+     * @param name the name for the antry
+     * @param length the length to be assigned to the entry if the entry type supports setSize()
+     *               setSize() is not attempted if length < 0
+     * @return the ArchiveEntry
      */
-    protected ZipArchiveEntry createEntry(PackageStream.Resource resource) {
-        return new ZipArchiveEntry(resource.name());
+    protected ArchiveEntry createEntry(String name, long length) {
+        PackageStream.Metadata metadata = metadata();
+        if(metadata.archive().equals(PackageStream.ARCHIVE.TAR)) {
+            TarArchiveEntry entry = new TarArchiveEntry(name);
+            if (length >= 0) {
+                entry.setSize(length);
+            }
+            return entry;
+        } else if (metadata.archive().equals(PackageStream.ARCHIVE.ZIP)) {
+            ZipArchiveEntry entry = new ZipArchiveEntry(name);
+            if (length >= 0) {
+                entry.setSize(length);
+            }
+            return entry;
+        } else return null;
     }
 
     /**
@@ -262,7 +282,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param archiveOut the OutputStream of the package being written
      * @param archiveEntry metadata describing the bytes supplied by {@code inputStream}
      * @param inputStream the bytes to write to the package, described by {@code archiveEntry}
-     * @throws IOException
+     * @throws IOException if putting the resource fails
      */
     protected void putResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream inputStream)
             throws IOException {
@@ -272,18 +292,22 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
         archiveOut.closeArchiveEntry();
     }
 
-    protected InputStream updateLength(ZipArchiveEntry entry, InputStream toSize) throws IOException {
+    protected InputStream updateLength(ArchiveEntry entry, InputStream toSize) throws IOException {
         org.apache.commons.io.output.ByteArrayOutputStream baos =
                 new org.apache.commons.io.output.ByteArrayOutputStream(THIRTY_TWO_KIB);
         IOUtils.copy(toSize, baos);
-        entry.setSize(baos.size());
-        LOG.debug("Updating tar entry {} size to {}", entry.getName(), baos.size());
+        if (entry instanceof TarArchiveEntry) {
+            ((TarArchiveEntry) entry).setSize(baos.size());
+        } else if (entry instanceof ZipArchiveEntry) {
+            ((ZipArchiveEntry) entry).setSize(baos.size());
+         }
+        LOG.debug("Updating archive entry {} size to {}", entry.getName(), baos.size());
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
     /**
-     * The {@link ArchiveOutputStream} provided on {@link #AbstractThreadedOutputStreamWriter(String,
-     * ArchiveOutputStream, DepositSubmission, List, ResourceBuilderFactory) construction} is written to when the
+     * The {@link ArchiveOutputStream} provided on {@link #AbstractThreadedOutputStreamWriter(String, ArchiveOutputStream,
+     * DepositSubmission, List, ResourceBuilderFactory, MetadataBuilder) construction} is written to when the
      * {@link #run()} method is executed.  If there is a problem writing to the {@code ArchiveOutputStream}, it <em>must
      * </em> be {@link ArchiveOutputStream#close() closed} due to the threaded nature of {@link
      * java.io.PipedOutputStream} and {@link java.io.PipedInputStream}.
@@ -296,5 +320,9 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      */
     interface CloseOutputstreamCallback {
         void closeAll();
+    }
+
+    protected PackageStream.Metadata metadata() {
+        return metadataBuilder.build();
     }
 }

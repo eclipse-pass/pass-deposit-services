@@ -19,7 +19,9 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderImpl;
 import org.junit.Before;
@@ -30,6 +32,8 @@ import org.springframework.core.io.Resource;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -39,7 +43,7 @@ import static org.mockito.Mockito.when;
 
 public class DspaceMetsPackageStreamTest {
 
-    private MetadataBuilder mb = mock(MetadataBuilder.class);
+    private MetadataBuilder mb = new MetadataBuilderImpl();
 
     private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
 
@@ -53,6 +57,12 @@ public class DspaceMetsPackageStreamTest {
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(new ResourceBuilderImpl());
+        mb.spec(SPEC_DSPACE_METS);
+        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archived(true);
+        mb.compressed(true);
+        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.mimeType(APPLICATION_ZIP);
     }
 
     @Test

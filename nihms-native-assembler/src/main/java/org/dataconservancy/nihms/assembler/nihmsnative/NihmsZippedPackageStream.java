@@ -44,17 +44,20 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     private DepositSubmission submission;
 
+    private MetadataBuilder metadata;
+
     public NihmsZippedPackageStream(DepositSubmission submission, List<org.springframework.core.io.Resource> custodialResources,
                                     MetadataBuilder metadata, ResourceBuilderFactory rbf) {
         super(custodialResources, metadata, rbf);
         this.submission = submission;
+        this.metadata = metadata;
     }
 
     @Override
     public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
                                                               ResourceBuilderFactory rbf) {
         ThreadedOutputStreamWriter threadedWriter = new ThreadedOutputStreamWriter("Archive Piped Writer",
-                archiveOut, submission, custodialContent, rbf, manifestSerializer, metadataSerializer);
+                archiveOut, submission, custodialContent, rbf, metadata, manifestSerializer, metadataSerializer);
 
         return threadedWriter;
     }
