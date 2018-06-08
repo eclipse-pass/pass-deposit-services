@@ -117,6 +117,11 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
             // (1) need to know the name of each file going into the tar
             // (2) the size of each file going into the tar?
 
+            if (packageFiles.size() < 1) {
+                throw new RuntimeException("Refusing to create an empty package: no Resources were supplied " +
+                        "to this " + this.getClass().getName());
+            }
+
             packageFiles.forEach(resource -> {
                 ResourceBuilder rb = rbf.newInstance();
                 try (InputStream resourceIn = resource.getInputStream();

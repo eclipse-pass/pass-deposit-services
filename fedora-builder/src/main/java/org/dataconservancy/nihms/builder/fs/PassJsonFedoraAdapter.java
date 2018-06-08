@@ -318,7 +318,7 @@ public class PassJsonFedoraAdapter {
         if (! entities.containsKey(funderURI)) {
             Funder funder = client.readResource(funderURI, Funder.class);
             entities.put(funderURI, funder);
-            if (! entities.containsKey(funder.getPolicy())) {
+            if (! entities.containsKey(funder.getPolicy()) && funder.getPolicy() != null) {
                 Policy policy = client.readResource(funder.getPolicy(), Policy.class);
                 entities.put(funder.getPolicy(), policy);
                 // Ignore the repositories listed for the policy - they are added from the Submission's list.
