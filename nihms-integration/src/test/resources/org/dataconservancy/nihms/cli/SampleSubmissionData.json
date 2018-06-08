@@ -131,5 +131,25 @@
     "roles" : [ "admin" ],
     "@id" : "fake:user3",
     "@type" : "User"
+  },
+  {
+    "name" : "test_image",
+    "uri" : "classpath:/org/dataconservancy/nihms/cli/dektol.jpg",
+    "description" : "A logo to test supplemental type",
+    "fileRole" : "supplemental",
+    "mimeType" : "image/png",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file1",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_pdf",
+    "uri" : "classpath:/org/dataconservancy/nihms/cli/ilford_film_processing_chart.pdf",
+    "description" : "PDF hype to test manuscript type",
+    "fileRole" : "manuscript",
+    "mimeType" : "application/pdf",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file2",
+    "@type" : "File"
   }
 ]

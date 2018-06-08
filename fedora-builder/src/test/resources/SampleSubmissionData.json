@@ -128,7 +128,7 @@
   },
   {
     "name" : "test_image",
-    "uri" : "classpath:/org/dataconservancy/pass/deposit/builder/fedora/dektol.jpg",
+    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/dektol.jpg",
     "description" : "A logo to test supplemental type",
     "fileRole" : "supplemental",
     "mimeType" : "image/png",
@@ -138,7 +138,7 @@
   },
   {
     "name" : "test_pdf",
-    "uri" : "classpath:/org/dataconservancy/pass/deposit/builder/fedora/ilford_film_processing_chart.pdf",
+    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/ilford_film_processing_chart.pdf",
     "description" : "PDF hype to test manuscript type",
     "fileRole" : "manuscript",
     "mimeType" : "application/pdf",
