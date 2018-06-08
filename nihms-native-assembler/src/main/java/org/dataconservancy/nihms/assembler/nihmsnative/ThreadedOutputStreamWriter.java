@@ -20,13 +20,12 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,7 +45,7 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
 
 
     public ThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                      List<Resource> packageFiles, ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder,
+                                      List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder,
                                       StreamingSerializer manifestSerializer, StreamingSerializer metadataSerializer) {
         super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
         this.manifestSerializer = manifestSerializer;
@@ -81,8 +80,9 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
      * @return a collision-free name for the provided resource file.
      */
     @Override
-    protected String nameResource(Resource resource) {
-        return NihmsZippedPackageStream.getNonCollidingFilename(resource.getFilename(), DepositFileType.supplemental);
+    protected String nameResource(DepositFileResource resource) {
+        return NihmsZippedPackageStream.getNonCollidingFilename(super.nameResource(resource),
+                resource.getDepositFile().getType());
     }
 
 }

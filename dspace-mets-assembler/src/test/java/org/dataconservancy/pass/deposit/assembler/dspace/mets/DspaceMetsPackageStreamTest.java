@@ -22,12 +22,14 @@ import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,20 +51,38 @@ public class DspaceMetsPackageStreamTest {
 
     private DspaceMetadataDomWriter metsWriter = mock(DspaceMetadataDomWriter.class);
 
-    private List<Resource> custodialContent = Arrays.asList(
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
+    private List<DepositFileResource> custodialContent;
 
 
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(new ResourceBuilderImpl());
+
         mb.spec(SPEC_DSPACE_METS);
         mb.archive(PackageStream.ARCHIVE.ZIP);
         mb.archived(true);
         mb.compressed(true);
         mb.compression(PackageStream.COMPRESSION.ZIP);
         mb.mimeType(APPLICATION_ZIP);
+
+        String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
+        String figureLocation = this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg";
+
+        DepositFile manuscript = new DepositFile();
+        manuscript.setName("manuscript.txt");
+        manuscript.setType(DepositFileType.manuscript);
+        manuscript.setLabel("Manuscript");
+        manuscript.setLocation(manuscriptLocation);
+
+        DepositFile figure = new DepositFile();
+        figure.setName("figure.jpg");
+        figure.setType(DepositFileType.figure);
+        figure.setLabel("Figure");
+        figure.setLocation(figureLocation);
+
+        custodialContent = Arrays.asList(
+                new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
+                new DepositFileResource(figure, new ClassPathResource(figureLocation)));
     }
 
     @Test

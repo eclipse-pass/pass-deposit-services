@@ -22,6 +22,7 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractZippedPackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     private MetadataBuilder metadata;
 
-    public NihmsZippedPackageStream(DepositSubmission submission, List<org.springframework.core.io.Resource> custodialResources,
+    public NihmsZippedPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
                                     MetadataBuilder metadata, ResourceBuilderFactory rbf) {
         super(custodialResources, metadata, rbf);
         this.submission = submission;

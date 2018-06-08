@@ -89,7 +89,7 @@ public abstract class AbstractAssembler implements Assembler {
         MetadataBuilder metadataBuilder = mbf.newInstance();
         metadataBuilder.name(sanitizeFilename(submission.getName()));
 
-        List<Resource> custodialResources = resolveCustodialResources(submission.getFiles());
+        List<DepositFileResource> custodialResources = resolveCustodialResources(submission.getFiles());
 
         return createPackageStream(submission, custodialResources, metadataBuilder, rbf);
     }
@@ -115,7 +115,7 @@ public abstract class AbstractAssembler implements Assembler {
      * @param rbf
      * @return
      */
-    protected abstract PackageStream createPackageStream(DepositSubmission submission, List<Resource> custodialResources,
+    protected abstract PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
                                                          MetadataBuilder mdb, ResourceBuilderFactory rbf);
 
     /**
@@ -140,26 +140,28 @@ public abstract class AbstractAssembler implements Assembler {
      * @return a Spring {@code Resource} for each entry in the manifest; {@code Resource}s in the returned {@code List}
      *         are expected to resolve to bytestreams
      */
-    protected List<Resource> resolveCustodialResources(List<DepositFile> manifest) {
+    protected List<DepositFileResource> resolveCustodialResources(List<DepositFile> manifest) {
         // Locate byte streams containing uploaded manuscript and any supplemental data
         // essentially, the custodial content of the package (i.e. excluding package-specific
         // metadata such as bagit tag files, or mets xml files)
         return manifest
                 .stream()
-                .map(DepositFile::getLocation)
-                .map(location -> {
+                .map(DepositFileResource::new)
+                .peek(depositFileRes -> {
+                    String location = depositFileRes.getDepositFile().getLocation();
+                    Resource delegateResource = null;
 
                     if (location.startsWith(FILE_PREFIX)) {
-                        return new FileSystemResource(location.substring(FILE_PREFIX.length()));
-                    }
-
-                    if (location.startsWith(CLASSPATH_PREFIX) ||
+                        delegateResource = new FileSystemResource(location.substring(FILE_PREFIX.length()));
+                    } else if (location.startsWith(CLASSPATH_PREFIX) ||
                             location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
                         if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
-                            return new ClassPathResource(location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
+                            delegateResource = new ClassPathResource(location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
+                        } else {
+
+                            delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
                         }
-                        return new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
-                    }
+                    } else
 
                     // Defend against callers that have not specified Fedora auth creds, or repositories that
                     // do not require authentication
@@ -168,27 +170,28 @@ public abstract class AbstractAssembler implements Assembler {
                         if (fedoraUser != null) {
                             try {
                                 LOG.trace(">>>> Returning AuthenticatedResource for {}", location);
-                                return new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
+                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
                         }
-                    }
-
-                    if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX)) {
+                    } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX)) {
                         try {
-                            return new UrlResource(location);
+                            delegateResource = new UrlResource(location);
                         } catch (MalformedURLException e) {
                             throw new RuntimeException(e.getMessage(), e);
                         }
-                    }
-
-                    if (location.contains("/") || location.contains("\\")) {
+                    } else if (location.contains("/") || location.contains("\\")) {
                         // assume it is a file
-                        return new FileSystemResource(location);
+                        delegateResource = new FileSystemResource(location);
                     }
 
-                    throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
+                    if (delegateResource == null) {
+                        throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
+                    }
+
+                    depositFileRes.setResource(delegateResource);
+
                 })
                 .collect(Collectors.toList());
     }

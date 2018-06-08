@@ -19,16 +19,17 @@ import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -59,9 +60,7 @@ public class NihmsPackageStreamTest {
 
     private StreamingSerializer metadataSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the metadata", "UTF-8"));
 
-    private List<Resource> custodialContent = Arrays.asList(
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt"),
-            new ClassPathResource(this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg"));
+    private List<DepositFileResource> custodialContent;
 
     private MetadataBuilder mb = mock(MetadataBuilder.class);
     private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
@@ -72,6 +71,7 @@ public class NihmsPackageStreamTest {
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(rb);
+
         MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
         metadataBuilder.spec(SPEC_NIHMS_NATIVE_2017_07);
         metadataBuilder.archive(PackageStream.ARCHIVE.TAR);
@@ -80,6 +80,24 @@ public class NihmsPackageStreamTest {
         metadataBuilder.compression(PackageStream.COMPRESSION.GZIP);
         metadataBuilder.mimeType(APPLICATION_GZIP);
 
+        String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
+        String figureLocation = this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg";
+
+        DepositFile manuscript = new DepositFile();
+        manuscript.setName("manuscript.txt");
+        manuscript.setType(DepositFileType.manuscript);
+        manuscript.setLabel("Manuscript");
+        manuscript.setLocation(manuscriptLocation);
+
+        DepositFile figure = new DepositFile();
+        figure.setName("figure.jpg");
+        figure.setType(DepositFileType.figure);
+        figure.setLabel("Figure");
+        figure.setLocation(figureLocation);
+
+        custodialContent = Arrays.asList(
+                new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
+                new DepositFileResource(figure, new ClassPathResource(figureLocation)));
     }
 
     /**

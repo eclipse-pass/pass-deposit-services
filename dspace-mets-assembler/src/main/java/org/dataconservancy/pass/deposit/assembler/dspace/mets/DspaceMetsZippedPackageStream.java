@@ -21,6 +21,7 @@ import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractZippedPackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
     private MetadataBuilder metadataBuilder;
 
     public DspaceMetsZippedPackageStream(DepositSubmission submission,
-                                         List<org.springframework.core.io.Resource> custodialResources,
+                                         List<DepositFileResource> custodialResources,
                                          MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
                                          DspaceMetadataDomWriter metsWriter) {
 

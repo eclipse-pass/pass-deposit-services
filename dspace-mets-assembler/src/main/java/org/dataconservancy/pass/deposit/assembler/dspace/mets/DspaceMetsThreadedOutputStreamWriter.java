@@ -17,15 +17,12 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
-import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +40,7 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
 
     public DspaceMetsThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
                                                 DepositSubmission submission,
-                                                List<Resource> packageFiles, ResourceBuilderFactory rbf,
+                                                List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf,
                                                 MetadataBuilder metadataBuilder,
                                                 DspaceMetadataDomWriter metsWriter) {
         super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
@@ -82,8 +79,8 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
      * @return
      */
     @Override
-    protected String nameResource(Resource resource) {
-        return "data/" + resource.getFilename();
+    protected String nameResource(DepositFileResource resource) {
+        return "data/" + super.nameResource(resource);
     }
 
 }
