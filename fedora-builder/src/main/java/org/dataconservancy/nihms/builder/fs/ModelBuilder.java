@@ -77,14 +77,15 @@ abstract class ModelBuilder {
         person.setCorrespondingPi(isCoPI);
         person.setAuthor(isAuthor);
         // Available User data for which there is no place in the existing DepositMetadata.Person:
-        String username = userEntity.getUsername();
-        String displayName = userEntity.getDisplayName();
-        String affiliation = userEntity.getAffiliation();
-        String institutionalId = userEntity.getInstitutionalId();
-        String localKey = userEntity.getLocalKey();
-        String orcidId = userEntity.getOrcidId();
-        for (User.Role role : userEntity.getRoles()) {
-        }
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String username = userEntity.getUsername();
+//        String displayName = userEntity.getDisplayName();
+//        String affiliation = userEntity.getAffiliation();
+//        String institutionalId = userEntity.getInstitutionalId();
+//        String localKey = userEntity.getLocalKey();
+//        String orcidId = userEntity.getOrcidId();
+//        for (User.Role role : userEntity.getRoles()) {
+//        }
 
         return person;
     }
@@ -123,10 +124,11 @@ abstract class ModelBuilder {
         String journalTitle = getStringProperty(submissionData, "journal-title");
         metadata.getJournalMetadata().setJournalTitle(journalTitle);
 
-        String journalTitleShort = getStringProperty(submissionData, "journal-title-short");
-        String volume = getStringProperty(submissionData, "volume");
-        String issue = getStringProperty(submissionData, "issue");
-        String subjects = getStringProperty(submissionData, "subjects");
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String journalTitleShort = getStringProperty(submissionData, "journal-title-short");
+//        String volume = getStringProperty(submissionData, "volume");
+//        String issue = getStringProperty(submissionData, "issue");
+//        String subjects = getStringProperty(submissionData, "subjects");
 
         String url = getStringProperty(submissionData, "URL");
         try {
@@ -135,12 +137,13 @@ abstract class ModelBuilder {
             throw new InvalidModel(String.format("Data file '%s' contained an invalid URL.", url), e);
         }
 
-        JsonArray authors = submissionData.get("authors").getAsJsonArray();
-        for (JsonElement element : authors) {
-            JsonObject author = element.getAsJsonObject();
-            String name = getStringProperty(author, "author");
-            String orcid = getStringProperty(author, "orcid");
-        }
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        JsonArray authors = submissionData.get("authors").getAsJsonArray();
+//        for (JsonElement element : authors) {
+//            JsonObject author = element.getAsJsonObject();
+//            String name = getStringProperty(author, "author");
+//            String orcid = getStringProperty(author, "orcid");
+//        }
     }
 
     private void processNihMetadata(DepositMetadata metadata, JsonObject submissionData) {
@@ -218,10 +221,11 @@ abstract class ModelBuilder {
         // The deposit data model requires a "name" - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
         // Available Submission data for which there is no place in the existing DepositSubmission:
-        Submission.Source source = submissionEntity.getSource();
-        Boolean submitted = submissionEntity.getSubmitted();
-        DateTime submittedDate = submissionEntity.getSubmittedDate();
-        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        Submission.Source source = submissionEntity.getSource();
+//        Boolean submitted = submissionEntity.getSubmitted();
+//        DateTime submittedDate = submissionEntity.getSubmittedDate();
+//        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
 
         // Data from the Submission's user resource
         User userEntity = (User)entities.get(submissionEntity.getUser());
@@ -238,10 +242,11 @@ abstract class ModelBuilder {
         }
         // Available Publication data for which there is no place in the existing deposit model:
         // Some of these properties are ignored because they are overwritten by the metadata, below.
-        String publicationAbstract = publicationEntity.getPublicationAbstract();
-        String pmid = publicationEntity.getPmid();
-        String volume = publicationEntity.getVolume();
-        String issue = publicationEntity.getIssue();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String publicationAbstract = publicationEntity.getPublicationAbstract();
+//        String pmid = publicationEntity.getPmid();
+//        String volume = publicationEntity.getVolume();
+//        String issue = publicationEntity.getIssue();
 
         Journal journalEntity = (Journal)entities.get(publicationEntity.getJournal());
         //journal.setJournalTitle(journalEntity.getName());
@@ -254,7 +259,8 @@ abstract class ModelBuilder {
         // Is the model's ID the nlmta value?
         //journal.setJournalId(journalEntity.getNlmta());
         // Available data for which there is no place in the existing deposit model:
-        PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
 
         // Publishers are not currently used in deposits, and may be missing from Journal resources.
         /*
@@ -277,9 +283,10 @@ abstract class ModelBuilder {
         for (URI repositoryUri : submissionEntity.getRepositories()) {
             Repository repositoryEntity = (Repository)entities.get(repositoryUri);
             // Available Repository data for which there is no place in the existing deposit model:
-            String repoName = repositoryEntity.getName();
-            String repoDescription = repositoryEntity.getDescription();
-            URI repoUrl = repositoryEntity.getUrl();
+            // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//            String repoName = repositoryEntity.getName();
+//            String repoDescription = repositoryEntity.getDescription();
+//            URI repoUrl = repositoryEntity.getUrl();
             // (member formSchema should not be needed)
         }
 
@@ -287,13 +294,14 @@ abstract class ModelBuilder {
         for (URI grantUri : submissionEntity.getGrants()) {
             Grant grantEntity = (Grant)entities.get(grantUri);
             // Available data for which there is no place in the existing model:
-            String awardNum = grantEntity.getAwardNumber();
-            Grant.AwardStatus awardStatus = grantEntity.getAwardStatus();
-            String projectLocalKey = grantEntity.getLocalKey();
-            String projectName = grantEntity.getProjectName();
-            DateTime awardDate = grantEntity.getAwardDate();
-            DateTime startDate = grantEntity.getStartDate();
-            DateTime endDate = grantEntity.getEndDate();
+            // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//            String awardNum = grantEntity.getAwardNumber();
+//            Grant.AwardStatus awardStatus = grantEntity.getAwardStatus();
+//            String projectLocalKey = grantEntity.getLocalKey();
+//            String projectName = grantEntity.getProjectName();
+//            DateTime awardDate = grantEntity.getAwardDate();
+//            DateTime startDate = grantEntity.getStartDate();
+//            DateTime endDate = grantEntity.getEndDate();
 
             // Data from the Primary Funder and its Policy resources
 //            Funder primaryFunderEntity = (Funder)entities.get(grantEntity.getPrimaryFunder());
