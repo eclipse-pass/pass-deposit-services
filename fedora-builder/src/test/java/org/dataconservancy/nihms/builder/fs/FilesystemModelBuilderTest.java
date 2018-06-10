@@ -20,6 +20,7 @@ import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.dataconservancy.pass.model.PassEntity;
@@ -41,6 +42,7 @@ public class FilesystemModelBuilderTest {
     private DepositSubmission submission;
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
     private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+    private String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
 
     @Before
     public void setup() throws Exception{
@@ -92,4 +94,15 @@ public class FilesystemModelBuilderTest {
         assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
     }
 
+    @Test
+    public void buildWithNullValues() throws Exception {
+        // Create submission data from sample data file with null values
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNull(submission.getMetadata().getManuscriptMetadata().getMsAbstract());
+        assertNull(submission.getMetadata().getManuscriptMetadata().getManuscriptUrl());
+    }
 }
