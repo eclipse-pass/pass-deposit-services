@@ -26,19 +26,15 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
-
 import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Journal;
 import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.PmcParticipation;
-import org.dataconservancy.pass.model.Policy;
 import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
-import org.joda.time.DateTime;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -51,6 +47,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 /***
  * Base class for copying deposit-submission data from Fedora-based sources into the deposit data model.
@@ -77,101 +74,124 @@ abstract class ModelBuilder {
         person.setCorrespondingPi(isCoPI);
         person.setAuthor(isAuthor);
         // Available User data for which there is no place in the existing DepositMetadata.Person:
-        String username = userEntity.getUsername();
-        String displayName = userEntity.getDisplayName();
-        String affiliation = userEntity.getAffiliation();
-        String institutionalId = userEntity.getInstitutionalId();
-        String localKey = userEntity.getLocalKey();
-        String orcidId = userEntity.getOrcidId();
-        for (User.Role role : userEntity.getRoles()) {
-        }
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String username = userEntity.getUsername();
+//        String displayName = userEntity.getDisplayName();
+//        String affiliation = userEntity.getAffiliation();
+//        String institutionalId = userEntity.getInstitutionalId();
+//        String localKey = userEntity.getLocalKey();
+//        String orcidId = userEntity.getOrcidId();
+//        for (User.Role role : userEntity.getRoles()) {
+//        }
 
         return person;
     }
 
     // Convenience method for retrieving a boolean property.  Should the default be true or false?
-    private boolean getBooleanProperty(JsonObject parent, String name) {
+    private Optional<Boolean> getBooleanProperty(JsonObject parent, String name) {
         if (parent.has(name)) {
-            return parent.get(name).getAsBoolean();
+            return Optional.of(parent.get(name).getAsBoolean());
         }
-        else {
-            return false;
-        }
+        return Optional.empty();
     }
 
     // Convenience method for retrieving a string property.  Should the default be empty or null?
-    private String getStringProperty(JsonObject parent, String name) {
+    private Optional<String> getStringProperty(JsonObject parent, String name) {
         if (parent.has(name)) {
-            return parent.get(name).getAsString();
+            return Optional.of(parent.get(name).getAsString());
         }
-        else {
-            return "";
-        }
+
+        return Optional.empty();
     }
 
     // The following four methods are based on a single sample of PASS submission metadata at
     // https://github.com/OA-PASS/pass-ember/issues/194.
     private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData)
             throws InvalidModel {
-        String title = getStringProperty(submissionData, "title");
-        metadata.getManuscriptMetadata().setTitle(title);
-        metadata.getArticleMetadata().setTitle(title); // Is this tile for manuscript or article or both?
 
-        String abstractTxt = getStringProperty(submissionData, "abstract");
-        metadata.getManuscriptMetadata().setMsAbstract(abstractTxt);
+        // Is this tile for manuscript or article or both?
+        getStringProperty(submissionData, "title")
+                .ifPresent(title -> {
+                    metadata.getManuscriptMetadata().setTitle(title);
+                    metadata.getArticleMetadata().setTitle(title);
+        });
 
-        String journalTitle = getStringProperty(submissionData, "journal-title");
-        metadata.getJournalMetadata().setJournalTitle(journalTitle);
+        getStringProperty(submissionData, "abstract")
+                .ifPresent(abs -> metadata.getManuscriptMetadata().setMsAbstract(abs));
 
-        String journalTitleShort = getStringProperty(submissionData, "journal-title-short");
-        String volume = getStringProperty(submissionData, "volume");
-        String issue = getStringProperty(submissionData, "issue");
-        String subjects = getStringProperty(submissionData, "subjects");
+        getStringProperty(submissionData, "journal-title")
+                .ifPresent(jTitle -> metadata.getJournalMetadata().setJournalTitle(jTitle));
 
-        String url = getStringProperty(submissionData, "URL");
-        try {
-            metadata.getManuscriptMetadata().setManuscriptUrl(new URL(url));
-        } catch (MalformedURLException e) {
-            throw new InvalidModel(String.format("Data file '%s' contained an invalid URL.", url), e);
-        }
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String journalTitleShort = getStringProperty(submissionData, "journal-title-short");
+//        String volume = getStringProperty(submissionData, "volume");
+//        String issue = getStringProperty(submissionData, "issue");
+//        String subjects = getStringProperty(submissionData, "subjects");
 
-        JsonArray authors = submissionData.get("authors").getAsJsonArray();
-        for (JsonElement element : authors) {
-            JsonObject author = element.getAsJsonObject();
-            String name = getStringProperty(author, "author");
-            String orcid = getStringProperty(author, "orcid");
-        }
+        getStringProperty(submissionData, "URL").ifPresent(url -> {
+            try {
+                metadata.getManuscriptMetadata().setManuscriptUrl(new URL(url));
+            } catch (MalformedURLException e) {
+                InvalidModel im = new InvalidModel(String.format("Data file '%s' contained an invalid URL.", url), e);
+                throw new RuntimeException(im.getMessage(), im);
+            }
+        });
+
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        JsonArray authors = submissionData.get("authors").getAsJsonArray();
+//        for (JsonElement element : authors) {
+//            JsonObject author = element.getAsJsonObject();
+//            String name = getStringProperty(author, "author");
+//            String orcid = getStringProperty(author, "orcid");
+//        }
     }
 
     private void processNihMetadata(DepositMetadata metadata, JsonObject submissionData) {
-        String journalId = getStringProperty(submissionData, "journal-NLMTA-ID");
-        metadata.getJournalMetadata().setJournalId(journalId);
-        String issn = getStringProperty(submissionData, "ISSN");
-        metadata.getJournalMetadata().setIssn(issn);
+        getStringProperty(submissionData, "journal-NLMTA-ID")
+                .ifPresent(journalId -> metadata.getJournalMetadata().setJournalId(journalId));
+        getStringProperty(submissionData, "ISSN")
+                .ifPresent(issn -> metadata.getJournalMetadata().setIssn(issn));
     }
 
     private void processJScholarshipMetadata(DepositMetadata metadata, JsonObject submissionData)
             throws InvalidModel {
-        if (submissionData.has("under-embargo")) {
-            String embargoEndDateStr = getStringProperty(submissionData, "Embargo-end-date");
-            try {
-                boolean underEmbargo = submissionData.get("under-embargo").getAsBoolean();
-                metadata.getArticleMetadata().setUnderEmbargo(underEmbargo);
-                String embargoTerms = getStringProperty(submissionData, "embargo");
-                metadata.getArticleMetadata().setEmbargoTerms(embargoTerms);
-                boolean agreementToEmbargo = getBooleanProperty(submissionData, "agreement-to-embargo");
-                metadata.getArticleMetadata().setAgreementToEmbargo(agreementToEmbargo);
-
-                // TODO - Resolve inconsistent date/date-time formats in metadata and deposit data model
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
-                LocalDateTime localEndDate = LocalDate.parse(embargoEndDateStr, formatter).atStartOfDay();
-                ZonedDateTime zonedEndDate = localEndDate.atZone(ZoneId.of("America/New_York"));
-                metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
-            } catch (Exception e) {
-                throw new InvalidModel(String.format("Data file contained an invalid Date: '%s'.",
-                        embargoEndDateStr), e);
-            }
+        if (! submissionData.has("under-embargo")) {
+            return;
         }
+
+        getStringProperty(submissionData, "Embargo-end-date").ifPresent(endDate -> {
+            try {
+                getBooleanProperty(submissionData, "under-embargo").ifPresent(underEmbargo -> {
+                    if (!underEmbargo) {
+                        return;
+                    }
+
+                    metadata.getArticleMetadata().setUnderEmbargo(underEmbargo);
+
+                    getStringProperty(submissionData, "embargo").ifPresent(embargoTerms -> metadata
+                            .getArticleMetadata().setEmbargoTerms(embargoTerms));
+
+                    getBooleanProperty(submissionData, "agreement-to-embargo").ifPresent(agreement -> {
+                            if (!agreement) {
+                                return;
+                            }
+                            metadata.getArticleMetadata().setAgreementToEmbargo(agreement);
+                            });
+
+                    // TODO - Resolve inconsistent date/date-time formats in metadata and deposit data model
+                    // TODO - Fix assumption of local timezone
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+                    LocalDateTime localEndDate = LocalDate.parse(endDate, formatter).atStartOfDay();
+                    ZonedDateTime zonedEndDate = localEndDate.atZone(ZoneId.of("America/New_York"));
+                    metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
+                });
+
+            } catch (Exception e) {
+                InvalidModel im = new InvalidModel(String.format("Data file contained an invalid Date: '%s'.",
+                        endDate), e);
+                throw new RuntimeException(im.getMessage(), im);
+            };
+        });
     }
 
     private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
@@ -218,10 +238,11 @@ abstract class ModelBuilder {
         // The deposit data model requires a "name" - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
         // Available Submission data for which there is no place in the existing DepositSubmission:
-        Submission.Source source = submissionEntity.getSource();
-        Boolean submitted = submissionEntity.getSubmitted();
-        DateTime submittedDate = submissionEntity.getSubmittedDate();
-        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        Submission.Source source = submissionEntity.getSource();
+//        Boolean submitted = submissionEntity.getSubmitted();
+//        DateTime submittedDate = submissionEntity.getSubmittedDate();
+//        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
 
         // Data from the Submission's user resource
         User userEntity = (User)entities.get(submissionEntity.getUser());
@@ -238,10 +259,11 @@ abstract class ModelBuilder {
         }
         // Available Publication data for which there is no place in the existing deposit model:
         // Some of these properties are ignored because they are overwritten by the metadata, below.
-        String publicationAbstract = publicationEntity.getPublicationAbstract();
-        String pmid = publicationEntity.getPmid();
-        String volume = publicationEntity.getVolume();
-        String issue = publicationEntity.getIssue();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        String publicationAbstract = publicationEntity.getPublicationAbstract();
+//        String pmid = publicationEntity.getPmid();
+//        String volume = publicationEntity.getVolume();
+//        String issue = publicationEntity.getIssue();
 
         Journal journalEntity = (Journal)entities.get(publicationEntity.getJournal());
         //journal.setJournalTitle(journalEntity.getName());
@@ -254,7 +276,8 @@ abstract class ModelBuilder {
         // Is the model's ID the nlmta value?
         //journal.setJournalId(journalEntity.getNlmta());
         // Available data for which there is no place in the existing deposit model:
-        PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
+        // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//        PmcParticipation journalParticipation = journalEntity.getPmcParticipation();
 
         // Publishers are not currently used in deposits, and may be missing from Journal resources.
         /*
@@ -277,9 +300,10 @@ abstract class ModelBuilder {
         for (URI repositoryUri : submissionEntity.getRepositories()) {
             Repository repositoryEntity = (Repository)entities.get(repositoryUri);
             // Available Repository data for which there is no place in the existing deposit model:
-            String repoName = repositoryEntity.getName();
-            String repoDescription = repositoryEntity.getDescription();
-            URI repoUrl = repositoryEntity.getUrl();
+            // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//            String repoName = repositoryEntity.getName();
+//            String repoDescription = repositoryEntity.getDescription();
+//            URI repoUrl = repositoryEntity.getUrl();
             // (member formSchema should not be needed)
         }
 
@@ -287,13 +311,14 @@ abstract class ModelBuilder {
         for (URI grantUri : submissionEntity.getGrants()) {
             Grant grantEntity = (Grant)entities.get(grantUri);
             // Available data for which there is no place in the existing model:
-            String awardNum = grantEntity.getAwardNumber();
-            Grant.AwardStatus awardStatus = grantEntity.getAwardStatus();
-            String projectLocalKey = grantEntity.getLocalKey();
-            String projectName = grantEntity.getProjectName();
-            DateTime awardDate = grantEntity.getAwardDate();
-            DateTime startDate = grantEntity.getStartDate();
-            DateTime endDate = grantEntity.getEndDate();
+            // Leave commented out until this metadata is to be used.  Protect against NPEs.
+//            String awardNum = grantEntity.getAwardNumber();
+//            Grant.AwardStatus awardStatus = grantEntity.getAwardStatus();
+//            String projectLocalKey = grantEntity.getLocalKey();
+//            String projectName = grantEntity.getProjectName();
+//            DateTime awardDate = grantEntity.getAwardDate();
+//            DateTime startDate = grantEntity.getStartDate();
+//            DateTime endDate = grantEntity.getEndDate();
 
             // Data from the Primary Funder and its Policy resources
 //            Funder primaryFunderEntity = (Funder)entities.get(grantEntity.getPrimaryFunder());
