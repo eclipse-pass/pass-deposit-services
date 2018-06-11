@@ -52,7 +52,7 @@ public class DepositFileLabelMaker {
     }
 
     /**
-     * Return a unique label for a {@code }DepositFile}. If the type of file is not to be labeled, return an empty string.
+     * Return a unique label for a {@code DepositFile}. If the type of file is not to be labeled, return an empty string.
      *
      * @param type the {@code DepositFileType} of the {@code DepositFile} requesting a label
      * @param description the user-supplied description of the file
