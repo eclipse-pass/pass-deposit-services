@@ -293,6 +293,8 @@
                         <dspace.port>${dspace.port}</dspace.port>
                         <ftp.host>${ftp.server}</ftp.host>
                         <ftp.port>${ftp-control.port}</ftp.port>
+                        <sword.user>${sword.user}</sword.user>
+                        <sword.pass>${sword.pass}</sword.pass>
                     </systemProperties>
                 </configuration>
                 <executions>
