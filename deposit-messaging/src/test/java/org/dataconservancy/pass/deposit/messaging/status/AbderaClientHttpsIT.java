@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import okhttp3.OkHttpClient;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.client.AbderaClient;
