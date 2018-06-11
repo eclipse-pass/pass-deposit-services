@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * We are supporting Labels only for all file types which are required to have them.
  *
- * From page 1 the NIHMS Bulk Submission Speccification for Funding Agencies, July 2017
+ * From page 1 the NIHMS Bulk Submission Specification for Funding Agencies, July 2017
  *
  *  "{label} is a label to differentiate between files of one {file_type} in the system.
  *   This field is required for figure, table, and supplement file types.
