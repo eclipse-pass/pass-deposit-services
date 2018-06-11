@@ -27,6 +27,15 @@ import java.util.Set;
 /**
  * A utility class for generating unique labels for manifest entries for {@code DepositFile}s.
  *
+ * We are supporting Labels only for all file types which are required to have them.
+ *
+ * From page 1 the NIHMS Bulk Submission Speccification for Funding Agencies, July 2017
+ *
+ *  "{label} is a label to differentiate between files of one {file_type} in the system.
+ *   This field is required for figure, table, and supplement file types.
+ *  {label} is used to identify files sent,such as 2a, 2b, and so on.
+ *  In the case of supplemental files, the string supplied here will be used as text for a hyperlink in the PMC manuscript.
+ *
  * @author jrm@jhu.edu
  */
 
