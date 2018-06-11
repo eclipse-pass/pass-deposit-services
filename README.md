@@ -15,23 +15,26 @@ Deposit Services relies on _existing_ variables common to the PASS infrastructur
 
 ### Production Configuration Variables
 
-* `FCREPO_HOST`: (_default_: **localhost**) the IP address or host name of the Fedora repository.
-* `FCREPO_PORT`: (_default_: **8080**) the TCP port running the Fedora HTTP REST API.
-* `FCREPO_JMS_PORT`: (_default_: **61616**) the TCP port for the STOMP protocol.
-* `ES_HOST`: (_default_: **localhost**) the IP address or host name of the Elastic Search index.
-* `ES_PORT`: (_default_: **9200**) the TCP port running the Elastic Search HTTP API.
-* `FTP_HOST`: (_default_: **localhost**) the IP address or host name of the NIH FTP server
-* `FTP_PORT`: (_default_: **21**) the TCP control port of the NIH FTP server
-* `DSPACE_HOST`: (_default_: **localhost**) the IP address or host name of the server running the SWORD protocol version 2 endpoint
-* `DSPACE_PORT`: (_default_: **8181**) the TCP port exposing the SWORD protocol version 2 endpoint
-* `PASS_ELASTICSEARCH_LIMIT`: (_default_: **100**) the maximum number of results returned in a single search response
-* `PASS_FEDORA_USER`: (_default_: **fedoraAdmin**) the username used for `Basic` HTTP authentication to the Fedora REST API
-* `PASS_FEDORA_PASSWORD:` (_default_: **moo**) the password used for `Basic` HTTP authentication to the Fedora REST API
-* `PASS_DEPOSIT_TRANSPORT_CONFIGURATION`: (_default_: **classpath:/packagers.properties**) points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Accepted values include any Spring Resource path, as well as file paths.
-* `PASS_DEPOSIT_WORKERS_CONCURRENCY`: (_default_: **4**) the number of Deposit Worker threads that can simultaneously run.
-* `PASS_DEPOSIT_STATUS_MAPPING`: (_default_: **classpath:/statusmapping.json**) points to a JSON file that identifies protocol-specific statuses as _terminal_ or _intermediate_.  Accepted values include any Spring Resource path, as well as file paths.
-* `PASS_DEPOSIT_HTTP_AGENT`: (_default_: **pass-deposit/x.y.z**) the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
-* `SPRING_JMS_LISTENER_CONCURRENCY`: (_default_: **4**) the number of JMS messages that can be processed simultaneously.
+
+|Environment Variable                       |Default Value                   |Description|
+|-------------------------------------------|--------------------------------|-----------|
+|`FCREPO_HOST`                              |localhost                       |the IP address or host name of the Fedora repository
+|`FCREPO_PORT`                              |8080                            |the TCP port running the Fedora HTTP REST API.
+|`FCREPO_JMS_PORT`                          |61616                           |the TCP port for the STOMP protocol.
+|`ES_HOST`                                  |localhost                       |the IP address or host name of the Elastic Search index.
+|`ES_PORT`                                  |9200                            |the TCP port running the Elastic Search HTTP API.
+|`FTP_HOST`                                 |localhost                       |the IP address or  host name of the NIH FTP server
+|`FTP_PORT`                                 |21                              |the TCP control port of the NIH FTP server
+|`DSPACE_HOST`                              |localhost                       |the IP address or host name of the server running the SWORD protocol version 2 endpoint
+|`DSPACE_PORT`                              |8181                            |the TCP port exposing the SWORD protocol version 2 endpoint
+|`PASS_ELASTICSEARCH_LIMIT`                 |100                             |the maximum number of results returned in a single search response
+|`PASS_FEDORA_USER`                         |fedoraAdmin                     |the username used for `Basic` HTTP authentication to the Fedora REST API
+|`PASS_FEDORA_PASSWORD:`                    |moo                             |the password used for `Basic` HTTP authentication to the Fedora REST API
+|`PASS_DEPOSIT_TRANSPORT_CONFIGURATION`     |classpath:/packagers.properties |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Accepted values include any Spring Resource path, as well as file paths.
+|`PASS_DEPOSIT_WORKERS_CONCURRENCY`         |4                               |the number of Deposit Worker threads that can simultaneously run.
+|`PASS_DEPOSIT_STATUS_MAPPING`              |classpath:/statusmapping.json   |points to a JSON file that identifies protocol-specific statuses as _terminal_ or _intermediate_.  Accepted values include any Spring Resource path, as well as file paths.
+|`PASS_DEPOSIT_HTTP_AGENT`                  |pass-deposit/x.y.z              |the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
+|`SPRING_JMS_LISTENER_CONCURRENCY`          |4                               |the number of JMS messages that can be processed simultaneously.
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=http://fcrepo:8080/fcrepo/rest`)
 
@@ -77,16 +80,19 @@ A few observations of this example configuration:
 
 A production deployment of Deposit Services is likely to provide updated values for the following keys:
 > Remember: if the default configuration is overridden, _all_ keys with their values must be in the new configuration, even if their value remains unchanged
-* `transport.nihms.deposit.transport.username`: (_default_: **nihmsftpuser**) the username used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
-* `transport.nihms.deposit.transport.password`: (_default_: **nihmsftppass**) the password used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
-* `transport.nihms.deposit.transport.server-fqdn` (or set the environment variable `FTP_HOST`): (_default_: **localhost**) the IP address or hostname of the NIH FTP server
-* `transport.nihms.deposit.transport.server-port` (or set the environment variable `FTP_PORT`): (_default_: **21**) the FTP control port of the NIH FTP server
-* `transport.js.deposit.transport.username`: (_default_: **dspace-admin@oapass.org**): the username used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
-* `transport.js.deposit.transport.password`: (_default_: **foobar**): the password used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
-* `transport.js.deposit.transport.server-fqdn` (or set the environment variable `DSPACE_HOST`): (_default_: **localhost**) the IP address or hostname of the DSpace SWORD endpoint
-* `transport.js.deposit.transport.server-port` (or set the environment variable `DSPACE_PORT`): (_default_: **8181**) the TCP port of the DSpace SWORD endpoint
-* `transport.js.deposit.transport.protocol.swordv2.service-doc`: (_default_: **http://${dspace.host}:${dspace.port}/swordv2/servicedocument**): the location of the SWORD service document
-* `transport.js.deposit.transport.protocol.swordv2.target-collection`: (_default_: **http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2**): the location of the SWORD collection accepting deposits (note that this collection _must_ be enumerated in the SWORD service document)
+
+|Property name                                                       |Default value                                                         |Description|
+|--------------------------------------------------------------------|----------------------------------------------------------------------|-----------|
+|`transport.nihms.deposit.transport.username`                        |nihmsftpuser                                                          |the username used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
+|`transport.nihms.deposit.transport.password`                        |nihmsftppass                                                          |the password used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
+|`transport.nihms.deposit.transport.server-fqdn`                     |localhost                                                             |the IP address or hostname of the NIH FTP server 
+|`transport.nihms.deposit.transport.server-port`                     |21                                                                    |the FTP control port of the NIH FTP server
+|`transport.js.deposit.transport.username`                           |dspace-admin@oapass.org                                               |the username used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
+|`transport.js.deposit.transport.password`                           |foobar                                                                |the password used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
+|`transport.js.deposit.transport.server-fqdn`                        |localhost                                                             |the IP address or hostname of the DSpace SWORD endpoint
+|`transport.js.deposit.transport.server-port`                        |8181                                                                  |the TCP port of the DSpace SWORD endpoint
+|`transport.js.deposit.transport.protocol.swordv2.service-doc`       |http://${dspace.host}:${dspace.port}/swordv2/servicedocument          |the location of the SWORD service document
+|`transport.js.deposit.transport.protocol.swordv2.target-collection` |http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2   |the location of the SWORD collection accepting deposits (note that this collection _must_ be enumerated in the SWORD service document)
 
 #### Creating and using an updated configuration
 
