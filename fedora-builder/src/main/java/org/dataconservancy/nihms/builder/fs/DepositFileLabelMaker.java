@@ -41,9 +41,9 @@ public class DepositFileLabelMaker {
 
     private static final Set<DepositFileType> types = new HashSet<>(Arrays.asList(labeledTypes));
 
-    private static Map<DepositFileType, Set<String>> usedFileLabels = createLabelMap(types);
+    private static Map<DepositFileType, Set<String>> usedFileLabels = createLabelMap();
 
-    private static  Map<DepositFileType, Set<String>> createLabelMap(Set<DepositFileType> types) {
+    private static  Map<DepositFileType, Set<String>> createLabelMap() {
         Map<DepositFileType, Set<String>> labelMap = new HashMap<>();
         for (DepositFileType fileType : types) {
             labelMap.put(fileType, new HashSet<>());
