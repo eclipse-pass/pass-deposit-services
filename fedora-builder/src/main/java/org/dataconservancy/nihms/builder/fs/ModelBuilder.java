@@ -353,6 +353,7 @@ abstract class ModelBuilder {
         ArrayList<DepositFile> files = new ArrayList<>();
         submission.setFiles(files);
         manifest.setFiles(files);
+        DepositFileLabelMaker labelMaker = new DepositFileLabelMaker();
 
         for (URI key : entities.keySet()) {
             PassEntity entity = entities.get(key);
@@ -365,7 +366,7 @@ abstract class ModelBuilder {
                     depositFile.setLocation(file.getUri().toString());
                     // TODO - The client model currently only has "manuscript" and "supplemental" roles.
                     depositFile.setType(DepositFileType.valueOf(file.getFileRole().name().toLowerCase()));
-                    depositFile.setLabel(""); // TODO - What value should this take?
+                    depositFile.setLabel(labelMaker.label(depositFile.getType(), file.getDescription()));
                     files.add(depositFile);
                 }
             }

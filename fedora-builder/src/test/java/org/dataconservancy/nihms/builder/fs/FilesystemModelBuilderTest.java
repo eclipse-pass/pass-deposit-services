@@ -21,6 +21,7 @@ import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.dataconservancy.pass.model.PassEntity;
@@ -92,6 +93,12 @@ public class FilesystemModelBuilderTest {
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
         assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
+
+        //test that the DepositFileLabelMaker is being called to supply the file labels
+        String label = submission.getManifest().getFiles().get(0).getLabel();//the image file - label required
+        assertEquals("A logo to test supplemental type", label);
+        label = submission.getManifest().getFiles().get(1).getLabel();//the manuscript file - empty label
+        assertEquals("", label);
     }
 
     @Test
