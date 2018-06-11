@@ -97,7 +97,7 @@ public class FilesystemModelBuilderTest {
         //test that the DepositFileLabelMaker is being called to supply the file labels
         String label = submission.getManifest().getFiles().get(0).getLabel();//the image file - label required
         assertEquals("A logo to test supplemental type", label);
-        label = submission.getManifest().getFiles().get(1).getLabel();//the manuscript file - no label
+        label = submission.getManifest().getFiles().get(1).getLabel();//the manuscript file - empty label
         assertEquals("", label);
     }
 
