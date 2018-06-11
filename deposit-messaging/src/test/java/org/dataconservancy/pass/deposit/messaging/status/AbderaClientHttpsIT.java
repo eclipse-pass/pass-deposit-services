@@ -75,7 +75,6 @@ public class AbderaClientHttpsIT {
     @Autowired
     private AbderaClient underTest;
 
-    //    @Value("${transport.js.deposit.transport.protocol.swordv2.service-doc}")
     private String httpsSwordServiceDocUrl = "https://jscholarship.library.jhu.edu/swordv2/servicedocument";
 
     @Value("${sword.user}")
