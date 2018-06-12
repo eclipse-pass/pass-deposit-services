@@ -37,7 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_CHECKSUM;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_CHECKSUM_TYPE;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_FILE;
@@ -75,6 +78,15 @@ public class DspaceMetsAssemblerIT extends BaseAssemblerIT {
     protected DspaceMetsAssembler assemblerUnderTest() {
         return new DspaceMetsAssembler(mbf, rbf,
                     new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance()));
+    }
+
+    @Override
+    protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
+        assertEquals(PackageStream.COMPRESSION.ZIP, metadata.compression());
+        assertEquals(PackageStream.ARCHIVE.ZIP, metadata.archive());
+        assertTrue(metadata.archived());
+        assertEquals(SPEC_DSPACE_METS, metadata.spec());
+        assertEquals(APPLICATION_ZIP, metadata.mimeType());
     }
 
     /**

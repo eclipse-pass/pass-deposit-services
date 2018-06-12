@@ -22,7 +22,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +94,9 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         ArchiveOutputStream archiveOut;
         PackageStream.Metadata metadata = metadata();
 
-        if(metadata.archive().equals(TAR)) {
+        if (metadata.archive().equals(TAR)) {
             try {
-                if(metadata.compression().equals(COMPRESSION.GZIP)) {
+                if (metadata.compression().equals(COMPRESSION.GZIP)) {
                     archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
                 } else {
                     archiveOut = new TarArchiveOutputStream(pipedOut);
