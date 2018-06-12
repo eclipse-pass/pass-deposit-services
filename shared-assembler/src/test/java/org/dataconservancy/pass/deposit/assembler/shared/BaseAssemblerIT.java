@@ -195,7 +195,27 @@ public abstract class BaseAssemblerIT {
      * @throws IOException if there is an error saving the package
      */
     protected File savePackage(PackageStream stream) throws IOException {
-        File tmpOut = tmpFile(this.getClass(), testName, ".zip");
+        StringBuilder ext = new StringBuilder();
+
+        switch (stream.metadata().archive()) {
+            case TAR:
+                ext.append(".tar");
+                break;
+            case ZIP:
+                ext.append(".zip");
+                break;
+        }
+
+        switch (stream.metadata().compression()) {
+            case GZIP:
+                ext.append(".gz");
+                break;
+            case BZIP2:
+                ext.append("bzip");
+                break;
+        }
+
+        File tmpOut = tmpFile(this.getClass(), testName, ext.toString());
 
         try (InputStream in = stream.open()) {
             Files.copy(in, tmpOut.toPath(), StandardCopyOption.REPLACE_EXISTING);
