@@ -211,7 +211,7 @@ public abstract class BaseAssemblerIT {
                 ext.append(".gz");
                 break;
             case BZIP2:
-                ext.append("bzip");
+                ext.append(".bzip");
                 break;
         }
 
