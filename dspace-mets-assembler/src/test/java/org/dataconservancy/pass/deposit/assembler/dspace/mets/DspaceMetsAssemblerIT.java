@@ -82,8 +82,8 @@ public class DspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageStream.COMPRESSION.GZIP, metadata.compression());
-        assertEquals(PackageStream.ARCHIVE.TAR, metadata.archive());
+        assertEquals(PackageStream.COMPRESSION.ZIP, metadata.compression());
+        assertEquals(PackageStream.ARCHIVE.ZIP, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_DSPACE_METS, metadata.spec());
         assertEquals(APPLICATION_ZIP, metadata.mimeType());
