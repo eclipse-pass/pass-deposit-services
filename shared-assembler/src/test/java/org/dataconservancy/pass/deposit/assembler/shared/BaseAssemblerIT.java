@@ -134,6 +134,8 @@ public abstract class BaseAssemblerIT {
 
         File packageArchive = savePackage(stream);
 
+        verifyStreamMetadata(stream.metadata());
+
         extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
     }
 
@@ -256,4 +258,11 @@ public abstract class BaseAssemblerIT {
      * @return the {@code AbstractAssembler} under test
      */
     protected abstract AbstractAssembler assemblerUnderTest();
+
+    /**
+     * To be implemented by sub-classes: must verify expected values found in the {@link PackageStream.Metadata}.
+     *
+     * @param metadata the package stream metadata
+     */
+    protected abstract void verifyStreamMetadata(PackageStream.Metadata metadata);
 }
