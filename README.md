@@ -9,32 +9,34 @@ Deposit Services is deployed as "back-end" infrastructure.  It has no user-facin
 
 ## Configuration
 
-The primary mechanism for configuring Deposit Services is through environment variables.  This aligns with the patterns used in development and production infrastructure which rely on Docker and its approach to runtime configuration.
-
-Deposit Services relies on _existing_ variables common to the PASS infrastructure, and defines its own application-specific variables.  Some variables influence the production runtime, and other variables influence the testing runtime.
+The primary mechanism for configuring Deposit Services is through environment variables.  This aligns with the patterns used in development and production infrastructure which rely on Docker and its approach to runtime configuration.  Deposit Services relies on _existing_ variables common to the PASS infrastructure, and defines its own application-specific variables.
 
 ### Production Configuration Variables
 
 
-|Environment Variable                       |Default Value                   |Description|
-|-------------------------------------------|--------------------------------|-----------|
-|`FCREPO_HOST`                              |localhost                       |the IP address or host name of the Fedora repository
-|`FCREPO_PORT`                              |8080                            |the TCP port running the Fedora HTTP REST API.
-|`FCREPO_JMS_PORT`                          |61616                           |the TCP port for the STOMP protocol.
-|`ES_HOST`                                  |localhost                       |the IP address or host name of the Elastic Search index.
-|`ES_PORT`                                  |9200                            |the TCP port running the Elastic Search HTTP API.
-|`FTP_HOST`                                 |localhost                       |the IP address or  host name of the NIH FTP server
-|`FTP_PORT`                                 |21                              |the TCP control port of the NIH FTP server
-|`DSPACE_HOST`                              |localhost                       |the IP address or host name of the server running the SWORD protocol version 2 endpoint
-|`DSPACE_PORT`                              |8181                            |the TCP port exposing the SWORD protocol version 2 endpoint
-|`PASS_ELASTICSEARCH_LIMIT`                 |100                             |the maximum number of results returned in a single search response
-|`PASS_FEDORA_USER`                         |fedoraAdmin                     |the username used for `Basic` HTTP authentication to the Fedora REST API
-|`PASS_FEDORA_PASSWORD:`                    |moo                             |the password used for `Basic` HTTP authentication to the Fedora REST API
-|`PASS_DEPOSIT_TRANSPORT_CONFIGURATION`     |classpath:/packagers.properties |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Accepted values include any Spring Resource path, as well as file paths.
-|`PASS_DEPOSIT_WORKERS_CONCURRENCY`         |4                               |the number of Deposit Worker threads that can simultaneously run.
-|`PASS_DEPOSIT_STATUS_MAPPING`              |classpath:/statusmapping.json   |points to a JSON file that identifies protocol-specific statuses as _terminal_ or _intermediate_.  Accepted values include any Spring Resource path, as well as file paths.
-|`PASS_DEPOSIT_HTTP_AGENT`                  |pass-deposit/x.y.z              |the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
-|`SPRING_JMS_LISTENER_CONCURRENCY`          |4                               |the number of JMS messages that can be processed simultaneously.
+|Environment Variable                       |Default Value                                                                  |Description|
+|-------------------------------------------|-------------------------------------------------------------------------------|-----------|
+|`FCREPO_HOST`                              |localhost                                                                      |the IP address or host name of the Fedora repository
+|`FCREPO_PORT`                              |8080                                                                           |the TCP port running the Fedora HTTP REST API.
+|`FCREPO_JMS_PORT`                          |61616                                                                          |the TCP port for the STOMP protocol.
+|`ES_HOST`                                  |localhost                                                                      |the IP address or host name of the Elastic Search index.
+|`ES_PORT`                                  |9200                                                                           |the TCP port running the Elastic Search HTTP API.
+|`FTP_HOST`                                 |localhost                                                                      |the IP address or  host name of the NIH FTP server
+|`FTP_PORT`                                 |21                                                                             |the TCP control port of the NIH FTP server
+|`DSPACE_HOST`                              |localhost                                                                      |the IP address or host name of the server running the SWORD protocol version 2 endpoint
+|`DSPACE_PORT`                              |8181                                                                           |the TCP port exposing the SWORD protocol version 2 endpoint
+|`PASS_ELASTICSEARCH_LIMIT`                 |100                                                                            |the maximum number of results returned in a single search response
+|`PASS_FEDORA_USER`                         |fedoraAdmin                                                                    |the username used for `Basic` HTTP authentication to the Fedora REST API
+|`PASS_FEDORA_PASSWORD`                     |moo                                                                            |the password used for `Basic` HTTP authentication to the Fedora REST API
+|`PASS_DEPOSIT_TRANSPORT_CONFIGURATION`     |classpath:/packagers.properties                                                |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Values must be [Spring Resource URIs][1].
+|`PASS_DEPOSIT_WORKERS_CONCURRENCY`         |4                                                                              |the number of Deposit Worker threads that can simultaneously run.
+|`PASS_DEPOSIT_STATUS_MAPPING`              |classpath:/statusmapping.json                                                  |points to a JSON file that identifies protocol-specific statuses as _terminal_ or _intermediate_.  Values must be [Spring Resource URIs][1].
+|`PASS_DEPOSIT_HTTP_AGENT`                  |pass-deposit/x.y.z                                                             |the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
+|`SPRING_JMS_LISTENER_CONCURRENCY`          |4                                                                              |the number of JMS messages that can be processed simultaneously by _each_ JMS queue
+|`PASS_DEPOSIT_QUEUE_SUBMISSION_NAME`       |submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
+|`PASS_DEPOSIT_QUEUE_DEPOSIT_NAME`          |deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
+|`ACTIVEMQ_BROKER_URI`                      |`null`                                                                         |the publicly-supported (i.e. official PASS) variable for configuring the JMS broker URL.  used to compose the `SPRING_ACTIVEMQ_BROKER_URL`
+|`SPRING_ACTIVEMQ_BROKER_URL`               |${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker (under normal circumstances, this environment variable should never be set)
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=http://fcrepo:8080/fcrepo/rest`)
 
@@ -254,3 +256,4 @@ After the `CriticalPath` executes, its `CriticalResult` can be examined for succ
 
 
 
+[1]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/spring-framework-reference/core.html#resources-implementations
