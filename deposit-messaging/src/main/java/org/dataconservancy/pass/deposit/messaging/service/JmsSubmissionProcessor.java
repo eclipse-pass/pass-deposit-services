@@ -82,6 +82,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                   Registry<Packager> packagerRegistry,
                                   @Qualifier("passUserSubmittedPolicy") SubmissionPolicy submissionPolicy,
                                   Policy<Deposit.DepositStatus> dirtyDepositPolicy,
+                                  Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                   @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
                                   TaskExecutor taskExecutor,
                                   DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
@@ -89,7 +90,8 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                   CriticalRepositoryInteraction critical) {
 
         super(passClient, jsonParser, submissionBuilder, packagerRegistry, submissionPolicy,
-                dirtyDepositPolicy, messagePolicy, taskExecutor, depositStatusMapper, atomStatusParser, critical);
+                dirtyDepositPolicy, messagePolicy, terminalDepositStatusPolicy, taskExecutor, depositStatusMapper,
+                atomStatusParser, critical);
 
     }
 

@@ -19,6 +19,7 @@ import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
@@ -44,6 +45,7 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 import static java.lang.Integer.toHexString;
+import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
@@ -78,6 +80,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected Policy<Deposit.DepositStatus> dirtyDepositPolicy;
 
+    protected Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+
     protected CriticalRepositoryInteraction critical;
 
     @Autowired
@@ -86,6 +90,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                @Qualifier("alwaysTrueSubmissionPolicy") SubmissionPolicy submissionPolicy,
                                @Qualifier("dirtyDepositPolicy") Policy<Deposit.DepositStatus> dirtyDepositPolicy,
                                @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
+                               @Qualifier("terminalDepositStatusPolicy")
+                                           Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                TaskExecutor taskExecutor,
                                DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
@@ -101,6 +107,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.depositStatusMapper = depositStatusMapper;
         this.atomStatusParser = atomStatusParser;
         this.dirtyDepositPolicy = dirtyDepositPolicy;
+        this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.critical = critical;
     }
 
@@ -146,53 +153,69 @@ public class SubmissionProcessor implements Consumer<Submission> {
         if (!result.success()) {
             result.throwable().ifPresent(t -> LOG.debug(">>>> Unable to update status of {} to '{}': {}",
                     submission.getId(), IN_PROGRESS, t.getMessage(), t));
-            return;
+
+            if (result.throwable().isPresent()) {
+                Throwable cause = result.throwable().get();
+                String msg = format("Unable to update status of %s to '%s': %s",
+                        submission.getId(), IN_PROGRESS, cause.getMessage());
+                throw new DepositServiceRuntimeException(msg, cause, submission);
+            }
+
+            String msg = format("Unable to update status of %s to '%s'", submission.getId(), IN_PROGRESS);
+            throw new DepositServiceRuntimeException(msg, submission);
         }
 
-        Submission updatedS = result.resource().orElseThrow(
-                () -> new RuntimeException("Missing expected Submission " + submission.getId()));
+        Submission updatedS = result.resource().orElseThrow(() ->
+                new DepositServiceRuntimeException("Missing expected Submission " + submission.getId(), submission));
 
-        DepositSubmission depositSubmission = result.result().orElseThrow(
-                () -> new RuntimeException("Missing expected DepositSubmission"));
+
+        DepositSubmission depositSubmission = result.result().orElseThrow(() ->
+            new DepositServiceRuntimeException("Missing expected DepositSubmission", submission));
 
         LOG.debug(">>>> Processing Submission {}", submission.getId());
 
         updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
                 .forEach(repo -> {
-            LOG.debug(">>>> Creating a new Deposit for Repository {} and Submission {}", repo.getId(), updatedS.getId());
-            Deposit deposit = new Deposit();
-            deposit.setRepository(repo.getId());
-            deposit.setSubmission(updatedS.getId());
+                    try {
+                        LOG.debug(">>>> Creating a new Deposit for Repository {} and Submission {}",
+                                repo.getId(), updatedS.getId());
+                        Deposit deposit = new Deposit();
+                        deposit.setRepository(repo.getId());
+                        deposit.setSubmission(updatedS.getId());
 
-            deposit = passClient.createAndReadResource(deposit, Deposit.class);
+                        deposit = passClient.createAndReadResource(deposit, Deposit.class);
 
-            // Compose the DepositSubmission, assembly, and transport graphs
-            LOG.debug(">>>> Retrieving Repository {} from Deposit {}", deposit.getRepository(), deposit.getId());
-            Repository repository = passClient.readResource(deposit.getRepository(), Repository.class);
+                        // Compose the DepositSubmission, assembly, and transport graphs
+                        LOG.debug(">>>> Retrieving Repository {} from Deposit {}",
+                                deposit.getRepository(), deposit.getId());
 
-            // TODO: packagers are resolved based on the 'name' of the Repository; there's a better way
-            Packager packager = packagerRegistry.get(repository.getName());
+                        Repository repository = passClient.readResource(deposit.getRepository(), Repository.class);
 
-            if (packager == null) {
-                LOG.error(">>>> No Packager found for tuple [Submission {}, Deposit {}, Repository {}]: Missing Packager " +
-                                "for Repository named '{}'",
-                        updatedS.getId(), deposit.getId(), repository.getId(), repository.getName());
-                return;
-            }
+                        // TODO: packagers are resolved based on the 'name' of the Repository; there's a better way
+                        Packager packager = packagerRegistry.get(repository.getName());
 
-            DepositUtil.DepositWorkerContext dc = toDepositWorkerContext(deposit, updatedS, depositSubmission, repository,
-                    packager);
-            DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper, dirtyDepositPolicy, critical);
+                        if (packager == null) {
+                            LOG.error(">>>> No Packager found for tuple [Submission {}, Deposit {}, Repository {}]: " +
+                                            "Missing Packager for Repository named '{}'",
+                                    updatedS.getId(), deposit.getId(), repository.getId(), repository.getName());
+                            return;
+                        }
 
-            LOG.debug(">>>> Submitting task ({}@{}) to the deposit worker queue for submission {}",
-                    depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)), updatedS.getId());
-            taskExecutor.execute(depositTask);
-        });
+                        DepositUtil.DepositWorkerContext dc = toDepositWorkerContext(
+                                deposit, updatedS, depositSubmission, repository, packager);
+                        DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper,
+                                dirtyDepositPolicy, terminalDepositStatusPolicy, critical);
 
-        // submit each { DepositSubmission, Deposit, Packager } tuple to worker pool
-        // - worker will need a transport-dependent mechanism for parsing responses from the transport endpoint
-        // - update the Deposit with the response, no.  Worker will do that.
-        // - DO have to handle what happens when the task is rejected.
+                        LOG.debug(">>>> Submitting task ({}@{}) to the deposit worker queue for submission {}",
+                                depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
+                                updatedS.getId());
+                        taskExecutor.execute(depositTask);
+                    } catch (Exception e) {
+                        String msg = String.format("Failed to process %s: %s", submission.getId(), e.getMessage());
+                        throw new DepositServiceRuntimeException(msg, e, submission);
+                    }
+                });
+
     }
 
 }

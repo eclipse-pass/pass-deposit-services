@@ -17,26 +17,15 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.model.Registry;
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
-import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.core.task.TaskExecutor;
 
 import java.net.URI;
 import java.util.Map;
@@ -57,8 +46,8 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, dirtyDepositPolicy, messagePolicy, taskExecutor, dspaceStatusMapper,
-                atomStatusParser, critical);
+                submissionPolicy, dirtyDepositPolicy, messagePolicy, terminalDepositStatusPolicy, taskExecutor,
+                dspaceStatusMapper, atomStatusParser, critical);
     }
 
     /**
