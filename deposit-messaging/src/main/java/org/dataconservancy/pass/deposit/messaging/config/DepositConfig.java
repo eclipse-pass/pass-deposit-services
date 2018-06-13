@@ -29,6 +29,8 @@ import org.dataconservancy.nihms.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.FcrepoRepositoriesSource;
 import org.dataconservancy.pass.deposit.messaging.model.InMemoryMapRegistry;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -354,6 +356,11 @@ public class DepositConfig {
     @Bean
     Parser abderaParser() {
         return new FOMParserFactory().getParser();
+    }
+
+    @Bean
+    DepositServiceErrorHandler errorHandler(CriticalRepositoryInteraction cri) {
+        return new DepositServiceErrorHandler(cri);
     }
 
 }

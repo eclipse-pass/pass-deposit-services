@@ -15,32 +15,31 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.springframework.stereotype.Component;
+import org.dataconservancy.pass.model.Submission;
 
 /**
- * Determines if a PASS {@link org.dataconservancy.pass.model.Deposit.DepositStatus} is <em>terminal</em> or not.
+ * Determines if a PASS {@link org.dataconservancy.pass.model.Submission.AggregatedDepositStatus} is <em>terminal</em>
+ * or not.
  * <p>
  * <strong>N.B.</strong> {@code null} is <em>not</em> considered a status to be evaluated
  * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
-public class DepositStatusEvaluator implements StatusEvaluator<Deposit.DepositStatus> {
+public class SubmissionStatusEvaluator implements StatusEvaluator<Submission.AggregatedDepositStatus> {
 
     /**
-     * Determine if {@code status} is in a <em>terminal</em> state, {@link Deposit.DepositStatus#ACCEPTED} or
-     * {@link Deposit.DepositStatus#REJECTED}
+     * Determine if {@code status} is in a <em>terminal</em> state, {@link Submission.AggregatedDepositStatus#ACCEPTED}
+     * or {@link Submission.AggregatedDepositStatus#REJECTED}
      *
      * @param status the status the PASS {@code DepositStatus}
      * @return {@code true} if the status is terminal
      * @throws IllegalArgumentException if {@code status} is {@code null}
      */
     @Override
-    public boolean isTerminal(Deposit.DepositStatus status) {
+    public boolean isTerminal(Submission.AggregatedDepositStatus status) {
         if (status == null) {
-            throw new IllegalArgumentException("Deposit status must not be null.");
+            throw new IllegalArgumentException("Submission status must not be null.");
         }
 
         switch (status) {
@@ -51,5 +50,4 @@ public class DepositStatusEvaluator implements StatusEvaluator<Deposit.DepositSt
                 return false;
         }
     }
-
 }

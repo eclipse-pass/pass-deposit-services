@@ -17,6 +17,12 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.deposit.messaging.policy.TerminalDepositStatusPolicy;
+import org.dataconservancy.pass.deposit.messaging.policy.TerminalSubmissionStatusPolicy;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusEvaluator;
+import org.dataconservancy.pass.deposit.messaging.status.SubmissionStatusEvaluator;
+import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
@@ -28,11 +34,13 @@ import org.springframework.messaging.Message;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
+import java.net.URI;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 
 import static java.time.Instant.ofEpochMilli;
+import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.FAILED;
 
 /**
  * Utility methods for deposit messaging.
@@ -46,6 +54,12 @@ public class DepositUtil {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private static final String UTC = "UTC";
+
+    private static final TerminalDepositStatusPolicy TERMINAL_DEPOSIT_STATUS_POLICY = new TerminalDepositStatusPolicy
+            (new DepositStatusEvaluator());
+
+    private static final TerminalSubmissionStatusPolicy TERMINAL_SUBMISSION_STATUS_POLICY = new
+            TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
 
     static final String UNKNOWN_DATETIME = "UNKNOWN";
 
@@ -192,6 +206,69 @@ public class DepositUtil {
         } catch (JMSException e) {
             LOG.error("Error acknowledging message (ack mode: {}): {} {}", mc.ackMode(), mc.dateTime(), mc.id(), e);
         }
+    }
+
+    /**
+     * Uses the {@code cri} to update the referenced {@code Submission} {@code aggregatedDepositStatus} to {@code
+     * FAILED}.  Submissions that are already in a <em>terminal</em> state will <em>not</em> be modified by this method.
+     * That is to say, a {@code Submission} that has already been marked {@code ACCEPTED} or {@code REJECTED} cannot be
+     * later marked as {@code FAILED} (even if the thread calling this method perceives a {@code Submission} as {@code
+     * FAILED}, another thread may have succeeded in the interim).
+     *
+     * @param submissionUri the URI of the submission
+     * @param cri the critical repository interaction
+     * @return true if the {@code Submission} was marked {@code FAILED}
+     */
+    public static boolean markSubmissionFailed(URI submissionUri, CriticalRepositoryInteraction cri) {
+        CriticalResult<Submission, Submission> updateResult = cri.performCritical(submissionUri, Submission.class,
+                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.accept(submission.getAggregatedDepositStatus()),
+                (submission) -> submission.getAggregatedDepositStatus() == FAILED,
+                (submission) -> {
+                    submission.setAggregatedDepositStatus(FAILED);
+                    return submission;
+                });
+
+        if (!updateResult.success()) {
+            LOG.info("Updating status of {} to {} failed: {}", submissionUri, FAILED, updateResult.throwable()
+                    .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
+                    updateResult.throwable().get());
+        } else {
+            LOG.info("Marking {} as FAILED.", submissionUri);
+        }
+
+        return updateResult.success();
+    }
+
+    /**
+     * Uses the {@code cri} to update the referenced {@code Deposit} {@code DepositStatus} to {@code FAILED}.  Deposits
+     * that are already in a <em>terminal</em> state will <em>not</em> be modified by this method. That is to say, a
+     * {@code Deposit} that has already been marked {@code ACCEPTED} or {@code REJECTED} cannot be later marked as
+     * {@code FAILED} (even if the thread calling this method perceives a {@code Deposit} as {@code FAILED}, another
+     * thread may have succeeded in the interim).
+     *
+     * @param depositUri the URI of the deposit
+     * @param cri the critical repository interaction
+     * @return true if the {@code Deposit} was marked {@code FAILED}
+     */
+    public static boolean markDepositFailed(URI depositUri, CriticalRepositoryInteraction cri) {
+        CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(depositUri, Deposit.class,
+                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.accept(deposit.getDepositStatus()),
+                (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
+                (deposit) -> {
+                    deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
+                    return deposit;
+                });
+
+        if (!updateResult.success()) {
+            LOG.info("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,
+                    updateResult.throwable()
+                            .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
+                    updateResult.throwable().get());
+        } else {
+            LOG.info("Marking {} as FAILED.", depositUri);
+        }
+
+        return updateResult.success();
     }
 
     /**
