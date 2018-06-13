@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
@@ -47,6 +48,8 @@ public abstract class AbstractSubmissionIT {
     protected static final String EXPECTED_REPO_NAME = "JScholarship";
 
     protected Submission submission;
+
+    protected Map<URI, PassEntity> submissionResources;
 
     @Autowired
     @Qualifier("submissionProcessor")
@@ -96,6 +99,9 @@ public abstract class AbstractSubmissionIT {
         assertTrue(submission.getRepositories().stream()
                 .map(uri -> (Repository)uriMap.get(uri))
                 .anyMatch(repo -> repo.getName().equals(EXPECTED_REPO_NAME)));
+
+
+        submissionResources = uriMap;
 
     }
 
