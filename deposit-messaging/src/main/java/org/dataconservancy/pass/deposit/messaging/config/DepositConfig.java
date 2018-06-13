@@ -31,17 +31,17 @@ import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.dataconservancy.pass.deposit.messaging.model.FcrepoRepositoriesSource;
 import org.dataconservancy.pass.deposit.messaging.model.InMemoryMapRegistry;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
+import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
-import org.dataconservancy.pass.model.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -260,23 +260,28 @@ public class DepositConfig {
     }
 
     @Bean
-    public ThreadPoolTaskExecutor depositWorkers() {
+    public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setMaxPoolSize(depositWorkersConcurrency);
         executor.setQueueCapacity(10);
-        executor.setRejectedExecutionHandler((rejectedTask, exe) ->
-                // TODO update deposit status
-                LOG.warn(">>>> Task {}@{} rejected, will be retried later.",
-                        rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask))));
+        executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
+            String msg = String.format(">>>> Task %s@%s rejected, will be retried later.",
+                    rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
+            if (rejectedTask instanceof DepositTask && ((DepositTask)rejectedTask).getDepositWorkerContext() != null) {
+                DepositServiceRuntimeException ex = new DepositServiceRuntimeException(msg, ((DepositTask)
+                        rejectedTask).getDepositWorkerContext().deposit());
+                errorHandler.handleError(ex);
+            } else {
+                LOG.error(msg);
+            }
+        });
+
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setThreadNamePrefix("Deposit-Worker-");
         ThreadFactory tf = r -> {
-            // TODO update deposit status
             Thread t = new Thread(r);
             t.setName("Deposit-Worker-" + THREAD_COUNTER.getAndIncrement());
-            t.setUncaughtExceptionHandler((thread, throwable) ->
-                    LOG.warn(">>>> {} aborted with the following exception: {}",
-                            thread, throwable.getMessage(), throwable));
+            t.setUncaughtExceptionHandler((thread, throwable) -> errorHandler.handleError(throwable));
             return t;
         };
         executor.setThreadFactory(tf);
