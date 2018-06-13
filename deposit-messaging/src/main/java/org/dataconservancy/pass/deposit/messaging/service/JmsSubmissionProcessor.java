@@ -93,7 +93,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
 
     }
 
-    @JmsListener(destination = "submission")
+    @JmsListener(destination = "${pass.deposit.queue.submission.name}")
     public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
                                @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
                                @Header(JmsHeaders.TIMESTAMP) long timeStamp,
