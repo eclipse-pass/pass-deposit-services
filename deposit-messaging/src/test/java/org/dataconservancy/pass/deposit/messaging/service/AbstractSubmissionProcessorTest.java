@@ -62,7 +62,7 @@ public abstract class AbstractSubmissionProcessorTest {
 
     DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
 
-    CriticalRepositoryInteraction critical;
+    CriticalRepositoryInteraction cri;
 
     @Before
     @SuppressWarnings("unchecked")
@@ -77,7 +77,7 @@ public abstract class AbstractSubmissionProcessorTest {
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
         atomStatusParser = mock(DepositStatusParser.class);
-        critical = mock(CriticalRepositoryInteraction.class);
+        cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
     }
     
