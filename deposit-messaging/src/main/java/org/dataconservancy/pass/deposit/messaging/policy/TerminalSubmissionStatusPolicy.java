@@ -17,10 +17,12 @@ package org.dataconservancy.pass.deposit.messaging.policy;
 
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
 import org.dataconservancy.pass.model.Submission;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class TerminalSubmissionStatusPolicy implements Policy<Submission.AggregatedDepositStatus> {
 
     private StatusEvaluator<Submission.AggregatedDepositStatus> statusEvaluator;
