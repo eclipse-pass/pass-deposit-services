@@ -66,9 +66,9 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
             return false;
         }
 
-        // Allow FAILED and NOT_STARTED Submissions to be processed.
-        if (submission.getAggregatedDepositStatus() != Submission.AggregatedDepositStatus.NOT_STARTED &&
-                submission.getAggregatedDepositStatus() != Submission.AggregatedDepositStatus.FAILED) {
+        // Currently we dis-allow FAILED Submissions; the SubmissionProcessor is not capable of "re-processing"
+        // failures.
+        if (submission.getAggregatedDepositStatus() != Submission.AggregatedDepositStatus.NOT_STARTED) {
             LOG.debug(">>>> Submission {} will not be accepted for processing: status = {}",
                     submission.getId(), submission.getAggregatedDepositStatus());
             return false;
