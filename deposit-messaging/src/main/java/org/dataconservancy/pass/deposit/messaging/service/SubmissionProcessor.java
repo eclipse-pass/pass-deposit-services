@@ -131,7 +131,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     accepted &= ds.getFiles().size() > 0;
 
                     if (!accepted) {
-                        LOG.debug(">>>> Update postcondition(s) failed for {}: the DepositSubmission has no files" +
+                        LOG.debug(">>>> Update postcondition(s) failed for {}: the DepositSubmission has no files " +
                                         "attached! (Hint: check the incoming links to the Submission)",
                                 s.getId());
                     }
