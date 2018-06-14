@@ -176,44 +176,50 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
                 .forEach(repo -> {
+
+                    Deposit deposit = null;
+
                     try {
-                        LOG.debug(">>>> Creating a new Deposit for Repository {} and Submission {}",
-                                repo.getId(), updatedS.getId());
-                        Deposit deposit = new Deposit();
+                        LOG.debug(">>>> Creating a new Deposit for tuple [{}, {}]", updatedS.getId(), repo.getId());
+                        deposit = new Deposit();
                         deposit.setRepository(repo.getId());
                         deposit.setSubmission(updatedS.getId());
 
-                        deposit = passClient.createAndReadResource(deposit, Deposit.class);
-
-                        // Compose the DepositSubmission, assembly, and transport graphs
-                        LOG.debug(">>>> Retrieving Repository {} from Deposit {}",
-                                deposit.getRepository(), deposit.getId());
-
-                        Repository repository = passClient.readResource(deposit.getRepository(), Repository.class);
-
                         // TODO: packagers are resolved based on the 'name' of the Repository; there's a better way
-                        Packager packager = packagerRegistry.get(repository.getName());
+                        Packager packager = packagerRegistry.get(repo.getName());
 
                         if (packager == null) {
-                            LOG.error(">>>> No Packager found for tuple [Submission {}, Deposit {}, Repository {}]: " +
-                                            "Missing Packager for Repository named '{}'",
-                                    updatedS.getId(), deposit.getId(), repository.getId(), repository.getName());
+                            // Fail the Deposit if the Packager is null, not the Submission.
+                            deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
+                            deposit = passClient.createAndReadResource(deposit, Deposit.class);
+                            LOG.error(">>>> No Packager found for tuple [{}, {}, {}]: " +
+                                            "Missing Packager for Repository named '{}', marking Deposit as FAILED.",
+                                    updatedS.getId(), repo.getId(), deposit.getId(), repo.getName());
                             return;
                         }
 
+                        deposit = passClient.createAndReadResource(deposit, Deposit.class);
+
                         DepositUtil.DepositWorkerContext dc = toDepositWorkerContext(
-                                deposit, updatedS, depositSubmission, repository, packager);
+                                deposit, updatedS, depositSubmission, repo, packager);
                         DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper,
                                 dirtyDepositPolicy, terminalDepositStatusPolicy, critical);
 
-                        LOG.debug(">>>> Submitting task ({}@{}) to the deposit worker queue for submission {}",
+                        LOG.debug(">>>> Submitting task ({}@{}) for tuple [{}, {}, {}]",
                                 depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
-                                updatedS.getId());
+                                updatedS.getId(), repo.getId(), deposit.getId());
+
                         taskExecutor.execute(depositTask);
                     } catch (Exception e) {
-                        String msg = String.format("Failed to process %s: %s", submission.getId(), e.getMessage());
-                        throw new DepositServiceRuntimeException(msg, e, submission);
+                        // For example, if the task isn't accepted by the taskExecutor, or if the Deposit cannot be
+                        // created or re-read from the Fedora repository, we fail the Deposit, not the Submission.
+                        // (the ErrorHandler takes care of failing the Deposit)
+                        String msg = String.format("Failed to process Deposit for tuple [%s, %s, %s]: %s",
+                                submission.getId(), repo.getId(),
+                                (deposit == null) ? "null" : deposit.getId(), e.getMessage());
+                        throw new DepositServiceRuntimeException(msg, e, deposit);
                     }
+
                 });
 
     }
