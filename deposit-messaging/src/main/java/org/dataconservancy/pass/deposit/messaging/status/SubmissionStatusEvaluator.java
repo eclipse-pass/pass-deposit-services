@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.status;
 
 import org.dataconservancy.pass.model.Submission;
+import org.springframework.stereotype.Component;
 
 /**
  * Determines if a PASS {@link org.dataconservancy.pass.model.Submission.AggregatedDepositStatus} is <em>terminal</em>
@@ -26,6 +27,7 @@ import org.dataconservancy.pass.model.Submission;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class SubmissionStatusEvaluator implements StatusEvaluator<Submission.AggregatedDepositStatus> {
 
     /**

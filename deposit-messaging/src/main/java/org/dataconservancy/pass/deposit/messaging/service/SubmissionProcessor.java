@@ -37,17 +37,14 @@ import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
 
 /**
@@ -59,6 +56,8 @@ import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.
 public class SubmissionProcessor implements Consumer<Submission> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessor.class);
+
+    private final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
 
     protected PassClient passClient;
 
@@ -84,15 +83,16 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected CriticalRepositoryInteraction critical;
 
+    protected DepositTaskHelper depositTaskHelper;
+
     @Autowired
     public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
                                Registry<Packager> packagerRegistry,
-                               @Qualifier("alwaysTrueSubmissionPolicy") SubmissionPolicy submissionPolicy,
-                               @Qualifier("dirtyDepositPolicy") Policy<Deposit.DepositStatus> dirtyDepositPolicy,
-                               @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
-                               @Qualifier("terminalDepositStatusPolicy")
-                                           Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
-                               TaskExecutor taskExecutor,
+                               SubmissionPolicy passUserSubmittedPolicy,
+                               Policy<Deposit.DepositStatus> dirtyDepositPolicy,
+                               JmsMessagePolicy submissionMessagePolicy,
+                               Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
+                               TaskExecutor taskExecutor, DepositTaskHelper depositTaskHelper,
                                DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                CriticalRepositoryInteraction critical) {
@@ -101,14 +101,15 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.jsonParser = jsonParser;
         this.submissionBuilder = submissionBuilder;
         this.packagerRegistry = packagerRegistry;
-        this.submissionPolicy = submissionPolicy;
-        this.messagePolicy = messagePolicy;
+        this.submissionPolicy = passUserSubmittedPolicy;
+        this.messagePolicy = submissionMessagePolicy;
         this.taskExecutor = taskExecutor;
         this.depositStatusMapper = depositStatusMapper;
         this.atomStatusParser = atomStatusParser;
         this.dirtyDepositPolicy = dirtyDepositPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.critical = critical;
+        this.depositTaskHelper = depositTaskHelper;
     }
 
     public void accept(Submission submission) {
@@ -168,7 +169,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
         Submission updatedS = result.resource().orElseThrow(() ->
                 new DepositServiceRuntimeException("Missing expected Submission " + submission.getId(), submission));
 
-
         DepositSubmission depositSubmission = result.result().orElseThrow(() ->
             new DepositServiceRuntimeException("Missing expected DepositSubmission", submission));
 
@@ -176,52 +176,33 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
                 .forEach(repo -> {
-
                     Deposit deposit = null;
-
+                    Packager packager = null;
                     try {
-                        LOG.debug(">>>> Creating a new Deposit for tuple [{}, {}]", updatedS.getId(), repo.getId());
-                        deposit = new Deposit();
-                        deposit.setRepository(repo.getId());
-                        deposit.setSubmission(updatedS.getId());
-
-                        // TODO: packagers are resolved based on the 'name' of the Repository; there's a better way
-                        Packager packager = packagerRegistry.get(repo.getName());
-
-                        if (packager == null) {
-                            // Fail the Deposit if the Packager is null, not the Submission.
-                            deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
-                            deposit = passClient.createAndReadResource(deposit, Deposit.class);
-                            LOG.error(">>>> No Packager found for tuple [{}, {}, {}]: " +
-                                            "Missing Packager for Repository named '{}', marking Deposit as FAILED.",
-                                    updatedS.getId(), repo.getId(), deposit.getId(), repo.getName());
+                        deposit = createDeposit(updatedS, repo);
+                        Optional<Packager> op = depositTaskHelper.resolvePackager(updatedS, deposit, repo);
+                        if (op.isPresent()) {
+                            packager = op.get();
+                        } else {
                             return;
                         }
-
                         deposit = passClient.createAndReadResource(deposit, Deposit.class);
-
-                        DepositUtil.DepositWorkerContext dc = toDepositWorkerContext(
-                                deposit, updatedS, depositSubmission, repo, packager);
-                        DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper,
-                                dirtyDepositPolicy, terminalDepositStatusPolicy, critical);
-
-                        LOG.debug(">>>> Submitting task ({}@{}) for tuple [{}, {}, {}]",
-                                depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
-                                updatedS.getId(), repo.getId(), deposit.getId());
-
-                        taskExecutor.execute(depositTask);
                     } catch (Exception e) {
-                        // For example, if the task isn't accepted by the taskExecutor, or if the Deposit cannot be
-                        // created or re-read from the Fedora repository, we fail the Deposit, not the Submission.
-                        // (the ErrorHandler takes care of failing the Deposit)
-                        String msg = String.format("Failed to process Deposit for tuple [%s, %s, %s]: %s",
-                                submission.getId(), repo.getId(),
+                        String msg = format(FAILED_TO_PROCESS_DEPOSIT, updatedS.getId(), repo.getId(),
                                 (deposit == null) ? "null" : deposit.getId(), e.getMessage());
                         throw new DepositServiceRuntimeException(msg, e, deposit);
                     }
 
+                    depositTaskHelper.submitDeposit(updatedS, depositSubmission, repo, deposit, packager);
                 });
+    }
 
+    private Deposit createDeposit(Submission submission, Repository repo) {
+        Deposit deposit;
+        deposit = new Deposit();
+        deposit.setRepository(repo.getId());
+        deposit.setSubmission(submission.getId());
+        return deposit;
     }
 
 }

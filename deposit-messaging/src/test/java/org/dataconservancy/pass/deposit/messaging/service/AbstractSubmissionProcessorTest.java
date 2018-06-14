@@ -64,6 +64,8 @@ public abstract class AbstractSubmissionProcessorTest {
 
     CriticalRepositoryInteraction cri;
 
+    DepositTaskHelper depositTaskHelper;
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
@@ -79,6 +81,8 @@ public abstract class AbstractSubmissionProcessorTest {
         atomStatusParser = mock(DepositStatusParser.class);
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
+        depositTaskHelper = new DepositTaskHelper(passClient, packagerRegistry, taskExecutor, dspaceStatusMapper,
+                atomStatusParser, dirtyDepositPolicy, terminalDepositStatusPolicy, cri);
     }
     
 }

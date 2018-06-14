@@ -65,8 +65,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, dirtyDepositPolicy, messagePolicy, terminalDepositStatusPolicy, taskExecutor,
-                dspaceStatusMapper, atomStatusParser, cri);
+                submissionPolicy, dirtyDepositPolicy, messagePolicy, terminalDepositStatusPolicy, taskExecutor, depositTaskHelper, dspaceStatusMapper, atomStatusParser, cri);
     }
 
     /**
