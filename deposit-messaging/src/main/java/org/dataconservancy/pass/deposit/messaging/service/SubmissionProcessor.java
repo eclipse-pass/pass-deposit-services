@@ -41,17 +41,12 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.ackMessage;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
 
 /**
  * Processes an incoming {@code Submission} by composing and submitting a {@link DepositTask} for execution.

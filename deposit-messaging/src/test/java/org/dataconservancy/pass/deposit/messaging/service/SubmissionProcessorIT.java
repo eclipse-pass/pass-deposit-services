@@ -15,99 +15,31 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.Submission;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toSet;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
-public class SubmissionProcessorIT {
+public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final String SUBMISSION_RESOURCES = "SubmissionProcessorIT.json";
 
-    private static final String EXPECTED_REPO_NAME = "JScholarship";
-
-    private Submission submission;
-
-    @Autowired
-    @Qualifier("submissionProcessor")
-    private SubmissionProcessor underTest;
-
-    @Autowired
-    private PassClient passClient;
-
-    /**
-     * Populates Fedora with a Submission, as if it was submitted interactively by a user of the PASS UI.
-     *
-     * @throws Exception
-     */
-    @Before
-    public void createSubmission() throws Exception {
-        PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
-
-        // Upload sample data to Fedora repository to get its Submission URI.
-        InputStream is = this.getClass().getResourceAsStream(SUBMISSION_RESOURCES);
-        assertNotNull("Unable to resolve classpath resource " + SUBMISSION_RESOURCES, is);
-
-        HashMap<URI, PassEntity> uriMap = new HashMap<>();
-        URI submissionUri = passAdapter.jsonToFcrepo(is, uriMap);
-        is.close();
-
-        // Find the Submission entity that was uploaded
-        for (URI key : uriMap.keySet()) {
-            PassEntity entity = uriMap.get(key);
-            if (entity.getId() == submissionUri) {
-                submission = (Submission)entity;
-                break;
-            }
-        }
-
-        assertNotNull("Missing expected Submission; it was not added to the repository.", submission);
-
-        // verify state of the initial Submission
-        assertEquals(Submission.Source.PASS, submission.getSource());
-        assertEquals(Boolean.TRUE, submission.getSubmitted());
-        assertEquals(NOT_STARTED, submission.getAggregatedDepositStatus());
-
-        // no Deposits pointing to the Submission
-        assertTrue("Unexpected incoming links to " + submissionUri,
-                getDepositUris(submission, passClient).isEmpty());
-
-        // JScholarship repository ought to exist
-        assertNotNull(submission.getRepositories());
-        assertTrue(submission.getRepositories().stream()
-                .map(uri -> (Repository)uriMap.get(uri))
-                .anyMatch(repo -> repo.getName().equals(EXPECTED_REPO_NAME)));
-
+    @Override
+    protected InputStream getSubmissionResources() {
+        return SubmissionTestUtil.getSubmissionResources(SUBMISSION_RESOURCES);
     }
 
     @Test
@@ -151,15 +83,4 @@ public class SubmissionProcessorIT {
                                     passClient.readResource(uri, RepositoryCopy.class).getCopyStatus() == COMPLETE)));
     }
 
-    private static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
-        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
-        return incoming.get("submission").stream().filter(uri -> {
-            try {
-                passClient.readResource(uri, Deposit.class);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        }).collect(toSet());
-    }
 }
