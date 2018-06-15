@@ -155,15 +155,15 @@ public class NihmsPackageStreamTest {
         String nameIn, nameOut;
 
         nameIn = "test.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "manifest.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplemental);
+        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";

@@ -74,7 +74,7 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
      * one of the default files that are included in a NIHMS deposit.  The file type is not known at this
      * point in the code, but we do know that it must be user-supplied and therefore not "bulksub_meta_xml"
      * (the only type that warrants special treatment in getNoncollidingFilename()).  So, the type is
-     * always passed as "supplemental" to avoid that special treatment.
+     * always passed as "supplement" to avoid that special treatment.
      *
      * @param resource the resource for which a safe file name will be returned.
      * @return a collision-free name for the provided resource file.

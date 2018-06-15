@@ -17,7 +17,7 @@
 package org.dataconservancy.nihms.model;
 
 /**
- * Represents a file that was uploaded by a user into PASS; e.g. a manuscript or supplemental material for a specific
+ * Represents a file that was uploaded by a user into PASS; e.g. a manuscript or supplement material for a specific
  * submission.
  */
 public class DepositFile {
@@ -36,7 +36,7 @@ public class DepositFile {
      * Differentiates between files of the same type
      * <p>
      * Required field for {@link DepositFileType#figure}, {@link DepositFileType#table},
-     * and {@link DepositFileType#supplemental} file types
+     * and {@link DepositFileType#supplement} file types
      * </p>
      */
     private String label;

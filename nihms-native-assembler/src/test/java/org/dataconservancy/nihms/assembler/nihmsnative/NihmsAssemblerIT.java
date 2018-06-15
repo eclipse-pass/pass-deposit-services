@@ -150,7 +150,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
                 custodialResources.size() + 1, lineCount);
 
         //check for compliance with the NIHMS Bulk Submission Specification
-        //table, figure and supplemental file types must have a label
+        //table, figure and supplement file types must have a label
         //labels must be unique within type for all types
         Map<String, Set<String>> labels = new HashMap<>();
         for (DepositFileType fileType : Arrays.asList(DepositFileType.values())) {
@@ -160,7 +160,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         for (String entry : entries) {
             String[] fields = entry.split("\t");
             assertFalse (labels.get(fields[0]).contains(fields[1]));
-            if (fields[0].equals("figure") || fields[0].equals("table") || fields[0].equals("supplemental")) {
+            if (fields[0].equals("figure") || fields[0].equals("table") || fields[0].equals("supplement")) {
                 assertTrue(fields[1].length()>0);
             }
         }

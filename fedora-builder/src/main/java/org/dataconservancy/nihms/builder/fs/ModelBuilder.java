@@ -26,6 +26,7 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
@@ -363,8 +364,8 @@ abstract class ModelBuilder {
                     DepositFile depositFile = new DepositFile();
                     depositFile.setName(file.getName());
                     depositFile.setLocation(file.getUri().toString());
-                    // TODO - The client model currently only has "manuscript" and "supplemental" roles.
-                    depositFile.setType(DepositFileType.valueOf(file.getFileRole().name().toLowerCase()));
+                    // TODO - The client model currently only has "manuscript" and "supplement" roles.
+                    depositFile.setType(getTypeForRole(file.getFileRole()));
                     depositFile.setLabel(file.getDescription());
                     files.add(depositFile);
                 }
@@ -372,5 +373,13 @@ abstract class ModelBuilder {
         }
 
         return submission;
+    }
+
+    private DepositFileType getTypeForRole(File.FileRole role) {
+        if (role.equals(File.FileRole.SUPPLEMENTAL)) {
+            return DepositFileType.supplement;
+        } else {
+            return DepositFileType.valueOf(role.name().toLowerCase());
+        }
     }
 }

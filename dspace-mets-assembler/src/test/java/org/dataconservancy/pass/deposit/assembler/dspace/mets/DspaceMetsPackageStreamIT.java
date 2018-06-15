@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -92,7 +91,7 @@ public class DspaceMetsPackageStreamIT {
                 new HashMap<File, DepositFileType>() {
                     {
                         put(custodialContent.get(0).getFile(), DepositFileType.manuscript);
-                        put(custodialContent.get(1).getFile(), DepositFileType.supplemental);
+                        put(custodialContent.get(1).getFile(), DepositFileType.supplement);
                     }
 
                 });

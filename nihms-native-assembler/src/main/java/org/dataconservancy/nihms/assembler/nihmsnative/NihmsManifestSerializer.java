@@ -39,7 +39,7 @@ import java.util.Set;
  *
  * where the file type is one of
  *
- * “bulksub_meta_xml”, “manuscript”, “supplemental”, “figure”, or “table”
+ * “bulksub_meta_xml”, “manuscript”, “supplement”, “figure”, or “table”
  *
  * @author Jim Martino (jrm@jhu.edu)
  */
@@ -90,7 +90,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
      *  "{label} is a label to differentiate between files of one {file_type} in the system.
      *   This field is required for figure, table, and supplement file types.
      *  {label} is used to identify files sent,such as 2a, 2b, and so on.
-     *  In the case of supplemental files, the string supplied here will be used as text for a hyperlink in the PMC manuscript.
+     *  In the case of supplement files, the string supplied here will be used as text for a hyperlink in the PMC manuscript.
 
      * If the label is not required, we make sure that any supplied label has not been used for a file of that type yet.
      *
@@ -104,7 +104,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         private final DepositFileType[] requiredLabelTypes = {
                 DepositFileType.figure,
                 DepositFileType.table,
-                DepositFileType.supplemental
+                DepositFileType.supplement
         };
 
         private final Set<DepositFileType> requiredTypes = new HashSet<>(Arrays.asList(requiredLabelTypes));

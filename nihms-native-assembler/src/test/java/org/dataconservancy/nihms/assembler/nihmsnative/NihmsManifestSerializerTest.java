@@ -102,17 +102,17 @@ public class NihmsManifestSerializerTest {
         label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "   ");
         assertEquals("figure-3", label);
 
-        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, "figure-1");
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplement, "figure-1");
         assertEquals("figure-1", label );
 
-        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, null);
-        assertEquals("supplemental-1", label );
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplement, null);
+        assertEquals("supplement-1", label );
 
-        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, "");
-        assertEquals("supplemental-2", label );
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplement, "");
+        assertEquals("supplement-2", label );
 
-        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, null);
-        assertEquals("supplemental-3", label );
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplement, null);
+        assertEquals("supplement-3", label );
 
         label = labelMaker.getTypeUniqueLabel(DepositFileType.manuscript, "Moo Cows in the Pasture");
         assertEquals("Moo Cows in the Pasture", label );

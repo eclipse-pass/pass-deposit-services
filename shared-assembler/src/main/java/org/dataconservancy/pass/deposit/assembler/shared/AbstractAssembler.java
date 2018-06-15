@@ -141,7 +141,7 @@ public abstract class AbstractAssembler implements Assembler {
      *         are expected to resolve to bytestreams
      */
     protected List<DepositFileResource> resolveCustodialResources(List<DepositFile> manifest) {
-        // Locate byte streams containing uploaded manuscript and any supplemental data
+        // Locate byte streams containing uploaded manuscript and any supplement data
         // essentially, the custodial content of the package (i.e. excluding package-specific
         // metadata such as bagit tag files, or mets xml files)
         return manifest
