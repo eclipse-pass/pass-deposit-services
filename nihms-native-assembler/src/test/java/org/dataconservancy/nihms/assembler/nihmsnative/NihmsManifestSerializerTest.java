@@ -86,4 +86,60 @@ public class NihmsManifestSerializerTest {
         assertEquals(expected, actual);
 
     }
+
+    @Test
+    public void labelMakerTest() {
+
+        NihmsManifestSerializer underTest = new NihmsManifestSerializer(null);
+        NihmsManifestSerializer.DepositFileLabelMaker labelMaker = underTest.new DepositFileLabelMaker();
+
+        String label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, null);
+        assertEquals("figure-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, null);
+        assertEquals("figure-2", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "   ");
+        assertEquals("figure-3", label);
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, "figure-1");
+        assertEquals("figure-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, null);
+        assertEquals("supplemental-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, "");
+        assertEquals("supplemental-2", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.supplemental, null);
+        assertEquals("supplemental-3", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.manuscript, "Moo Cows in the Pasture");
+        assertEquals("Moo Cows in the Pasture", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "Spotted Cows");
+        assertEquals("Spotted Cows", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "Spotted Cows");
+        assertEquals("Spotted Cows-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "Spotted Cows     ");
+        assertEquals("Spotted Cows-2", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.figure, "Spotted Cows-2");
+        assertEquals("Spotted Cows-2-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.table, "table");
+        assertEquals("table", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.table, "table-1");
+        assertEquals("table-1", label );
+
+        label = labelMaker.getTypeUniqueLabel(DepositFileType.table, "");
+        assertEquals("table-2", label );
+
+
+    }
+    
 }
+    

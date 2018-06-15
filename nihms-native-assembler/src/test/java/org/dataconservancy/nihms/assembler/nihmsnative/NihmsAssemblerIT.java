@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata.Person;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
@@ -28,9 +29,13 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -135,11 +140,30 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     public void testPackageManifest() throws Exception {
         int lineCount = 0;
         LineIterator lines = FileUtils.lineIterator(manifest);
+        List<String> entries = new ArrayList<>();
         while (lines.hasNext()) {
-            new ManifestLine(manifest, lines.nextLine(), lineCount++).assertAll();
+            String line = lines.nextLine();
+            entries.add(line);
+            new ManifestLine(manifest, line, lineCount++).assertAll();
         }
         assertEquals("Expected one line per custodial resource plus metadata file in NIHMS manifest file " + manifest,
                 custodialResources.size() + 1, lineCount);
+
+        //check for compliance with the NIHMS Bulk Submission Specification
+        //table, figure and supplemental file types must have a label
+        //labels must be unique within type for all types
+        Map<String, Set<String>> labels = new HashMap<>();
+        for (DepositFileType fileType : Arrays.asList(DepositFileType.values())) {
+            labels.put(fileType.toString(), new HashSet<>());
+        }
+
+        for (String entry : entries) {
+            String[] fields = entry.split("\t");
+            assertFalse (labels.get(fields[0]).contains(fields[1]));
+            if (fields[0].equals("figure") || fields[0].equals("table") || fields[0].equals("supplemental")) {
+                assertTrue(fields[1].length()>0);
+            }
+        }
     }
 
     @Test
