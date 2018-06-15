@@ -16,14 +16,11 @@
 package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.deposit.messaging.config.DepositConfig;
-import org.dataconservancy.pass.deposit.messaging.config.JmsConfig;
 import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
-import org.dataconservancy.pass.deposit.messaging.runner.DirtyDepositRunner;
-import org.dataconservancy.pass.deposit.messaging.support.Condition;
+import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -71,8 +68,8 @@ public class DepositApp {
                 }});
                 break;
             }
-            case "process": {
-                app = new SpringApplication(DepositApp.class, DirtyDepositRunner.class);
+            case "retry": {
+                app = new SpringApplication(DepositApp.class, FailedDepositRunner.class);
                 app.setDefaultProperties(new HashMap<String, Object>() { {
                     put("spring.jms.listener.auto-startup", Boolean.FALSE);
                 }});
