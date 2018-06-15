@@ -243,7 +243,7 @@ public abstract class BaseAssemblerIT {
                 }
             } else {
                 try {
-                    custodialContentWithTypes.put(resource.getFile(), DepositFileType.supplemental);
+                    custodialContentWithTypes.put(resource.getFile(), DepositFileType.supplement);
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }

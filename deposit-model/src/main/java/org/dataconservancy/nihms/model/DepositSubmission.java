@@ -18,7 +18,7 @@ package org.dataconservancy.nihms.model;
 import java.util.List;
 
 /**
- * Encapsulates a submission to the target system, including the manuscript and supplemental files, metadata describing
+ * Encapsulates a submission to the target system, including the manuscript and supplement files, metadata describing
  * the manuscript, authors, and the journal of publication, and a manifest cataloging every file in the submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -41,7 +41,7 @@ public class DepositSubmission {
     private DepositMetadata metadata;
 
     /**
-     * The files uploaded by the user, including the manuscript and supplemental files.
+     * The files uploaded by the user, including the manuscript and supplement files.
      */
     private List<DepositFile> files;
 

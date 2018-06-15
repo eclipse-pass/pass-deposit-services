@@ -63,7 +63,7 @@ import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV
  *     <dt>{@link Assembler Package Assembler}</dt>
  *     <dd>Responsible for interrogating the submission model and creating a {@link PackageStream streamable} package
  *         of the submission contents.  The package includes everything that is required by the target repository,
- *         including manuscript files, supplemental files, and any metadata, manifests or checksums.  Different target
+ *         including manuscript files, supplement files, and any metadata, manifests or checksums.  Different target
  *         repositories will have different packaging requirements, so this component is largely influenced by the
  *         policy or requirements of the target repository.</dd>
  *     <dt>{@link Transport Transport Layer}</dt>
