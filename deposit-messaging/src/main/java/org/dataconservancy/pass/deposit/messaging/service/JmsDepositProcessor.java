@@ -73,7 +73,7 @@ public class JmsDepositProcessor {
         this.passClient = passClient;
     }
 
-    @JmsListener(destination = "deposit")
+    @JmsListener(destination = "${pass.deposit.queue.deposit.name}")
     public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
                                @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
                                @Header(JmsHeaders.TIMESTAMP) long timeStamp,

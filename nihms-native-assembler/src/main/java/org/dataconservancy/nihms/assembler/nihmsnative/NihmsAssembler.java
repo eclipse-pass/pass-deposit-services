@@ -33,20 +33,6 @@ import java.util.List;
 @Component
 public class NihmsAssembler extends AbstractAssembler {
 
-    private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to a Spring Resource type.";
-
-    private static final String FILE_PREFIX = "file:";
-
-    private static final String CLASSPATH_PREFIX = "classpath:";
-
-    private static final String WILDCARD_CLASSPATH_PREFIX = "classpath*:";
-
-    private static final String HTTP_PREFIX = "http:";
-
-    private static final String HTTPS_PREFIX = "https:";
-
-    // TODO: find a better place for these constants.
-
     /**
      * Package specification URI identifying the NIHMS native packaging spec, as specified by their 07/2017
      * bulk publishing pdf.
@@ -64,8 +50,9 @@ public class NihmsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf) {
-
+    protected PackageStream createPackageStream(DepositSubmission submission,
+                                                List<DepositFileResource> custodialResources, MetadataBuilder mb,
+                                                ResourceBuilderFactory rbf) {
         mb.spec(SPEC_NIHMS_NATIVE_2017_07);
         mb.archive(PackageStream.ARCHIVE.TAR);
         mb.archived(true);

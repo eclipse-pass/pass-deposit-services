@@ -353,6 +353,7 @@ abstract class ModelBuilder {
         ArrayList<DepositFile> files = new ArrayList<>();
         submission.setFiles(files);
         manifest.setFiles(files);
+        DepositFileLabelMaker labelMaker = new DepositFileLabelMaker();
 
         for (URI key : entities.keySet()) {
             PassEntity entity = entities.get(key);

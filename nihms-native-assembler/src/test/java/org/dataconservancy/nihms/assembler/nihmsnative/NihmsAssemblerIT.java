@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler.APPLICATION_GZIP;
+import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07;
 import static org.dataconservancy.nihms.assembler.nihmsnative.NihmsZippedPackageStream.REMEDIATED_FILE_PREFIX;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
 import static org.junit.Assert.assertEquals;
@@ -73,6 +75,15 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     @Override
     protected AbstractAssembler assemblerUnderTest() {
         return new NihmsAssembler(mbf, rbf);
+    }
+
+    @Override
+    protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
+        assertEquals(PackageStream.COMPRESSION.GZIP, metadata.compression());
+        assertEquals(PackageStream.ARCHIVE.TAR, metadata.archive());
+        assertTrue(metadata.archived());
+        assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
+        assertEquals(APPLICATION_GZIP, metadata.mimeType());
     }
 
     /**
