@@ -57,7 +57,7 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
     @Override
     protected DspaceMetsAssembler assemblerUnderTest() {
         return new DspaceMetsAssembler(mbf, rbf,
-                new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance()));
+                new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance()));
     }
 
     @Override
