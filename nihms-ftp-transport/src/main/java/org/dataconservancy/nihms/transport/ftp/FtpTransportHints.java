@@ -18,13 +18,13 @@ package org.dataconservancy.nihms.transport.ftp;
 
 public class FtpTransportHints {
 
-    public static final String BASE_DIRECTORY = "deposit.transport.ftp.basedir";
+    public static final String BASE_DIRECTORY = "deposit.transport.protocol.ftp.basedir";
 
-    public static final String TRANSFER_MODE = "deposit.transport.ftp.transfer-mode";
+    public static final String TRANSFER_MODE = "deposit.transport.protocol.ftp.transfer-mode";
 
-    public static final String USE_PASV = "deposit.transport.ftp.use-pasv";
+    public static final String USE_PASV = "deposit.transport.protocol.ftp.use-pasv";
 
-    public static final String DATA_TYPE = "deposit.transport.ftp.data-type";
+    public static final String DATA_TYPE = "deposit.transport.protocol.ftp.data-type";
 
     public enum MODE {
         stream,
