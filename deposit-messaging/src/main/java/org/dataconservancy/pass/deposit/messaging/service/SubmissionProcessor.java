@@ -180,11 +180,11 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     Packager packager = null;
                     try {
                         deposit = createDeposit(updatedS, repo);
-                        Optional<Packager> op = depositTaskHelper.resolvePackager(updatedS, deposit, repo);
-                        if (op.isPresent()) {
-                            packager = op.get();
-                        } else {
-                            return;
+                        packager = packagerRegistry.get(repo.getName());
+                        if (packager == null) {
+                            throw new NullPointerException(format("No Packager found for tuple [%s, %s, %s]: " +
+                                            "Missing Packager for Repository named '%s'",
+                                    updatedS.getId(), deposit.getId(), repo.getId(), repo.getName()));
                         }
                         deposit = passClient.createAndReadResource(deposit, Deposit.class);
                     } catch (Exception e) {

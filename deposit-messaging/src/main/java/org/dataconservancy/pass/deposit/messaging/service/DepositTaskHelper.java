@@ -37,7 +37,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.util.Optional;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
@@ -130,32 +129,6 @@ public class DepositTaskHelper {
                     (deposit == null) ? "null" : deposit.getId(), e.getMessage());
             throw new DepositServiceRuntimeException(msg, e, deposit);
         }
-    }
-
-    /**
-     * Attempts to resolve the {@code Packager} to use for depositing to the supplied {@code Repository}.
-     *
-     * @param submission the submission that the {@code deposit} belongs to
-     * @param deposit the {@code Deposit} that is being performed
-     * @param repo the {@code Repository} that is the target of the {@code Deposit}, for which the {@code Packager}
-     *             knows how to communicate
-     * @return the Packager for the Repository, or an empty Optional
-     */
-    // TODO: packagers are resolved based on the 'name' of the Repository; there's a better way
-    Optional<Packager> resolvePackager(Submission submission, Deposit deposit, Repository repo) {
-        Packager packager = packagerRegistry.get(repo.getName());
-
-        if (packager == null) {
-            // Fail the Deposit if the Packager is null, not the Submission.
-            deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
-            deposit = passClient.createAndReadResource(deposit, Deposit.class);
-            LOG.error(">>>> No Packager found for tuple [{}, {}, {}]: " +
-                            "Missing Packager for Repository named '{}', marking Deposit as FAILED.",
-                    submission.getId(), repo.getId(), deposit.getId(), repo.getName());
-            return Optional.empty();
-        }
-
-        return Optional.of(packager);
     }
 
 }
