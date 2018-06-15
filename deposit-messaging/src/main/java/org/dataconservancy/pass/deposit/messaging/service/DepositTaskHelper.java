@@ -15,22 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -62,7 +58,10 @@ public class DepositTaskHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessor.class);
 
-    private final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
+    public static final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
+
+    public static final String MISSING_PACKAGER = ">>>> No Packager found for tuple [{}, {}, {}]: " +
+            "Missing Packager for Repository named '{}', marking Deposit as FAILED.";
 
     protected PassClient passClient;
 
@@ -74,7 +73,7 @@ public class DepositTaskHelper {
 
     protected DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
 
-    protected Policy<Deposit.DepositStatus> dirtyDepositPolicy;
+    protected Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
 
     protected Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
 
@@ -84,7 +83,7 @@ public class DepositTaskHelper {
     public DepositTaskHelper(PassClient passClient, Registry<Packager> packagerRegistry, TaskExecutor taskExecutor,
                              DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                              DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
-                             Policy<Deposit.DepositStatus> dirtyDepositPolicy,
+                             Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
                              Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction critical) {
         this.passClient = passClient;
@@ -92,7 +91,7 @@ public class DepositTaskHelper {
         this.taskExecutor = taskExecutor;
         this.depositStatusMapper = depositStatusMapper;
         this.atomStatusParser = atomStatusParser;
-        this.dirtyDepositPolicy = dirtyDepositPolicy;
+        this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.critical = critical;
     }
@@ -113,13 +112,13 @@ public class DepositTaskHelper {
      * @param deposit the {@code Deposit} that is being submitted
      * @param packager the Packager for the {@code repo}
      */
-    void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo, Deposit deposit,
+    public void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo, Deposit deposit,
                        Packager packager) {
         try {
             DepositWorkerContext dc = toDepositWorkerContext(
                     deposit, submission, depositSubmission, repo, packager);
             DepositTask depositTask = new DepositTask(dc, passClient, atomStatusParser, depositStatusMapper,
-                    dirtyDepositPolicy, terminalDepositStatusPolicy, critical);
+                    intermediateDepositStatusPolicy, terminalDepositStatusPolicy, critical);
 
             LOG.debug(">>>> Submitting task ({}@{}) for tuple [{}, {}, {}]",
                     depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),

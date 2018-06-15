@@ -32,6 +32,7 @@ import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.util.Collections;
@@ -73,7 +74,7 @@ public class DepositTask implements Runnable {
 
     private DepositStatusMapper<SwordDspaceDepositStatus> swordDepositStatusMapper;
 
-    private Policy<Deposit.DepositStatus> dirtyDepositPolicy;
+    private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
 
     private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
 
@@ -82,14 +83,14 @@ public class DepositTask implements Runnable {
     public DepositTask(DepositUtil.DepositWorkerContext dc, PassClient passClient,
                        DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                        DepositStatusMapper<SwordDspaceDepositStatus> swordDepositStatusMapper,
-                       Policy<Deposit.DepositStatus> dirtyDepositPolicy,
+                       Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
                        Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                        CriticalRepositoryInteraction critical) {
         this.dc = dc;
         this.passClient = passClient;
         this.atomStatusParser = atomStatusParser;
         this.swordDepositStatusMapper = swordDepositStatusMapper;
-        this.dirtyDepositPolicy = dirtyDepositPolicy;
+        this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.critical = critical;
     }
@@ -102,10 +103,10 @@ public class DepositTask implements Runnable {
         CriticalResult<TransportResponse, Deposit> result = critical.performCritical(dc.deposit().getId(), Deposit.class,
 
                 /*
-                 * Only "dirty" deposits can be processed by {@code DepositTask}
+                 * Only "intermediate" deposits can be processed by {@code DepositTask}
                  */
                 (deposit) -> {
-                    boolean accept = dirtyDepositPolicy.accept(deposit.getDepositStatus());
+                    boolean accept = intermediateDepositStatusPolicy.accept(deposit.getDepositStatus());
                     if (!accept) {
                         LOG.debug(">>>> Update precondition failed for {}", deposit.getId());
                     }
