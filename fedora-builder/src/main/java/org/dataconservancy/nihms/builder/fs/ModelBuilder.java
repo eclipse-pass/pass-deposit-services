@@ -366,7 +366,7 @@ abstract class ModelBuilder {
                     depositFile.setLocation(file.getUri().toString());
                     // TODO - The client model currently only has "manuscript" and "supplemental" roles.
                     depositFile.setType(DepositFileType.valueOf(file.getFileRole().name().toLowerCase()));
-                    depositFile.setLabel(labelMaker.label(depositFile.getType(), file.getDescription()));
+                    depositFile.setLabel(file.getDescription());
                     files.add(depositFile);
                 }
             }
