@@ -49,12 +49,13 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     public static final String APPLICATION_ZIP = "application/zip";
 
 
-    private DspaceMetadataDomWriter metsWriter;
+    private DspaceMetadataDomWriterFactory metsWriterFactory;
 
     @Autowired
-    public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriter metsWriter) {
+    public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriterFactory
+            metsWriterFactory) {
         super(mbf, rbf);
-        this.metsWriter = metsWriter;
+        this.metsWriterFactory = metsWriterFactory;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
         mb.compressed(true);
         mb.compression(PackageStream.COMPRESSION.ZIP);
         mb.mimeType(APPLICATION_ZIP);
-        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriter);
+        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory);
     }
 
 }

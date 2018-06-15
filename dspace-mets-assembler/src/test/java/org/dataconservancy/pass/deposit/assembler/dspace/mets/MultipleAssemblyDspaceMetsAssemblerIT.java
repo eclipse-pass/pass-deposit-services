@@ -20,8 +20,6 @@ import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
-import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -56,7 +54,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
     @BeforeClass
     public static void initAssembler() {
         underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(),
-                new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance()));
+                new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance()));
     }
 
     /**

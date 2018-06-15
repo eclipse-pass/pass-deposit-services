@@ -28,7 +28,7 @@ import java.util.List;
 
 public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
 
-    private DspaceMetadataDomWriter metsWriter;
+    private DspaceMetadataDomWriterFactory metsWriterFactory;
 
     private DepositSubmission submission;
 
@@ -37,11 +37,11 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
     public DspaceMetsZippedPackageStream(DepositSubmission submission,
                                          List<DepositFileResource> custodialResources,
                                          MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
-                                         DspaceMetadataDomWriter metsWriter) {
+                                         DspaceMetadataDomWriterFactory metsWriterFactory) {
 
         super(custodialResources, metadataBuilder, rbf);
 
-        if (metsWriter == null) {
+        if (metsWriterFactory == null) {
             throw new IllegalArgumentException("METS writer must not be null.");
         }
 
@@ -49,7 +49,7 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
             throw new IllegalArgumentException("Submission must not be null.");
         }
 
-        this.metsWriter = metsWriter;
+        this.metsWriterFactory = metsWriterFactory;
         this.submission = submission;
         this.metadataBuilder = metadataBuilder;
     }
@@ -58,6 +58,6 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
     public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
                                                               ResourceBuilderFactory rbf) {
         return new DspaceMetsThreadedOutputStreamWriter("DSpace Archive Writer", archiveOutputStream,
-                submission, custodialContent, rbf, metadataBuilder, metsWriter);
+                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance());
     }
 }

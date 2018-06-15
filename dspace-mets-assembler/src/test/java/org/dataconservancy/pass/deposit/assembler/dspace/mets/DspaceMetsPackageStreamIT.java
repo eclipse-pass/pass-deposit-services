@@ -53,7 +53,8 @@ public class DspaceMetsPackageStreamIT {
 
     private ResourceBuilderFactory rbf = new DefaultResourceBuilderFactory();
 
-    private DspaceMetadataDomWriter metsWriter = new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance());
+    private DspaceMetadataDomWriterFactory metsWriter = new DspaceMetadataDomWriterFactory(
+            DocumentBuilderFactory.newInstance());
 
     private List<DepositFileResource> custodialContent;
 

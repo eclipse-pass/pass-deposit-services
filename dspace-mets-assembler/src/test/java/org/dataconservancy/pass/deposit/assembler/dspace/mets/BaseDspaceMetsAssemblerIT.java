@@ -23,7 +23,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,7 +56,7 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
     @Override
     protected DspaceMetsAssembler assemblerUnderTest() {
         return new DspaceMetsAssembler(mbf, rbf,
-                new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance()));
+                new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance()));
     }
 
     @Override
