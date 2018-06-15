@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.runner;
 
-import com.sun.tools.internal.ws.processor.modeler.annotation.ModelBuilder;
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
@@ -24,28 +23,20 @@ import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.TerminalDepositStatusPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
-import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper.MISSING_PACKAGER;
