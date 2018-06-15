@@ -21,7 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Accepts non-{@code null} {@code DepositStatus} that represents an <em>intermediate</em> deposit status.
+ * Accepts {@code DepositStatus} that represents an <em>intermediate</em> deposit status.  A {@code null} {@code
+ * DepositStatus} is considered <em>intermediate</em>.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -37,6 +38,6 @@ public class IntermediateDepositStatusPolicy implements Policy<Deposit.DepositSt
 
     @Override
     public boolean accept(Deposit.DepositStatus o) {
-        return o != null && !statusEvaluator.isTerminal(o);
+        return o == null || !statusEvaluator.isTerminal(o);
     }
 }

@@ -45,8 +45,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testNullStatus() throws Exception {
-        assertFalse(underTest.accept(null));
-        verifyZeroInteractions(evaluator);
+        assertTrue(underTest.accept(null));
     }
 
     @Test
