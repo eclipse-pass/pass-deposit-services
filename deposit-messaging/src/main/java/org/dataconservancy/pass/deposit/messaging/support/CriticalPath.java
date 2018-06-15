@@ -79,7 +79,7 @@ public class CriticalPath implements CriticalRepositoryInteraction {
      *         any exception thrown, and the overall success as determined by the post-condition
      */
     @Override
-    public <T extends PassEntity, R> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
+    public <R, T extends PassEntity> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
                                                                           Predicate<T> precondition,
                                                                           Predicate<T> postcondition,
                                                                           Function<T, R> critical) {
@@ -116,7 +116,7 @@ public class CriticalPath implements CriticalRepositoryInteraction {
      *         any exception thrown, and the overall success as determined by the post-condition
      */
     @Override
-    public <T extends PassEntity, R> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
+    public <R, T extends PassEntity> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
                                                                           Predicate<T> precondition,
                                                                           BiPredicate<T, R> postcondition,
                                                                           Function<T, R> critical) {
