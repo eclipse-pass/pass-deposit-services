@@ -122,21 +122,20 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     return accepted;
                 },
                 (s, ds) -> {
-                    boolean accepted = s.getAggregatedDepositStatus() == IN_PROGRESS;
-                    if (!accepted) {
+                    if (s.getAggregatedDepositStatus() != IN_PROGRESS) {
                         LOG.debug(">>>> Update postcondition(s) failed for {}: expected status '{}' but actual status is '{}'",
                                 s.getId(), IN_PROGRESS, s.getAggregatedDepositStatus());
+                        return false;
                     }
 
-                    accepted &= ds.getFiles().size() > 0;
-
-                    if (!accepted) {
+                    if (ds.getFiles().size() < 1) {
                         LOG.debug(">>>> Update postcondition(s) failed for {}: the DepositSubmission has no files " +
                                         "attached! (Hint: check the incoming links to the Submission)",
                                 s.getId());
+                        return false;
                     }
 
-                    return accepted;
+                    return true;
                 },
                 (s) -> {
                     DepositSubmission ds = null;
