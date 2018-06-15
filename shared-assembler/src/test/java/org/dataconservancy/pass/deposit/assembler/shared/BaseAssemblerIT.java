@@ -162,7 +162,23 @@ public abstract class BaseAssemblerIT {
      * @return a {@code Map} of custodial resources to be packaged, and their corresponding {@code DepositFileType}
      */
     protected Map<File, DepositFileType> prepareCustodialResources() {
-        custodialResources = fromClasspath(packageToClasspath(AbstractAssembler.class) + "/sample1");
+        return prepareCustodialResources(packageToClasspath(AbstractAssembler.class) + "/sample1");
+    }
+
+    /**
+     * Obtains a List of Resources from the classpath, stores them in {@link #custodialResources}.
+     *
+     * Creates a convenience {@code Map}, mapping file names to their corresponding Resources in {@link
+     * #custodialResourcesMap}.  Every Resource in {@code custodialResources} should be represented in {@code
+     * custodialResourcesMap}, and vice-versa.
+     *
+     * {@link #mapContentTypes(Map) Maps} the Resources to deposit content types from {@link DepositFileType}.
+     *
+     * @param baseClasspathResource a classpath resource that is interpreted as a "base directory" for custodial content
+     * @return a {@code Map} of custodial resources to be packaged, and their corresponding {@code DepositFileType}
+     */
+    protected Map<File, DepositFileType> prepareCustodialResources(String baseClasspathResource) {
+        custodialResources = fromClasspath(baseClasspathResource);
         // Insure we're packaging something
         assertTrue("Refusing to create an empty package!",custodialResources.size() > 0);
 
@@ -258,7 +274,7 @@ public abstract class BaseAssemblerIT {
      *
      * @return
      */
-    protected MetadataBuilderFactory metadataBuilderFactory() {
+    protected static MetadataBuilderFactory metadataBuilderFactory() {
         return new DefaultMetadataBuilderFactory();
     }
 
@@ -267,7 +283,7 @@ public abstract class BaseAssemblerIT {
      *
      * @return
      */
-    protected ResourceBuilderFactory resourceBuilderFactory() {
+    protected static ResourceBuilderFactory resourceBuilderFactory() {
         return new DefaultResourceBuilderFactory();
     }
 
