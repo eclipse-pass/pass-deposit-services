@@ -195,6 +195,7 @@ public abstract class BaseAssemblerIT {
      * @throws IOException if there is an error saving the package
      */
     protected File savePackage(PackageStream stream) throws IOException {
+
         StringBuilder ext = new StringBuilder();
 
         switch (stream.metadata().archive()) {
