@@ -46,7 +46,7 @@
                     <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                     <resourcesDirectory>${project.basedir}/src/test/resources</resourcesDirectory>
                     <includes>
-                        <include>**/sample1/**</include>
+                        <include>**/sample*/**</include>
                     </includes>
                 </configuration>
             </plugin>
