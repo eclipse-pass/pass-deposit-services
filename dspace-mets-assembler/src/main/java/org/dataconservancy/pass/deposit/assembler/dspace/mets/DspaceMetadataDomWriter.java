@@ -34,8 +34,6 @@ import au.edu.apsr.mtk.base.StructMap;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,7 +80,6 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstant
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
 public class DspaceMetadataDomWriter {
 
     static final String METS_ID = "DSPACE-METS-SWORD";
@@ -106,7 +103,6 @@ public class DspaceMetadataDomWriter {
 
     private METS mets;
 
-    @Autowired
     DspaceMetadataDomWriter(DocumentBuilderFactory dbf) {
         try {
             this.dbf = dbf;

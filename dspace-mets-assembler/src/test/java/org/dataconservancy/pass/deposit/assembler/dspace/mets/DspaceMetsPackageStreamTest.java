@@ -49,14 +49,16 @@ public class DspaceMetsPackageStreamTest {
 
     private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
 
+    private DspaceMetadataDomWriterFactory metsWriterFactory = mock(DspaceMetadataDomWriterFactory.class);
+
     private DspaceMetadataDomWriter metsWriter = mock(DspaceMetadataDomWriter.class);
 
     private List<DepositFileResource> custodialContent;
 
-
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(new ResourceBuilderImpl());
+        when(metsWriterFactory.newInstance()).thenReturn(metsWriter);
 
         mb.spec(SPEC_DSPACE_METS);
         mb.archive(PackageStream.ARCHIVE.ZIP);
@@ -89,7 +91,8 @@ public class DspaceMetsPackageStreamTest {
     public void testStream() throws Exception {
         // Construct a package stream using mocks and two example files
         DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriter);
+                new DspaceMetsZippedPackageStream(
+                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory);
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written
         assertTrue("Expected bytes written to be greater than 0!",
