@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -115,7 +116,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         // Mock the interactions with the repository that create Deposit resources, insuring the SubmissionProcessor
         // sets the correct state on newly created Deposits.
@@ -150,7 +151,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         underTest.accept(submission);
 
         // Verify the CRI executed successfully and the results obtained properly
-        verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
+        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
         verify(criResult).success();
         verify(criResult).resource();
         verify(criResult).result();
@@ -182,7 +183,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         CriticalResult criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.result()).thenReturn(Optional.of(new DepositSubmission()));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         // This should never happen, but Deposit Services checks to be sure that the resource() isn't empty.
         when(criResult.resource()).thenReturn(Optional.empty());
@@ -193,7 +194,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         underTest.accept(submission);
 
         // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
+        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
         verify(criResult).success();
         verify(criResult).result();
 
@@ -213,7 +214,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         CriticalResult criResult = mock(CriticalResult.class);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.success()).thenReturn(true);
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         // This should never happen, but Deposit Services checks to be sure that the resource() isn't empty.
         when(criResult.result()).thenReturn(Optional.empty());
@@ -224,7 +225,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         underTest.accept(submission);
 
         // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
+        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
         verify(criResult).success();
         verify(criResult).result();
 
@@ -253,7 +254,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         Exception expectedCause = new Exception("Failed CRI");
         when(criResult.throwable()).thenReturn(Optional.of(expectedCause));
         when(criResult.result()).thenReturn(Optional.of(new DepositSubmission()));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         thrown.expect(DepositServiceRuntimeException.class);
         thrown.expectMessage("Unable to update status of " + submission.getId());
@@ -262,7 +263,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         underTest.accept(submission);
 
         // Verify the CRI execution failed
-        verify(cri).performCritical(any(), any(), any(), any(Predicate.class), any());
+        verify(cri).performCritical(any(), any(), any(), any(BiPredicate.class), any());
         verify(criResult).success();
         verify(criResult).result();
 
@@ -290,7 +291,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         RuntimeException expectedCause = new RuntimeException("Error saving Deposit resource.");
         List<Repository> createdRepositories = repositoryIds.stream().map(repoUri -> {
@@ -332,7 +333,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         List<Repository> createdRepositories = repositoryIds.stream().map(repoUri -> {
             Repository r = new Repository();
@@ -364,8 +365,8 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
     /**
      * When a DepositSubmission is successfully built, a Packager is looked up from the Registry in order to create a
-     * DepositTask.  If the Packager cannot be looked up, a DepositTask should not be created and no interaction should
-     * occur with the task executor.
+     * DepositTask.  If the Packager cannot be looked up, a DepositServiceRuntimeException should be thrown, a
+     * DepositTask should <em>not</em> be created and <em>no</em> interaction should occur with the task executor.
      *
      * @throws Exception
      */
@@ -389,7 +390,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
-        when(cri.performCritical(any(), any(), any(), any(Predicate.class), any())).thenReturn(criResult);
+        when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
 
         List<Repository> createdRepositories = repositoryIds.stream().map(repoUri -> {
             Repository r = new Repository();
@@ -410,6 +411,9 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
             when(packagerRegistry.get(repo.getName())).thenReturn(null);
 
         }).collect(Collectors.toList());
+
+        thrown.expect(DepositServiceRuntimeException.class);
+        thrown.expectCause(isA(NullPointerException.class));
 
         underTest.accept(submission);
 
