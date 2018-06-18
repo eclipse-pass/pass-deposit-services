@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.transport.ftp;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.dataconservancy.nihms.transport.TransportResponse;
@@ -25,6 +26,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.dataconservancy.nihms.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
 import static org.junit.Assert.assertEquals;
@@ -72,8 +74,10 @@ public class FtpTransportSessionTest {
         String destinationResource = "package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
 
+        when(ftpClient.storeFile(any(), eq(content))).thenReturn(true);
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
+        when(ftpClient.setFileType(FTP.BINARY_FILE_TYPE)).thenReturn(true);
 
         TransportResponse response = ftpSession.storeFile(destinationResource, content);
 
@@ -81,6 +85,8 @@ public class FtpTransportSessionTest {
         assertTrue(response.success());
         assertNull(response.error());
         verifyDestinationResource(destinationResource, content);
+        verify(ftpClient).storeFile(any(), eq(content));
+        verify(ftpClient).setFileType(FTP.BINARY_FILE_TYPE);
     }
 
     /**
@@ -96,10 +102,12 @@ public class FtpTransportSessionTest {
         String destinationResource = "sub/directory/package.tar.gz";
         NullInputStream content = new NullInputStream(ONE_MIB);
 
+        when(ftpClient.storeFile(any(), eq(content))).thenReturn(true);
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
+        when(ftpClient.setFileType(FTP.BINARY_FILE_TYPE)).thenReturn(true);
 
         TransportResponse response = ftpSession.storeFile(destinationResource, content);
 
@@ -109,6 +117,8 @@ public class FtpTransportSessionTest {
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verifyDestinationResource("package.tar.gz", content);
         verify(ftpClient, atLeastOnce()).changeWorkingDirectory(FTP_ROOT_DIR);
+        verify(ftpClient).storeFile(any(), eq(content));
+        verify(ftpClient).setFileType(FTP.BINARY_FILE_TYPE);
     }
 
     /**
@@ -125,9 +135,14 @@ public class FtpTransportSessionTest {
         IOException expectedException = new IOException(expectedMessage);
         NullInputStream content = new NullInputStream(ONE_MIB);
 
+        AtomicBoolean storeFileInvoked = new AtomicBoolean(false);
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
-        when(ftpClient.storeFile(anyString(), any(InputStream.class))).thenThrow(expectedException);
+        when(ftpClient.setFileType(FTP.BINARY_FILE_TYPE)).thenReturn(true);
+        when(ftpClient.storeFile(anyString(), any(InputStream.class))).thenAnswer(inv -> {
+            storeFileInvoked.set(true);
+            throw expectedException;
+        });
         when(ftpClient.getReplyString()).thenAnswer((invocationOnMock) -> {
             if (invocationOnMock.getMethod().getName().equals("storeFile")) {
                 return "OK";
@@ -136,7 +151,7 @@ public class FtpTransportSessionTest {
             return "Transfer failed.";
         });
         when(ftpClient.getReplyCode()).thenAnswer((invocationOnMock) -> {
-            if (invocationOnMock.getMethod().getName().equals("storeFile")) {
+            if (storeFileInvoked.get()) {
                 return 500;
             }
             return 200;
@@ -147,11 +162,12 @@ public class FtpTransportSessionTest {
         assertNotNull(response);
         assertFalse(response.success());
         assertNotNull(response.error());
-        assertEquals(expectedException, response.error().getCause().getCause());
-        assertEquals(expectedMessage, response.error().getCause().getCause().getMessage());
+        assertEquals(expectedException, response.error().getCause());
+        assertEquals(expectedMessage, response.error().getCause().getMessage());
         verify(ftpClient).changeWorkingDirectory("sub/directory");
         verifyDestinationResource("package.tar.gz", content);
         verify(ftpClient, times(2)).changeWorkingDirectory(FTP_ROOT_DIR);
+        verify(ftpClient).setFileType(FTP.BINARY_FILE_TYPE);
     }
 
     /**
@@ -166,6 +182,7 @@ public class FtpTransportSessionTest {
         IOException expectedException = new IOException(expectedMessage);
 
         when(ftpClient.printWorkingDirectory()).thenReturn(FTP_ROOT_DIR);
+        when(ftpClient.setFileType(FTP.BINARY_FILE_TYPE)).thenReturn(true);
         when(ftpClient.storeFile(any(), any())).thenThrow(expectedException);
         when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK); // assume all commands return OK
 
@@ -176,7 +193,8 @@ public class FtpTransportSessionTest {
         verify(ftpClient).abort();
         assertNotNull(response);
         assertFalse(response.success());
-        assertEquals(expectedException, response.error().getCause().getCause());
+        assertEquals(expectedException, response.error().getCause());
+        verify(ftpClient).setFileType(FTP.BINARY_FILE_TYPE);
     }
 
     private void verifyDestinationResource(String destinationResource) throws IOException {
