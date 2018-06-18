@@ -21,6 +21,8 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,6 +46,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
 public abstract class AbstractSubmissionIT {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     protected static final String EXPECTED_REPO_NAME = "JScholarship";
 
