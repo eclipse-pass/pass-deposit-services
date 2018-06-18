@@ -112,15 +112,19 @@ public class PassJsonFedoraAdapter {
             return submission;
 
         } catch (IOException e) {
+            // TODO re-throw?
             System.out.println("Could not read from input stream.");
             e.printStackTrace();
         } catch (JsonSyntaxException e) {
+            // TODO re-throw?
             System.out.println("Could not parse sample data JSON.");
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            // TODO re-throw?
             System.out.println("Could not identify class type for entity.");
             e.printStackTrace();
         } catch (URISyntaxException e) {
+            // TODO re-throw?
             System.out.println("Entity contained an invalid URI as its Id.");
             e.printStackTrace();
         }
