@@ -197,10 +197,6 @@ public class PassJsonFedoraAdapter {
             URI newUri = client.createResource(entity);
             entity.setId(newUri);
             uriMap.put(oldUri, newUri);
-
-            if (entity instanceof File) {
-                uploadBinary((File) entity, client);
-            }
         }
 
         // Update links between resources using collected information
@@ -250,6 +246,11 @@ public class PassJsonFedoraAdapter {
             entities.remove(oldUri);
         }
 
+        // Upload the File binary content to the Submission, and update the File.uri field
+        Submission repoSubmission = (Submission) entities.get(submissionUri);
+        entities.values().stream().filter(e -> e instanceof File)
+                .forEach(f -> uploadBinaryToSubmission(repoSubmission, (File) f, client));
+
         return submissionUri;
     }
 
@@ -257,11 +258,14 @@ public class PassJsonFedoraAdapter {
      * Resolves the content referenced by {@link File#getUri()}, uploads the binary to Fedora, and then updates the
      * {@code File uri} with the location of the binary in the repository.
      *
+     * @param s the Submission resource that the binary File content will be subordinate to
      * @param f a File entity that may have a URI that links to binary content
      * @param client client used to update the File URI in the repository
      */
-    private void uploadBinary(File f, PassClient client) {
-        // attempt to upload binary content to fedora
+    private void uploadBinaryToSubmission(Submission s, File f, PassClient client) {
+        // attempt to upload binary content to fedora as a child resource of the Submission
+
+        // If the file has no URI, there's nothing for us to do.
         if (f.getUri() == null) {
             return;
         }
@@ -301,9 +305,9 @@ public class PassJsonFedoraAdapter {
         }
 
         try (InputStream in = contentResource.getInputStream()) {
-            URI binaryUri = client.upload(f.getId(), in, params);
-            LOG.debug("Uploaded binary {} for {}.  Updating 'uri' field to {} from {}",
-                    contentUri, f.getId(), contentUri, binaryUri);
+            URI binaryUri = client.upload(s.getId(), in, params);
+            LOG.debug("Uploaded binary {} for {} to {}.  Updating File 'uri' field to {} from {}",
+                    contentUri, f.getId(), s.getId(), contentUri, binaryUri);
             f.setUri(binaryUri);
         } catch (Exception e) {
             throw new RuntimeException("Error uploading resource " + contentResource + " to " + f.getId() +
