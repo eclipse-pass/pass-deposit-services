@@ -139,9 +139,13 @@ public class CriticalPath implements CriticalRepositoryInteraction {
             // 3. Verify that the state of the resource is what is expected from the caller.  If not, return indicating
             //    failure, with a copy of the resource.
 
-            if (!precondition.test(resource)) {
-                LOG.debug(">>>> Precondition for applying the critical path on resource {} failed.", resource.getId());
-                return new CriticalResult<>(null, resource, false);
+            try {
+                if (!precondition.test(resource)) {
+                    LOG.debug("Precondition for applying the critical path on resource {} failed.", resource.getId());
+                    return new CriticalResult<>(null, resource, false);
+                }
+            } catch (Exception e) {
+                return new CriticalResult<>(null, resource, false, e);
             }
 
             // 4.  Apply the critical update to the resource.
@@ -175,9 +179,13 @@ public class CriticalPath implements CriticalRepositoryInteraction {
             //    critical path rests entirely on the verification of this final state: the caller wants to know:
             //    "Did the update I perform result in the state I expected?"
 
-            if (!postcondition.test(resource, updateResult)) {
-                LOG.debug(">>>> Postcondition over resource {} and result {} failed.", resource.getId(), updateResult);
-                return new CriticalResult<>(updateResult, resource, false);
+            try {
+                if (!postcondition.test(resource, updateResult)) {
+                    LOG.debug("Postcondition over resource {} and result {} failed.", resource.getId(), updateResult);
+                    return new CriticalResult<>(updateResult, resource, false);
+                }
+            } catch (Exception e) {
+                return new CriticalResult<>(updateResult, resource, false, e);
             }
 
             cr = new CriticalResult<>(updateResult, resource, true);

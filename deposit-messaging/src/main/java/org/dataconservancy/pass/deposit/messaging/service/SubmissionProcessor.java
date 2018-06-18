@@ -41,7 +41,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -126,16 +125,16 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 },
                 (s, ds) -> {
                     if (s.getAggregatedDepositStatus() != IN_PROGRESS) {
-                        LOG.debug(">>>> Update postcondition(s) failed for {}: expected status '{}' but actual status is '{}'",
-                                s.getId(), IN_PROGRESS, s.getAggregatedDepositStatus());
-                        return false;
+                        String msg = "Update postcondition failed for %s: expected status '%s' but actual status is " +
+                                "'%s'";
+                        throw new IllegalStateException(String.format(msg, s.getId(), IN_PROGRESS, s
+                                .getAggregatedDepositStatus()));
                     }
 
                     if (ds.getFiles().size() < 1) {
-                        LOG.debug(">>>> Update postcondition(s) failed for {}: the DepositSubmission has no files " +
-                                        "attached! (Hint: check the incoming links to the Submission)",
-                                s.getId());
-                        return false;
+                        String msg = "Update postcondition failed for %s: the DepositSubmission has no files " +
+                                "attached! (Hint: check the incoming links to the Submission)";
+                        throw new IllegalStateException(String.format(msg, s.getId()));
                     }
 
                     return true;
@@ -152,16 +151,20 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 });
 
         if (!result.success()) {
-            result.throwable().ifPresent(t -> LOG.debug(">>>> Unable to update status of {} to '{}': {}",
+            result.throwable().ifPresent(t -> LOG.debug("Unable to update status of {} to '{}': {}",
                     submission.getId(), IN_PROGRESS, t.getMessage(), t));
 
             if (result.throwable().isPresent()) {
                 Throwable cause = result.throwable().get();
+                LOG.warn("Unable to update status of {} to '{}': {}",
+                        submission.getId(), IN_PROGRESS, cause.getMessage());
                 String msg = format("Unable to update status of %s to '%s': %s",
                         submission.getId(), IN_PROGRESS, cause.getMessage());
                 throw new DepositServiceRuntimeException(msg, cause, submission);
             }
 
+            LOG.warn("Unable to update status of {} to '{}': {}",
+                    submission.getId(), IN_PROGRESS, "(no throwable provided)");
             String msg = format("Unable to update status of %s to '%s'", submission.getId(), IN_PROGRESS);
             throw new DepositServiceRuntimeException(msg, submission);
         }
