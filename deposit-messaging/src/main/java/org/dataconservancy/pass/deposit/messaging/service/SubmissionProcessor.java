@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
@@ -124,10 +126,25 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                 .getAggregatedDepositStatus()));
                     }
 
+                    // Treat the lack of files on the Submission as a FAILURE, as that is not a transient issue
+                    // (that is, files will not magically appear on the Submission in the future).
+
                     if (ds.getFiles().size() < 1) {
                         String msg = "Update postcondition failed for %s: the DepositSubmission has no files " +
                                 "attached! (Hint: check the incoming links to the Submission)";
                         throw new IllegalStateException(String.format(msg, s.getId()));
+                    }
+
+                    // Each DepositFile must have a URI that links to its content
+                    String filesMissingLocations = ds.getFiles().stream()
+                            .filter(df -> df.getLocation() == null || df.getLocation().trim().length() == 0)
+                            .map(DepositFile::getName)
+                            .collect(Collectors.joining(", "));
+
+                    if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
+                        String msg = "Update postcondition failed for %s: the following DepositFiles are missing " +
+                                "URIs referencing their binary content: %s";
+                        throw new IllegalStateException(String.format(msg, s.getId(), filesMissingLocations));
                     }
 
                     return true;
