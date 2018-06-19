@@ -47,29 +47,30 @@ public class DepositServiceErrorHandler implements ErrorHandler {
 
     @Override
     public void handleError(Throwable t) {
-        if (!(t instanceof DepositServiceRuntimeException)) {
+        Throwable cause = t.getCause();
+        if (!(cause instanceof DepositServiceRuntimeException)) {
             LOG.error("Unrecoverable error: {}", t.getMessage(), t);
             return;
         }
 
-        DepositServiceRuntimeException e = (DepositServiceRuntimeException)t;
+        DepositServiceRuntimeException dsException = (DepositServiceRuntimeException)cause;
 
-        if (e.getResource() != null) {
-            if (e.getResource().getClass() == Deposit.class) {
-                LOG.error("Unrecoverable error, marking {} as FAILED", e.getResource().getId(), t);
-                DepositUtil.markDepositFailed(e.getResource().getId(), cri);
+        if (dsException.getResource() != null) {
+            if (dsException.getResource().getClass() == Deposit.class) {
+                LOG.error("Unrecoverable error, marking {} as FAILED", dsException.getResource().getId(), dsException);
+                DepositUtil.markDepositFailed(dsException.getResource().getId(), cri);
             }
 
-            if (e.getResource().getClass() == Submission.class) {
-                LOG.error("Unrecoverable error, marking {} as FAILED", e.getResource().getId(), t);
-                DepositUtil.markSubmissionFailed(e.getResource().getId(), cri);
+            if (dsException.getResource().getClass() == Submission.class) {
+                LOG.error("Unrecoverable error, marking {} as FAILED", dsException.getResource().getId(), dsException);
+                DepositUtil.markSubmissionFailed(dsException.getResource().getId(), cri);
             }
 
             return;
         }
 
         LOG.error("Unrecoverable error (note that {} is missing its PassEntity resource)",
-                    e.getClass().getName(), t);
+                    dsException.getClass().getName(), t);
 
     }
 }
