@@ -118,20 +118,19 @@ public class DepositTask implements Runnable {
                  * Determines *physical* success of the Deposit: were the bytes of the package successfully received?
                  */
                 (deposit, tr) -> {
-                    boolean success = deposit.getDepositStatus() == SUBMITTED;
-                    if (!success) {
-                        LOG.debug(">>>> Update postcondition failed for {} - expected status '{}' but actual status " +
+                    if (deposit.getDepositStatus() != SUBMITTED) {
+                        LOG.debug("Postcondition failed for {}.  Expected status '{}' but actual status " +
                                 "is '{}'", deposit.getId(), SUBMITTED, deposit.getDepositStatus());
+                        return false;
                     }
 
-                    success &= tr.success();
-
-                    if (!success) {
-                        LOG.debug(">>>> Update postcondition failed for {} - transport of package to endpoint " +
+                    if (!tr.success()) {
+                        LOG.debug("Postcondition failed for {}.  Transport of package to endpoint " +
                                 "failed: {}", deposit.getId(), tr.error().getMessage(), tr.error());
+                        return false;
                     }
 
-                    return success;
+                    return true;
                 },
 
                 /*
