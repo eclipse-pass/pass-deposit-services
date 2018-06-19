@@ -231,6 +231,8 @@ public class DepositConfig {
 
     @Bean
     public Map<String, Map<String, String>> transportRegistries(Environment env) {
+        LOG.debug("Loading Packager (a/k/a Transports) configuration from '{}'", transportResource);
+
         Properties properties = new Properties();
         try {
             properties.load(transportResource.getInputStream());
