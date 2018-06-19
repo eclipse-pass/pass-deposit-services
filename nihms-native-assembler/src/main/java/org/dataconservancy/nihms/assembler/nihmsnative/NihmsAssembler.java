@@ -60,13 +60,6 @@ public class NihmsAssembler extends AbstractAssembler {
         mb.compression(PackageStream.COMPRESSION.GZIP);
         mb.mimeType(APPLICATION_GZIP);
 
-        // Add manifest entry for metadata file
-        DepositFile metadataFile = new DepositFile();
-        metadataFile.setName(NihmsZippedPackageStream.METADATA_ENTRY_NAME);
-        metadataFile.setType(DepositFileType.bulksub_meta_xml);
-        metadataFile.setLabel("Metadata");
-        submission.getManifest().getFiles().add(metadataFile);
-
         NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
