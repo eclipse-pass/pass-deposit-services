@@ -42,6 +42,7 @@ import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 /**
@@ -255,7 +256,27 @@ public class DepositTask implements Runnable {
                     return true;
                 },
 
-                (deposit) -> terminalDepositStatusPolicy.accept(deposit.getDepositStatus()),
+                (deposit) -> {
+                    // As long as a Deposit is not FAILED, we are OK with the final result.
+                    //
+                    // A SWORD deposit may have taken longer than 10s (they are async, after all), so the Deposit
+                    // may be in the SUBMITTED state still.
+                    //
+                    // NIHMS FTP deposits will always be in the SUBMITTED state upon success, because there is no
+                    // way to determine the acceptability of the package simply by dropping it off at the FTP server
+                    //
+                    // So, the status of the Deposit might be REJECTED, ACCEPTED, or SUBMITTED, as long as it isn't
+                    // FAILED.
+                    if (terminalDepositStatusPolicy.accept(deposit.getDepositStatus()) ||
+                            deposit.getDepositStatus() == SUBMITTED) {
+                        return true;
+                    }
+
+                    LOG.debug("Postcondition for updating {} was not satisfied.  Expected " + "DepositDepositStatus " +
+                            "to be {}, {}, or {}, but was '{}'", ACCEPTED, REJECTED, SUBMITTED, deposit
+                            .getDepositStatus());
+                    return false;
+                },
 
                 (deposit) -> {
                     if (dc.repoCopy() != null) {
