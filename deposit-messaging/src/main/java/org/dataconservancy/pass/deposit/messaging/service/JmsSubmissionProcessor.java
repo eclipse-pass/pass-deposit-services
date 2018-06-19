@@ -33,7 +33,6 @@ import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.support.JmsHeaders;
 import org.springframework.messaging.Message;
@@ -71,7 +70,6 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * @param passUserSubmittedPolicy whether or not a {@code Submission} should be accepted for processing
      * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
      * @param submissionMessagePolicy whether or not a JMS message should be accepted for processing
-     * @param taskExecutor used to manage and execute deposits to remote repositories
      * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em>
      *                            status
      * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
@@ -82,13 +80,13 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                   Policy<Deposit.DepositStatus> dirtyDepositPolicy,
                                   Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                   JmsMessagePolicy submissionMessagePolicy,
-                                  TaskExecutor taskExecutor, DepositTaskHelper depositTaskHelper,
+                                  DepositTaskHelper depositTaskHelper,
                                   DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                   DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                   CriticalRepositoryInteraction critical) {
 
         super(passClient, jsonParser, submissionBuilder, packagerRegistry, passUserSubmittedPolicy,
-                dirtyDepositPolicy, submissionMessagePolicy, terminalDepositStatusPolicy, taskExecutor, depositTaskHelper, depositStatusMapper, atomStatusParser, critical);
+                dirtyDepositPolicy, submissionMessagePolicy, terminalDepositStatusPolicy, depositTaskHelper, depositStatusMapper, atomStatusParser, critical);
 
     }
 

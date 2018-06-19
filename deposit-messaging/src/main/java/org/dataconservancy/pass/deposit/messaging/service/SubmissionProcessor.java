@@ -37,7 +37,6 @@ import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -70,8 +69,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected JmsMessagePolicy messagePolicy;
 
-    protected TaskExecutor taskExecutor;
-
     protected DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper;
 
     protected DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
@@ -91,7 +88,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                                Policy<Deposit.DepositStatus> dirtyDepositPolicy,
                                JmsMessagePolicy submissionMessagePolicy,
                                Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
-                               TaskExecutor taskExecutor, DepositTaskHelper depositTaskHelper,
+                               DepositTaskHelper depositTaskHelper,
                                DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                CriticalRepositoryInteraction critical) {
@@ -102,7 +99,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
         this.messagePolicy = submissionMessagePolicy;
-        this.taskExecutor = taskExecutor;
         this.depositStatusMapper = depositStatusMapper;
         this.atomStatusParser = atomStatusParser;
         this.dirtyDepositPolicy = dirtyDepositPolicy;
