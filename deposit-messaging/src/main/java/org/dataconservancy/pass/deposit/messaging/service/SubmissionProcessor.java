@@ -161,8 +161,9 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 });
 
         if (!result.success()) {
-            result.throwable().ifPresent(t -> LOG.debug("Unable to update status of {} to '{}': {}",
-                    submission.getId(), IN_PROGRESS, t.getMessage(), t));
+
+            // If a throwable is present on the CriticalResult, re-throw it as a DepositServiceRuntimeException.
+            // The DepositServiceErrorHandler will pick up the exception and mark the Submission as FAILED.
 
             if (result.throwable().isPresent()) {
                 Throwable cause = result.throwable().get();
@@ -173,10 +174,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 throw new DepositServiceRuntimeException(msg, cause, submission);
             }
 
-            LOG.warn("Unable to update status of {} to '{}': {}",
-                    submission.getId(), IN_PROGRESS, "(no throwable provided)");
-            String msg = format("Unable to update status of %s to '%s'", submission.getId(), IN_PROGRESS);
-            throw new DepositServiceRuntimeException(msg, submission);
+            return;
         }
 
         Submission updatedS = result.resource().orElseThrow(() ->
