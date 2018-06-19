@@ -17,11 +17,14 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.File;
+import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toSet;
@@ -31,21 +34,35 @@ import static org.junit.Assert.assertNotNull;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionTestUtil {
+
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
-        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
-        return incoming.get("submission").stream().filter(uri -> {
-            try {
-                passClient.readResource(uri, Deposit.class);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        }).collect(toSet());
+        return getIncomingUris(submission, passClient, Deposit.class);
+    }
+
+    public static Collection<URI> getFileUris(Submission submission, PassClient passClient) {
+        return getIncomingUris(submission, passClient, File.class);
     }
 
     public static InputStream getSubmissionResources(String resource) {
         InputStream is = EmptySubmissionIT.class.getResourceAsStream(resource);
         assertNotNull("Unable to resolve classpath resource " + resource, is);
         return is;
+    }
+
+    private static Collection<URI> getIncomingUris(Submission submission, PassClient passClient,
+                                                   Class<? extends PassEntity> incomingResourceClass) {
+        Map<String, Collection<URI>> incoming = passClient.getIncoming(submission.getId());
+        if (!incoming.containsKey("submission")) {
+            return Collections.emptySet();
+        }
+
+        return incoming.get("submission").stream().filter(uri -> {
+            try {
+                passClient.readResource(uri, incomingResourceClass);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }).collect(toSet());
     }
 }
