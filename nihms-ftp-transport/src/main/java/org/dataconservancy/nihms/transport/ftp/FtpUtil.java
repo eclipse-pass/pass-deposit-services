@@ -201,15 +201,29 @@ public class FtpUtil {
             throw new RuntimeException("Unknown FTP file type '" + dataType + "'");
         }
 
+        boolean success = false;
+
         switch (type) {
             case ascii:
-                performSilently(ftpClient, () -> ftpClient.type(FTP.ASCII_FILE_TYPE));
+                try {
+                    success = ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error setting FTP file type to " + type, e);
+                }
                 break;
             case binary:
-                performSilently(ftpClient, () -> ftpClient.type(FTP.BINARY_FILE_TYPE));
+                try {
+                    success = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error setting FTP file type to " + type, e);
+                }
                 break;
             default:
                 throw new RuntimeException("Unsupported FTP file type '" + dataType + "'");
+        }
+
+        if (!success) {
+            throw new RuntimeException("Unable to set FTP file type to " + type);
         }
     }
 

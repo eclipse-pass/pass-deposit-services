@@ -216,8 +216,8 @@ public class FtpTransportSession implements TransportSession {
             }
             setPasv(ftpClient, true);
             setDataType(ftpClient, binary.name());
-            performSilently(ftpClient, ftpClient -> ftpClient.storeFile(finalFileName, content));
-            success.set(true);
+            boolean result = ftpClient.storeFile(finalFileName, content);
+            success.set(result);
             ftpReplyCode.set(ftpClient.getReplyCode());
             ftpReplyString.set(ftpClient.getReplyString());
         } catch (Exception e) {

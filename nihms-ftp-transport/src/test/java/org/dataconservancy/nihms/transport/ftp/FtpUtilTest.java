@@ -20,7 +20,9 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatcher;
 
 import java.io.IOException;
@@ -49,6 +51,9 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class FtpUtilTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private FTPClient ftpClient;
 
@@ -97,13 +102,11 @@ public class FtpUtilTest {
      */
     @Test
     public void setDataTypeBinarySuccess() throws IOException {
-        when(ftpClient.type(anyInt())).thenReturn(FTPReply.COMMAND_OK);
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
+        when(ftpClient.setFileType(FTP.BINARY_FILE_TYPE)).thenReturn(true);
 
         FtpUtil.setDataType(ftpClient, binary.name());
 
-        verify(ftpClient).type(eq(FTP.BINARY_FILE_TYPE));
-        verify(ftpClient).getReplyCode();
+        verify(ftpClient).setFileType(FTP.BINARY_FILE_TYPE);
     }
 
     /**
@@ -111,12 +114,16 @@ public class FtpUtilTest {
      *
      * @throws IOException
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void setDataTypeBinaryFail() throws IOException {
-        when(ftpClient.type(anyInt())).thenReturn(FTPReply.REQUEST_DENIED);
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.REQUEST_DENIED);
+        when(ftpClient.setFileType(anyInt())).thenReturn(false);
+
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage("Unable to set FTP file type to");
 
         FtpUtil.setDataType(ftpClient, binary.name());
+
+        verify(ftpClient).setFileType(anyInt());
     }
 
     /**
@@ -127,13 +134,11 @@ public class FtpUtilTest {
      */
     @Test
     public void setDataTypeAsciiSuccess() throws IOException {
-        when(ftpClient.type(anyInt())).thenReturn(FTPReply.COMMAND_OK);
-        when(ftpClient.getReplyCode()).thenReturn(FTPReply.COMMAND_OK);
+        when(ftpClient.setFileType(FTP.ASCII_FILE_TYPE)).thenReturn(true);
 
         FtpUtil.setDataType(ftpClient, ascii.name());
 
-        verify(ftpClient).type(eq(FTP.ASCII_FILE_TYPE));
-        verify(ftpClient).getReplyCode();
+        verify(ftpClient).setFileType(FTP.ASCII_FILE_TYPE);
     }
 
     /**
