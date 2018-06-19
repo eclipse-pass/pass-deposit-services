@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
