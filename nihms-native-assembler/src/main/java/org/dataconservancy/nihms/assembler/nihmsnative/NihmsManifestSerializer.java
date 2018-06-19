@@ -70,6 +70,12 @@ public class NihmsManifestSerializer implements StreamingSerializer{
             writer.write(name);
             writer.append("\n");
         }
+
+        // FIXME: Hack to include the bulk_meta.xml in the manifest if it wasn't included
+        if (manifest.getFiles().stream().noneMatch(df -> df.getType() == DepositFileType.bulksub_meta_xml)) {
+            includeBulkMetadataInManifest(writer, labelMaker);
+        }
+
         writer.close();
 
         byte[] bytes = os.toByteArray();
@@ -80,6 +86,14 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         } catch (IOException ioe) {
             throw new RuntimeException("Could not create Input Stream, or close Output Stream", ioe);
         }
+    }
+
+    protected static void includeBulkMetadataInManifest(PrintWriter writer, DepositFileLabelMaker labelMaker) {
+        writer.write(DepositFileType.bulksub_meta_xml.name());
+        writer.append("\t");
+        writer.write(labelMaker.getTypeUniqueLabel(DepositFileType.bulksub_meta_xml, "Submission Metadata"));
+        writer.append("\t");
+        writer.write(NihmsZippedPackageStream.METADATA_ENTRY_NAME);
     }
 
     /**
