@@ -23,10 +23,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setTransferMode;
 import static org.dataconservancy.nihms.transport.ftp.FtpUtil.setWorkingDirectory;
 
@@ -115,7 +118,11 @@ public class FtpTransport implements Transport {
         FtpUtil.connect(ftpClient, serverName, Integer.parseInt(serverPort));
         FtpUtil.login(ftpClient, hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD));
         setTransferMode(ftpClient, transferMode);
+
         if (baseDir != null && baseDir.trim().length() > 0) {
+            if (baseDir.contains("%s")) {
+                baseDir = String.format(baseDir, OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE));
+            }
             setWorkingDirectory(ftpClient, baseDir);
         }
 
