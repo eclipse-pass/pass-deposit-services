@@ -4,9 +4,6 @@ Deposit Services are responsible for the transfer of custodial content and metad
 
 Deposit Services is deployed as "back-end" infrastructure.  It has no user-facing elements.  In particular, Deposit Services is unaware of the internal/external duality of resource URIs.  This means that when looking at URIs in Deposit Services' logging output, some adjustment may be necessary for a developer or systems operator to retrieve the resource from their location in the network topology. 
 
-
- 
-
 ## Configuration
 
 The primary mechanism for configuring Deposit Services is through environment variables.  This aligns with the patterns used in development and production infrastructure which rely on Docker and its approach to runtime configuration.  Deposit Services relies on _existing_ variables common to the PASS infrastructure, and defines its own application-specific variables.
@@ -36,7 +33,9 @@ The primary mechanism for configuring Deposit Services is through environment va
 |`PASS_DEPOSIT_QUEUE_SUBMISSION_NAME`       |submission                                                                     |the name of the JMS queue that has messages pertaining to `Submission` resources (used by the `JmsSubmissionProcessor`)
 |`PASS_DEPOSIT_QUEUE_DEPOSIT_NAME`          |deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
 |`ACTIVEMQ_BROKER_URI`                      |`null`                                                                         |the publicly-supported (i.e. official PASS) variable for configuring the JMS broker URL.  used to compose the `SPRING_ACTIVEMQ_BROKER_URL`
-|`SPRING_ACTIVEMQ_BROKER_URL`               |${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker (under normal circumstances, this environment variable should never be set)
+|`SPRING_ACTIVEMQ_BROKER_URL`               |${activemq.broker.uri:tcp://${fcrepo.host:localhost}:${fcrepo.jms.port:61616}} |the internal variable for configuring the URI of the JMS broker
+|`SPRING_ACTIVEMQ_USER`                     |`null`                                                                         |User name to use when authenticating to the broker
+|`SPRING_ACTIVEMQ_PASSWORD`                 |`null`                                                                         |Password to use when authenticating to the broker
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=http://fcrepo:8080/fcrepo/rest`)
 
@@ -44,11 +43,11 @@ The primary mechanism for configuring Deposit Services is through environment va
 
 ### Packager (Transport) Configuration
 
-The `Packager` configuration contains the parameters used by the `Packager` for connecting to remote repositories (i.e. "transports").  Deposit Services comes with a default configuration, but a production environment may override the default, and tell Deposit Services the location of the new confguration.
+The Packager (a.k.a. Transport) configuration contains the parameters used for connecting to remote repositories.  Deposit Services comes with a default configuration, but a production environment will want to override the default.  Defaults are overridden by creating a copy of the default configuration, editing it to suit, and setting `PASS_DEPOSIT_TRANSPORT_CONFIGURATION` to point to the new location.
 
 #### Packager configuration format
 
-The format of the configuration file are Java properties, and the keys are prefixed by well-known values.  Each remote repository will have a prefix for its keys.  The _default_ configuration of Deposit Services is listed below.  There are two repositories supported, the NIH FTP server and the JScholarship DSpace instance.  Each repository has a unique prefix: `transport.nihms.deposit.transport` for the NIH, and `transport.js.deposit.transport` for DSpace:
+The format of the configuration file are Java properties, and the keys are prefixed by well-known values.  Each remote repository will have a prefix for its keys.  There are two repositories supported, the NIH FTP server and the JScholarship DSpace instance: `transport.nihms.deposit.transport` for the NIH, and `transport.js.deposit.transport` for DSpace.  The _default_ configuration of Deposit Services is listed below:
 
         transport.nihms.deposit.transport.authmode=userpass
         transport.nihms.deposit.transport.username=nihmsftpuser
@@ -74,11 +73,10 @@ The format of the configuration file are Java properties, and the keys are prefi
         transport.js.deposit.transport.protocol.swordv2.user-agent-string=pass-deposit/x.y.z 
 
 A few observations of this example configuration:
-* Deposit Services not provide _any_ default values to augment or complement the packager configuration, so when the default configuration is overridden, _all_ values must be represented in the new configuration, even if they remain unchanged from the default.
-* Environment variables / properties are allowed!  This means that a configuration can be parameterized, and environment variables used to provide key values (keys themselves cannot be parameterized with variables).
-* As the keys are well-known to Deposit Services, it is unlikely that the configuration would be overridden without a corresponding code update.
+* When the default configuration is overridden, _all_ values must be represented in the new configuration, even if they remain unchanged from the default.
+* Environment variables / properties are allowed in key values! Environment variables or properties may used to provide key values (keys themselves cannot use variables).
 
-#### Important configuration keys
+#### Important Packager keys
 
 A production deployment of Deposit Services is likely to provide updated values for the following keys:
 > Remember: if the default configuration is overridden, _all_ keys with their values must be in the new configuration, even if their value remains unchanged
@@ -100,6 +98,28 @@ A production deployment of Deposit Services is likely to provide updated values 
 
 To create your own configuration, copy and paste the default configuration into an empty file and modify the key values as described above.  The configuration _must_ be referenced by the `pass.deposit.transport.configuration` property, or is environment equivalent `PASS_DEPOSIT_TRANSPORT_CONFIGURATION`.  Allowed values are any Spring Resource path (e.g. `classpath:/`, `classpath*:`, `file:`, `http://`, `https://`).  For example, if your configuration is stored as a file in `/etc/deposit-services.cfg`, then you would set the environment variable `PASS_DEPOSIT_TRANSPORT_CONFIGURATION=file:/etc/deposit-services.cfg` prior to starting Deposit Services.  Likewise, if you kept the configuration accessible at a URL, you could use `PASS_DEPOSIT_TRANSPORT_CONFIGURATION=http://example.org/deposit-services.cfg`.
 
+## Failure Handling
+
+A "failed" `Deposit` or `Submission` has `Deposit.DepositStatus = FAILED` or `Submission.AggregateDepositStatus = FAILED`.  When a resource has been marked `FAILED`, Deposit Services will ignore any messages relating to the resource when in `listen` mode (see below for more information on modes).  Intervention (automated or manual) is required to update the failed resource.
+
+A resource will be considered as failed when errors occur during the processing of `Submission` and `Deposit` resources.  Some errors may be caused by transient network issues, or a server being rebooted, but for now Deposit Services does not contain any logic for retrying when there are low-level communication errors with an endpoint.
+
+`Submission` resources are failed when:
+1.  Failure to build the Deposit Services model for a Submission
+1.  There are no files attached to the Submission
+1.  Any file attached to the Submission is missing a location URI (the URI used to retrieve the bytes of the file).
+1.  An error occurs saving the state of the `Submission` in the repository (arguably a transient error, but DS does not perform any retries when there are errors communicating with the repository)
+
+See `SubmissionProcessor` for details.  Right now, when a `Submission` is failed, manual intervention is required.  Deposit Services does not provide any support for dealing with failed submissions.  It is likely the end-user will need to re-create the submission in the user interface, and resubmit it.
+
+`Deposit` resources are failed when:
+1. An error occurs building a package
+1. An error occurs streaming a package to a `Repository` (arguably transient)
+1. An error occurs polling (arguably transient, but DS does not perform retries) or parsing the status of a `Deposit`
+1. An error occurs saving the state of a `Deposit` in the repository (again, arguably transient, but DS doesn't perform retries when there are errors communicating with the repository)
+
+See `DepositTask` for details.  Deposits fail for transient reasons; a server being down, an interruption in network communication, or invalid credentials for the downstream repository are just a few examples.  Manual intervention is required to remediate failed deposits, but Deposit Services provides support for this case (see the `retry` mode documented below).
+
 ## Build and Deployment
 
 Deposit Services' primary artifact is a single self-executing jar.  The behavior, or "mode" of the deposit services application is directed by command line arguments and influenced by environment variables.  In the PASS infrastructure, the Deposit Services self-executing jar is deployed inside of a simple Docker container.
@@ -109,11 +129,11 @@ Deposit Services can be built by running:
 
 The main Deposit Services deployment artifact is found in `deposit-messaging/target/deposit-messaging-<version>.jar`.  It is this jarfile that is included in the Docker image for Deposit Services, and posted on the GitHub Release  page.
 
-### Supported modes
+## Supported modes
 
 The mode is a required command-line argument which directs the deposit services application to take a specific action.
 
-#### Listen
+### Listen
 
 Listen mode is the "primary" mode, if you will, of Deposit Services.  In `listen` mode Deposit Services responds to JMS messages from the Fedora repository by creating and transferring packages of custodial content to remote repositories. 
 
@@ -121,7 +141,7 @@ Listen mode is invoked by starting Deposit services with `listen` as the single 
 
 > $ java -jar deposit-services.jar listen
 
-Deposit Services will connect to a JMS broker specified by the environment variables `FCREPO_HOST` and `FCREPO_JMS_PORT`, and wait for the Fedora repository to be available as specified by `FCREPO_PORT`.  Notably, `listen` mode does not use the index.
+Deposit Services will connect to a JMS broker specified by the `SPRING_ACTIVEMQ_BROKER_URL` environment variable (optionally authenticating if `SPRING_ACTIVEMQ_USER` and `SPRING_ACTIVEMQ_PASSWORD` are present), and wait for the Fedora repository to be available as specified by `FCREPO_HOST` and `FCREPO_PORT`.  Notably, `listen` mode does not use the index.
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=http://fcrepo:8080/fcrepo/rest`)
 
@@ -132,6 +152,16 @@ After successfully connecting to the JMS broker and the Fedora repository, depos
 * recording the identities of content in destination repositories
 
 Incoming `Deposit` resources will be used to update the overall success or failure of a `Submission`.
+
+### Retry
+
+Retry mode is used to retry a `Deposit` that has failed.  Retry mode is invoked by starting Deposit services with `retry` as the first command-line argument, with an optional `--uris` argument, accepting a space-separated list of `Deposit` URIs to retry.  If no `--uris` argument is present, the index is searched for _all_ `Deposit` resources that have failed, and those are the deposits that are re-tried.
+
+To retry all failed deposits:
+> $ java -jar deposit-services.jar retry
+
+To retry specific deposits:
+> $ java -jar deposit-services.jar retry --uris http://192.168.99.100:8080/fcrepo/rest/deposits/8e/af/ac/a9/8eafaca9-1f24-413a-bf1e-fbbd673ba45b http://192.168.99.100:8080/fcrepo/rest/deposits/4a/cb/04/bb/4acb04bb-4f79-40ef-8ff9-e105261aa7fb
 
 ### Future modes
 
@@ -151,13 +181,19 @@ Deposit Services is implemented using Spring Boot, which heavily relies on Sprin
 
 The entrypoint into the deposit services is the `DepositApp`, which accepts command line parameters that set the "mode" of the deposit services runtime.  Spring beans are created entirely in Java code by the `DepositConfig`  and `JmsConfig` classes.
 
-## Listen mode
+## Runners
+
+### ListenerRunner
 
 The `listen` argument will invoke the `ListenerRunner`, which waits for the Fedora repository to be available, otherwise it shuts down the application.  Two JMS listeners are started that listen to the `submission` and `deposit` queues.  The `submission` queue provides messages relating to `Submission` resources, and the `deposit` queue provides messages relating to `Deposit` resources.  Deposit Services does not listen or act on messages for other types of repository resources.
 
 The `PASS_FEDORA_USERNAME` and `PASS_FEDORA_PASSWORD` define the username and password used to perform HTTP `Basic` authentication to the Fedora HTTP REST API (i.e. `PASS_FEDORA_BASEURL`).
 
-### Message flow and concurrency
+### FailedDepositRunner
+
+The `retry` argument invokes the `FailedDepositRunner` which will re-submit failed `Deposit` resources to the task queue for processing.  URIs for specific Deposits may be specified, otherwise the index is searched for failed Deposits, and each one will be re-tried. 
+
+## Message flow and concurrency
 
 Each JMS listener (one each for the `deposit` and `submission` queues) can process messages concurrently.  The number of messages each listener can process concurrently is set by the property `spring.jms.listener.concurrency` (or its environment equivalent: `SPRING_JMS_LISTENER_CONCURRENCY`).
 
@@ -165,7 +201,19 @@ The `submission` queue is processed by the `JmsSubmissionProcessor`,which resolv
 
 There is a thread pool of so-called "deposit workers" that perform the actual packaging and transport of custodial content to downstream repositories.  The size of the worker pool is determined by the property `pass.deposit.workers.concurrency` (or its environment equivalent: `PASS_DEPOSIT_WORKERS_CONCURRENCY`).  The deposit worker pool accepts instances of `DepositTask`, which contains the primary logic for packaging, streaming, and verifying the transfer of content from the PASS repository to downstream repositories.  The `DepositTask` will determine whether or not the transfer of custodial content has succeed, failed, or is indeterminable (i.e. an asyc deposit process that has not yet concluded).  The status of the `Deposit` resource associated with the `Submission` will be updated accordingly.  
 
-#### CriticalRepositoryInteraction
+## Common Abstractions and Patterns
+
+### Failure Handling
+
+Certain Spring sub-systems like Spring MVC, or Spring Messaging, support the notion of a "global" [`ErrorHandler`][2].  Deposit services provides an implementation **`DepositServicesErrorHandler`**, and it is used to catch exceptions thrown by the `JmsDepositProcessor`, `JmsSubmissionProcessor`, and is adapted as a [`Thread.UncaughtExceptionHandler`][3] and as a [`RejectedExecutionHandler`][4].
+
+Deposit services provides a `DepositServicesRuntimeException` (`DSRE` for short), which has a field `PassEntity resource`.  If the `DepositServicesErrorHandler` catches a `DSRE` with a non-`null` resource, the error handler will test the type of the resource, mark it as failed, and save it in the repository.
+
+The take-home point is: `Deposit` and `Submission` resources will be marked as failed if a `DepositServicesRuntimeException` is thrown from one of the JMS processors, or from the `DepositTask`.  As a developer, if an exceptional condition does **not** warrant a failure, then do not throw `DepositServicesRuntimeException`.  Instead, consider logging a warning or throwing a `DSRE` with a `null` resource.  Likewise, to fail a resource, all you need to do is throw a `DSRE` with a non-`null` resource.  The `DepositServicesErrorHandler` will do the rest.
+
+Finally, one last word.  Because the state of a resource can be modified at any time by any actor in the PASS infrastructure, the `DepositServicesErrorHandler` encapsulates the act of saving the failed state of a resource within a `CRI`.  A _pre-condition_ for updating the resource is that it must _not_ be in a _terminal_ state.  For example, if the error handler is updating the state from `SUBMITTED` to `FAILED`, but another actor has modified the state of the resource to `REJECTED` in the interim, the _pre-condition_ will fail.  It makes no sense to modify the state of a resource after it is in its _terminal_ state.  The take-home point is: the `DepositServicesErrorHandler` will not mark a resource as failed if it is in a _terminal_ state.
+
+### CriticalRepositoryInteraction
 
 A central, yet awkwardly-named, abstraction is `CriticalRepositoryInteraction`.  This interface is used to prevent interleaved updates of individual repository resources by different threads.  A `CriticalRepositoryInteraction` (`CRI` for short) isolates the execution of a `Function` on a specific repository resource, and provides the boilerplate (i.e. template) for retrieving and updating the state of the resource.  There are four main components to `CriticalRepositoryInteraction`: the repository resource itself, a _pre-condition_, _post-condition_, and the _critical_ update (i.e. the `Function` to be executed).  The only implementation of `CRI` is the class `CriticalPath`, and the particulars of that implementation are discussed below.
 
@@ -183,7 +231,7 @@ A central, yet awkwardly-named, abstraction is `CriticalRepositoryInteraction`. 
 
 6.  Finally, the _post-condition_ `BiPredicate` is executed.  It accepts the resource as updated and read by step 5, and the object returned by the critical update in step 4.  This determines the logical success or failure of the `CriticalPath`.  Steps 1 through 5 may have executed without error, but the _post-condition_ has final say of the overall success of the `CriticalPath`.  
   
-#### CriticalRepositoryInteraction Example
+### CriticalRepositoryInteraction Example
 
 Here is a real example of a `CRI` in action, used when packaging and depositing custodial content to a downstream repository.
 
@@ -247,13 +295,52 @@ After the `CriticalPath` executes, its `CriticalResult` can be examined for succ
                     }
                 });
 
+### Status
 
-### Transport Configuration
+Deposit services primarily acts on three types of resources: `Submission`, `Deposit`, and `RepositoryCopy`.  Each of these resources carries a status.  Managing and reacting to the values of resource status is a large part of what Deposit services does.
 
-### Status Mapping
+Abstractly, Deposit services considers the value of any status to be _intermediate_, or _terminal_.
+
+> It isn't clear, yet, whether this abstract notion of _intermediate_ and _terminal_ need to be shared amongst components of PASS.  If so, then certain classes and interfaces in the Deposit Services code base should be extracted out into a shared component.  
+
+The semantics of _terminal_ state are that the resource has been through a workflow of some kind, and has reached the end of that workflow.  Because the workflow has reached a terminus, no additional state is expected to be placed on the resource, and no existing state of the resource is expected to change.
+
+The semantics of _intermediate_ state are that the resource is currently in a workflow of some kind, and has yet to reach the end of that workflow.  Because the workflow has _not_ reached a terminus, the resource is expected to be modified at any time, until the _terminal_ state is achieved.
+
+A general pattern within Deposit services is that resources with _terminal_ status are explicitly accounted for (this is largely enforced by _policies_ which are documented elsewhere), and are considered "read-only".
+
+Submission status is enumerated in the `AggregatedDepositStatus` class.  Deposit services considers the following values:
+* `NOT_STARTED` (_intermediate_): Incoming Submissions from the UI must have this status value
+* `IN_PROGRESS` (_intermediate_): Deposit services places the Submission in an `IN_PROGRESS` state right away.  When a thread observes a `Submission` in this state, it assumes that _another_ thread is processing this resource.
+* `FAILED` (_intermediate_): Occurs when a non-recoverable error happens when processing the `Submission`
+* `ACCEPTED` (_terminal_): Deposit services places the Submission into this state when all of its `Deposit`s have been `ACCEPTED`
+* `REJECTED` (_terminal_): Deposit services places the Submission into this state when all of its `Deposit`s have been `REJECTED`
+
+Deposit status is enumerated in the `DepositStatus` class.  Deposit services considers the following values:
+*  `SUBMITTED` (_intermediate_): the custodial content of the `Submission` has been successfully transferred to the `Deposit`s `Repository`
+*  `ACCEPTED` (_terminal_): the custodial content of the `Submission` has been accessioned by the `Deposit`s `Repository` (i.e. custody of the `Submission` has successfully been transferred to the downstream `Repository`)
+*  `REJECTED` (_terminal_): the custodial content of the `Submission` has been rejected by the `Deposit`'s `Repository` (i.e. the downstream `Repository` has refused to accept custody of the `Submission` content)
+*  `FAILED` (_intermediate_): the transfer of custodial content to the `Repository` failed, or there was some other error updating the status of the `Deposit`
+
+RepositoryCopy status is enumerated in the `CopyStatus` class.  Deposit services considers the following values:
+* `COMPLETE` (_terminal_): a copy of the custodial content is available in the `Repository` at this location
+
+There are some common permutations of these statuses that will be observed:
+* `ACCEPTED` `Submission`s will only have `Deposit`s that are `ACCEPTED`.  Each `Deposit` will have a `COMPLETE` `RepositoryCopy`.
+* `REJECTED` `Submission`s will only have `Deposit`s that are `REJECTED`.  `REJECTED` `Deposit`s will not have any `RepositoryCopy` at all.
+* `IN_PROGRESS` `Submission`s may have zero or more `Deposit`s in any state.
+* `FAILED` `Submission`s should have zero `Deposit`s.
+* `ACCEPTED` `Deposit`s should have a `COMPLETE` `RepositoryCopy`.
+* `REJECTED` `Deposit`s will have no `RepositoryCopy`
+* `SUBMITTED` `Deposit`s will have no `RepositoryCopy`
+* `FAILED` `Deposit`s will have no `RepositoryCopy`
+
 
 ### Policies
 
 
 
 [1]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/spring-framework-reference/core.html#resources-implementations
+[2]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/javadoc-api/org/springframework/util/ErrorHandler.html
+[3]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.UncaughtExceptionHandler.html
+[4]: https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RejectedExecutionHandler.html
