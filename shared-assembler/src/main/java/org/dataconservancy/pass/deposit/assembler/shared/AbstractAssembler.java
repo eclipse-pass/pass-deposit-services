@@ -281,6 +281,11 @@ public abstract class AbstractAssembler implements Assembler {
             return true;
         }
 
+        // Allow period (0x2e), dash (0x2d), underscore (0x5f)
+        if (i == 0x002e || i == 0x002d || i == 0x005f) {
+            return true;
+        }
+
         // otherwise it's an illegal character inside of the latin-1 code block
         return false;
     }
