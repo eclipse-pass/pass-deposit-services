@@ -244,7 +244,16 @@ public class DepositTask implements Runnable {
 
         CriticalResult<RepositoryCopy, Deposit> finalResult = critical.performCritical(dc.deposit().getId(), Deposit.class,
 
-                (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.SUBMITTED,
+                (deposit) -> {
+                    if (deposit.getDepositStatus() != Deposit.DepositStatus.SUBMITTED) {
+                        LOG.debug("Precondition for updating {} was not satisfied.  Expected " +
+                                "Deposit.DepositStatus={}, but was {}",
+                                deposit.getId(), SUBMITTED, deposit.getDepositStatus());
+                        return false;
+                    }
+
+                    return true;
+                },
 
                 (deposit) -> terminalDepositStatusPolicy.accept(deposit.getDepositStatus()),
 
