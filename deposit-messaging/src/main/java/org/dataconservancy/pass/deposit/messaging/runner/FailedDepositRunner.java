@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.runner;
 
 import org.dataconservancy.nihms.builder.InvalidModel;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -39,6 +40,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper.MISSING_PACKAGER;
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.Indexer.DEPOSIT_STATUS;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
@@ -111,10 +113,21 @@ public class FailedDepositRunner {
 
                     CriticalRepositoryInteraction.CriticalResult<?, Deposit> cr =
                         cri.performCritical(deposit.getId(), Deposit.class,
+
+                            /*
+                             * This pre-condition insists that:
+                             *   1. The Deposit must have a FAILED or null DepositStatus
+                             *   2. A Packager must exist for the Repository associated with the Deposit
+                             *   3. The DepositSubmission must be built successfully from the original Submission
+                             *   4. That the DepositSubmission must carry files, and each file must have a location URI
+                             *
+                             * The failure to satisfy a pre-condition is *not* considered exceptional, and no action is
+                             * taken on the Deposit or any other repository resource if one fails.
+                             */
                             (d) -> {
                                 if (deposit.getDepositStatus() != FAILED && deposit.getDepositStatus() != null) {
-                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(), "Deposit status must equal 'null' or '" +
-                                            FAILED + "', but was '" + deposit.getDepositStatus() + "'");
+                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(), "Deposit status must equal 'null' " +
+                                            "or '" + FAILED + "', but was '" + deposit.getDepositStatus() + "'");
                                     return false;
                                 }
 
@@ -141,9 +154,27 @@ public class FailedDepositRunner {
                                     return false;
                                 }
 
+                                // Each DepositFile must have a URI that links to its content
+                                String filesMissingLocations = depositSubmission[0].getFiles().stream()
+                                        .filter(df -> df.getLocation() == null || df.getLocation().trim().length() == 0)
+                                        .map(DepositFile::getName)
+                                        .collect(Collectors.joining(", "));
+
+                                if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
+                                    String msg = "Update precondition failed for %s: the following DepositFiles are " +
+                                            "missing URIs referencing their binary content: %s";
+                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(),
+                                            format(msg, submission.getId(), filesMissingLocations));
+                                }
+
                                 return true;
                             },
 
+                            /*
+                             * The post condition does nothing, at least, it doesn't do anything right now.  In the
+                             * future, if the user wants to see the console in the foreground as things progress, this
+                             * post condition can track the progress of the retried Deposit.
+                             */
                             (d) -> true,
 
                             (d) -> {
