@@ -112,13 +112,10 @@ public class SubmissionProcessor implements Consumer<Submission> {
         // Mark the Submission as being IN_PROGRESS immediately.  If this fails, we've essentially lost a JMS message
 
         CriticalResult<DepositSubmission, Submission> result = critical.performCritical(submission.getId(), Submission.class,
-                (s) -> {
-                    boolean accepted = submissionPolicy.accept(s);
-                    if (!accepted) {
-                        LOG.debug(">>>> Update precondition(s) failed for {}", s.getId());
-                    }
-                    return accepted;
-                },
+
+                // PassUserSubmittedPolicy will log rejects
+                (s) -> submissionPolicy.accept(s),
+
                 (s, ds) -> {
                     if (s.getAggregatedDepositStatus() != IN_PROGRESS) {
                         String msg = "Update postcondition failed for %s: expected status '%s' but actual status is " +
