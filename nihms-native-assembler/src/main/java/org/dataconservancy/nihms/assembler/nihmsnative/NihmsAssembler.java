@@ -28,7 +28,13 @@ import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @Component
 public class NihmsAssembler extends AbstractAssembler {
@@ -43,6 +49,8 @@ public class NihmsAssembler extends AbstractAssembler {
      * Mime type of zip files.
      */
     public static final String APPLICATION_GZIP = "application/gzip";
+
+    private static final String PACKAGE_FILE_NAME = "%s_%s_%s";
 
     @Autowired
     public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
@@ -60,10 +68,54 @@ public class NihmsAssembler extends AbstractAssembler {
         mb.compression(PackageStream.COMPRESSION.GZIP);
         mb.mimeType(APPLICATION_GZIP);
 
+        namePackage(submission, mb);
+
         NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;
+    }
+
+    private static void namePackage(DepositSubmission submission, MetadataBuilder mb) {
+        String submissionUuid = null;
+
+        try {
+            URI submissionUri = URI.create(submission.getId());
+            submissionUuid = submissionUri.getPath().substring(submissionUri.getPath().lastIndexOf("/"));
+        } catch (Exception e) {
+            submissionUuid = UUID.randomUUID().toString();
+        }
+
+        String packageFileName = String.format(PACKAGE_FILE_NAME,
+                SPEC_NIHMS_NATIVE_2017_07,
+                OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE_TIME),
+                submissionUuid);
+
+        StringBuilder ext = new StringBuilder(packageFileName);
+        PackageStream.Metadata md = mb.build();
+        if (md.archived()) {
+            switch (md.archive()) {
+                case TAR:
+                    ext.append(".tar");
+                    break;
+                case ZIP:
+                    ext.append(".zip");
+                    break;
+            }
+        }
+
+        if (md.compressed()) {
+            switch (md.compression()) {
+                case BZIP2:
+                    ext.append(".bz2");
+                    break;
+                case GZIP:
+                    ext.append(".gzip");
+                    break;
+            }
+        }
+
+        mb.name(sanitizeFilename(ext.toString()));
     }
 
 }
