@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
+import static org.dataconservancy.pass.model.Submission.Source.PASS;
+
 /**
  * Accepts {@link Submission}s that are submitted by a user of the PASS UI.
  * <p>
@@ -50,27 +53,27 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
     public boolean accept(Submission submission) {
 
         if (submission == null) {
-            LOG.debug(">>>> Not accepting a null submission for processing.");
+            LOG.debug("Null submissions not accepted for processing.");
             return false;
         }
 
         if (submission.getSubmitted() != null && submission.getSubmitted() == Boolean.FALSE) {
-            LOG.debug(">>>> Submission {} will not be accepted for processing: submitted = {}",
+            LOG.debug("Submission {} will not be accepted for processing: submitted = {}, expected submitted = true",
                     submission.getId(), submission.getSubmitted());
             return false;
         }
 
-        if (submission.getSource() != Submission.Source.PASS) {
-            LOG.debug(">>>> Submission {} will not be accepted for processing: source = {}",
-                    submission.getId(), submission.getSource());
+        if (submission.getSource() != PASS) {
+            LOG.debug("Submission {} will not be accepted for processing: source = {}, expected source = {}",
+                    submission.getId(), submission.getSource(), PASS);
             return false;
         }
 
         // Currently we dis-allow FAILED Submissions; the SubmissionProcessor is not capable of "re-processing"
         // failures.
-        if (submission.getAggregatedDepositStatus() != Submission.AggregatedDepositStatus.NOT_STARTED) {
-            LOG.debug(">>>> Submission {} will not be accepted for processing: status = {}",
-                    submission.getId(), submission.getAggregatedDepositStatus());
+        if (submission.getAggregatedDepositStatus() != NOT_STARTED) {
+            LOG.debug("Submission {} will not be accepted for processing: status = {}, expected status = {}",
+                    submission.getId(), submission.getAggregatedDepositStatus(), NOT_STARTED);
             return false;
         }
 
