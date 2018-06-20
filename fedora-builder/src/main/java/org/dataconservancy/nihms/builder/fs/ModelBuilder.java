@@ -252,10 +252,14 @@ abstract class ModelBuilder {
         // Data from the Submission's Publication resource and its referenced Journal and Publisher resources
         Publication publicationEntity = (Publication)entities.get(submissionEntity.getPublication());
         manuscript.setTitle(publicationEntity.getTitle());
+        String doi = publicationEntity.getDoi();
         try {
-            article.setDoi(new URI(publicationEntity.getDoi()));
+            if (doi != null) {
+                doi = doi.trim();
+                article.setDoi(new URI(doi));
+            }
         } catch (URISyntaxException e) {
-            String msg = String.format("Data file '%s' contained an invalid URI.", publicationEntity.getDoi());
+            String msg = String.format("Submission contained an invalid DOI URI: %s", doi);
             throw new InvalidModel(msg, e);
         }
         // Available Publication data for which there is no place in the existing deposit model:
