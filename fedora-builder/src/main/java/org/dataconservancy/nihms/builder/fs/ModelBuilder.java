@@ -246,8 +246,7 @@ abstract class ModelBuilder {
 //        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
 
         // Data from the Submission's user resource
-        User userEntity = (User)entities.get(submissionEntity.getUser());
-        persons.add(createPerson(userEntity, true, true, false));
+//        User userEntity = (User)entities.get(submissionEntity.getUser());
 
         // Data from the Submission's Publication resource and its referenced Journal and Publisher resources
         Publication publicationEntity = (Publication)entities.get(submissionEntity.getPublication());
