@@ -18,23 +18,20 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
+import org.dataconservancy.pass.deposit.assembler.shared.Extension;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @Component
 public class NihmsAssembler extends AbstractAssembler {
@@ -76,7 +73,7 @@ public class NihmsAssembler extends AbstractAssembler {
         return stream;
     }
 
-    private static void namePackage(DepositSubmission submission, MetadataBuilder mb) {
+    static void namePackage(DepositSubmission submission, MetadataBuilder mb) {
         String submissionUuid = null;
 
         try {
@@ -88,7 +85,7 @@ public class NihmsAssembler extends AbstractAssembler {
 
         String packageFileName = String.format(PACKAGE_FILE_NAME,
                 SPEC_NIHMS_NATIVE_2017_07,
-                OffsetDateTime.now(ZoneId.of("UTC")).format(ISO_LOCAL_DATE_TIME),
+                ZonedDateTime.now().format(DateTimeFormatter.ofPattern("uuuu-MM-dd_HH-MM-ss")),
                 submissionUuid);
 
         StringBuilder ext = new StringBuilder(packageFileName);
@@ -96,10 +93,10 @@ public class NihmsAssembler extends AbstractAssembler {
         if (md.archived()) {
             switch (md.archive()) {
                 case TAR:
-                    ext.append(".tar");
+                    ext.append(".").append(Extension.TAR.getExt());
                     break;
                 case ZIP:
-                    ext.append(".zip");
+                    ext.append(".").append(Extension.ZIP.getExt());
                     break;
             }
         }
@@ -107,10 +104,10 @@ public class NihmsAssembler extends AbstractAssembler {
         if (md.compressed()) {
             switch (md.compression()) {
                 case BZIP2:
-                    ext.append(".bz2");
+                    ext.append(".").append(Extension.BZ2.getExt());
                     break;
                 case GZIP:
-                    ext.append(".gzip");
+                    ext.append(".").append(Extension.GZ.getExt());
                     break;
             }
         }
