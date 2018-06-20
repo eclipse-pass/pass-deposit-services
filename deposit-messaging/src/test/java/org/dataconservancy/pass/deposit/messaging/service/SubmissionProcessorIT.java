@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.junit.Test;
 
@@ -28,6 +29,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -67,6 +69,22 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                         depositUris.size() == submission.getRepositories().size() &&
                         depositUris.stream().allMatch(uri ->
                                 passClient.readResource(uri, Deposit.class).getDepositStatus() == ACCEPTED)));
+
+        // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository) then a non-null
+        // 'depositStatusRef' should be present
+
+        Repository dspaceRepo = submission.getRepositories().stream()
+                .map(uri -> (Repository)submissionResources.get(uri))
+                .filter(repo -> repo.getName().equals(EXPECTED_REPO_NAME))
+                .findAny().orElseThrow(() ->
+                        new RuntimeException("Missing expected Repository named '" + EXPECTED_REPO_NAME + "' for " + submission.getId()));
+
+        Collection<URI> depositUris = getDepositUris(submission, passClient);
+        Deposit dspaceDeposit = depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class))
+                .filter(deposit -> deposit.getRepository().toString().equals(dspaceRepo.getId().toString()))
+                .findAny().orElseThrow(() ->
+                        new RuntimeException("Missing Deposit for Repository '" + dspaceRepo.getName() + "', '" + dspaceRepo.getId() + "'"));
+        assertNotNull(dspaceDeposit.getDepositStatusRef());
 
         // 3. A RepositoryCopy created for each Deposit, with a copy status of 'COMPLETE'
 

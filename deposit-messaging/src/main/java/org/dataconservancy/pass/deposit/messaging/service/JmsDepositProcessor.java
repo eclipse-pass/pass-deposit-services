@@ -54,7 +54,9 @@ public class JmsDepositProcessor {
 
     private JmsMessagePolicy messagePolicy;
 
-    private Policy<Deposit.DepositStatus> terminalStatusPolicy;
+    private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+
+    private Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy;
 
     private JsonParser jsonParser;
 
@@ -64,10 +66,12 @@ public class JmsDepositProcessor {
 
     @Autowired
     public JmsDepositProcessor(@Qualifier("depositMessagePolicy") JmsMessagePolicy messagePolicy,
-                               @Qualifier("terminalDepositStatusPolicy") Policy<Deposit.DepositStatus> statusPolicy,
+                               Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
+                               Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
                                JsonParser jsonParser, CriticalRepositoryInteraction critical, PassClient passClient) {
         this.messagePolicy = messagePolicy;
-        this.terminalStatusPolicy = statusPolicy;
+        this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
+        this.terminalSubmissionStatusPolicy  = terminalSubmissionStatusPolicy;
         this.jsonParser = jsonParser;
         this.critical = critical;
         this.passClient = passClient;
@@ -101,7 +105,7 @@ public class JmsDepositProcessor {
 
             // If the status of the incoming Deposit is not terminal, then there's no point in continuing.
             // *All* Deposit resources for a Submission must be terminal before proceeding
-            if (! terminalStatusPolicy.accept(passClient.readResource(depositUri, Deposit.class).getDepositStatus())) {
+            if (! terminalDepositStatusPolicy.accept(passClient.readResource(depositUri, Deposit.class).getDepositStatus())) {
                 return;
             }
             submissionUri = passClient.readResource(depositUri, Deposit.class).getSubmission();
@@ -114,8 +118,20 @@ public class JmsDepositProcessor {
 
         // obtain a critical over the submission
         critical.performCritical(submissionUri, Submission.class,
+
+                /*
+                 * The Submission must not be in a terminal state in order for us to update its status
+                 */
+                (submission) -> !terminalSubmissionStatusPolicy.accept(submission.getAggregatedDepositStatus()),
+
+                /*
+                 * Any (or no) updates to the Submission are acceptable
+                 */
                 (submission) -> true,
-                (submission) -> true,
+
+                /*
+                 * Update the status of the Submission only if all of its Deposits are in a terminal state
+                 */
                 (submission) -> {
                     Collection<Deposit> deposits = passClient.getIncoming(submission.getId())
                         .getOrDefault("submission", Collections.emptySet()).stream()
@@ -137,7 +153,7 @@ public class JmsDepositProcessor {
                     // If all the statuses are terminal, then we can update the aggregated deposit status of
                     // the submission
                     if (deposits.stream().allMatch((deposit) ->
-                            terminalStatusPolicy.accept(deposit.getDepositStatus()))) {
+                            terminalDepositStatusPolicy.accept(deposit.getDepositStatus()))) {
                         if (deposits.stream().allMatch((deposit) -> deposit.getDepositStatus() == ACCEPTED)) {
                             submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.ACCEPTED);
                             LOG.trace(">>>> Updating {} aggregated deposit status to {}", submission.getId(), ACCEPTED);

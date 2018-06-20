@@ -21,6 +21,8 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
@@ -44,9 +47,14 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
 public abstract class AbstractSubmissionIT {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     protected static final String EXPECTED_REPO_NAME = "JScholarship";
 
     protected Submission submission;
+
+    protected Map<URI, PassEntity> submissionResources;
 
     @Autowired
     @Qualifier("submissionProcessor")
@@ -96,6 +104,9 @@ public abstract class AbstractSubmissionIT {
         assertTrue(submission.getRepositories().stream()
                 .map(uri -> (Repository)uriMap.get(uri))
                 .anyMatch(repo -> repo.getName().equals(EXPECTED_REPO_NAME)));
+
+
+        submissionResources = uriMap;
 
     }
 

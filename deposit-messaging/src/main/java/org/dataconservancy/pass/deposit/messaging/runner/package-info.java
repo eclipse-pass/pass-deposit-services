@@ -21,7 +21,7 @@
  * <em>intermediate</em> state, in an effort to determine their <em>terminal</em> state.
  * </p>
  * <p>
- * The {@link org.dataconservancy.pass.deposit.messaging.runner.DirtyDepositRunner} identifies and processes
+ * The {@link org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner} identifies and processes
  * <em>dirty</em> {@link org.dataconservancy.pass.model.Deposit}s by re-submitting the {@code Deposit} and its
  * associated {@code Submission} as a {@link org.dataconservancy.pass.deposit.messaging.service.DepositTask}.
  * </p>

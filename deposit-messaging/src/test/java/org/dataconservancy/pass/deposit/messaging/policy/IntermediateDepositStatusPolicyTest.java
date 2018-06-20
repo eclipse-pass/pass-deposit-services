@@ -45,8 +45,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testNullStatus() throws Exception {
-        assertFalse(underTest.accept(null));
-        verifyZeroInteractions(evaluator);
+        assertTrue(underTest.accept(null));
     }
 
     @Test
@@ -65,5 +64,14 @@ public class IntermediateDepositStatusPolicyTest {
 
         assertTrue(underTest.accept(terminal));
         verify(evaluator).isTerminal(terminal);
+    }
+
+    @Test
+    public void testFailedStatus() throws Exception {
+        Deposit.DepositStatus failed = Deposit.DepositStatus.FAILED;
+        when(evaluator.isTerminal(failed)).thenReturn(false);
+
+        assertTrue(underTest.accept(failed));
+        verify(evaluator).isTerminal(failed);
     }
 }

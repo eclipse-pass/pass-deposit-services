@@ -215,19 +215,19 @@ public abstract class BaseAssemblerIT {
 
         switch (stream.metadata().archive()) {
             case TAR:
-                ext.append(".tar");
+                ext.append(".").append(Extension.TAR.getExt());
                 break;
             case ZIP:
-                ext.append(".zip");
+                ext.append(".").append(Extension.ZIP.getExt());
                 break;
         }
 
         switch (stream.metadata().compression()) {
             case GZIP:
-                ext.append(".gz");
+                ext.append(".").append(Extension.GZ.getExt());
                 break;
             case BZIP2:
-                ext.append(".bzip");
+                ext.append(".").append(Extension.BZ2.getExt());
                 break;
         }
 

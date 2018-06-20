@@ -16,28 +16,35 @@
 package org.dataconservancy.pass.deposit.messaging.policy;
 
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
-import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Submission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Accepts {@code DepositStatus} that represents an <em>intermediate</em> deposit status.  A {@code null} {@code
- * DepositStatus} is considered <em>intermediate</em>.
- *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
-public class IntermediateDepositStatusPolicy implements Policy<Deposit.DepositStatus> {
+public class TerminalSubmissionStatusPolicy implements Policy<Submission.AggregatedDepositStatus> {
 
-    private StatusEvaluator<Deposit.DepositStatus> statusEvaluator;
+    private StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator;
 
     @Autowired
-    public IntermediateDepositStatusPolicy(StatusEvaluator<Deposit.DepositStatus> statusEvaluator) {
-        this.statusEvaluator = statusEvaluator;
+    public TerminalSubmissionStatusPolicy(StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
+        this.submissionStatusEvaluator = submissionStatusEvaluator;
     }
 
+    /**
+     * Return {@code true} if the supplied {@code status} is considered <em>terminal</em>.
+     * <p>
+     * <strong>N.B.</strong> {@code null} <em>is not</em> considered terminal.
+     * </p>
+     *
+     * @param status the Submission status
+     * @return true if the status is <em>terminal</em>
+     */
     @Override
-    public boolean accept(Deposit.DepositStatus o) {
-        return o == null || !statusEvaluator.isTerminal(o);
+    public boolean accept(Submission.AggregatedDepositStatus status) {
+        return status != null && submissionStatusEvaluator.isTerminal(status);
     }
+
 }

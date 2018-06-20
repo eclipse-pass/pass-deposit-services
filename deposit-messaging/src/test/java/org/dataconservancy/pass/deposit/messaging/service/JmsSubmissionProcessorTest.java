@@ -29,7 +29,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -76,8 +75,7 @@ public class JmsSubmissionProcessorTest extends AbstractSubmissionProcessorTest 
         critical = mock(CriticalRepositoryInteraction.class);
 
         underTest = new JmsSubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, dirtyDepositPolicy, messagePolicy, taskExecutor, dspaceStatusMapper,
-                atomStatusParser, critical);
+                submissionPolicy, dirtyDepositPolicy, terminalDepositStatusPolicy, messagePolicy, depositTaskHelper, dspaceStatusMapper, atomStatusParser, critical);
     }
 
     /**

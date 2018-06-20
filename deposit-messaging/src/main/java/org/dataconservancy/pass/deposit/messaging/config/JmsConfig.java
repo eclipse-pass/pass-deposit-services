@@ -15,8 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config;
 
+import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.stereotype.Component;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.Session;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -24,4 +31,21 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableJms
 public class JmsConfig {
+
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(DepositServiceErrorHandler errorHandler,
+                                                                          @Value("${spring.jms.listener.concurrency}")
+                                                                          String concurrency,
+                                                                          @Value("${spring.jms.listener.auto-startup}")
+                                                                          boolean autoStart,
+                                                                          ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
+        factory.setErrorHandler(errorHandler);
+        factory.setConcurrency(concurrency);
+        factory.setConnectionFactory(connectionFactory);
+        factory.setAutoStartup(autoStart);
+        return factory;
+    }
+
 }

@@ -30,12 +30,9 @@ import org.dataconservancy.pass.deposit.messaging.support.Constants;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.support.JmsHeaders;
 import org.springframework.messaging.Message;
@@ -70,26 +67,26 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * @param submissionBuilder used to build a {@link DepositSubmission} from a {@code Submission}
      * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote
      *                         repositories
-     * @param submissionPolicy whether or not a {@code Submission} should be accepted for processing
+     * @param passUserSubmittedPolicy whether or not a {@code Submission} should be accepted for processing
      * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
-     * @param messagePolicy whether or not a JMS message should be accepted for processing
-     * @param taskExecutor used to manage and execute deposits to remote repositories
+     * @param submissionMessagePolicy whether or not a JMS message should be accepted for processing
      * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em>
      *                            status
      * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
     public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
                                   Registry<Packager> packagerRegistry,
-                                  @Qualifier("passUserSubmittedPolicy") SubmissionPolicy submissionPolicy,
+                                  SubmissionPolicy passUserSubmittedPolicy,
                                   Policy<Deposit.DepositStatus> dirtyDepositPolicy,
-                                  @Qualifier("submissionMessagePolicy") JmsMessagePolicy messagePolicy,
-                                  TaskExecutor taskExecutor,
+                                  Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
+                                  JmsMessagePolicy submissionMessagePolicy,
+                                  DepositTaskHelper depositTaskHelper,
                                   DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
                                   DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                   CriticalRepositoryInteraction critical) {
 
-        super(passClient, jsonParser, submissionBuilder, packagerRegistry, submissionPolicy,
-                dirtyDepositPolicy, messagePolicy, taskExecutor, depositStatusMapper, atomStatusParser, critical);
+        super(passClient, jsonParser, submissionBuilder, packagerRegistry, passUserSubmittedPolicy,
+                dirtyDepositPolicy, submissionMessagePolicy, terminalDepositStatusPolicy, depositTaskHelper, depositStatusMapper, atomStatusParser, critical);
 
     }
 

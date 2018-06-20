@@ -107,7 +107,7 @@ public interface CriticalRepositoryInteraction {
      * @param <R> the type of the result returned by {@code critical}
      * @return a {@code CriticalResult} recording the success or failure of the interaction, and any results.
      */
-    <T extends PassEntity, R> CriticalResult<R, T> performCritical(
+    <R, T extends PassEntity> CriticalResult<R, T> performCritical(
             URI uri, Class<T> clazz, Predicate<T> precondition, Predicate<T> postcondition, Function<T, R> critical);
 
     /**
@@ -128,7 +128,7 @@ public interface CriticalRepositoryInteraction {
      * @param <R> the type of the result returned by {@code critical}
      * @return a {@code CriticalResult} recording the success or failure of the interaction, and any results.
      */
-    <T extends PassEntity, R> CriticalResult<R, T> performCritical(
+    <R, T extends PassEntity> CriticalResult<R, T> performCritical(
             URI uri, Class<T> clazz, Predicate<T> precondition, BiPredicate<T, R> postcondition, Function<T, R> critical);
 
     /**

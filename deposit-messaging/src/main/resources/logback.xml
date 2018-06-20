@@ -25,7 +25,7 @@
   <root level="WARN">
     <appender-ref ref="STDERR"/>
   </root>
-  <logger name="org.springframework" additivity="false" level="WARN">
+  <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
@@ -35,6 +35,26 @@
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.config" additivity="false"
+          level="${org.dataconservancy.pass.deposit.config.level:-DEBUG}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.service.JmsSubmissionProcessor" additivity="false"
+          level="${org.dataconservancy.pass.deposit.jms.submission.level:-DEBUG}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.service.JmsDepositProcessor" additivity="false"
+          level="${org.dataconservancy.pass.deposit.jms.deposit.level:-DEBUG}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
+  <logger name="org.dataconservancy.pass.deposit.messaging.policy" additivity="false"
+          level="${org.dataconservancy.pass.deposit.policy.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 </configuration>

@@ -66,9 +66,10 @@ public class DefaultConflictHandler implements ConflictHandler {
         try {
             toUpdate = passClient.readResource(conflictedResource.getId(), resourceClass);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Update retry failed for %s (version %s): Unable to " +
-                    "successfully re-read the latest version of the resource when retrying: %s",
-                    conflictedResource.getId(), conflictedResource.getVersionTag(), e.getMessage()), e);
+            String msg = String.format("Update retry failed for %s (version %s): Unable to successfully re-read the " +
+                            "latest version of the resource when retrying: %s", conflictedResource.getId(),
+                    conflictedResource.getVersionTag(), e.getMessage());
+            LOG.info(msg, e);
         }
 
         try {
@@ -82,10 +83,11 @@ public class DefaultConflictHandler implements ConflictHandler {
             passClient.updateResource(toUpdate);
             return toReturn;
         } catch (Exception e) {
-            String msg = String.format("Update retry failed for %s (version %s to %s): %s",
-                    conflictedResource.getId(), conflictedResource.getVersionTag(), toUpdate.getVersionTag(),
-                    e.getMessage());
-            throw new RuntimeException(msg, e);
+            String msg = String.format("Update retry failed for %s (version %s to %s)",
+                    conflictedResource.getId(), conflictedResource.getVersionTag(), toUpdate.getVersionTag());
+            LOG.info(msg, e);
         }
+
+        return null;
     }
 }

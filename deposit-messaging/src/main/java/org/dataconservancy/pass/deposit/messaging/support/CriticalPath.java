@@ -79,7 +79,7 @@ public class CriticalPath implements CriticalRepositoryInteraction {
      *         any exception thrown, and the overall success as determined by the post-condition
      */
     @Override
-    public <T extends PassEntity, R> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
+    public <R, T extends PassEntity> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
                                                                           Predicate<T> precondition,
                                                                           Predicate<T> postcondition,
                                                                           Function<T, R> critical) {
@@ -116,7 +116,7 @@ public class CriticalPath implements CriticalRepositoryInteraction {
      *         any exception thrown, and the overall success as determined by the post-condition
      */
     @Override
-    public <T extends PassEntity, R> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
+    public <R, T extends PassEntity> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
                                                                           Predicate<T> precondition,
                                                                           BiPredicate<T, R> postcondition,
                                                                           Function<T, R> critical) {
@@ -139,9 +139,13 @@ public class CriticalPath implements CriticalRepositoryInteraction {
             // 3. Verify that the state of the resource is what is expected from the caller.  If not, return indicating
             //    failure, with a copy of the resource.
 
-            if (!precondition.test(resource)) {
-                LOG.debug(">>>> Precondition for applying the critical path on resource {} failed.", resource.getId());
-                return new CriticalResult<>(null, resource, false);
+            try {
+                if (!precondition.test(resource)) {
+                    LOG.debug("Precondition for applying the critical path on resource {} failed.", resource.getId());
+                    return new CriticalResult<>(null, resource, false);
+                }
+            } catch (Exception e) {
+                return new CriticalResult<>(null, resource, false, e);
             }
 
             // 4.  Apply the critical update to the resource.
@@ -164,6 +168,15 @@ public class CriticalPath implements CriticalRepositoryInteraction {
                     // If the ConflictHandler is successful, the resource with its updated state is returned
                     // (presumably a merge of the state in the repository with the state from the critical function)
                     updateResult = conflictHandler.handleConflict(resource, clazz, precondition, critical);
+
+                    if (updateResult == null) {
+                        // Do not include the exception on the CriticalResult, because a UpdateConflictException is not
+                        // a reason to fail a Submission or Deposit (another thread may successfully process the update)
+                        return new CriticalResult<>(null, resource, false);
+                    }
+
+                    // Get the latest version of the resource after the conflict has been resolved
+                    resource = passClient.readResource(resource.getId(), (Class<T>)resource.getClass());
                 } catch (Exception handlerE) {
                     return new CriticalResult<>(updateResult, resource, false, handlerE);
                 }
@@ -175,9 +188,13 @@ public class CriticalPath implements CriticalRepositoryInteraction {
             //    critical path rests entirely on the verification of this final state: the caller wants to know:
             //    "Did the update I perform result in the state I expected?"
 
-            if (!postcondition.test(resource, updateResult)) {
-                LOG.debug(">>>> Postcondition over resource {} and result {} failed.", resource.getId(), updateResult);
-                return new CriticalResult<>(updateResult, resource, false);
+            try {
+                if (!postcondition.test(resource, updateResult)) {
+                    LOG.debug("Postcondition over resource {} and result {} failed.", resource.getId(), updateResult);
+                    return new CriticalResult<>(updateResult, resource, false);
+                }
+            } catch (Exception e) {
+                return new CriticalResult<>(updateResult, resource, false, e);
             }
 
             cr = new CriticalResult<>(updateResult, resource, true);

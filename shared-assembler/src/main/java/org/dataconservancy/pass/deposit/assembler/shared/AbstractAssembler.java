@@ -29,6 +29,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -147,8 +148,43 @@ public abstract class AbstractAssembler implements Assembler {
         return manifest
                 .stream()
                 .map(DepositFileResource::new)
-                .peek(depositFileRes -> {
-                    String location = depositFileRes.getDepositFile().getLocation();
+                .peek(dfr -> {
+                    try {
+                        LOG.trace("Processing DepositFileResource:" +
+                                "\n\t{}: '{}'" +
+                                "\n\t\t{}: '{}'" +
+                                "\n\t{}: '{}'" +
+                                "\n\t\t{}: '{}'" +
+                                "\n\t\t{}: '{}'" +
+                                "\n\t\t{}: '{}'" +
+                                "\n\t\t{}: '{}'",
+                                "resource", dfr.getResource(),
+                                "resource.URI", dfr.getResource() != null ? dfr.getResource().getURI() : null,
+                                "depositFile", dfr.getDepositFile(),
+                                "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
+                                "depositFile.label", dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
+                                "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
+                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
+                    } catch (IOException e) {
+                        LOG.trace("Processing DepositFileResource:" +
+                                        "\n\t{}: '{}'" +
+                                        "\n\t\t{}: '{}'" +
+                                        "\n\t{}: '{}'" +
+                                        "\n\t\t{}: '{}'" +
+                                        "\n\t\t{}: '{}'" +
+                                        "\n\t\t{}: '{}'" +
+                                        "\n\t\t{}: '{}'",
+                                "resource", dfr.getResource(),
+                                "resource.URI", dfr.getResource() != null ? "Error getting URI: " + e.getMessage() : null,
+                                "depositFile", dfr.getDepositFile(),
+                                "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
+                                "depositFile.label", dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
+                                "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
+                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
+                    }
+                })
+                .peek(dfr -> {
+                    String location = dfr.getDepositFile().getLocation();
                     Resource delegateResource = null;
 
                     if (location.startsWith(FILE_PREFIX)) {
@@ -190,7 +226,7 @@ public abstract class AbstractAssembler implements Assembler {
                         throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
                     }
 
-                    depositFileRes.setResource(delegateResource);
+                    dfr.setResource(delegateResource);
 
                 })
                 .collect(Collectors.toList());

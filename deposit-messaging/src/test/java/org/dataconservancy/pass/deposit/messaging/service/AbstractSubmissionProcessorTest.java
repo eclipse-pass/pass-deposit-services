@@ -28,7 +28,6 @@ import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatu
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
 import org.junit.Before;
 import org.springframework.core.task.TaskExecutor;
 
@@ -53,6 +52,8 @@ public abstract class AbstractSubmissionProcessorTest {
 
     Policy<Deposit.DepositStatus> dirtyDepositPolicy;
 
+    Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+
     JmsMessagePolicy messagePolicy;
 
     TaskExecutor taskExecutor;
@@ -61,7 +62,9 @@ public abstract class AbstractSubmissionProcessorTest {
 
     DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
 
-    CriticalRepositoryInteraction critical;
+    CriticalRepositoryInteraction cri;
+
+    DepositTaskHelper depositTaskHelper;
 
     @Before
     @SuppressWarnings("unchecked")
@@ -76,7 +79,10 @@ public abstract class AbstractSubmissionProcessorTest {
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
         atomStatusParser = mock(DepositStatusParser.class);
-        critical = mock(CriticalRepositoryInteraction.class);
+        cri = mock(CriticalRepositoryInteraction.class);
+        terminalDepositStatusPolicy = mock(Policy.class);
+        depositTaskHelper = new DepositTaskHelper(passClient, packagerRegistry, taskExecutor, dspaceStatusMapper,
+                atomStatusParser, dirtyDepositPolicy, terminalDepositStatusPolicy, cri);
     }
     
 }

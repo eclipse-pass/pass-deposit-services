@@ -66,6 +66,20 @@
                 <postgres.skip>true</postgres.skip>
             </properties>
         </profile>
+        <profile>
+            <id>standard</id>
+            <activation>
+                <property>
+                    <name>standard</name>
+                </property>
+            </activation>
+            <properties>
+                <fcrepo.http.port>8080</fcrepo.http.port>
+                <fcrepo.jms.port>61616</fcrepo.jms.port>
+                <dspace.port>8181</dspace.port>
+                <postgres.port>6543</postgres.port>
+            </properties>
+        </profile>
     </profiles>
 
     <properties>

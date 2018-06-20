@@ -15,11 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import afu.org.checkerframework.checker.igj.qual.I;
-import org.junit.Ignore;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.junit.Test;
 
 import java.io.InputStream;
+
+import static org.hamcrest.CoreMatchers.isA;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -34,18 +35,14 @@ public class EmptySubmissionIT extends AbstractSubmissionIT {
     }
 
     @Test
-    @Ignore("TODO: Implement test when failure handling is properly implemented by SubmissionProcessor.")
     public void submissionWithNoFiles() throws Exception {
+
+        thrown.expect(DepositServiceRuntimeException.class);
+        thrown.expectCause(isA(IllegalStateException.class));
+        thrown.expectMessage("no files attached");
 
         // This submission should fail off the bat because there's no files in the submission.
         underTest.accept(submission);
-
-        // We should observe a Submission with a status of FAILURE, no Deposits created, nor any RepositoryCopies
-        // created.
-
-        // The problem is that the failure handling for Submissions is inadequate at this point, and so Submissions
-        // are not yet marked as FAILED when this happens.  This will happen in a future PR.
-
-        // TODO: Implement test
     }
+
 }
