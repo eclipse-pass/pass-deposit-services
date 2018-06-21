@@ -42,7 +42,7 @@ public class DepositMetadata {
     }
 
     /**
-     * Journal type: electronic or print
+     * Person type: identifies person's role as submitter, PI/co-PI or author
      */
     public enum PERSON_TYPE {
         /**
@@ -286,7 +286,7 @@ public class DepositMetadata {
     }
 
     /**
-     * Persons associated with the submission, and their roles
+     * A Person associated with the submission, their names and role
      */
     public static class Person {
 
@@ -301,7 +301,7 @@ public class DepositMetadata {
         public String email;
 
         /**
-         * Role for this entry for this person (multiple entries allowed per person)
+         * The role for this person.  People with multiple roles are represented with multiple Person objects.
          */
         public PERSON_TYPE type;
 
@@ -315,8 +315,12 @@ public class DepositMetadata {
             this.setType(otherPerson.getType());
         }
 
-        // If "full name" has been set it will be returned,
-        // otherwise a combination of first/middle/last names will be returned.
+        /**
+         * Returns the "total" name for the person, regardless of how that name was supplied.
+         * If a "full" name (single string) was supplied, it will be returned.
+         * Othewise, a name will be constructed from the supplied first/middle/last names.
+         * @return the complete name for the person, or empty string if none assigned.
+         */
         public String getName() {
             if (getFullName() != null) {
                 return getFullName();
@@ -330,10 +334,18 @@ public class DepositMetadata {
             return "";
         }
 
+        /**
+         * Returns the supplied "full" name string for the person.
+         * @return the supplied name string or null if none assigned.
+         */
         public String getFullName() {
             return fullName;
         }
 
+        /**
+         * Stores a single string containing the person's entire name.
+         * @param fullName the person's entire name
+         */
         public void setFullName(String fullName) {
             this.fullName = fullName;
         }

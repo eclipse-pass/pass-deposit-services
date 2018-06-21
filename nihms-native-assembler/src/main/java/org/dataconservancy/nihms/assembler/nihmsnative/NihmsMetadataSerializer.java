@@ -157,8 +157,9 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                         }
                         //primitive types
                         writer.addAttribute("corrpi", booleanConvert(true));
-                        // Searching for other Persons who match this one and who are a PI or AUTHOR
-                        // would be difficult due to name variations, so do not output those attributes.
+                        writer.addAttribute("pi", booleanConvert(true));
+                        // Searching for another Person who matches this one and who is an AUTHOR
+                        // would be difficult due to name variations, so do not output that attribute.
                         writer.endNode(); // end person
                         break; // Make sure we only write one person to the metadata
                     }
