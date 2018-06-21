@@ -16,14 +16,10 @@
 
 package org.dataconservancy.nihms.builder.fs;
 
+import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Publication;
@@ -31,14 +27,23 @@ import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 public class FilesystemModelBuilderTest {
 
@@ -48,6 +53,7 @@ public class FilesystemModelBuilderTest {
     private String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
     private String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
     private String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
+    private String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
 
     @Before
     public void setup() throws Exception{
@@ -161,5 +167,26 @@ public class FilesystemModelBuilderTest {
         assertNotNull(doi);
         assertFalse(doi.toString().startsWith(" "));
         assertFalse(doi.toString().endsWith(" "));
+    }
+
+    @Test
+    public void buildWithTableAndFigure() throws Exception {
+        // Create submission data from sample data file with table and figure files
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNotNull(submission.getFiles());
+        assertEquals(4, submission.getFiles().size());
+        List<DepositFileType> types = new ArrayList<>();
+        for (DepositFile file : submission.getFiles()) {
+            types.add(file.getType());
+        }
+
+        assertTrue(types.contains(DepositFileType.figure));
+        assertTrue(types.contains(DepositFileType.supplement));
+        assertTrue(types.contains(DepositFileType.table));
+        assertTrue(types.contains(DepositFileType.manuscript));
     }
 }

@@ -257,6 +257,18 @@ public abstract class BaseAssemblerIT {
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
+            } else if (fileName.endsWith(".tif") || fileName.endsWith(".png") || fileName.endsWith(".jpg")) {
+                try {
+                    custodialContentWithTypes.put(resource.getFile(), DepositFileType.figure);
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            } else if (fileName.endsWith(".ods")) {
+                try {
+                    custodialContentWithTypes.put(resource.getFile(), DepositFileType.table);
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
             } else {
                 try {
                     custodialContentWithTypes.put(resource.getFile(), DepositFileType.supplement);
