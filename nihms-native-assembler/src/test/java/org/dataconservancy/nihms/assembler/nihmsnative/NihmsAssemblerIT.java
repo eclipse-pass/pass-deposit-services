@@ -19,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositMetadata.Person;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
@@ -191,20 +192,15 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             Person asPerson = new Person();
             asPerson.setFirstName(element.getAttribute("fname"));
             asPerson.setLastName(element.getAttribute("lname"));
-            asPerson.setAuthor("yes".equals(element.getAttribute("author")));
-            asPerson.setCorrespondingPi("yes".equals(element.getAttribute("corrpi")));
-            asPerson.setPi("yes".equals(element.getAttribute("pi")));
+            asPerson.setType(DepositMetadata.PERSON_TYPE.submitter);
             return asPerson;
         }).collect(Collectors.toList());
 
         // Insure that the Person in the metadata matches a Person on the Submission, and that the person is a corresponding pi
         asPersons.stream().forEach(person -> {
             assertTrue(submission.getMetadata().getPersons().stream().anyMatch(candidate ->
-                    candidate.getFirstName().equals(person.getFirstName()) &&
-                    candidate.getLastName().equals(person.getLastName()) &&
-                    candidate.isAuthor() == person.isAuthor() &&
-                    candidate.isPi() == person.isPi() &&
-                    candidate.isCorrespondingPi() == person.isCorrespondingPi()));
+                    candidate.getName().equals(person.getName()) &&
+                    candidate.getType() == person.getType()));
         });
 
         // Assert that the DOI is present in the metadata

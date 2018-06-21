@@ -64,16 +64,13 @@ import java.util.Optional;
 abstract class ModelBuilder {
 
     // Creates a DepositMetadata person with the person's context passed as parameters.
-    // Note that callers currently protect against adding a person twice (as both an author and PI).
-    private DepositMetadata.Person createPerson(User userEntity, boolean isPi, boolean isCoPI, boolean isAuthor) {
+    private DepositMetadata.Person createPerson(User userEntity, DepositMetadata.PERSON_TYPE type) {
         DepositMetadata.Person person = new DepositMetadata.Person();
         person.setFirstName(userEntity.getFirstName());
         person.setMiddleName(userEntity.getMiddleName());
         person.setLastName(userEntity.getLastName());
         person.setEmail(userEntity.getEmail());
-        person.setPi(isPi);
-        person.setCorrespondingPi(isCoPI);
-        person.setAuthor(isAuthor);
+        person.setType(type);
         // Available User data for which there is no place in the existing DepositMetadata.Person:
         // Leave commented out until this metadata is to be used.  Protect against NPEs.
 //        String username = userEntity.getUsername();
@@ -85,6 +82,14 @@ abstract class ModelBuilder {
 //        for (User.Role role : userEntity.getRoles()) {
 //        }
 
+        return person;
+    }
+
+    // Creates a Person representing an author with the given name.
+    private DepositMetadata.Person createAuthor(String fullName) {
+        DepositMetadata.Person person = new DepositMetadata.Person();
+        person.setFullName(fullName);
+        person.setType(DepositMetadata.PERSON_TYPE.author);
         return person;
     }
 
@@ -139,12 +144,13 @@ abstract class ModelBuilder {
         });
 
         // Leave commented out until this metadata is to be used.  Protect against NPEs.
-//        JsonArray authors = submissionData.get("authors").getAsJsonArray();
-//        for (JsonElement element : authors) {
-//            JsonObject author = element.getAsJsonObject();
-//            String name = getStringProperty(author, "author");
-//            String orcid = getStringProperty(author, "orcid");
-//        }
+        JsonArray authors = submissionData.get("authors").getAsJsonArray();
+        for (JsonElement element : authors) {
+            JsonObject author = element.getAsJsonObject();
+            getStringProperty(author, "author")
+                    .ifPresent(name -> metadata.getPersons().add(createAuthor(name)));
+            // String orcid = getStringProperty(author, "orcid");
+        }
     }
 
     private void processNihMetadata(DepositMetadata metadata, JsonObject submissionData) {
@@ -246,7 +252,8 @@ abstract class ModelBuilder {
 //        Submission.AggregatedDepositStatus status = submissionEntity.getAggregatedDepositStatus();
 
         // Data from the Submission's user resource
-//        User userEntity = (User)entities.get(submissionEntity.getUser());
+        User userEntity = (User)entities.get(submissionEntity.getUser());
+        persons.add(createPerson(userEntity, DepositMetadata.PERSON_TYPE.submitter));
 
         // Data from the Submission's Publication resource and its referenced Journal and Publisher resources
         Publication publicationEntity = (Publication)entities.get(submissionEntity.getPublication());
@@ -344,10 +351,10 @@ abstract class ModelBuilder {
 
             // Data from the User resources for the PI and CoPIs
             User piEntity = (User)entities.get(grantEntity.getPi());
-            persons.add(createPerson(piEntity, true, false, false));
+            persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
             for (URI copiUri : grantEntity.getCoPis()) {
                 User copiEntity = (User)entities.get(copiUri);
-                persons.add(createPerson(copiEntity, true, false, false));
+                persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
             }
         }
 

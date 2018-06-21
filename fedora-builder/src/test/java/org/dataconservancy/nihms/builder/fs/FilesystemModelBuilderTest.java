@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 
 public class FilesystemModelBuilderTest {
 
@@ -97,6 +98,31 @@ public class FilesystemModelBuilderTest {
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
         assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
 
+        List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
+        int authors = 0;
+        int pis = 0;
+        int copis = 0;
+        int submitters = 0;
+        for (DepositMetadata.Person person : persons) {
+            switch (person.getType()) {
+                case author:
+                    authors++;
+                    break;
+                case pi:
+                    pis++;
+                    break;
+                case copi:
+                    copis++;
+                    break;
+                case submitter:
+                    submitters++;
+                    break;
+            }
+        }
+        assertEquals(1, submitters);
+        assertEquals(1, pis);
+        assertEquals(1, copis);
+        assertEquals(6, authors);
     }
 
     @Test

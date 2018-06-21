@@ -74,43 +74,40 @@ public class NihmsMetadataSerializerTest {
 
         //populate persons
         DepositMetadata.Person person1 = new DepositMetadata.Person();
-        person1.setAuthor(true);
-        person1.setCorrespondingPi(false);
+        person1.setType(DepositMetadata.PERSON_TYPE.author);
         person1.setEmail("person@farm.com");
         person1.setFirstName("Bessie");
         person1.setLastName("Cow");
         person1.setMiddleName("The");
-        person1.setPi(true);
+        personList.add(person1);
+
+        // Enter the first person twice, as both an author and a PI
+        DepositMetadata.Person person1a = new DepositMetadata.Person(person1);
+        person1.setType(DepositMetadata.PERSON_TYPE.pi);
         personList.add(person1);
 
         DepositMetadata.Person person2 = new DepositMetadata.Person();
-        person2.setAuthor(false);
-        person2.setCorrespondingPi(true);
+        person2.setType(DepositMetadata.PERSON_TYPE.submitter);
         person2.setEmail("person@farm.com");
         person2.setFirstName("Elsie");
         person2.setLastName("Cow");
         person2.setMiddleName("The");
-        person2.setPi(false);
         personList.add(person2);
 
         DepositMetadata.Person person3 = new DepositMetadata.Person();
-        person3.setAuthor(false);
-        person3.setCorrespondingPi(false);
+        person3.setType(DepositMetadata.PERSON_TYPE.author);
         person3.setEmail("person@farm.com");
         person3.setFirstName("Mark");
         person3.setLastName("Cow");
         person3.setMiddleName("The");
-        person3.setPi(false);
         personList.add(person3);
 
         DepositMetadata.Person person4 = new DepositMetadata.Person();
-        person4.setAuthor(false);
-        person4.setCorrespondingPi(false);
+        person4.setType(DepositMetadata.PERSON_TYPE.copi);
         person4.setEmail("person@farm.com");
         person4.setFirstName("John");
         person4.setLastName("Cow");
         person4.setMiddleName("The");
-        person4.setPi(true);
         personList.add(person4);
 
         metadata.setJournalMetadata(journal);

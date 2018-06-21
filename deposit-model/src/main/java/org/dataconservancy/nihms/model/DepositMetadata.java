@@ -42,6 +42,31 @@ public class DepositMetadata {
     }
 
     /**
+     * Journal type: electronic or print
+     */
+    public enum PERSON_TYPE {
+        /**
+         * submitter (from Submission)
+         */
+        submitter,
+
+        /**
+         * co-PI (from Grant)
+         */
+        pi,
+
+        /**
+         * co-PI (from Grant)
+         */
+        copi,
+
+        /**
+         * author (from submission metadata)
+         */
+        author,
+    }
+
+    /**
      * Metadata describing the manuscript
      */
     private Manuscript manuscriptMetadata;
@@ -265,6 +290,8 @@ public class DepositMetadata {
      */
     public static class Person {
 
+        public String fullName;
+
         public String firstName;
 
         public String middleName;
@@ -274,16 +301,42 @@ public class DepositMetadata {
         public String email;
 
         /**
-         * Principle Investigator (i.e. NIHMS "funding provider")
+         * Role for this entry for this person (multiple entries allowed per person)
          */
-        public boolean pi;
+        public PERSON_TYPE type;
 
-        /**
-         * NIHMS "Reviewer"
-         */
-        public boolean correspondingPi;
+        public Person() {}
 
-        public boolean author;
+        public Person(Person otherPerson) {
+            this.setFullName(otherPerson.getFullName());
+            this.setFirstName(otherPerson.getFirstName());
+            this.setMiddleName(otherPerson.getMiddleName());
+            this.setLastName(otherPerson.getLastName());
+            this.setType(otherPerson.getType());
+        }
+
+        // If "full name" has been set it will be returned,
+        // otherwise a combination of first/middle/last names will be returned.
+        public String getName() {
+            if (getFullName() != null) {
+                return getFullName();
+            } else if (getFirstName() != null && getLastName() != null) {
+                if (getMiddleName() != null) {
+                    return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName());
+                } else {
+                    return String.format("%s %s", getFirstName(), getLastName());
+                }
+            }
+            return "";
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
 
         public String getFirstName() {
             return firstName;
@@ -317,28 +370,12 @@ public class DepositMetadata {
             this.email = email;
         }
 
-        public boolean isPi() {
-            return pi;
+        public PERSON_TYPE getType() {
+            return type;
         }
 
-        public void setPi(boolean pi) {
-            this.pi = pi;
-        }
-
-        public boolean isCorrespondingPi() {
-            return correspondingPi;
-        }
-
-        public void setCorrespondingPi(boolean correspondingPi) {
-            this.correspondingPi = correspondingPi;
-        }
-
-        public boolean isAuthor() {
-            return author;
-        }
-
-        public void setAuthor(boolean author) {
-            this.author = author;
+        public void setType(PERSON_TYPE type) {
+            this.type = type;
         }
     }
 
