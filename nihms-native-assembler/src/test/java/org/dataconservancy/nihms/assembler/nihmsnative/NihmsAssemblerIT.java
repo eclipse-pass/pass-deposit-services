@@ -204,8 +204,12 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         });
 
         // Assert that the DOI is present in the metadata
-        Element ms = (Element) asList(root.getElementsByTagName("manuscript")).get(0);
+        Element ms = asList(root.getElementsByTagName("manuscript")).get(0);
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), ms.getAttribute("doi"));
+
+        // Assert that the ISSN is present in the metadata as the <issn> element
+        Element issn = asList(root.getElementsByTagName("issn")).get(0);
+        assertEquals(submission.getMetadata().getJournalMetadata().getIssn(), issn.getTextContent());
     }
 
     private static boolean isNullOrEmpty(String s) {

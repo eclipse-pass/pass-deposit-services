@@ -47,13 +47,33 @@ import java.util.List;
 
 public class FilesystemModelBuilderTest {
 
+    private static final String EXPECTED_TITLE = "The Analyst";
+
+    private static final String EXPECTED_ISSN = "0003-2654,1364-5528";
+
+    private static final String EXPECTED_DOI = "10.1039/c7an01617d";
+
+    private static final int EXPECTED_SUBMITER_COUNT = 1;
+
+    private static final int EXPECTED_PI_COUNT = 1;
+
+    private static final int EXPECTED_CO_PI_COUNT = 1;
+
+    private static final int EXPECTED_AUTHOR_COUNT = 5;
+
     private DepositSubmission submission;
+
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
-    private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
 
     @Before
     public void setup() throws Exception{
@@ -89,20 +109,18 @@ public class FilesystemModelBuilderTest {
         assertNotNull(submission.getMetadata().getPersons());
 
         assertEquals(submission.getId(), submissionEntity.getId().toString());
-        Publication publication = (Publication)entities.get(submissionEntity.getPublication());
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
+        assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
         assertEquals(2, submission.getFiles().size());
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
-        assertEquals("Food Funct.", journalMetadata.getJournalTitle());
-        assertEquals("TD452689", journalMetadata.getJournalId());
-        assertEquals("2042-6496,2042-650X", journalMetadata.getIssn());
+        assertEquals(EXPECTED_TITLE, journalMetadata.getJournalTitle());
+        assertEquals(EXPECTED_ISSN, journalMetadata.getIssn());
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
-        assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
+        assertNull(manuscriptMetadata.getManuscriptUrl());
 
         List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
         int authors = 0;
@@ -125,10 +143,10 @@ public class FilesystemModelBuilderTest {
                     break;
             }
         }
-        assertEquals(1, submitters);
-        assertEquals(1, pis);
-        assertEquals(1, copis);
-        assertEquals(6, authors);
+        assertEquals(EXPECTED_SUBMITER_COUNT, submitters);
+        assertEquals(EXPECTED_PI_COUNT, pis);
+        assertEquals(EXPECTED_CO_PI_COUNT, copis);
+        assertEquals(EXPECTED_AUTHOR_COUNT, authors);
     }
 
     @Test
@@ -139,8 +157,8 @@ public class FilesystemModelBuilderTest {
         submission = underTest.build(sampleDataUrl.getPath());
 
         assertNotNull(submission);
+        assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
         assertNull(submission.getMetadata().getManuscriptMetadata().getMsAbstract());
-        assertNull(submission.getMetadata().getManuscriptMetadata().getManuscriptUrl());
     }
 
     @Test
