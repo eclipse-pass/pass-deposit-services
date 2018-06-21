@@ -42,6 +42,31 @@ public class DepositMetadata {
     }
 
     /**
+     * Person type: identifies person's role as submitter, PI/co-PI or author
+     */
+    public enum PERSON_TYPE {
+        /**
+         * submitter (from Submission)
+         */
+        submitter,
+
+        /**
+         * co-PI (from Grant)
+         */
+        pi,
+
+        /**
+         * co-PI (from Grant)
+         */
+        copi,
+
+        /**
+         * author (from submission metadata)
+         */
+        author,
+    }
+
+    /**
      * Metadata describing the manuscript
      */
     private Manuscript manuscriptMetadata;
@@ -261,9 +286,11 @@ public class DepositMetadata {
     }
 
     /**
-     * Persons associated with the submission, and their roles
+     * A Person associated with the submission, their names and role
      */
     public static class Person {
+
+        public String fullName;
 
         public String firstName;
 
@@ -274,16 +301,54 @@ public class DepositMetadata {
         public String email;
 
         /**
-         * Principle Investigator (i.e. NIHMS "funding provider")
+         * The role for this person.  People with multiple roles are represented with multiple Person objects.
          */
-        public boolean pi;
+        public PERSON_TYPE type;
+
+        public Person() {}
+
+        public Person(Person otherPerson) {
+            this.setFullName(otherPerson.getFullName());
+            this.setFirstName(otherPerson.getFirstName());
+            this.setMiddleName(otherPerson.getMiddleName());
+            this.setLastName(otherPerson.getLastName());
+            this.setType(otherPerson.getType());
+        }
 
         /**
-         * NIHMS "Reviewer"
+         * Returns the "total" name for the person, regardless of how that name was supplied.
+         * If a "full" name (single string) was supplied, it will be returned.
+         * Othewise, a name will be constructed from the supplied first/middle/last names.
+         * @return the complete name for the person, or empty string if none assigned.
          */
-        public boolean correspondingPi;
+        public String getName() {
+            if (getFullName() != null) {
+                return getFullName();
+            } else if (getFirstName() != null && getLastName() != null) {
+                if (getMiddleName() != null) {
+                    return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName());
+                } else {
+                    return String.format("%s %s", getFirstName(), getLastName());
+                }
+            }
+            return "";
+        }
 
-        public boolean author;
+        /**
+         * Returns the supplied "full" name string for the person.
+         * @return the supplied name string or null if none assigned.
+         */
+        public String getFullName() {
+            return fullName;
+        }
+
+        /**
+         * Stores a single string containing the person's entire name.
+         * @param fullName the person's entire name
+         */
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
 
         public String getFirstName() {
             return firstName;
@@ -317,28 +382,12 @@ public class DepositMetadata {
             this.email = email;
         }
 
-        public boolean isPi() {
-            return pi;
+        public PERSON_TYPE getType() {
+            return type;
         }
 
-        public void setPi(boolean pi) {
-            this.pi = pi;
-        }
-
-        public boolean isCorrespondingPi() {
-            return correspondingPi;
-        }
-
-        public void setCorrespondingPi(boolean correspondingPi) {
-            this.correspondingPi = correspondingPi;
-        }
-
-        public boolean isAuthor() {
-            return author;
-        }
-
-        public void setAuthor(boolean author) {
-            this.author = author;
+        public void setType(PERSON_TYPE type) {
+            this.type = type;
         }
     }
 

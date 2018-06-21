@@ -387,11 +387,18 @@ public class DspaceMetadataDomWriterTest {
     @Test
     public void testCreateDublinCoreMetadata() throws Exception {
         DepositMetadata.Person person1 = mock(DepositMetadata.Person.class);
-        when(person1.getFirstName()).thenReturn("Jane");
-        when(person1.getLastName()).thenReturn("Doe");
+        when(person1.getName()).thenReturn("Jane Doe");
+        when(person1.getType()).thenReturn(DepositMetadata.PERSON_TYPE.author);
+
         DepositMetadata.Person person2 = mock(DepositMetadata.Person.class);
-        when(person2.getFirstName()).thenReturn("John");
-        when(person2.getLastName()).thenReturn("Doe");
+        when(person2.getName()).thenReturn("John Doe");
+        when(person2.getType()).thenReturn(DepositMetadata.PERSON_TYPE.pi);
+
+        // Submitter - should not show up in metadata's contributor list
+        DepositMetadata.Person person3 = mock(DepositMetadata.Person.class);
+        when(person3.getName()).thenReturn("John Q Public");
+        when(person3.getType()).thenReturn(DepositMetadata.PERSON_TYPE.submitter);
+
         DepositMetadata md = mock(DepositMetadata.class);
         DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
         String msAbs = "This is the manuscript abstract";

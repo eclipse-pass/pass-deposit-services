@@ -319,17 +319,12 @@ public class DspaceMetadataDomWriter {
         DepositMetadata.Article articleMd = nimsMd.getArticleMetadata();
 
         nimsMd.getPersons().forEach(p -> {
-            Element contributor = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CONTRIBUTOR));
-            if (p.getFirstName() != null && p.getLastName() != null) {
-                if (p.getMiddleName() != null) {
-                    contributor.setTextContent(String.format("%s %s %s", p.getFirstName(), p.getMiddleName(), p
-                            .getLastName()));
-                } else {
-                    contributor.setTextContent(String.format("%s %s", p.getFirstName(), p.getLastName()));
-                }
+            // Only include authors, PIs and CoPIs as contributors
+            if (p.getType() != DepositMetadata.PERSON_TYPE.submitter) {
+                Element contributor = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CONTRIBUTOR));
+                contributor.setTextContent(p.getName());
+                record.appendChild(contributor);
             }
-
-            record.appendChild(contributor);
         });
 
         // Attach a <dc:title> for the Manuscript title

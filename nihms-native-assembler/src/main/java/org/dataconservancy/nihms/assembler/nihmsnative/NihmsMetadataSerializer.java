@@ -141,7 +141,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                 writer.startNode("contacts");
                 for (DepositMetadata.Person person : persons){
                     // There should be exactly one corresponding PI per deposit.
-                    if (person.isCorrespondingPi()) {
+                    if (person.getType() == DepositMetadata.PERSON_TYPE.submitter) {
                         writer.startNode("person");
                         if (person.getFirstName() != null) {
                             writer.addAttribute("fname", person.getFirstName());
@@ -156,9 +156,10 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                             writer.addAttribute("email", person.getEmail());
                         }
                         //primitive types
-                        writer.addAttribute("pi", booleanConvert(person.isPi()));
-                        writer.addAttribute("corrpi", booleanConvert(person.isCorrespondingPi()));
-                        // Author status is not known from Submission data and is optional, so do not include it.
+                        writer.addAttribute("corrpi", booleanConvert(true));
+                        writer.addAttribute("pi", booleanConvert(true));
+                        // Searching for another Person who matches this one and who is an AUTHOR
+                        // would be difficult due to name variations, so do not output that attribute.
                         writer.endNode(); // end person
                         break; // Make sure we only write one person to the metadata
                     }
