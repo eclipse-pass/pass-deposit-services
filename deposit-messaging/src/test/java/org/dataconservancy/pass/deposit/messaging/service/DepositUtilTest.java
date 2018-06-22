@@ -108,6 +108,7 @@ public class DepositUtilTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void toMessageContext() throws Exception {
         String rType = "resource_type";
         String eType = "event_type";

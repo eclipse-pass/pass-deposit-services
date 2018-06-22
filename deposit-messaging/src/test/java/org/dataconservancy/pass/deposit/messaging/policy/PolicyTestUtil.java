@@ -36,6 +36,7 @@ public class PolicyTestUtil {
         return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType, String
             messageBodyResource) throws IOException {
         DepositUtil.MessageContext mc = mock(DepositUtil.MessageContext.class);

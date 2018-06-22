@@ -158,6 +158,7 @@ public class DepositUtil {
      * @param jmsMessage the message, in the native JMS model
      * @return an Object with references to the context of an incoming JMS message
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static MessageContext toMessageContext(String resourceType, String eventType, long timestamp, String id, Session
             session, Message message, javax.jms.Message jmsMessage) {
         MessageContext mc = new MessageContext();

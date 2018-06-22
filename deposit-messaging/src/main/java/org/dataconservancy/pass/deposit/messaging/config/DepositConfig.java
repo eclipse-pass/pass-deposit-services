@@ -36,6 +36,7 @@ import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
+import org.dataconservancy.pass.deposit.messaging.status.AbderaDepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
@@ -212,11 +213,13 @@ public class DepositConfig {
     @Bean
     public Map<String, Packager> packagers(DspaceMetsAssembler dspaceAssembler, Sword2Transport swordTransport,
                                            NihmsAssembler nihmsAssembler, FtpTransport ftpTransport,
-                                           Map<String, Map<String, String>> transportRegistries) {
+                                           Map<String, Map<String, String>> transportRegistries,
+                                           AbderaDepositStatusRefProcessor abderaDepositStatusRefProcessor) {
         Map<String, Packager> packagers = new HashMap<>();
         // TODO: transport registries looked up by hard-coded strings.  Need a more reliable way of discovering repositories, the packagers for those repositories, and their configuration
         packagers.put("JScholarship",
-                new Packager("JScholarship", dspaceAssembler, swordTransport, transportRegistries.get("js")));
+                new Packager("JScholarship", dspaceAssembler, swordTransport, transportRegistries.get("js"),
+                        abderaDepositStatusRefProcessor));
         packagers.put("PubMed Central",
                 new Packager("PubMed Central", nihmsAssembler, ftpTransport, transportRegistries.get("nihms")));
         return packagers;

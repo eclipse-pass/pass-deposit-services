@@ -38,7 +38,7 @@ public class SwordDspaceDepositStatusMapper extends AbstractStatusMapper<SwordDs
      * Maps a {@link SwordDspaceDepositStatus} to a {@link org.dataconservancy.pass.model.Deposit.DepositStatus}
      *
      * @param statusToMap the SWORD deposit status
-     * @return the corresponding PASS deposit status
+     * @return the corresponding PASS deposit status, may be {@code null}
      */
     @Override
     public Deposit.DepositStatus map(SwordDspaceDepositStatus statusToMap) {

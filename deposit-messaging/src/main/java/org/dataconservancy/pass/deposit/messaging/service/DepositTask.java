@@ -22,19 +22,18 @@ import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -42,7 +41,6 @@ import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 /**
@@ -67,33 +65,28 @@ public class DepositTask implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositTask.class);
 
-    private DepositUtil.DepositWorkerContext dc;
+    private DepositWorkerContext dc;
 
     private PassClient passClient;
 
-    private DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
-
-    private DepositStatusMapper<SwordDspaceDepositStatus> swordDepositStatusMapper;
-
     private Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
 
-    private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
+    private CriticalRepositoryInteraction cri;
 
-    private CriticalRepositoryInteraction critical;
+    private DepositTaskHelper depositHelper;
 
-    public DepositTask(DepositUtil.DepositWorkerContext dc, PassClient passClient,
-                       DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
-                       DepositStatusMapper<SwordDspaceDepositStatus> swordDepositStatusMapper,
+    private long swordSleepTimeMs = 10000;
+
+    public DepositTask(DepositWorkerContext dc,
+                       PassClient passClient,
                        Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
-                       Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
-                       CriticalRepositoryInteraction critical) {
+                       CriticalRepositoryInteraction cri,
+                       DepositTaskHelper depositHelper) {
         this.dc = dc;
         this.passClient = passClient;
-        this.atomStatusParser = atomStatusParser;
-        this.swordDepositStatusMapper = swordDepositStatusMapper;
         this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
-        this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
-        this.critical = critical;
+        this.cri = cri;
+        this.depositHelper = depositHelper;
     }
 
     @Override
@@ -101,7 +94,7 @@ public class DepositTask implements Runnable {
 
         LOG.debug(">>>> Running {}@{}", DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
 
-        CriticalResult<TransportResponse, Deposit> result = critical.performCritical(dc.deposit().getId(), Deposit.class,
+        CriticalResult<TransportResponse, Deposit> result = cri.performCritical(dc.deposit().getId(), Deposit.class,
 
                 /*
                  * Only "intermediate" deposits can be processed by {@code DepositTask}
@@ -192,24 +185,26 @@ public class DepositTask implements Runnable {
             // TODO: abstract out a configurable timer.
             // Sleep here for a bit, let DSpace do its thing, and then we ought to be able to parse a deposit status
             try {
-                LOG.debug(">>>> Sleeping 10 seconds for SWORD deposit to complete ...");
-                Thread.sleep(10000);
+                LOG.debug(">>>> Sleeping {} ms for SWORD deposit to complete ...", swordSleepTimeMs);
+                Thread.sleep(swordSleepTimeMs);
             } catch (InterruptedException e) {
                 LOG.debug(">>>> DepositTask {}@{} interrupted!",
                         DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
                 Thread.interrupted();
             }
 
-            // deposit receipt -> SWORD Statement (ORE ReM/Atom XML) -> sword:state
-            Sword2DepositReceiptResponse swordResponse = (Sword2DepositReceiptResponse) transportResponse;
-            String itemUri = swordResponse.getReceipt().getEntry().getAlternateLink().getHref().toString();
             URI statementUri = null;
-            Deposit.DepositStatus status = null;
+            String itemUri = null;
             try {
+                Sword2DepositReceiptResponse swordResponse = (Sword2DepositReceiptResponse) transportResponse;
+
+                // deposit receipt -> SWORD Statement (ORE ReM/Atom XML) -> sword:state
+                if (swordResponse.getReceipt().getSplashPageLink() != null) {
+                    itemUri = swordResponse.getReceipt().getSplashPageLink().getHref();
+                }
+
+                // deposit receipt -> DSpace Item URL
                 statementUri = swordResponse.getReceipt().getAtomStatementLink().getIRI().toURI();
-                dc.deposit().setDepositStatusRef(statementUri.toString());
-                SwordDspaceDepositStatus swordStatus = atomStatusParser.parse(statementUri);
-                status = swordDepositStatusMapper.map(swordStatus);
             } catch (Exception e) {
                 String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
                             "parsing the Atom statement %s for %s failed: %s",
@@ -218,98 +213,47 @@ public class DepositTask implements Runnable {
                 throw new DepositServiceRuntimeException(msg, e, dc.deposit());
             }
 
-            switch (status) {
-                case ACCEPTED: {
-                    LOG.info(">>>> Deposit {} was accepted.", dc.deposit().getId());
-                    dc.deposit().setDepositStatus(ACCEPTED);
-                    RepositoryCopy repoCopy = new RepositoryCopy();
-                    repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
-                    repoCopy.setRepository(dc.repository().getId());
-                    repoCopy.setPublication(dc.submission().getPublication());
-                    repoCopy.setExternalIds(Collections.singletonList(itemUri));
-                    dc.repoCopy(repoCopy);
-                    break;
-                }
+            // TransportResponse was successfully parsed, set the status ref
+            dc.deposit().setDepositStatusRef(statementUri.toString());
 
-                case REJECTED: {
-                    LOG.info(">>>> Deposit {} was rejected.", dc.deposit().getId());
-                    dc.deposit().setDepositStatus(Deposit.DepositStatus.REJECTED);
-                    break;
-                }
-            }
-        }
+            // Create a RepositoryCopy, which will record the URL of the Item in DSpace
+            RepositoryCopy repoCopy = newRepositoryCopy(dc, itemUri, CopyStatus.IN_PROGRESS);
+            dc.repoCopy(repoCopy);
 
-        // TransportResponse was successfully parsed and logical success or failure of the Deposit was determined.
-        // Create the RepositoryCopy and update the Deposit
-
-
-        CriticalResult<RepositoryCopy, Deposit> finalResult = critical.performCritical(dc.deposit().getId(), Deposit.class,
-
-                (deposit) -> {
-                    if (deposit.getDepositStatus() != Deposit.DepositStatus.SUBMITTED) {
-                        LOG.debug("Precondition for updating {} was not satisfied.  Expected " +
-                                "Deposit.DepositStatus={}, but was {}",
-                                deposit.getId(), SUBMITTED, deposit.getDepositStatus());
-                        return false;
-                    }
-
-                    return true;
-                },
-
-                (deposit) -> {
-                    // As long as a Deposit is not FAILED, we are OK with the final result.
-                    //
-                    // A SWORD deposit may have taken longer than 10s (they are async, after all), so the Deposit
-                    // may be in the SUBMITTED state still.
-                    //
-                    // NIHMS FTP deposits will always be in the SUBMITTED state upon success, because there is no
-                    // way to determine the acceptability of the package simply by dropping it off at the FTP server
-                    //
-                    // So, the status of the Deposit might be REJECTED, ACCEPTED, or SUBMITTED, as long as it isn't
-                    // FAILED.
-                    if (terminalDepositStatusPolicy.accept(deposit.getDepositStatus()) ||
-                            deposit.getDepositStatus() == SUBMITTED) {
-                        return true;
-                    }
-
-                    LOG.debug("Postcondition for updating {} was not satisfied.  Expected " + "DepositDepositStatus " +
-                            "to be {}, {}, or {}, but was '{}'", ACCEPTED, REJECTED, SUBMITTED, deposit
-                            .getDepositStatus());
-                    return false;
-                },
-
-                (deposit) -> {
-                    if (dc.repoCopy() != null) {
-                        dc.repoCopy(passClient.createAndReadResource(dc.repoCopy(), RepositoryCopy.class));
-                        deposit.setRepositoryCopy(dc.repoCopy().getId());
-                        LOG.debug(">>>> Created repository copy for {}: {}", dc.deposit().getId(), dc.repoCopy().getId());
-                    }
-
-                    // the 'deposit' lambda parameter is a Deposit resource that has been retrieved from the repository.
-                    // If we have any state in the local DepositContext.deposit() that we want to be persisted in the
-                    // repository, it must be copied over from dc.deposit() to deposit.
-                    deposit.setDepositStatusRef(dc.deposit().getDepositStatusRef());
-                    deposit.setDepositStatus(dc.deposit().getDepositStatus());
-
-                    return dc.repoCopy();
-                });
-
-        if (!finalResult.success()) {
-            String msg = format("Failed to update Deposit tuple [%s, %s, %s]",
-                    dc.submission().getId(), dc.repository().getId(), dc.deposit().getId());
-            if (finalResult.throwable().isPresent()) {
-                Throwable t = finalResult.throwable().get();
-                msg = msg + ": " + t.getMessage();
-                throw new DepositServiceRuntimeException(msg, t, dc.deposit());
-            }
-
-            throw new DepositServiceRuntimeException(msg, dc.deposit());
+            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy in
+            // the Fedora repository
+            depositHelper.processDepositStatus(dc.submission(), dc.repository(), dc.repoCopy(), dc.deposit());
         }
 
     }
 
-    public DepositUtil.DepositWorkerContext getDepositWorkerContext() {
+    private static RepositoryCopy newRepositoryCopy(DepositWorkerContext dc, String itemUri, CopyStatus copyStatus) {
+        RepositoryCopy repoCopy = new RepositoryCopy();
+        repoCopy.setCopyStatus(copyStatus);
+        repoCopy.setRepository(dc.repository().getId());
+        repoCopy.setPublication(dc.submission().getPublication());
+        if (itemUri != null) {
+            repoCopy.setExternalIds(Collections.singletonList(itemUri));
+            try {
+                repoCopy.setAccessUrl(new URI(itemUri));
+            } catch (URISyntaxException e) {
+                LOG.warn("Error creating an accessUrl from '{}' for a RepositoryCopy associated with {}",
+                        itemUri, dc.deposit().getId());
+            }
+        }
+        return repoCopy;
+    }
+
+    public DepositWorkerContext getDepositWorkerContext() {
         return dc;
+    }
+
+    public long getSwordSleepTimeMs() {
+        return swordSleepTimeMs;
+    }
+
+    public void setSwordSleepTimeMs(long swordSleepTimeMs) {
+        this.swordSleepTimeMs = swordSleepTimeMs;
     }
 
     @Override

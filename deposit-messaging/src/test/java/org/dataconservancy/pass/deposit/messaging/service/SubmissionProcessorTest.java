@@ -65,7 +65,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, dirtyDepositPolicy, messagePolicy, terminalDepositStatusPolicy, depositTaskHelper, dspaceStatusMapper, atomStatusParser, cri);
+                submissionPolicy, intermediateDepositStatusPolicy, messagePolicy, terminalDepositStatusPolicy, depositTaskHelper, dspaceStatusMapper, atomStatusParser, cri);
     }
 
     /**
@@ -111,7 +111,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
@@ -179,7 +179,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.result()).thenReturn(Optional.of(new DepositSubmission()));
         when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
@@ -210,7 +210,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.success()).thenReturn(true);
         when(cri.performCritical(any(), any(), any(), any(BiPredicate.class), any())).thenReturn(criResult);
@@ -248,7 +248,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
         // In this test the CRI fails, for whatever reason.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(false);
         Exception expectedCause = new Exception("Failed CRI");
         when(criResult.throwable()).thenReturn(Optional.of(expectedCause));
@@ -286,7 +286,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
@@ -328,7 +328,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
@@ -385,7 +385,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
 
-        CriticalResult criResult = mock(CriticalResult.class);
+        CriticalResult<DepositSubmission, Submission> criResult = mock(CriticalResult.class);
         when(criResult.success()).thenReturn(true);
         when(criResult.resource()).thenReturn(Optional.of(submission));
         when(criResult.result()).thenReturn(Optional.of(depositSubmission));
