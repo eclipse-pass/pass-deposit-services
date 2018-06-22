@@ -50,7 +50,7 @@ public abstract class AbstractSubmissionProcessorTest {
 
     SubmissionPolicy submissionPolicy;
 
-    Policy<Deposit.DepositStatus> dirtyDepositPolicy;
+    Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy;
 
     Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
 
@@ -74,15 +74,14 @@ public abstract class AbstractSubmissionProcessorTest {
         submissionBuilder = mock(SubmissionBuilder.class);
         packagerRegistry = mock(Registry.class);
         submissionPolicy = mock(SubmissionPolicy.class);
-        dirtyDepositPolicy = mock(Policy.class);
+        intermediateDepositStatusPolicy = mock(Policy.class);
         messagePolicy = mock(JmsMessagePolicy.class);
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
         atomStatusParser = mock(DepositStatusParser.class);
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
-        depositTaskHelper = new DepositTaskHelper(passClient, packagerRegistry, taskExecutor, dspaceStatusMapper,
-                atomStatusParser, dirtyDepositPolicy, terminalDepositStatusPolicy, cri);
+        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy, terminalDepositStatusPolicy, cri, packagerRegistry);
     }
     
 }

@@ -94,7 +94,7 @@ public class DepositApp {
                 app = new SpringApplication(DepositApp.class, ListenerRunner.class);
                 break;
             }
-            case "update": {
+            case "refresh": {
                 app = new SpringApplication(DepositApp.class, SubmittedUpdateRunner.class);
                 // TODO figure out elegant way to exclude JMS-related beans like SubmissionProcessor from being spun up
                 app.setDefaultProperties(new HashMap<String, Object>() { {

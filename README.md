@@ -163,6 +163,18 @@ To retry all failed deposits:
 To retry specific deposits:
 > $ java -jar deposit-services.jar retry --uris http://192.168.99.100:8080/fcrepo/rest/deposits/8e/af/ac/a9/8eafaca9-1f24-413a-bf1e-fbbd673ba45b http://192.168.99.100:8080/fcrepo/rest/deposits/4a/cb/04/bb/4acb04bb-4f79-40ef-8ff9-e105261aa7fb
 
+#### Refresh
+
+Refresh mode is used to re-process a Deposit in the `SUBMITTED` state that needs its deposit status refreshed.  When `refresh` is invoked, the optional `--uris` argument is used to identify the `Deposit` resources to refresh.  Otherwise a search of the index is performed for _all_ `Deposit` resources in the `SUBMITTED` state.
+
+Refreshing a `Deposit` means that its deposit status reference will be retrieved, parsed, and processed.  The status returned from the reference will be stored on the `Deposit`, and the status of the corresponding `RepositoryCopy` will be updated as well.  If the `Deposit` status is updated to `ACCEPTED`, the `RepositoryCopy` will be updated to `COMPLETE`.  If the `Deposit` status is updated to `REJECTED`, the `RepositoryCopy` will be updated to `REJECTED` as well.
+
+To refresh all deposits in the `SUBMITTED` state:
+> $ java -jar deposit-services.jar refresh
+
+To refresh specific deposits:
+> $ java -jar deposit-services.jar refresh --uris http://192.168.99.100:8080/fcrepo/rest/deposits/8e/af/ac/a9/8eafaca9-1f24-413a-bf1e-fbbd673ba45b http://192.168.99.100:8080/fcrepo/rest/deposits/4a/cb/04/bb/4acb04bb-4f79-40ef-8ff9-e105261aa7fb
+
 ### Future modes
 
 Modes to be supported by future releases of Deposit Services.
@@ -171,9 +183,6 @@ Modes to be supported by future releases of Deposit Services.
 
 TODO
 
-#### Process
-
-TODO
 
 # Developers
 
@@ -192,6 +201,10 @@ The `PASS_FEDORA_USERNAME` and `PASS_FEDORA_PASSWORD` define the username and pa
 ### FailedDepositRunner
 
 The `retry` argument invokes the `FailedDepositRunner` which will re-submit failed `Deposit` resources to the task queue for processing.  URIs for specific Deposits may be specified, otherwise the index is searched for failed Deposits, and each one will be re-tried. 
+
+### SubmittedUpdateRunner
+
+The `refresh` argument invokes the `SubmittedUpdateRunner` which will attempt to re-process a `Deposit`'s status reference.  URIs for specific Deposits may be specified, otherwise the index is searched for `SUBMITTED` Deposits, and each one will be refreshed.   
 
 ## Message flow and concurrency
 
@@ -309,6 +322,8 @@ The semantics of _intermediate_ state are that the resource is currently in a wo
 
 A general pattern within Deposit services is that resources with _terminal_ status are explicitly accounted for (this is largely enforced by _policies_ which are documented elsewhere), and are considered "read-only".
 
+#### Submission Status
+
 Submission status is enumerated in the `AggregatedDepositStatus` class.  Deposit services considers the following values:
 * `NOT_STARTED` (_intermediate_): Incoming Submissions from the UI must have this status value
 * `IN_PROGRESS` (_intermediate_): Deposit services places the Submission in an `IN_PROGRESS` state right away.  When a thread observes a `Submission` in this state, it assumes that _another_ thread is processing this resource.
@@ -316,14 +331,24 @@ Submission status is enumerated in the `AggregatedDepositStatus` class.  Deposit
 * `ACCEPTED` (_terminal_): Deposit services places the Submission into this state when all of its `Deposit`s have been `ACCEPTED`
 * `REJECTED` (_terminal_): Deposit services places the Submission into this state when all of its `Deposit`s have been `REJECTED`
 
+#### Deposit Status
+
 Deposit status is enumerated in the `DepositStatus` class.  Deposit services considers the following values:
 *  `SUBMITTED` (_intermediate_): the custodial content of the `Submission` has been successfully transferred to the `Deposit`s `Repository`
 *  `ACCEPTED` (_terminal_): the custodial content of the `Submission` has been accessioned by the `Deposit`s `Repository` (i.e. custody of the `Submission` has successfully been transferred to the downstream `Repository`)
 *  `REJECTED` (_terminal_): the custodial content of the `Submission` has been rejected by the `Deposit`'s `Repository` (i.e. the downstream `Repository` has refused to accept custody of the `Submission` content)
 *  `FAILED` (_intermediate_): the transfer of custodial content to the `Repository` failed, or there was some other error updating the status of the `Deposit`
 
+#### RepositoryCopy Status
+
 RepositoryCopy status is enumerated in the `CopyStatus` class.  Deposit services considers the following values:
 * `COMPLETE` (_terminal_): a copy of the custodial content is available in the `Repository` at this location
+* `IN_PROGRESS` (_intermediate_): a copy of the custodial content is _expected to be_ available in the `Repository` at this location.  The custodial content should not be expected to exist until the `Deposit` status is `ACCEPTED`
+* `REJECTED` (_terminal_): the copy should be considered to be invalid.  Even if the custodial content is made available at the location indicated by the `RepositoryCopy`, it should not be mistaken for a successful transfer of custody.
+
+RepositoryCopy status is subservient to the Deposit status.  They will always be congruent.  For example, a RepositoryCopy cannot be `COMPLETE` if the Deposit is `REJECTED`.  If a Deposit is `REJECTED`, then the RepositoryCopy must also be `REJECTED`.
+
+#### Common Permutations
 
 There are some common permutations of these statuses that will be observed:
 * `ACCEPTED` `Submission`s will only have `Deposit`s that are `ACCEPTED`.  Each `Deposit` will have a `COMPLETE` `RepositoryCopy`.
@@ -331,8 +356,8 @@ There are some common permutations of these statuses that will be observed:
 * `IN_PROGRESS` `Submission`s may have zero or more `Deposit`s in any state.
 * `FAILED` `Submission`s should have zero `Deposit`s.
 * `ACCEPTED` `Deposit`s should have a `COMPLETE` `RepositoryCopy`.
-* `REJECTED` `Deposit`s will have no `RepositoryCopy`
-* `SUBMITTED` `Deposit`s will have no `RepositoryCopy`
+* `REJECTED` `Deposit`s will have a `REJECTED` `RepositoryCopy`
+* `SUBMITTED` `Deposit`s will have an `IN_PROGRESS` `RepositoryCopy`
 * `FAILED` `Deposit`s will have no `RepositoryCopy`
 
 
