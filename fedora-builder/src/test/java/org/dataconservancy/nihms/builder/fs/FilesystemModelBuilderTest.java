@@ -22,7 +22,6 @@ import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 
 import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,11 +46,11 @@ import java.util.List;
 
 public class FilesystemModelBuilderTest {
 
-    private static final String EXPECTED_TITLE = "The Analyst";
+    private static final String EXPECTED_TITLE = "Food & Function";
 
-    private static final String EXPECTED_ISSN = "0003-2654,1364-5528";
+    private static final String EXPECTED_ISSN = "2042-6496,2042-650X";
 
-    private static final String EXPECTED_DOI = "10.1039/c7an01617d";
+    private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
 
     private static final int EXPECTED_SUBMITER_COUNT = 1;
 
@@ -59,7 +58,7 @@ public class FilesystemModelBuilderTest {
 
     private static final int EXPECTED_CO_PI_COUNT = 1;
 
-    private static final int EXPECTED_AUTHOR_COUNT = 5;
+    private static final int EXPECTED_AUTHOR_COUNT = 6;
 
     private DepositSubmission submission;
 
@@ -69,7 +68,11 @@ public class FilesystemModelBuilderTest {
 
     private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
 
+    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS = "/SampleSubmissionData-with-missing-common-md-fields.json";
+
     private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI = "/SampleSubmissionData-missing-doi.json";
 
     private static final String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
 
@@ -162,10 +165,33 @@ public class FilesystemModelBuilderTest {
     }
 
     @Test
+    public void buildWithMissingValues() throws Exception {
+        // Create submission data from sample data file with null values
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
+        assertNull(submission.getMetadata().getManuscriptMetadata().getMsAbstract());
+    }
+
+    @Test
     public void buildWithNullDoi() throws Exception {
         // Create submission data from sample data file with null values
         URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_NULL_DOI);
         assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_NULL_DOI, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNull(submission.getMetadata().getArticleMetadata().getDoi());
+    }
+
+    @Test
+    public void buildWithMissingDoi() throws Exception {
+        // Create submission data from sample data file with null values
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI, sampleDataUrl);
         submission = underTest.build(sampleDataUrl.getPath());
 
         assertNotNull(submission);
