@@ -21,6 +21,7 @@ import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositMetadata.Person;
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.junit.Before;
@@ -208,8 +209,17 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), ms.getAttribute("doi"));
 
         // Assert that the ISSN is present in the metadata as the <issn> element
-        Element issn = asList(root.getElementsByTagName("issn")).get(0);
-        assertEquals(submission.getMetadata().getJournalMetadata().getIssn(), issn.getTextContent());
+        List<Element> issns = asList(root.getElementsByTagName("issn"));
+        Map<String, DepositMetadata.IssnPubType> issnPubTypes =
+                submission.getMetadata().getJournalMetadata().getIssnPubTypes();
+        assertEquals(issnPubTypes.size(), issns.size());
+        assertEquals(1, issns.size());
+        Element issn = issns.get(0);
+        DepositMetadata.IssnPubType expectedIssnPubtype = issnPubTypes.get(issn.getTextContent());
+
+        assertNotNull(expectedIssnPubtype);
+        assertEquals(expectedIssnPubtype.issn, issn.getTextContent());
+        assertEquals(expectedIssnPubtype.pubType, JournalPublicationType.valueOf(issn.getAttribute("pub-type").toUpperCase()));
     }
 
     private static boolean isNullOrEmpty(String s) {

@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.assembler.nihmsnative;
 
 import org.dataconservancy.nihms.model.DepositMetadata;
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -34,6 +35,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -57,10 +59,13 @@ public class NihmsMetadataSerializerTest {
         List<DepositMetadata.Person> personList = new ArrayList<>();
 
         //populate journal metadata
-        journal.setIssn("1234-5678");
         journal.setJournalId("FJ001");
         journal.setJournalTitle("Dairy Cow Monthly");
-        journal.setPubType(DepositMetadata.JOURNAL_PUBLICATION_TYPE.epub);
+        journal.setIssnPubTypes(new HashMap<String, DepositMetadata.IssnPubType>() {
+            {
+                put("1234-5678", new DepositMetadata.IssnPubType("1234-5678", JournalPublicationType.EPUB));
+            }
+        });
 
         //populate manuscript metadata
         manuscript.setManuscriptUrl(new URL("http://farm.com/Cows"));

@@ -24,6 +24,7 @@ import org.apache.tika.io.IOUtils;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.deposit.DepositTestUtil;
 import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 import org.junit.Before;
@@ -51,6 +52,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -181,9 +183,11 @@ public class DspaceMetadataDomWriterTest {
         when(article.getTitle()).thenReturn("Two stupendous minds.");
         when(article.getDoi()).thenReturn(URI.create("https://dx.doi.org/123/456"));
         when(article.getEmbargoLiftDate()).thenReturn(ZonedDateTime.now());
-
-        when(journal.getIssn()).thenReturn("1236-5678");
-        when(journal.getJournalType()).thenReturn(DepositMetadata.JOURNAL_PUBLICATION_TYPE.ppub.name());
+        when(journal.getIssnPubTypes()).thenReturn(new HashMap<String, DepositMetadata.IssnPubType>() {
+            {
+                put("1236-5678", new DepositMetadata.IssnPubType("1236-5678", JournalPublicationType.PPUB));
+            }
+        });
         when(journal.getJournalTitle()).thenReturn("American Journal of XYZ Research");
         when(journal.getJournalId()).thenReturn("Am J of XYZ Res");
 

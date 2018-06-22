@@ -26,6 +26,7 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
@@ -33,6 +34,8 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -43,6 +46,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+
+import static org.dataconservancy.nihms.model.JournalPublicationType.parseTypeDescription;
 
 /***
  * Base class for copying deposit-submission data from Fedora-based sources into the deposit data model.
@@ -57,7 +62,9 @@ import java.util.Optional;
  */
 abstract class ModelBuilder {
 
-    private static final String ISSN_KEY = "ISSN";
+    private static final Logger LOG = LoggerFactory.getLogger(ModelBuilder.class);
+
+    private static final String ISSN_MAP_KEY = "issn-map";
 
     private static final String MANUSCRIPT_TITLE_KEY = "title";
 
@@ -80,6 +87,8 @@ abstract class ModelBuilder {
     private static final String AUTHORS_KEY = "authors";
 
     private static final String AUTHOR_KEY = "author";
+
+    private static final String PUB_TYPE_KEY = "pub-type";
 
     private static final String EMBARGO_END_DATE_PATTERN = "yyyy-MM-dd";
 
@@ -130,6 +139,22 @@ abstract class ModelBuilder {
         return Optional.empty();
     }
 
+    private Optional<JsonObject> getObjectProperty(JsonObject parent, String name) {
+        if (parent.has(name) && !parent.get(name).isJsonNull() && parent.get(name).isJsonObject()) {
+            return Optional.of(parent.get(name).getAsJsonObject());
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<JsonArray> getArrayProperty(JsonObject parent, String name) {
+        if (parent.has(name) && !parent.get(name).isJsonNull() && parent.get(name).isJsonArray()) {
+            return Optional.of(parent.get(name).getAsJsonArray());
+        }
+
+        return Optional.empty();
+    }
+
     // The following four methods are based on a single sample of PASS submission metadata at
     // https://github.com/OA-PASS/pass-ember/issues/194.
     private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData)
@@ -163,8 +188,27 @@ abstract class ModelBuilder {
             // String orcid = getStringProperty(author, "orcid");
         }
 
-        getStringProperty(submissionData, ISSN_KEY)
-                .ifPresent(issn -> metadata.getJournalMetadata().setIssn(issn));
+        getObjectProperty(submissionData, ISSN_MAP_KEY).ifPresent(issnMapObject -> {
+            issnMapObject.keySet().forEach(issn -> {
+                getObjectProperty(issnMapObject, issn).ifPresent(issnObj -> {
+                    getArrayProperty(issnObj, PUB_TYPE_KEY).ifPresent(typeArray -> {
+                        if (typeArray.size() < 1) {
+                            return;
+                        }
+                        String typeDesc = typeArray.get(0).getAsString();
+                        try {
+                            DepositMetadata.IssnPubType pubType =
+                                    new DepositMetadata.IssnPubType(issn, parseTypeDescription(typeDesc));
+                            metadata.getJournalMetadata().getIssnPubTypes().putIfAbsent(issn, pubType);
+                        } catch (IllegalArgumentException e) {
+                            LOG.warn("Unable to parse a JournalPublicationType from the type description " + "'{}'",
+                                    typeDesc, e);
+                            return;
+                        }
+                    });
+                });
+            });
+        });
 
         getStringProperty(submissionData, EMBARGO_END_DATE_KEY).ifPresent(endDate -> {
             try {

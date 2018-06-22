@@ -21,6 +21,7 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
@@ -42,13 +43,20 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class FilesystemModelBuilderTest {
 
     private static final String EXPECTED_TITLE = "Food & Function";
 
-    private static final String EXPECTED_ISSN = "2042-6496,2042-650X";
+    private static final Map<String, JournalPublicationType> EXPECTED_ISSN_PUBTYPES =
+            new HashMap<String, JournalPublicationType>() {
+                {
+                    put("2042-6496", JournalPublicationType.PPUB);
+                    put("2042-650X", JournalPublicationType.EPUB);
+                }
+            };
 
     private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
 
@@ -120,7 +128,10 @@ public class FilesystemModelBuilderTest {
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
         assertEquals(EXPECTED_TITLE, journalMetadata.getJournalTitle());
-        assertEquals(EXPECTED_ISSN, journalMetadata.getIssn());
+        journalMetadata.getIssnPubTypes().values().forEach(pubType -> {
+            assertTrue(EXPECTED_ISSN_PUBTYPES.containsKey(pubType.issn));
+            assertEquals(EXPECTED_ISSN_PUBTYPES.get(pubType.issn), pubType.pubType);
+        });
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
         assertNull(manuscriptMetadata.getManuscriptUrl());

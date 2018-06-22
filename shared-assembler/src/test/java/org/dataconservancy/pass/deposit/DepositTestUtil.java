@@ -27,6 +27,7 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -148,8 +150,14 @@ public class DepositTestUtil {
         article.setDoi(URI.create("123/456"));
         article.setEmbargoLiftDate(ZonedDateTime.now().plusDays(10));
 
-        journal.setIssn("1236-5678");
-        journal.setPubType(DepositMetadata.JOURNAL_PUBLICATION_TYPE.ppub);
+        journal.setIssnPubTypes(
+                new HashMap<String, DepositMetadata.IssnPubType>() {
+                    {
+                        put("1236-5678",
+                                new DepositMetadata.IssnPubType("1236-5678", JournalPublicationType.EPUB));
+                    }
+                }
+        );
         journal.setJournalTitle("American Journal of XYZ Research");
         journal.setJournalId("Am J of XYZ Res");
         return submission;
