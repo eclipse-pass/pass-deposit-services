@@ -68,6 +68,8 @@ public class FilesystemModelBuilderTest {
 
     private static final int EXPECTED_AUTHOR_COUNT = 6;
 
+    private static final String EXPECTED_NLMTA = "Food Funct";
+
     private DepositSubmission submission;
 
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
@@ -133,34 +135,20 @@ public class FilesystemModelBuilderTest {
             assertEquals(EXPECTED_ISSN_PUBTYPES.get(pubType.issn), pubType.pubType);
         });
 
+        assertEquals(EXPECTED_NLMTA, journalMetadata.getJournalId());
+
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
         assertNull(manuscriptMetadata.getManuscriptUrl());
 
         List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
-        int authors = 0;
-        int pis = 0;
-        int copis = 0;
-        int submitters = 0;
-        for (DepositMetadata.Person person : persons) {
-            switch (person.getType()) {
-                case author:
-                    authors++;
-                    break;
-                case pi:
-                    pis++;
-                    break;
-                case copi:
-                    copis++;
-                    break;
-                case submitter:
-                    submitters++;
-                    break;
-            }
-        }
-        assertEquals(EXPECTED_SUBMITER_COUNT, submitters);
-        assertEquals(EXPECTED_PI_COUNT, pis);
-        assertEquals(EXPECTED_CO_PI_COUNT, copis);
-        assertEquals(EXPECTED_AUTHOR_COUNT, authors);
+        assertEquals(EXPECTED_SUBMITER_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.submitter).count());
+        assertEquals(EXPECTED_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.pi).count());
+        assertEquals(EXPECTED_CO_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.copi).count());
+        assertEquals(EXPECTED_AUTHOR_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author).count());
     }
 
     @Test
