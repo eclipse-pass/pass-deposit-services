@@ -116,6 +116,7 @@ public class CriticalPath implements CriticalRepositoryInteraction {
      *         any exception thrown, and the overall success as determined by the post-condition
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <R, T extends PassEntity> CriticalResult<R, T> performCritical(URI uri, Class<T> clazz,
                                                                           Predicate<T> precondition,
                                                                           BiPredicate<T, R> postcondition,
