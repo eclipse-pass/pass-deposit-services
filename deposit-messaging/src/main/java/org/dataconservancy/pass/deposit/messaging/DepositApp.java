@@ -26,7 +26,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.Properties;
 
 
 /**
@@ -40,14 +43,45 @@ public class DepositApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositApp.class);
 
+    private static final String GIT_BUILD_VERSION_KEY = "git.build.version";
+
+    private static final String GIT_COMMIT_HASH_KEY = "git.commit.id.abbrev";
+
+    private static final String GIT_COMMIT_TIME_KEY = "git.commit.time";
+
+    private static final String GIT_DIRTY_FLAG = "git.dirty";
+
+    private static final String GIT_BRANCH = "git.branch";
+
     private String fcrepoUser;
 
     private String fcrepoPass;
 
     private String fcrepoBaseUrl;
 
+    private static final String GIT_PROPERTIES_RESOURCE_PATH = "/git.properties";
+
     public static void main(String[] args) {
-        LOG.info(">>>> Starting DepositService");
+
+        URL gitPropertiesResource = DepositApp.class.getResource(GIT_PROPERTIES_RESOURCE_PATH);
+        if (gitPropertiesResource == null) {
+            LOG.info(">>>> Starting DepositServices (no Git commit information available)");
+        } else {
+            Properties gitProperties = new Properties();
+            try {
+                gitProperties.load(gitPropertiesResource.openStream());
+                boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
+
+                LOG.info(">>>> Starting DepositServices (version: {} branch: {} commit: {} commit date: {})",
+                        gitProperties.get(GIT_BUILD_VERSION_KEY), gitProperties.get(GIT_BRANCH), gitProperties.get(GIT_COMMIT_HASH_KEY), gitProperties.getProperty(GIT_COMMIT_TIME_KEY));
+
+                if (isDirty) {
+                    LOG.warn(">>>> ** Deposit Services was compiled from a Git repository with uncommitted changes! **");
+                }
+            } catch (IOException e) {
+                LOG.warn(">>>> Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
+            }
+        }
 
         if (args.length < 1 || args[0] == null) {
             throw new IllegalArgumentException("Requires at least one argument!");

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.dataconservancy.nihms</groupId>
         <artifactId>nihms-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.0.6-2.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>deposit-messaging</artifactId>
@@ -95,6 +95,26 @@
     <build>
 
         <plugins>
+
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <abbrevLength>8</abbrevLength>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>gitproperties</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
