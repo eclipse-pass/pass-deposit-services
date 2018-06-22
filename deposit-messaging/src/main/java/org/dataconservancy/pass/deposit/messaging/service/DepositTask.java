@@ -80,6 +80,7 @@ public class DepositTask implements Runnable {
     private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
 
     private CriticalRepositoryInteraction critical;
+    private long swordSleepTimeMs = 10000;
 
     public DepositTask(DepositUtil.DepositWorkerContext dc, PassClient passClient,
                        DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
@@ -192,8 +193,8 @@ public class DepositTask implements Runnable {
             // TODO: abstract out a configurable timer.
             // Sleep here for a bit, let DSpace do its thing, and then we ought to be able to parse a deposit status
             try {
-                LOG.debug(">>>> Sleeping 10 seconds for SWORD deposit to complete ...");
-                Thread.sleep(10000);
+                LOG.debug(">>>> Sleeping {} ms for SWORD deposit to complete ...", swordSleepTimeMs);
+                Thread.sleep(swordSleepTimeMs);
             } catch (InterruptedException e) {
                 LOG.debug(">>>> DepositTask {}@{} interrupted!",
                         DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
