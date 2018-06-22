@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.model;
 
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.transport.Transport;
+import org.dataconservancy.pass.deposit.messaging.service.DepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -50,12 +51,20 @@ public class Packager {
 
     private Transport transport;
 
+    private DepositStatusRefProcessor depositStatusProcessor;
+
     private Map<String, String> configuration;
 
     public Packager(String name, Assembler assembler, Transport transport, Map<String, String> configuration) {
+        this(name, assembler, transport, configuration, null);
+    }
+
+    public Packager(String name, Assembler assembler, Transport transport, Map<String, String> configuration,
+                    DepositStatusRefProcessor depositStatusProcessor) {
         this.name = name;
         this.assembler = assembler;
         this.transport = transport;
+        this.depositStatusProcessor = depositStatusProcessor;
         this.configuration = configuration;
     }
 
@@ -79,6 +88,15 @@ public class Packager {
                         toHexString(identityHashCode(this)),
                         entry.getKey(), entry.getValue()))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    /**
+     * The {@link DepositStatusRefProcessor}, may be {@code null}.
+     *
+     * @return the {@link DepositStatusRefProcessor}, may be {@code null}.
+     */
+    public DepositStatusRefProcessor getDepositStatusProcessor() {
+        return depositStatusProcessor;
     }
 
 }
