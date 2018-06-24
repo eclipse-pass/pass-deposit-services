@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.dataconservancy.nihms</groupId>
         <artifactId>nihms-parent</artifactId>
-        <version>0.0.6-2.2-SNAPSHOT</version>
+        <version>0.0.6-2.2</version>
     </parent>
 
     <artifactId>nihms-integration</artifactId>
