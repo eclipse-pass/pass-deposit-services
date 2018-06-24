@@ -21,8 +21,8 @@ import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,17 +43,50 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class FilesystemModelBuilderTest {
 
+    private static final String EXPECTED_TITLE = "Food & Function";
+
+    private static final Map<String, JournalPublicationType> EXPECTED_ISSN_PUBTYPES =
+            new HashMap<String, JournalPublicationType>() {
+                {
+                    put("2042-6496", JournalPublicationType.PPUB);
+                    put("2042-650X", JournalPublicationType.EPUB);
+                }
+            };
+
+    private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
+
+    private static final int EXPECTED_SUBMITER_COUNT = 1;
+
+    private static final int EXPECTED_PI_COUNT = 1;
+
+    private static final int EXPECTED_CO_PI_COUNT = 1;
+
+    private static final int EXPECTED_AUTHOR_COUNT = 6;
+
+    private static final String EXPECTED_NLMTA = "Food Funct";
+
     private DepositSubmission submission;
+
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
-    private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
-    private String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS = "/SampleSubmissionData-with-missing-common-md-fields.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI = "/SampleSubmissionData-missing-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
+
+    private static final String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
 
     @Before
     public void setup() throws Exception{
@@ -89,46 +122,33 @@ public class FilesystemModelBuilderTest {
         assertNotNull(submission.getMetadata().getPersons());
 
         assertEquals(submission.getId(), submissionEntity.getId().toString());
-        Publication publication = (Publication)entities.get(submissionEntity.getPublication());
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
+        assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
         assertEquals(2, submission.getFiles().size());
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
-        assertEquals("Food Funct.", journalMetadata.getJournalTitle());
-        assertEquals("TD452689", journalMetadata.getJournalId());
-        assertEquals("2042-6496,2042-650X", journalMetadata.getIssn());
+        assertEquals(EXPECTED_TITLE, journalMetadata.getJournalTitle());
+        journalMetadata.getIssnPubTypes().values().forEach(pubType -> {
+            assertTrue(EXPECTED_ISSN_PUBTYPES.containsKey(pubType.issn));
+            assertEquals(EXPECTED_ISSN_PUBTYPES.get(pubType.issn), pubType.pubType);
+        });
+
+        assertEquals(EXPECTED_NLMTA, journalMetadata.getJournalId());
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
-        assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
+        assertNull(manuscriptMetadata.getManuscriptUrl());
 
         List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
-        int authors = 0;
-        int pis = 0;
-        int copis = 0;
-        int submitters = 0;
-        for (DepositMetadata.Person person : persons) {
-            switch (person.getType()) {
-                case author:
-                    authors++;
-                    break;
-                case pi:
-                    pis++;
-                    break;
-                case copi:
-                    copis++;
-                    break;
-                case submitter:
-                    submitters++;
-                    break;
-            }
-        }
-        assertEquals(1, submitters);
-        assertEquals(1, pis);
-        assertEquals(1, copis);
-        assertEquals(6, authors);
+        assertEquals(EXPECTED_SUBMITER_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.submitter).count());
+        assertEquals(EXPECTED_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.pi).count());
+        assertEquals(EXPECTED_CO_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.copi).count());
+        assertEquals(EXPECTED_AUTHOR_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author).count());
     }
 
     @Test
@@ -139,8 +159,20 @@ public class FilesystemModelBuilderTest {
         submission = underTest.build(sampleDataUrl.getPath());
 
         assertNotNull(submission);
+        assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
         assertNull(submission.getMetadata().getManuscriptMetadata().getMsAbstract());
-        assertNull(submission.getMetadata().getManuscriptMetadata().getManuscriptUrl());
+    }
+
+    @Test
+    public void buildWithMissingValues() throws Exception {
+        // Create submission data from sample data file with null values
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
+        assertNull(submission.getMetadata().getManuscriptMetadata().getMsAbstract());
     }
 
     @Test
@@ -148,6 +180,17 @@ public class FilesystemModelBuilderTest {
         // Create submission data from sample data file with null values
         URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_NULL_DOI);
         assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_NULL_DOI, sampleDataUrl);
+        submission = underTest.build(sampleDataUrl.getPath());
+
+        assertNotNull(submission);
+        assertNull(submission.getMetadata().getArticleMetadata().getDoi());
+    }
+
+    @Test
+    public void buildWithMissingDoi() throws Exception {
+        // Create submission data from sample data file with null values
+        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI);
+        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI, sampleDataUrl);
         submission = underTest.build(sampleDataUrl.getPath());
 
         assertNotNull(submission);

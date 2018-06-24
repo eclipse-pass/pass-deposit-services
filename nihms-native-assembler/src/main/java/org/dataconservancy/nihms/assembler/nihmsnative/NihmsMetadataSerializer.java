@@ -113,14 +113,13 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
                 writer.endNode();
             }
 
-            if (journal.getIssn() != null) {
+            journal.getIssnPubTypes().values().forEach(issnPubType -> {
                 writer.startNode("issn");
-                if (journal.getPubType() != null) {
-                    writer.addAttribute("pub-type", journal.getPubType().toString());
-                }
-                writer.setValue(journal.getIssn());
+                writer.addAttribute("pub-type", issnPubType.pubType.name().toLowerCase());
+                writer.setValue(issnPubType.issn);
                 writer.endNode();
-            }
+            });
+
             if (journal.getJournalTitle() != null) {
                 writer.startNode("journal-title");
                 writer.setValue(journal.getJournalTitle());

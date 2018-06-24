@@ -22,7 +22,10 @@ import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
@@ -34,13 +37,40 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FcrepoModelBuilderIT {
 
+    private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";
+
+    private static final Map<String, DepositMetadata.IssnPubType> EXPECTED_ISSNS =
+            new HashMap<String, DepositMetadata.IssnPubType>() {
+                {
+                    put("2042-650X", new DepositMetadata.IssnPubType("2042-650X", JournalPublicationType.EPUB));
+                    put("2042-6496", new DepositMetadata.IssnPubType("2042-6496", JournalPublicationType.PPUB));
+                }
+            };
+
+    private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
+
+    private static final String EXPECTED_EMBARGO_END_DATE = "2018-06-30";
+
+    private static final int EXPECTED_SUBMITER_COUNT = 1;
+
+    private static final int EXPECTED_PI_COUNT = 1;
+
+    private static final int EXPECTED_CO_PI_COUNT = 1;
+
+    private static final int EXPECTED_AUTHOR_COUNT = 6;
+
+    private static final String EXPECTED_NLMTA = "Food Funct";
+
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
-    private String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+    private static final String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
     private HashMap<URI, PassEntity> entities = new HashMap<>();
     private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
     private Submission submissionEntity = null;
@@ -79,19 +109,72 @@ public class FcrepoModelBuilderIT {
 
         // Cannot compare ID strings, as they change when uploading to a Fedora server.
         Publication publication = (Publication)entities.get(submissionEntity.getPublication());
-        assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), publication.getDoi());
+        assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
         assertEquals(2, submission.getFiles().size());
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
-        assertEquals("Food Funct.", journalMetadata.getJournalTitle());
-        assertEquals("TD452689", journalMetadata.getJournalId());
-        assertEquals("2042-6496,2042-650X", journalMetadata.getIssn());
+        assertEquals(EXPECTED_JOURNAL_TITLE, journalMetadata.getJournalTitle());
+
+        EXPECTED_ISSNS.values().forEach(expectedIssnPubType -> {
+            journalMetadata.getIssnPubTypes().values().stream()
+                    .filter(candidate ->
+                            candidate.equals(expectedIssnPubType))
+                    .findAny().orElseThrow(() ->
+                        new RuntimeException("Missing expected IssnPubType " + expectedIssnPubType));
+        });
+        assertEquals(EXPECTED_ISSNS.size(), journalMetadata.getIssnPubTypes().size());
+
+        assertEquals(EXPECTED_NLMTA, journalMetadata.getJournalId());
 
         DepositMetadata.Manuscript manuscriptMetadata = submission.getMetadata().getManuscriptMetadata();
-        assertEquals("http://dx.doi.org/10.1039/c7fo01251a", manuscriptMetadata.getManuscriptUrl().toString());
+        assertNull(manuscriptMetadata.getManuscriptUrl());
+
+//        assertTrue(submission.getMetadata().getArticleMetadata().getUnderEmbargo());
+        assertEquals(EXPECTED_EMBARGO_END_DATE, submission.getMetadata().getArticleMetadata().getEmbargoLiftDate()
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd")));
+
+        List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
+        assertEquals(EXPECTED_SUBMITER_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.submitter).count());
+        assertEquals(EXPECTED_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.pi).count());
+        assertEquals(EXPECTED_CO_PI_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.copi).count());
+        assertEquals(EXPECTED_AUTHOR_COUNT,persons.stream()
+                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author).count());
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                author.getName().equals("Tania Marchbank")));
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                        author.getName().equals("Nikki Mandir")));
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                        author.getName().equals("Denis Calnan")));
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                        author.getName().equals("Robert A. Goodlad")));
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                        author.getName().equals("Theo Podas")));
+
+        assertTrue(persons.stream()
+                .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
+                .anyMatch(author ->
+                        author.getName().equals("Raymond J. Playford")));
     }
 
     @After

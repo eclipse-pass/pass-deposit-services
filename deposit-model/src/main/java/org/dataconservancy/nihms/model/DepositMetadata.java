@@ -19,7 +19,9 @@ package org.dataconservancy.nihms.model;
 import java.net.URI;
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulates required and optional metadata for submitting a manuscript.
@@ -27,18 +29,44 @@ import java.util.List;
 public class DepositMetadata {
 
     /**
-     * Journal type: electronic or print
+     * ISSN associated with a publication type
      */
-    public enum JOURNAL_PUBLICATION_TYPE {
-        /**
-         * print publication
-         */
-        ppub,
+    public static class IssnPubType {
 
-        /**
-         * electronic publication
-         */
-        epub
+        public String issn;
+
+        public JournalPublicationType pubType;
+
+        public IssnPubType(String issn, JournalPublicationType pubType) {
+            this.issn = issn;
+            this.pubType = pubType;
+        }
+
+        @Override
+        public String toString() {
+            return "IssnPubType{" + "issn='" + issn + '\'' + ", pubType=" + pubType + '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            IssnPubType that = (IssnPubType) o;
+
+            if (!issn.equals(that.issn))
+                return false;
+            return pubType == that.pubType;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = issn.hashCode();
+            result = 31 * result + pubType.hashCode();
+            return result;
+        }
     }
 
     /**
@@ -190,13 +218,14 @@ public class DepositMetadata {
         public String journalTitle;
 
         /**
-         * Journal publication type
+         * ISSN mapped to journal publication type
          */
-        public JOURNAL_PUBLICATION_TYPE pubType;
+        public Map<String, IssnPubType> issnPubTypes = new HashMap<>(2);
 
         /**
          * Serial number for the journal
          */
+        @Deprecated
         public String issn;
 
         public String getJournalId() {
@@ -219,18 +248,20 @@ public class DepositMetadata {
             this.journalTitle = journalTitle;
         }
 
-        public JOURNAL_PUBLICATION_TYPE getPubType() {
-            return pubType;
+        public Map<String, IssnPubType> getIssnPubTypes() {
+            return issnPubTypes;
         }
 
-        public void setPubType(JOURNAL_PUBLICATION_TYPE pubType) {
-            this.pubType = pubType;
+        public void setIssnPubTypes(Map<String, IssnPubType> issnPubTypes) {
+            this.issnPubTypes = issnPubTypes;
         }
 
+        @Deprecated
         public String getIssn() {
             return issn;
         }
 
+        @Deprecated
         public void setIssn(String issn) {
             this.issn = issn;
         }
@@ -248,12 +279,6 @@ public class DepositMetadata {
          */
         public String title;
 
-        public boolean underEmbargo = false;
-
-        public boolean agreementToEmbargo = false;
-
-        public String embargoTerms = "";
-
         public ZonedDateTime embargoLiftDate = null;
 
         public String getTitle() { return title; }
@@ -267,18 +292,6 @@ public class DepositMetadata {
         public void setDoi(URI doi) {
             this.doi = doi;
         }
-
-        public boolean getUnderEmbargo() { return underEmbargo; }
-
-        public void setUnderEmbargo(boolean underEmbargo) { this.underEmbargo = underEmbargo; }
-
-        public boolean getAgreementToEmbargo() { return agreementToEmbargo; }
-
-        public void setAgreementToEmbargo(boolean underEmbargo) { this.agreementToEmbargo = agreementToEmbargo; }
-
-        public void setEmbargoTerms(String embargoTerms) { this.embargoTerms = embargoTerms; }
-
-        public String getEmbargoTerms() { return embargoTerms; }
 
         public ZonedDateTime getEmbargoLiftDate() { return embargoLiftDate; }
 
