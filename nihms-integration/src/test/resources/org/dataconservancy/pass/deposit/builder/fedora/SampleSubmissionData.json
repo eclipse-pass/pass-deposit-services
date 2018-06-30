@@ -145,5 +145,15 @@
     "submission" : "fake:submission1",
     "@id" : "fake:file2",
     "@type" : "File"
+  },
+  {
+    "name" : "filename with space",
+    "uri" : "encodedclasspath:/org/dataconservancy/pass/deposit/builder/fedora/ilford%20panf.pdf",
+    "description" : "PDF hype to test manuscript type",
+    "fileRole" : "supplemental",
+    "mimeType" : "application/pdf",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file3",
+    "@type" : "File"
   }
 ]

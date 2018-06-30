@@ -59,8 +59,6 @@ import java.util.List;
  */
 public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractThreadedOutputStreamWriter.class);
-
     private List<DepositFileResource> packageFiles;
 
     private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback closeStreamHandler;
@@ -72,6 +70,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
     private MetadataBuilder metadataBuilder;
 
     private DepositSubmission submission;
+
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractThreadedOutputStreamWriter.class);
 
     protected static final int THIRTY_TWO_KIB = 32 * 2 ^ 10;
 

@@ -125,7 +125,9 @@ public class FilesystemModelBuilderTest {
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
-        assertEquals(2, submission.getFiles().size());
+        assertEquals(3, submission.getFiles().size());
+        // One of the uris is expected to contain an encoded space
+        assertTrue(submission.getFiles().stream().anyMatch(f -> f.getLocation().contains("%20")));
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();

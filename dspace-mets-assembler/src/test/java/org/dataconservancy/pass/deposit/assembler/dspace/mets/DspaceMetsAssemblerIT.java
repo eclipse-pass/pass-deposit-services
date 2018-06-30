@@ -21,7 +21,9 @@ import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.junit.Test;
+import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_CHECKSUM;
@@ -39,6 +42,7 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstant
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_SIZE;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_HREF;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_NS;
+import static org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler.sanitizeFilename;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -116,14 +120,21 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
      */
     @Test
     public void testFileMetadata() throws Exception {
+
+        // Custodial resources have their file names sanitized before being written out to a package
+        // If we are to locate the sanitized file name on the filesystem, we have to repeat the sanitization function
+        // on each filename in order to check for its existence
+        Map<String, Resource> sanitizedCustodialResourcesMap = custodialResourcesMap.entrySet().stream()
+                .collect(Collectors.toMap(entry -> sanitizeFilename(entry.getKey()), Map.Entry::getValue));
+
         asList(metsDoc.getElementsByTagNameNS(METS_NS, METS_FILE))
                 .forEach(fileElement -> {
                     assertNotNull(fileElement.getAttribute(METS_MIMETYPE));
-                    String fileName = ((Element) fileElement.getFirstChild())
+                    String sanitizedFileName = ((Element) fileElement.getFirstChild())
                             .getAttributeNS(XLINK_NS, XLINK_HREF).substring("data/".length());
                     try {
-                        assertEquals((Long) custodialResourcesMap.get(fileName).contentLength(),
-                                Long.valueOf(fileElement.getAttribute(METS_SIZE)));
+                        assertEquals((Long) sanitizedCustodialResourcesMap.get(sanitizedFileName).contentLength(),
+                                    Long.valueOf(fileElement.getAttribute(METS_SIZE)));
                     } catch (IOException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }

@@ -47,6 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -73,6 +75,7 @@ import static java.util.Base64.getEncoder;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Configuration
+@EnableAutoConfiguration(exclude = {RestTemplateAutoConfiguration.class})
 public class DepositConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositConfig.class);

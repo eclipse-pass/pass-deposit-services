@@ -20,6 +20,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
@@ -80,7 +81,14 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
      */
     @Override
     protected String nameResource(DepositFileResource resource) {
-        return "data/" + super.nameResource(resource);
+        String candidateFilename = super.nameResource(resource);
+        String sanitizedFilename = AbstractAssembler.sanitizeFilename(candidateFilename);
+        if (LOG.isTraceEnabled()) {
+            if (!candidateFilename.equals(sanitizedFilename)) {
+                LOG.trace("Sanitized original resource name '{}' to '{}'", candidateFilename, sanitizedFilename);
+            }
+        }
+        return "data/" + sanitizedFilename;
     }
 
 }

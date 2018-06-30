@@ -34,7 +34,7 @@
         <postgres.skip>false</postgres.skip>
         <fcrepo.skip>false</fcrepo.skip>
         <fcrepo.server>${docker.host.address}</fcrepo.server>
-        <pass.fedora.user>admin</pass.fedora.user>
+        <pass.fedora.user>fedoraAdmin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
         <pass.elasticsearch.host>${docker.host.address}</pass.elasticsearch.host>

@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
@@ -28,6 +29,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,6 +56,8 @@ public abstract class AbstractAssembler implements Assembler {
     private static final String HTTP_PREFIX = "http:";
 
     private static final String HTTPS_PREFIX = "https:";
+
+    private static final String ENCODED_CLASSPATH_PREFIX = EncodingClassPathResource.RESOURCE_KEY;
 
     private MetadataBuilderFactory mbf;
 
@@ -188,7 +192,12 @@ public abstract class AbstractAssembler implements Assembler {
                     Resource delegateResource = null;
 
                     if (location.startsWith(FILE_PREFIX)) {
-                        delegateResource = new FileSystemResource(location.substring(FILE_PREFIX.length()));
+                        try {
+                            delegateResource = new UrlResource(location);
+                        } catch (MalformedURLException e) {
+                            throw new RuntimeException("Unable to create URL resource for file location '" + location
+                                    + "': " + e.getMessage(), e);
+                        }
                     } else if (location.startsWith(CLASSPATH_PREFIX) ||
                             location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
                         if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
@@ -197,6 +206,9 @@ public abstract class AbstractAssembler implements Assembler {
 
                             delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
                         }
+                    } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
+                        delegateResource = new EncodingClassPathResource(
+                                location.substring(ENCODED_CLASSPATH_PREFIX.length()));
                     } else
 
                     // Defend against callers that have not specified Fedora auth creds, or repositories that
@@ -248,15 +260,9 @@ public abstract class AbstractAssembler implements Assembler {
             throw new IllegalArgumentException("Supplied name was null or the empty string.");
         }
 
-        String result = candidateFilename
-                .chars()
-                .filter(AbstractAssembler::isValidChar)
-                .mapToObj(c -> Character.toString((char)c))
-                .collect(Collectors.joining());
+        String result = UriUtils.encodePathSegment(candidateFilename, "UTF-8");
 
-        if (result.length() == 0) {
-            throw new IllegalArgumentException("The supplied name was invalid, and cannot be sanitized.");
-        }
+        LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 
         return result;
     }

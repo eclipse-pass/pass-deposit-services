@@ -112,7 +112,10 @@ public class FcrepoModelBuilderIT {
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
-        assertEquals(2, submission.getFiles().size());
+        assertEquals(3, submission.getFiles().size());
+
+        // One of the file's URIs should contain an encoded space
+        assertTrue(submission.getFiles().stream().anyMatch(df -> df.getLocation().contains("%20")));
 
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();

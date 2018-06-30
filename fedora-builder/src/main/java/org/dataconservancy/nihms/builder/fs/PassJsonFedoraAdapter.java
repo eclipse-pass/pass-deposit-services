@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
+import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientFactory;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -292,6 +293,11 @@ public class PassJsonFedoraAdapter {
 
         if (contentUri.startsWith("classpath:")) {
             contentResource = new ClassPathResource(contentUri.substring("classpath:".length()));
+        }
+
+        if (contentUri.startsWith(EncodingClassPathResource.RESOURCE_KEY)) {
+            contentResource = new EncodingClassPathResource(contentUri.substring(
+                    EncodingClassPathResource.RESOURCE_KEY.length()));
         }
 
         if (contentResource == null) {

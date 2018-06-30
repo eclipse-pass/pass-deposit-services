@@ -128,7 +128,7 @@
   },
   {
     "name" : "test_image",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/dektol.jpg",
+    "uri" : "classpath:/dektol.jpg",
     "description" : "A logo to test supplemental type",
     "fileRole" : "supplemental",
     "mimeType" : "image/png",
@@ -138,12 +138,22 @@
   },
   {
     "name" : "test_pdf",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/ilford_film_processing_chart.pdf",
+    "uri" : "classpath:/ilford_film_processing_chart.pdf",
     "description" : "PDF hype to test manuscript type",
     "fileRole" : "manuscript",
     "mimeType" : "application/pdf",
     "submission" : "fake:submission1",
     "@id" : "fake:file2",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_pdf_with_space",
+    "uri" : "encodedclasspath:/ilford%20panf.pdf",
+    "description" : "File name containing space.",
+    "fileRole" : "supplemental",
+    "mimeType" : "application/pdf",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file3",
     "@type" : "File"
   }
 ]
