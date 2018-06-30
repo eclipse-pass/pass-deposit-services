@@ -145,5 +145,15 @@
     "submission" : "fake:submission1",
     "@id" : "fake:file2",
     "@type" : "File"
+  },
+  {
+    "name" : "test_pdf_with_space",
+    "uri" : "encodedclasspath:/ilford%20panf.pdf",
+    "description" : "File name containing space.",
+    "fileRole" : "supplemental",
+    "mimeType" : "application/pdf",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file3",
+    "@type" : "File"
   }
 ]
