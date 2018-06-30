@@ -188,7 +188,12 @@ public abstract class AbstractAssembler implements Assembler {
                     Resource delegateResource = null;
 
                     if (location.startsWith(FILE_PREFIX)) {
-                        delegateResource = new FileSystemResource(location.substring(FILE_PREFIX.length()));
+                        try {
+                            delegateResource = new UrlResource(location);
+                        } catch (MalformedURLException e) {
+                            throw new RuntimeException("Unable to create URL resource for file location '" + location
+                                    + "': " + e.getMessage(), e);
+                        }
                     } else if (location.startsWith(CLASSPATH_PREFIX) ||
                             location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
                         if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
