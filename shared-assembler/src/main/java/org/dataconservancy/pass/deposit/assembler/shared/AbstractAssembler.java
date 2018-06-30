@@ -29,6 +29,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -259,15 +260,7 @@ public abstract class AbstractAssembler implements Assembler {
             throw new IllegalArgumentException("Supplied name was null or the empty string.");
         }
 
-        String result = candidateFilename
-                .chars()
-                .map(c -> isValidChar(c) ? c : (char) 0x005f) // map invalid characters to underscore (0x5f)
-                .mapToObj(c -> Character.toString((char)c))
-                .collect(Collectors.joining());
-
-        if (result.length() == 0) {
-            throw new IllegalArgumentException("The supplied name was invalid, and cannot be sanitized.");
-        }
+        String result = UriUtils.encodePathSegment(candidateFilename, "UTF-8");
 
         LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 

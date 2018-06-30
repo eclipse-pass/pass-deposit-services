@@ -30,9 +30,9 @@ public class AbstractAssemblerTest {
     public void testSanitize() {
         assertEquals("foo", AbstractAssembler.sanitizeFilename("foo"));
         assertEquals("f.o.o", AbstractAssembler.sanitizeFilename("f.o.o"));
-        assertEquals("foo_", AbstractAssembler.sanitizeFilename("foo" + '\u00F6'));
-        assertEquals(".._foo", AbstractAssembler.sanitizeFilename("../foo"));
-        assertEquals("f_o_o", AbstractAssembler.sanitizeFilename("f o o"));
+        assertEquals("foo%C3%B6", AbstractAssembler.sanitizeFilename("foo" + '\u00F6'));
+        assertEquals("..%2Ffoo", AbstractAssembler.sanitizeFilename("../foo"));
+        assertEquals("f%20o%20o", AbstractAssembler.sanitizeFilename("f o o"));
         assertEquals("foo-", AbstractAssembler.sanitizeFilename("foo-"));
         assertEquals("fo-o", AbstractAssembler.sanitizeFilename("fo-o"));
         assertEquals("f_oo", AbstractAssembler.sanitizeFilename("f_oo"));
