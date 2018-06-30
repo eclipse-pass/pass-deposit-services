@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.junit.Before;
 import org.springframework.core.io.Resource;
@@ -34,6 +35,7 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstant
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_HREF;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_NS;
+import static org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler.sanitizeFilename;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -78,8 +80,17 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         // expect mets xml to have a fileSec with a file for each resource with the correct path
 
         // Each custodial resource is represented in the package under the 'data/' directory
-        custodialResources.forEach(custodialResource -> {
-            assertTrue(extractedPackageDir.toPath().resolve("data/" + custodialResource.getFilename()).toFile().exists());
+        // The filename of the custodial resource was sanitized when the package was written, so the
+        // filenames of the custodial resources need to be run through the sanitizer before checking for
+        // existence.
+
+        List<String> sanitizedFileNames = custodialResources.stream()
+                .map(Resource::getFilename)
+                .map(AbstractAssembler::sanitizeFilename)
+                .collect(Collectors.toList());
+
+        sanitizedFileNames.forEach(sanitizedFileName -> {
+                    assertTrue(extractedPackageDir.toPath().resolve("data/" + sanitizedFileName).toFile().exists());
         });
 
         // Each custodial resource in the package has a File and Fptr in METS.xml, pointing to the correct location.
@@ -118,11 +129,11 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         // each custodial resource has an flocat, and each flocat has a custodial resource
         assertEquals("Expected '" + custodialResources.size() + "' flocat elements in the package metadata",
                 custodialResources.size(), flocats.size());
-        custodialResources.forEach(custodialResource -> {
-            assertTrue(flocatHrefs.contains("data/" + custodialResource.getFilename()));
+        sanitizedFileNames.forEach(fileName -> {
+            assertTrue(flocatHrefs.contains("data/" + fileName));
         });
         flocatHrefs.forEach(flocat -> {
-            assertTrue(custodialResourceFilenames.contains(flocat.substring("data/".length())));
+            assertTrue(sanitizedFileNames.contains(flocat.substring("data/".length())));
         });
     }
 

@@ -255,13 +255,15 @@ public abstract class AbstractAssembler implements Assembler {
 
         String result = candidateFilename
                 .chars()
-                .filter(AbstractAssembler::isValidChar)
+                .map(c -> isValidChar(c) ? c : (char) 0x005f) // map invalid characters to underscore (0x5f)
                 .mapToObj(c -> Character.toString((char)c))
                 .collect(Collectors.joining());
 
         if (result.length() == 0) {
             throw new IllegalArgumentException("The supplied name was invalid, and cannot be sanitized.");
         }
+
+        LOG.trace("Filename was sanitized from '{}' to '{}'", candidateFilename, result);
 
         return result;
     }
