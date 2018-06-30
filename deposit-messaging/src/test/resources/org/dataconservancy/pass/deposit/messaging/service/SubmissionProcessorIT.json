@@ -148,8 +148,8 @@
   },
   {
     "name" : "filename with space",
-    "uri" : "classpath:/org/dataconservancy/pass/deposit/messaging/service/ilford%20panf.pdf",
-    "description" : "PDF hype to test manuscript type",
+    "uri" : "encodedclasspath:/org/dataconservancy/pass/deposit/messaging/service/ilford%20panf.pdf",
+    "description" : "PDF file with encoded space",
     "fileRole" : "supplemental",
     "mimeType" : "application/pdf",
     "submission" : "fake:submission1",
