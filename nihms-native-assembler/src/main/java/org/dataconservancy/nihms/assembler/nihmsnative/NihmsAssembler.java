@@ -78,7 +78,7 @@ public class NihmsAssembler extends AbstractAssembler {
 
         try {
             URI submissionUri = URI.create(submission.getId());
-            submissionUuid = submissionUri.getPath().substring(submissionUri.getPath().lastIndexOf("/"));
+            submissionUuid = submissionUri.getPath().substring(submissionUri.getPath().lastIndexOf("/") + 1);
         } catch (Exception e) {
             submissionUuid = UUID.randomUUID().toString();
         }
