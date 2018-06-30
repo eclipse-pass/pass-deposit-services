@@ -16,6 +16,11 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Link;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -48,7 +53,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+import static java.util.Base64.getEncoder;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -289,6 +298,29 @@ public class Sword2TransportSessionIT extends BaseIT {
         System.err.println(">>>> Treatment: " + treatement);
         System.err.println(">>>> DC fields: ");
         dc.forEach(e -> System.err.println("    " + String.format("{%s}%s: %s", e.getQName().getNamespaceURI(), e.getQName().getLocalPart(), e.getText())));
+
+        // Retrieve all the URLs we can.
+        OkHttpClient okHttp = newOkHttpClient(authCreds);
+
+        Stream<String> toRetrieve = Stream.of(receipt.getLocation(), content.getHref(), atomStatement.getHref(), receipt.getOREStatementLink()
+                .getHref(), receipt.getEntry().getAlternateLink().getHref().toString());
+
+        toRetrieve.forEach(url -> {
+            try (Response res = okHttp.newCall(new Request.Builder().url(url).build()).execute()) {
+                int code = res.code();
+                LOG.debug("Retrieved '{}', {}", url, code);
+                String message = res.message();
+                ResponseBody body = res.body();
+                String bodyString = body == null ? "Response body was null " : body.string();
+
+                assertTrue("Unexpected response code '" + code + "' when GETting '" + url + "': " + message + "\n" + bodyString, 199 < code  && code < 300);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("{}", (body == null ? "Response body was null" : bodyString));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
     }
 
@@ -639,6 +671,45 @@ public class Sword2TransportSessionIT extends BaseIT {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         t.printStackTrace(new PrintStream(out, true));
         return new String(out.toByteArray());
+    }
+
+    private OkHttpClient newOkHttpClient(AuthCredentials authCreds) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        String builderName = builder.getClass().getSimpleName();
+        String builderHashcode = toHexString(identityHashCode(builder.getClass()));
+
+        if (authCreds != null && authCreds.getUsername() != null) {
+            LOG.trace("{}:{} adding Authorization interceptor", builderName, builderHashcode);
+            builder.addInterceptor((chain) -> {
+                Request request = chain.request();
+                Request.Builder reqBuilder = request.newBuilder();
+                byte[] bytes = String.format("%s:%s", authCreds.getUsername(), authCreds.getPassword()).getBytes();
+                return chain.proceed(reqBuilder
+                        .addHeader("Authorization",
+                                "Basic " + getEncoder().encodeToString(bytes)).build());
+            });
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.trace("{}:{} adding Logging interceptor", builderName, builderHashcode);
+            HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::debug);
+            builder.addInterceptor(httpLogger);
+        }
+
+        LOG.trace("{}:{} adding User-Agent interceptor", builderName, builderHashcode);
+        builder.addInterceptor((chain) -> {
+            Request.Builder reqBuilder = chain.request().newBuilder();
+            reqBuilder.removeHeader("User-Agent");
+            reqBuilder.addHeader("User-Agent", this.getClass().getName());
+            return chain.proceed(reqBuilder.build());
+        });
+
+        OkHttpClient client = builder.build();
+        LOG.trace("{}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
+                client.getClass().getSimpleName(), toHexString(identityHashCode(client.getClass())));
+
+        return client;
     }
 
 }
