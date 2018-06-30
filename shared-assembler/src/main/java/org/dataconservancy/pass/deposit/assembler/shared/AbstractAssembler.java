@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.MetadataBuilder;
 import org.dataconservancy.nihms.assembler.PackageStream;
@@ -54,6 +55,8 @@ public abstract class AbstractAssembler implements Assembler {
     private static final String HTTP_PREFIX = "http:";
 
     private static final String HTTPS_PREFIX = "https:";
+
+    private static final String ENCODED_CLASSPATH_PREFIX = EncodingClassPathResource.RESOURCE_KEY;
 
     private MetadataBuilderFactory mbf;
 
@@ -202,6 +205,9 @@ public abstract class AbstractAssembler implements Assembler {
 
                             delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
                         }
+                    } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
+                        delegateResource = new EncodingClassPathResource(
+                                location.substring(ENCODED_CLASSPATH_PREFIX.length()));
                     } else
 
                     // Defend against callers that have not specified Fedora auth creds, or repositories that
