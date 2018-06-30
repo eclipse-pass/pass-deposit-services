@@ -148,7 +148,7 @@
   },
   {
     "name" : "filename with space",
-    "uri" : "classpath:/org/dataconservancy/pass/deposit/builder/fedora/ilford%20panf.pdf",
+    "uri" : "encodedclasspath:/org/dataconservancy/pass/deposit/builder/fedora/ilford%20panf.pdf",
     "description" : "PDF hype to test manuscript type",
     "fileRole" : "supplemental",
     "mimeType" : "application/pdf",
