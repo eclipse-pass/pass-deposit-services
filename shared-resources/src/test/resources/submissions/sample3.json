@@ -9,7 +9,7 @@
     "repositories" : [ "fake:repository1" ],
     "user" : "fake:user1",
     "grants" : [ "fake:grant1" ],
-    "@id" : "fake:submission1",
+    "@id" : "fake:submission3",
     "@type" : "Submission"
   },
   {
@@ -128,42 +128,22 @@
   },
   {
     "name" : "test_image",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/dektol.jpg",
-    "description" : "A logo to test figure type",
-    "fileRole" : "figure",
+    "uri" : "classpath:/submissions/sample3/dektol.jpg",
+    "description" : "A logo to test supplemental type",
+    "fileRole" : "supplemental",
     "mimeType" : "image/png",
-    "submission" : "fake:submission1",
+    "submission" : "fake:submission3",
     "@id" : "fake:file1",
     "@type" : "File"
   },
   {
     "name" : "test_pdf",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/ilford_film_processing_chart.pdf",
-    "description" : "PDF type to test manuscript type",
+    "uri" : "classpath:/submissions/sample3/ilford_film_processing_chart.pdf",
+    "description" : "PDF hype to test manuscript type",
     "fileRole" : "manuscript",
     "mimeType" : "application/pdf",
-    "submission" : "fake:submission1",
+    "submission" : "fake:submission3",
     "@id" : "fake:file2",
-    "@type" : "File"
-  },
-  {
-    "name" : "test_table",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/table.ods",
-    "description" : "spreadsheet type to test table type",
-    "fileRole" : "table",
-    "mimeType" : "application/vnd.oasis.opendocument.spreadsheet",
-    "submission" : "fake:submission1",
-    "@id" : "fake:file3",
-    "@type" : "File"
-  },
-  {
-    "name" : "test_supplement",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/somefile.txt",
-    "description" : "text file type to test supplemental type",
-    "fileRole" : "supplemental",
-    "mimeType" : "text/plain",
-    "submission" : "fake:submission1",
-    "@id" : "fake:file4",
     "@type" : "File"
   }
 ]
