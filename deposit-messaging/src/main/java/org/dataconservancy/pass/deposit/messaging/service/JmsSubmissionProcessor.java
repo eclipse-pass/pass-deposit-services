@@ -64,7 +64,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      *
      * @param passClient used to resolve {@code Submission} resources from the Fedora repository
      * @param jsonParser used to parse the {@code Submission} URI from the JMS message
-     * @param submissionBuilder used to build a {@link DepositSubmission} from a {@code Submission}
+     * @param fcrepoModelBuilder used to build a {@link DepositSubmission} from a {@code Submission}
      * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote
      *                         repositories
      * @param passUserSubmittedPolicy whether or not a {@code Submission} should be accepted for processing
@@ -74,7 +74,8 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      *                            status
      * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
-    public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
+    public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser,
+                                  SubmissionBuilder fcrepoModelBuilder,
                                   Registry<Packager> packagerRegistry,
                                   SubmissionPolicy passUserSubmittedPolicy,
                                   Policy<Deposit.DepositStatus> dirtyDepositPolicy,
@@ -85,7 +86,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
                                   DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                   CriticalRepositoryInteraction critical) {
 
-        super(passClient, jsonParser, submissionBuilder, packagerRegistry, passUserSubmittedPolicy,
+        super(passClient, jsonParser, fcrepoModelBuilder, packagerRegistry, passUserSubmittedPolicy,
                 dirtyDepositPolicy, submissionMessagePolicy, terminalDepositStatusPolicy, depositTaskHelper, depositStatusMapper, atomStatusParser, critical);
 
     }

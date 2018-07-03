@@ -75,7 +75,7 @@ import java.util.function.Predicate;
  *      (submission) -> {
  *          DepositSubmission ds = null;
  *          try {
- *              ds = submissionBuilder.build(submission.getId().toString());
+ *              ds = fcrepoModelBuilder.build(submission.getId().toString());
  *          } catch (InvalidModel invalidModel) {
  *              throw new RuntimeException(invalidModel.getMessage(), invalidModel);
  *          }
