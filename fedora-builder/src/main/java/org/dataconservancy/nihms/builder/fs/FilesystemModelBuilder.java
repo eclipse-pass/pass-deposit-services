@@ -17,6 +17,7 @@
 package org.dataconservancy.nihms.builder.fs;
 
 import org.dataconservancy.nihms.builder.InvalidModel;
+import org.dataconservancy.nihms.builder.StreamingSubmissionBuilder;
 import org.dataconservancy.nihms.builder.SubmissionBuilder;
 import org.dataconservancy.nihms.model.DepositSubmission;
 import org.dataconservancy.pass.model.PassEntity;
@@ -26,8 +27,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Builds a submission from a file on a locally mounted filesystem.
@@ -36,7 +41,7 @@ import java.util.HashMap;
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
  */
-public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder {
+public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder, StreamingSubmissionBuilder {
 
     /***
      * Build a DepositSubmission from the JSON data in named file.
@@ -47,7 +52,21 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
     @Override
     public DepositSubmission build(String formDataUrl) throws InvalidModel {
         try {
-            InputStream is = new FileInputStream(formDataUrl);
+            URI resource = new URI(formDataUrl);
+            InputStream is;
+
+            if (resource.getScheme() == null) {
+                is = new FileInputStream(formDataUrl);
+            } else if (resource.getScheme().startsWith("http") ||
+                    resource.getScheme().startsWith("file") ||
+                    resource.getScheme().startsWith("jar")) {
+                is = resource.toURL().openStream();
+            } else {
+                throw new InvalidModel(String.format("Unknown scheme '%s' for URL '%s'",
+                        resource.getScheme(), formDataUrl));
+            }
+
+
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             HashMap<URI, PassEntity> entities = new HashMap<>();
             Submission submissionEntity = reader.jsonToPass(is, entities);
@@ -57,7 +76,16 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
             throw new InvalidModel(String.format("Could not open the data file '%s'.", formDataUrl), e);
         } catch (IOException e) {
             throw new InvalidModel(String.format("Failed to close the data file '%s'.", formDataUrl), e);
+        } catch (URISyntaxException e) {
+            throw new InvalidModel(String.format("Malformed URL '%s'.", formDataUrl), e);
         }
     }
 
+    @Override
+    public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel {
+        PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
+        HashMap<URI, PassEntity> entities = new HashMap<>();
+        Submission submissionEntity = reader.jsonToPass(stream, entities);
+        return createDepositSubmission(submissionEntity, entities);
+    }
 }
