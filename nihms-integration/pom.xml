@@ -86,6 +86,21 @@
 
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>shared-resources</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.lukehutch</groupId>
+            <artifactId>fast-classpath-scanner</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-ftp-transport</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>

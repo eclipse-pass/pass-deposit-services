@@ -15,14 +15,18 @@
  */
 package org.dataconservancy.nihms.cli;
 
+import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
 import org.dataconservancy.nihms.transport.Transport;
 import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
 import org.junit.Before;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,12 +41,10 @@ import static org.junit.Assert.assertTrue;
  */
 public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
 
-    private static String SAMPLE_SUBMISSION_RESOURCE = "org/dataconservancy/nihms/cli/SampleSubmissionData.json";
+    private static URI SAMPLE_SUBMISSION_RESOURCE = URI.create("fake:submission1");
 
     private static String NIHMS_FTP_SUBMISSION_BASE_DIRECTORY = String.format("%s%s",
             FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY, SubmissionEngine.BASE_DIRECTORY);
-
-    private URL sampleDataSource;
 
     private Map<String, String> transportHints;
 
@@ -71,8 +73,8 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
             }
         };
 
-        sampleDataSource = this.getClass().getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-        assertNotNull("Unable to locate " + SAMPLE_SUBMISSION_RESOURCE + " as a classpath resource", sampleDataSource);
+        assertNotNull("Unable to resolve " + SAMPLE_SUBMISSION_RESOURCE + " as a classpath resource",
+                SharedResourceUtil.lookupUri(SAMPLE_SUBMISSION_RESOURCE));
         itUtil.connect();
         itUtil.login();
     }
@@ -96,7 +98,13 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
                 ftpClient.changeWorkingDirectory(NIHMS_FTP_SUBMISSION_BASE_DIRECTORY));
         itUtil.logout();
 
-        NihmsSubmissionApp app = new NihmsSubmissionApp(new File(sampleDataSource.getPath()), transportHints);
+        // Copy the sample submission data to a temporary file
+        File sampleSubmission = File.createTempFile(this.getClass().getName() + "-", ".json");
+        sampleSubmission.deleteOnExit();
+        IOUtils.copy(SharedResourceUtil.lookupStream(SAMPLE_SUBMISSION_RESOURCE),
+                new FileOutputStream(sampleSubmission));
+
+        NihmsSubmissionApp app = new NihmsSubmissionApp(sampleSubmission, transportHints);
         app.run();
 
         itUtil.connect();

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static submissions.SharedResourceUtil.lookupStream;
 
 import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
@@ -32,6 +33,7 @@ import org.dataconservancy.pass.model.Submission;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -62,7 +64,7 @@ public class FcrepoModelBuilderIT {
 
     private static final int EXPECTED_PI_COUNT = 1;
 
-    private static final int EXPECTED_CO_PI_COUNT = 1;
+    private static final int EXPECTED_CO_PI_COUNT = 2;
 
     private static final int EXPECTED_AUTHOR_COUNT = 6;
 
@@ -70,7 +72,7 @@ public class FcrepoModelBuilderIT {
 
     private DepositSubmission submission;
     private FcrepoModelBuilder underTest = new FcrepoModelBuilder();
-    private static final String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE = URI.create("fake:submission1");
     private HashMap<URI, PassEntity> entities = new HashMap<>();
     private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
     private Submission submissionEntity = null;
@@ -78,10 +80,10 @@ public class FcrepoModelBuilderIT {
     @Before
     public void setup() throws Exception {
         // Upload sample data to Fedora repository to get its Submission URI.
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE);
-        InputStream is = new FileInputStream(sampleDataUrl.getPath());
-        URI submissionUri = adapter.jsonToFcrepo(is, entities);
-        is.close();
+        URI submissionUri;
+        try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
+            submissionUri = adapter.jsonToFcrepo(is, entities);
+        }
 
         // Find the Submission entity that was uploaded
         for (URI key : entities.keySet()) {
@@ -112,7 +114,7 @@ public class FcrepoModelBuilderIT {
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
-        assertEquals(3, submission.getFiles().size());
+        assertEquals(8, submission.getFiles().size());
 
         // One of the file's URIs should contain an encoded space
         assertTrue(submission.getFiles().stream().anyMatch(df -> df.getLocation().contains("%20")));
