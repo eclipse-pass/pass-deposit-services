@@ -17,17 +17,16 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.nihms.assembler.Assembler;
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.nihms.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.Map;
+import java.net.URI;
 
-import static org.dataconservancy.pass.deposit.DepositTestUtil.packageToClasspath;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceDepositTestUtil.getMetsXml;
 
 /**
@@ -49,7 +48,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
 
     /**
      * Creates an instance of DsspaceMetsAssembler that is shared across test method invocations.
-     * See {@link #assemblePackage(String)}.
+     * See {@link #assemblePackage(URI)}.
      */
     @BeforeClass
     public static void initAssembler() {
@@ -62,15 +61,17 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
      * {@code sample1/} resource path.  Sets the {@link #extractedPackageDir} to the base directory of the newly created
      * and extracted package.
      */
-    private void assemblePackage(String classpathResourceBase) throws Exception {
+    private void assemblePackage(URI submissionUri) throws Exception {
+        submissionUtil = new SharedSubmissionUtil();
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
 
-        Map<File, DepositFileType> custodialContentWithTypes = prepareCustodialResources(classpathResourceBase);
+        prepareSubmission(submissionUri);
 
-        submission = prepareSubmission(custodialContentWithTypes);
+        prepareCustodialResources();
 
-        // Both tests in this IT will execute assemble(...) on the same instance of DspaceMetsAssembler
+        // Both tests in this IT will execute assemble(...) on the same instance of DspaceMetsAssembler because the
+        // field is static
         PackageStream stream = underTest.assemble(submission);
 
         File packageArchive = savePackage(stream);
@@ -82,13 +83,13 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
 
     @Test
     public void assembleSample1() throws Exception {
-        assemblePackage(packageToClasspath(AbstractAssembler.class) + "/sample1");
+        assemblePackage(URI.create("fake:submission1"));
         verifyPackageStructure(getMetsXml(extractedPackageDir), extractedPackageDir, custodialResources);
     }
 
     @Test
     public void assembleSample2() throws Exception {
-        assemblePackage(packageToClasspath(AbstractAssembler.class) + "/sample2");
+        assemblePackage(URI.create("fake:submission2"));
         verifyPackageStructure(getMetsXml(extractedPackageDir), extractedPackageDir, custodialResources);
     }
 

@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DspaceMetsPackageStreamIT {
@@ -88,14 +89,16 @@ public class DspaceMetsPackageStreamIT {
     @Test
     public void testStream() throws Exception {
 
-        DepositSubmission submission = composeSubmission(this.getClass().getName() + "_testStream",
-                new HashMap<File, DepositFileType>() {
-                    {
-                        put(custodialContent.get(0).getFile(), DepositFileType.manuscript);
-                        put(custodialContent.get(1).getFile(), DepositFileType.supplement);
-                    }
+        DepositSubmission submission = composeSubmission();
 
-                });
+        // Assert there are files on the submission and that they have a type
+        assertTrue(submission.getFiles().size() > 0);
+        assertTrue(submission.getFiles().stream().allMatch(df -> df.getType() != null));
+        assertEquals(1, submission.getFiles().stream()
+                .filter(df -> df.getType() == DepositFileType.manuscript).count());
+
+        submission.setName(this.getClass().getName() + "_testStream");
+
         // Construct a package stream using mocks and two example files
         DspaceMetsZippedPackageStream underTest =
                 new DspaceMetsZippedPackageStream(submission, custodialContent, mb, rbf, metsWriter);
