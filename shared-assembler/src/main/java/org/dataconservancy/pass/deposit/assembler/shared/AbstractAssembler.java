@@ -59,6 +59,8 @@ public abstract class AbstractAssembler implements Assembler {
 
     private static final String ENCODED_CLASSPATH_PREFIX = EncodingClassPathResource.RESOURCE_KEY;
 
+    private static final String JAR_PREFIX = "jar:";
+
     private MetadataBuilderFactory mbf;
 
     private ResourceBuilderFactory rbf;
@@ -223,7 +225,8 @@ public abstract class AbstractAssembler implements Assembler {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
                         }
-                    } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX)) {
+                    } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
+                            location.startsWith(JAR_PREFIX)) {
                         try {
                             delegateResource = new UrlResource(location);
                         } catch (MalformedURLException e) {
