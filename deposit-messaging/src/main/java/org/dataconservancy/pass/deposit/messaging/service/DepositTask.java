@@ -214,8 +214,8 @@ public class DepositTask implements Runnable {
 
                 if (prefixToMatch != null && statementUri.startsWith(prefixToMatch)) {
                     String newUri = statementUri.replace(prefixToMatch, replacementPrefix);
-                    statementUri  = newUri;
                     LOG.trace("Replacing Atom Statement URI '{}' with '{}'", statementUri, newUri);
+                    statementUri  = newUri;
                 } else {
                     LOG.trace("Prefix '{}' did not match Atom Statement URI '{}', no replacement will take place.",
                             prefixToMatch == null ? "<null>" : prefixToMatch, statementUri);

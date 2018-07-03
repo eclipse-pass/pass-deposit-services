@@ -341,6 +341,22 @@ public class DepositTaskHelper {
         }
     }
 
+    String getStatementUriPrefix() {
+        return statementUriPrefix;
+    }
+
+    void setStatementUriPrefix(String statementUriPrefix) {
+        this.statementUriPrefix = statementUriPrefix;
+    }
+
+    String getStatementUriReplacement() {
+        return statementUriReplacement;
+    }
+
+    void setStatementUriReplacement(String statementUriReplacement) {
+        this.statementUriReplacement = statementUriReplacement;
+    }
+
     private static boolean verifyNullityAndLinks(Submission s, Repository r, RepositoryCopy rc, Deposit d) {
         if (d.getDepositStatus() != SUBMITTED) {
             LOG.warn(PRECONDITION_FAILED + " expected DepositStatus = '{}', but was '{}'",
