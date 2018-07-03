@@ -77,6 +77,12 @@ public class DepositTask implements Runnable {
 
     private long swordSleepTimeMs = 10000;
 
+    // e.g. http://dspace-prod.mse.jhu.edu:8080/swordv2
+    private String prefixToMatch;
+
+    // e.g. https://jscholarship.library.jhu.edu/swordv2
+    private String replacementPrefix;
+
     public DepositTask(DepositWorkerContext dc,
                        PassClient passClient,
                        Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
@@ -193,7 +199,7 @@ public class DepositTask implements Runnable {
                 Thread.interrupted();
             }
 
-            URI statementUri = null;
+            String statementUri = null;
             String itemUri = null;
             try {
                 Sword2DepositReceiptResponse swordResponse = (Sword2DepositReceiptResponse) transportResponse;
@@ -204,7 +210,16 @@ public class DepositTask implements Runnable {
                 }
 
                 // deposit receipt -> DSpace Item URL
-                statementUri = swordResponse.getReceipt().getAtomStatementLink().getIRI().toURI();
+                statementUri = swordResponse.getReceipt().getAtomStatementLink().getIRI().toURI().toString();
+
+                if (prefixToMatch != null && statementUri.startsWith(prefixToMatch)) {
+                    String newUri = statementUri.replace(prefixToMatch, replacementPrefix);
+                    statementUri  = newUri;
+                    LOG.trace("Replacing Atom Statement URI '{}' with '{}'", statementUri, newUri);
+                } else {
+                    LOG.trace("Prefix '{}' did not match Atom Statement URI '{}', no replacement will take place.",
+                            prefixToMatch == null ? "<null>" : prefixToMatch, statementUri);
+                }
             } catch (Exception e) {
                 String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
                             "parsing the Atom statement %s for %s failed: %s",
@@ -214,7 +229,7 @@ public class DepositTask implements Runnable {
             }
 
             // TransportResponse was successfully parsed, set the status ref
-            dc.deposit().setDepositStatusRef(statementUri.toString());
+            dc.deposit().setDepositStatusRef(statementUri);
 
             // Create a RepositoryCopy, which will record the URL of the Item in DSpace
             RepositoryCopy repoCopy = newRepositoryCopy(dc, itemUri, CopyStatus.IN_PROGRESS);
@@ -242,6 +257,22 @@ public class DepositTask implements Runnable {
             }
         }
         return repoCopy;
+    }
+
+    public String getPrefixToMatch() {
+        return prefixToMatch;
+    }
+
+    public void setPrefixToMatch(String prefixToMatch) {
+        this.prefixToMatch = prefixToMatch;
+    }
+
+    public void setReplacementPrefix(String replacementPrefix) {
+        this.replacementPrefix = replacementPrefix;
+    }
+
+    public String getReplacementPrefix() {
+        return this.replacementPrefix;
     }
 
     public DepositWorkerContext getDepositWorkerContext() {
