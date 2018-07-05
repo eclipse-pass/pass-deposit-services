@@ -17,14 +17,14 @@
 package org.dataconservancy.nihms.submission;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.builder.InvalidModel;
-import org.dataconservancy.nihms.builder.SubmissionBuilder;
-import org.dataconservancy.nihms.model.DepositSubmission;
-import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.TransportResponse;
-import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

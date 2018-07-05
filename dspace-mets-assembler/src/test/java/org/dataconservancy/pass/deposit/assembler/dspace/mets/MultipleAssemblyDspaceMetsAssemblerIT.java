@@ -15,13 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
-import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;

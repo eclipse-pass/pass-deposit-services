@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.springframework.stereotype.Component;
 
 /**

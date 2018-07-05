@@ -18,11 +18,11 @@ package org.dataconservancy.nihms.cli;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultMetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
-import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
-import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
-import org.dataconservancy.nihms.transport.ftp.DefaultFtpClientFactory;
-import org.dataconservancy.nihms.transport.ftp.FtpTransport;
+import org.dataconservancy.pass.deposit.transport.ftp.DefaultFtpClientFactory;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import static java.lang.String.format;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_FQDN;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.BASE_DIRECTORY;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.BASE_DIRECTORY;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -19,12 +19,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.commons.io.output.NullOutputStream;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.junit.Test;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 
 import java.io.File;

@@ -18,8 +18,8 @@ package org.dataconservancy.nihms.cli;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.nihms.integration.FtpBaseIT;
 import org.dataconservancy.nihms.submission.SubmissionEngine;
-import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
 import org.junit.Before;
 import org.junit.Test;
 import submissions.SharedResourceUtil;
@@ -27,7 +27,6 @@ import submissions.SharedResourceUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 

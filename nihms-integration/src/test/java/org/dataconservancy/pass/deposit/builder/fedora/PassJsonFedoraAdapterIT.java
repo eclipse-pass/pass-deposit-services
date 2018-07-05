@@ -21,12 +21,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.model.PassEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 

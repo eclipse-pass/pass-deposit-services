@@ -15,14 +15,14 @@
  */
 package org.dataconservancy.nihms.submission;
 
-import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.builder.SubmissionBuilder;
-import org.dataconservancy.nihms.model.DepositSubmission;
-import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.TransportResponse;
-import org.dataconservancy.nihms.transport.TransportSession;
-import org.dataconservancy.nihms.transport.ftp.FtpTransportHints;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,19 +37,19 @@ import java.util.function.Supplier;
 import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static org.dataconservancy.nihms.transport.Transport.AUTHMODE;
-import static org.dataconservancy.nihms.transport.Transport.PROTOCOL;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_AUTHMODE;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PASSWORD;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PROTOCOL;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_FQDN;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_SERVER_PORT;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_USERNAME;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.DATA_TYPE;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.MODE;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TRANSFER_MODE;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.TYPE;
-import static org.dataconservancy.nihms.transport.ftp.FtpTransportHints.USE_PASV;
+import static org.dataconservancy.pass.deposit.transport.Transport.AUTHMODE;
+import static org.dataconservancy.pass.deposit.transport.Transport.PROTOCOL;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.DATA_TYPE;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.MODE;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.TRANSFER_MODE;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.TYPE;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.USE_PASV;
 
 /**
  * Performs the submission of a manuscript and associated files to a target repository.

@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 
 /**
  * Implementations create new instances of {@link MetadataBuilder}.

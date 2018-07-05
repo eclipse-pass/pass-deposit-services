@@ -15,8 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.messaging.model;
 
-import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.transport.Transport;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.messaging.service.DepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.model.Repository;

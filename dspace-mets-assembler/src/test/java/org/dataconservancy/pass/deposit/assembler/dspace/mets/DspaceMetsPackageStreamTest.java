@@ -18,12 +18,12 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderImpl;

@@ -16,18 +16,17 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.builder.InvalidModel;
-import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import submissions.SharedResourceUtil;
 
 import java.io.File;
 import java.io.IOException;

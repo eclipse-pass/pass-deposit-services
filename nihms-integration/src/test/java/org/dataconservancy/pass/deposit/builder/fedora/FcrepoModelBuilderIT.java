@@ -16,29 +16,26 @@
 
 package org.dataconservancy.pass.deposit.builder.fedora;
 
-import org.dataconservancy.nihms.builder.fs.FcrepoModelBuilder;
-import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
-import org.dataconservancy.nihms.model.DepositMetadata;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.deposit.model.DepositMetadata;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static submissions.SharedResourceUtil.lookupStream;
 
-import org.dataconservancy.nihms.model.JournalPublicationType;
+import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;

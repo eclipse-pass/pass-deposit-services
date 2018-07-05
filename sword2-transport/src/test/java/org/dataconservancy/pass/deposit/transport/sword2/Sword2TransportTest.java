@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.dataconservancy.nihms.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.Transport;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_AUTHMODE;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PASSWORD;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_PROTOCOL;
-import static org.dataconservancy.nihms.transport.Transport.TRANSPORT_USERNAME;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
 import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
 import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_ON_BEHALF_OF_USER;
 import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_SERVICE_DOC_URL;

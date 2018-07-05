@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

@@ -18,14 +18,14 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -36,7 +36,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;

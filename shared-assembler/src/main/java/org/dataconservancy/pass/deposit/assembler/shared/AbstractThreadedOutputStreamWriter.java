@@ -26,10 +26,10 @@ import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -85,7 +85,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param archiveOut the output stream being written to by this writer
      * @param submission the submission
      * @param packageFiles the custodial content of the package
-     * @param rbf factory for building {@link org.dataconservancy.nihms.assembler.PackageStream.Resource
+     * @param rbf factory for building {@link PackageStream.Resource
      *            package resources}
      */
     public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,

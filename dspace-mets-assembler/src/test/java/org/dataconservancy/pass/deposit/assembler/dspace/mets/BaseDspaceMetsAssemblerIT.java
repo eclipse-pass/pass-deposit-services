@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
-import org.dataconservancy.nihms.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.junit.Before;
 import org.w3c.dom.Document;

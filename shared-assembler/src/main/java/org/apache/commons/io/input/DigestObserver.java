@@ -15,8 +15,8 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 
 import java.io.IOException;
