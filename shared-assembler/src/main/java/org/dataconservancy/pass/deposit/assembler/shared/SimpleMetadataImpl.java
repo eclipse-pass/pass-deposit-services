@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.util.ArrayList;
 import java.util.Collection;

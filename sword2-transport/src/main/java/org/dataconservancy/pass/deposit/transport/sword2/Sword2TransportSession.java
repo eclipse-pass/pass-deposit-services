@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.transport.TransportResponse;
-import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swordapp.client.AuthCredentials;
@@ -25,7 +25,6 @@ import org.swordapp.client.Deposit;
 import org.swordapp.client.DepositReceipt;
 import org.swordapp.client.ProtocolViolationException;
 import org.swordapp.client.SWORDClient;
-import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDError;
 import org.swordapp.client.ServiceDocument;

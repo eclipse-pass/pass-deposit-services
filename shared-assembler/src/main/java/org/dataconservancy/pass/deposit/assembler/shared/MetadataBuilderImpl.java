@@ -16,12 +16,12 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
  * Allows for various components to contribute to the state of PackageStream.Metadata without the requirement to share
- * knowledge of the underlying {@link org.dataconservancy.nihms.assembler.PackageStream.Metadata} implementation.
+ * knowledge of the underlying {@link PackageStream.Metadata} implementation.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */

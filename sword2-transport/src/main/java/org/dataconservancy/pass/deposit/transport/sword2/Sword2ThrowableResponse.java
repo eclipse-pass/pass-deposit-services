@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.dataconservancy.nihms.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
 
 /**
  * Adapts a {@code Throwable} as a {@code TransportResponse}.

@@ -16,7 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 
 /**
  * Implementations create new instances of {@link ResourceBuilder}.

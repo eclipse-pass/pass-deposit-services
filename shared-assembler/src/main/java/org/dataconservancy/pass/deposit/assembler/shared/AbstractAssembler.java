@@ -17,11 +17,11 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
-import org.dataconservancy.nihms.assembler.Assembler;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFile;
-import org.dataconservancy.nihms.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

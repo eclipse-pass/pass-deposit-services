@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;

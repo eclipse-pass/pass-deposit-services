@@ -20,9 +20,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.dataconservancy.nihms</groupId>
-        <artifactId>nihms-parent</artifactId>
-        <version>0.0.8-2.2</version>
+        <groupId>org.dataconservancy.pass.deposit</groupId>
+        <artifactId>deposit-parent</artifactId>
+        <version>0.0.9-2.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>fedora-builder</artifactId>
@@ -41,13 +41,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>deposit-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>builder-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -59,8 +59,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
-            <artifactId>nihms-util</artifactId>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>deposit-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
@@ -71,7 +71,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.nihms</groupId>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>shared-resources</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>

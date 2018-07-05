@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.transport.TransportResponse;
-import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;

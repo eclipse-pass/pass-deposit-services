@@ -15,11 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
-import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
-import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;

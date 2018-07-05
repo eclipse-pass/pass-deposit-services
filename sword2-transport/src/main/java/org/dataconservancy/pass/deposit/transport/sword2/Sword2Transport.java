@@ -15,9 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.TransportSession;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.Transport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.swordapp.client.AuthCredentials;

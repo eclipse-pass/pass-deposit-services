@@ -20,7 +20,7 @@ import com.google.common.net.InetAddresses;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
-import org.dataconservancy.nihms.transport.ftp.FtpUtil;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

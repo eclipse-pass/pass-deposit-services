@@ -20,8 +20,8 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.dataconservancy.nihms.assembler.MetadataBuilder;
-import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +31,8 @@ import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.dataconservancy.nihms.assembler.PackageStream.ARCHIVE.TAR;
-import static org.dataconservancy.nihms.assembler.PackageStream.ARCHIVE.ZIP;
+import static org.dataconservancy.pass.deposit.assembler.PackageStream.ARCHIVE.TAR;
+import static org.dataconservancy.pass.deposit.assembler.PackageStream.ARCHIVE.ZIP;
 
 public abstract class AbstractZippedPackageStream implements PackageStream {
 
@@ -127,7 +127,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
     /**
      * Implementations must provide an {@link AbstractThreadedOutputStreamWriter} that encapsulates the logic for
      * writing the package to the supplied {@code archiveOutputStream} and composing
-     * {@link org.dataconservancy.nihms.assembler.PackageStream.Resource package resources}.  Implementations are
+     * {@link PackageStream.Resource package resources}.  Implementations are
      * encouraged to extend and return {@link AbstractThreadedOutputStreamWriter}.
      *
      * @param archiveOutputStream the output stream that the package contents will be written to

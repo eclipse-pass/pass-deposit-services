@@ -15,8 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 
 /**
  * Allows for various components to contribute to the state of PackageStream.Resources without the requirement to share

@@ -18,9 +18,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.dataconservancy.nihms</groupId>
-    <artifactId>nihms-parent</artifactId>
-    <version>0.0.8-2.2</version>
+    <groupId>org.dataconservancy.pass.deposit</groupId>
+    <artifactId>deposit-parent</artifactId>
+    <version>0.0.9-2.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>NIH Package and Submission Parent Project</name>
 
@@ -28,15 +28,15 @@
         <module>deposit-model</module>
         <module>builder-api</module>
         <module>fedora-builder</module>
-        <module>nihms-assembler-api</module>
+        <module>assembler-api</module>
         <module>nihms-native-assembler</module>
         <!-- nihms-bagit-assembler -->
-        <module>nihms-transport-api</module>
-        <module>nihms-ftp-transport</module>
+        <module>transport-api</module>
+        <module>ftp-transport</module>
         <!-- nihms-http-transport -->
         <module>nihms-submission-engine</module>
         <module>nihms-integration</module>
-        <module>nihms-util</module>
+        <module>deposit-util</module>
         <module>nihms-cli</module>
         <module>sword2-transport</module>
         <module>dspace-mets-assembler</module>
