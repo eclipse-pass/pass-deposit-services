@@ -84,6 +84,12 @@ public class DepositTaskHelper {
     @Value("${pass.deposit.transport.swordv2.sleep-time-ms}")
     private long swordDepositSleepTimeMs;
 
+    @Value("${jscholarship.hack.sword.statement.uri-prefix}")
+    private String statementUriPrefix;
+
+    @Value("${jscholarship.hack.sword.statement.uri-replacement}")
+    private String statementUriReplacement;
+
     private Registry<Packager> packagerRegistry;
 
     @Autowired
@@ -128,6 +134,8 @@ public class DepositTaskHelper {
                     deposit, submission, depositSubmission, repo, packager);
             DepositTask depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri, this);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
+            depositTask.setPrefixToMatch(statementUriPrefix);
+            depositTask.setReplacementPrefix(statementUriReplacement);
 
             LOG.debug(">>>> Submitting task ({}@{}) for tuple [{}, {}, {}]",
                     depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
@@ -331,6 +339,22 @@ public class DepositTaskHelper {
 
             throw new DepositServiceRuntimeException(msg, deposit);
         }
+    }
+
+    String getStatementUriPrefix() {
+        return statementUriPrefix;
+    }
+
+    void setStatementUriPrefix(String statementUriPrefix) {
+        this.statementUriPrefix = statementUriPrefix;
+    }
+
+    String getStatementUriReplacement() {
+        return statementUriReplacement;
+    }
+
+    void setStatementUriReplacement(String statementUriReplacement) {
+        this.statementUriReplacement = statementUriReplacement;
     }
 
     private static boolean verifyNullityAndLinks(Submission s, Repository r, RepositoryCopy rc, Deposit d) {
