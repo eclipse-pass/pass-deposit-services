@@ -86,7 +86,7 @@
         <fcrepo.server>${docker.host.address}</fcrepo.server>
         <dspace.server>${docker.host.address}</dspace.server>
         <ftp.server>${docker.host.address}</ftp.server>
-        <pass.fedora.user>admin</pass.fedora.user>
+        <pass.fedora.user>fedoraAdmin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
         <pass.elasticsearch.url>http://${docker.host.address}:${es.port}/pass/</pass.elasticsearch.url>
