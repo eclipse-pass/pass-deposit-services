@@ -63,7 +63,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected JsonParser jsonParser;
 
-    protected SubmissionBuilder submissionBuilder;
+    protected SubmissionBuilder fcrepoModelBuilder;
 
     protected Registry<Packager> packagerRegistry;
 
@@ -84,7 +84,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
-    public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder submissionBuilder,
+    public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder fcrepoModelBuilder,
                                Registry<Packager> packagerRegistry,
                                SubmissionPolicy passUserSubmittedPolicy,
                                Policy<Deposit.DepositStatus> dirtyDepositPolicy,
@@ -97,7 +97,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         this.passClient = passClient;
         this.jsonParser = jsonParser;
-        this.submissionBuilder = submissionBuilder;
+        this.fcrepoModelBuilder = fcrepoModelBuilder;
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
         this.messagePolicy = submissionMessagePolicy;
@@ -152,7 +152,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 (s) -> {
                     DepositSubmission ds = null;
                     try {
-                        ds = submissionBuilder.build(s.getId().toString());
+                        ds = fcrepoModelBuilder.build(s.getId().toString());
                     } catch (InvalidModel invalidModel) {
                         throw new RuntimeException(invalidModel.getMessage(), invalidModel);
                     }

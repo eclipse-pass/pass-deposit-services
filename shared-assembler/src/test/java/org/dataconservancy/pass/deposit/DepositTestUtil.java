@@ -22,12 +22,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.builder.InvalidModel;
+import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositManifest;
-import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositSubmission;
-import org.dataconservancy.nihms.model.JournalPublicationType;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,17 +44,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -113,55 +109,23 @@ public class DepositTestUtil {
      * @return a mocked {@code DepositSubmission}
      */
     public static DepositSubmission composeSubmission() {
-        DepositSubmission submission = new DepositSubmission();
-        DepositMetadata mdHolder = new DepositMetadata();
-        DepositMetadata.Person contributorOne = new DepositMetadata.Person();
-        DepositMetadata.Person contributorTwo = new DepositMetadata.Person();
-        DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
-        DepositMetadata.Journal journal = new DepositMetadata.Journal();
-        DepositMetadata.Article article = new DepositMetadata.Article();
-
-        submission.setMetadata(mdHolder);
-
-        mdHolder.setPersons(Arrays.asList(contributorOne, contributorTwo));
-        mdHolder.setManuscriptMetadata(manuscript);
-        mdHolder.setArticleMetadata(article);
-        mdHolder.setJournalMetadata(journal);
-
-        contributorOne.setFirstName("Albert");
-        contributorOne.setLastName("Einstien");
-        contributorOne.setEmail("aeinstien@foo.org");
-        contributorOne.setType(DepositMetadata.PERSON_TYPE.submitter);
-        contributorTwo.setFirstName("Stephen");
-        contributorTwo.setLastName("Hawking");
-        contributorTwo.setEmail("shawking@bar.org");
-
-        manuscript.setTitle("Two stupendous minds.");
+        SharedSubmissionUtil util = new SharedSubmissionUtil();
         try {
-            manuscript.setManuscriptUrl(
-                    URI.create("https://pass.library.johnshopkins.edu/fcrepo/rest/manuscripts/1234").toURL());
-        } catch (MalformedURLException e) {
-            fail(e.getMessage());
+            return util.asDepositSubmission(URI.create("fake:submission3"));
+        } catch (InvalidModel invalidModel) {
+            throw new RuntimeException(invalidModel.getMessage(), invalidModel);
         }
-        manuscript.setPublisherPdf(false);
-        manuscript.setMsAbstract("This is an abstract for the manuscript, provided by the submitter.");
-
-        article.setTitle("Two stupendous minds.");
-        article.setDoi(URI.create("123/456"));
-        article.setEmbargoLiftDate(ZonedDateTime.now().plusDays(10));
-
-        journal.setIssnPubTypes(
-                new HashMap<String, DepositMetadata.IssnPubType>() {
-                    {
-                        put("1236-5678",
-                                new DepositMetadata.IssnPubType("1236-5678", JournalPublicationType.EPUB));
-                    }
-                }
-        );
-        journal.setJournalTitle("American Journal of XYZ Research");
-        journal.setJournalId("Am J of XYZ Res");
-        return submission;
     }
+
+    public static DepositSubmission composeSubmission(URI submissionUri) {
+        SharedSubmissionUtil util = new SharedSubmissionUtil();
+        try {
+            return util.asDepositSubmission(submissionUri);
+        } catch (InvalidModel invalidModel) {
+            throw new RuntimeException(invalidModel.getMessage(), invalidModel);
+        }
+    }
+
 
     /**
      * Mocks a {@link DepositSubmission}.  The mock submission includes:

@@ -18,6 +18,7 @@ package org.dataconservancy.nihms.assembler.nihmsnative;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.dataconservancy.nihms.assembler.PackageStream;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.nihms.model.DepositFileType;
 import org.dataconservancy.nihms.model.DepositMetadata;
 import org.dataconservancy.nihms.model.DepositMetadata.Person;
@@ -98,12 +99,20 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     public void testBasicStructure() throws Exception {
         assertTrue("Missing NIHMS package manifest (expected: " + manifest + ")", manifest.exists());
         assertTrue("Missing NIHMS bulk metadata (expected: " + metadata + ")", metadata.exists());
+        assertTrue("Expected Files to be attached to the DepositSubmission!",
+                submission.getFiles().size() > 0);
+        assertTrue("Expected exactly 1 manuscript to be attached to the DepositSubmission!",
+                submission.getFiles().stream()
+                        .filter(df -> df.getType() == DepositFileType.manuscript).count() == 1);
+
+        Map<String, DepositFileType> custodialResourcesTypeMap = custodialResources.stream()
+                .collect(Collectors.toMap(DepositFile::getName, DepositFile::getType));
 
         // Each custodial resource is present in the package.  The tested filenames need to be remediated, in case
         // a custodial resource uses a reserved file name.
         custodialResources.forEach(custodialResource -> {
-            String filename = NihmsZippedPackageStream.getNonCollidingFilename(custodialResource.getFilename(),
-                    custodialResourcesTypeMap.get(custodialResource.getFilename()));
+            String filename = NihmsZippedPackageStream.getNonCollidingFilename(custodialResource.getName(),
+                    custodialResource.getType());
             assertTrue(extractedPackageDir.toPath().resolve(filename).toFile().exists());
         });
 
@@ -149,7 +158,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             new ManifestLine(manifest, line, lineCount++).assertAll();
         }
         assertEquals("Expected one line per custodial resource plus metadata file in NIHMS manifest file " + manifest,
-                custodialResources.size() + 1, lineCount);
+                submission.getFiles().size() + 1, lineCount);
 
         //check for compliance with the NIHMS Bulk Submission Specification
         //table, figure and supplement file types must have a label
@@ -182,7 +191,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         assertEquals(submission.getMetadata().getManuscriptMetadata().getTitle(), title.getTextContent());
 
         // Insure that only one <person> element is present in the submission metadata
-        // and insure that the <person> is a corresponding PI.
+        // and insure that the <person> is a PI or a Co-PI for the grant that funded the submission.
 
         List<Element> personElements = asList(root.getElementsByTagName("person"));
         // Assert that there is only one Person present in the metadata
@@ -193,6 +202,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
             Person asPerson = new Person();
             asPerson.setFirstName(element.getAttribute("fname"));
             asPerson.setLastName(element.getAttribute("lname"));
+            asPerson.setMiddleName(element.getAttribute("mname"));
             asPerson.setType(DepositMetadata.PERSON_TYPE.submitter);
             return asPerson;
         }).collect(Collectors.toList());
@@ -208,18 +218,16 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         Element ms = asList(root.getElementsByTagName("manuscript")).get(0);
         assertEquals(submission.getMetadata().getArticleMetadata().getDoi().toString(), ms.getAttribute("doi"));
 
-        // Assert that the ISSN is present in the metadata as the <issn> element
+        // Assert that the ISSNs are present in the metadata as the <issn> element
         List<Element> issns = asList(root.getElementsByTagName("issn"));
         Map<String, DepositMetadata.IssnPubType> issnPubTypes =
                 submission.getMetadata().getJournalMetadata().getIssnPubTypes();
         assertEquals(issnPubTypes.size(), issns.size());
-        assertEquals(1, issns.size());
-        Element issn = issns.get(0);
-        DepositMetadata.IssnPubType expectedIssnPubtype = issnPubTypes.get(issn.getTextContent());
+        assertTrue(issnPubTypes.size() > 0);
 
-        assertNotNull(expectedIssnPubtype);
-        assertEquals(expectedIssnPubtype.issn, issn.getTextContent());
-        assertEquals(expectedIssnPubtype.pubType, JournalPublicationType.valueOf(issn.getAttribute("pub-type").toUpperCase()));
+        issnPubTypes.values().forEach(issnPubType -> {
+            assertTrue(issns.stream().anyMatch(element -> element.getTextContent().equals(issnPubType.issn) && element.getAttribute("pub-type").equals(issnPubType.pubType.name().toLowerCase())));
+        });
     }
 
     private static boolean isNullOrEmpty(String s) {

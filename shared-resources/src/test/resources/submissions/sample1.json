@@ -7,7 +7,7 @@
     "aggregatedDepositStatus" : "not-started",
     "publication" : "fake:publication1",
     "repositories" : [ "fake:repository1" ],
-    "user" : "fake:user1",
+    "user" : "fake:user2",
     "grants" : [ "fake:grant1" ],
     "@id" : "fake:submission1",
     "@type" : "Submission"
@@ -51,7 +51,7 @@
     "primaryFunder" : "fake:funder1",
     "directFunder" : "fake:funder2",
     "pi" : "fake:user2",
-    "coPis" : [ "fake:user3" ],
+    "coPis" : [ "fake:user3", "fake:user1" ],
     "@id" : "fake:grant1",
     "@type" : "Grant"
   },
@@ -127,33 +127,83 @@
     "@type" : "User"
   },
   {
-    "name" : "test_image",
-    "uri" : "classpath:/dektol.jpg",
-    "description" : "A logo to test supplemental type",
+    "name" : "test_chart",
+    "uri" : "classpath:/submissions/sample1/Chart.jpg",
+    "description" : "Custodial content",
     "fileRole" : "supplemental",
-    "mimeType" : "image/png",
+    "mimeType" : "image/jpg",
     "submission" : "fake:submission1",
     "@id" : "fake:file1",
     "@type" : "File"
   },
   {
-    "name" : "test_pdf",
-    "uri" : "classpath:/ilford_film_processing_chart.pdf",
-    "description" : "PDF hype to test manuscript type",
-    "fileRole" : "manuscript",
-    "mimeType" : "application/pdf",
+    "name" : "test_figure_1",
+    "uri" : "classpath:/submissions/sample1/Figure1.tif",
+    "description" : "Custodial content",
+    "fileRole" : "figure",
+    "mimeType" : "image/tiff",
     "submission" : "fake:submission1",
     "@id" : "fake:file2",
     "@type" : "File"
   },
   {
-    "name" : "test_pdf_with_space",
-    "uri" : "encodedclasspath:/ilford%20panf.pdf",
-    "description" : "File name containing space.",
-    "fileRole" : "supplemental",
-    "mimeType" : "application/pdf",
+    "name" : "test_figure_2",
+    "uri" : "classpath:/submissions/sample1/Figure2.png",
+    "description" : "Custodial content",
+    "fileRole" : "figure",
+    "mimeType" : "image/png",
     "submission" : "fake:submission1",
     "@id" : "fake:file3",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_manuscript",
+    "uri" : "classpath:/submissions/sample1/Sample2.doc",
+    "description" : "Custodial content",
+    "fileRole" : "manuscript",
+    "mimeType" : "application/msword",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file4",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_table",
+    "uri" : "classpath:/submissions/sample1/Table.ods",
+    "description" : "Custodial content",
+    "fileRole" : "table",
+    "mimeType" : "application/vnd.oasis.opendocument.spreadsheet",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file5",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_supplement_1",
+    "uri" : "classpath:/submissions/sample1/bulk_meta.xml",
+    "description" : "Custodial content, meant to conflict with NIH package spec",
+    "fileRole" : "supplemental",
+    "mimeType" : "application/xml",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file6",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_supplement_2",
+    "uri" : "classpath:/submissions/sample1/manifest.txt",
+    "description" : "Custodial content, meant to conflict with NIH package spec",
+    "fileRole" : "supplemental",
+    "mimeType" : "text/plain",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file7",
+    "@type" : "File"
+  },
+  {
+    "name" : "test_file_with_spaces",
+    "uri" : "encodedclasspath:/submissions/sample1/ilford%20panf.pdf",
+    "description" : "Custodial content with a space in the filename",
+    "fileRole" : "supplemental",
+    "mimeType" : "text/plain",
+    "submission" : "fake:submission1",
+    "@id" : "fake:file8",
     "@type" : "File"
   }
 ]

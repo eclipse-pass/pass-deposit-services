@@ -28,34 +28,6 @@
     <artifactId>shared-assembler</artifactId>
     <name>Shared Package Assembler implementation</name>
 
-    <build>
-
-        <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                    <resourcesDirectory>${project.basedir}/src/test/resources</resourcesDirectory>
-                    <includes>
-                        <include>**/sample*/**</include>
-                    </includes>
-                </configuration>
-            </plugin>
-
-        </plugins>
-
-    </build>
-
-
     <dependencies>
 
         <dependency>
@@ -72,6 +44,12 @@
         <dependency>
             <groupId>org.dataconservancy.nihms</groupId>
             <artifactId>nihms-assembler-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>builder-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
@@ -119,6 +97,24 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>shared-resources</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.nihms</groupId>
+            <artifactId>fedora-builder</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
         </dependency>
 
         <dependency>

@@ -17,9 +17,9 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.junit.Before;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -35,7 +35,6 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstant
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.METS_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_HREF;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.XLINK_NS;
-import static org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler.sanitizeFilename;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -70,22 +69,21 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         assertEquals(APPLICATION_ZIP, metadata.mimeType());
     }
 
-    protected static void verifyPackageStructure(Document metsDoc, File extractedPackageDir, List<Resource>
+    protected static void verifyPackageStructure(Document metsDoc, File extractedPackageDir, List<DepositFile>
             custodialResources) {
-        List<String> custodialResourceFilenames = custodialResources.stream()
-                .map(Resource::getFilename).collect(Collectors.toList());
 
         // expect a file for every resource under data/ directory
         // expect a mets xml file at the base directory
         // expect mets xml to have a fileSec with a file for each resource with the correct path
 
         // Each custodial resource is represented in the package under the 'data/' directory
+
         // The filename of the custodial resource was sanitized when the package was written, so the
         // filenames of the custodial resources need to be run through the sanitizer before checking for
         // existence.
 
         List<String> sanitizedFileNames = custodialResources.stream()
-                .map(Resource::getFilename)
+                .map(DepositFile::getName)
                 .map(AbstractAssembler::sanitizeFilename)
                 .collect(Collectors.toList());
 
@@ -129,9 +127,11 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
         // each custodial resource has an flocat, and each flocat has a custodial resource
         assertEquals("Expected '" + custodialResources.size() + "' flocat elements in the package metadata",
                 custodialResources.size(), flocats.size());
+
         sanitizedFileNames.forEach(fileName -> {
             assertTrue(flocatHrefs.contains("data/" + fileName));
         });
+
         flocatHrefs.forEach(flocat -> {
             assertTrue(sanitizedFileNames.contains(flocat.substring("data/".length())));
         });

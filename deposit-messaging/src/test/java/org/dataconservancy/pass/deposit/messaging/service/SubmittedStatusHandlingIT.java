@@ -16,9 +16,9 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.nihms.assembler.PackageStream;
-import org.dataconservancy.nihms.model.DepositFileType;
+import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.nihms.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.nihms.transport.Transport;
-import org.dataconservancy.nihms.transport.TransportResponse;
 import org.dataconservancy.nihms.transport.TransportSession;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
@@ -37,11 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.File;
 import java.net.URI;
-import java.net.URL;
 import java.util.Collections;
-import java.util.Map;
 
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
@@ -54,7 +51,7 @@ import static org.junit.Assert.assertTrue;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
+@SpringBootTest(properties = {"spring.jms.listener.auto-startup=false"})
 public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
     @Autowired
@@ -67,21 +64,24 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
     private PassClient passClient;
 
     @Autowired
-    DepositTaskHelper underTest;
+    private DepositTaskHelper underTest;
+
+    @Autowired
+    private FilesystemModelBuilder fsModelBuilder;
 
     private Deposit toUpdate;
 
     @Override
     public void setUp() throws Exception {
 
+        submissionUtil = new SharedSubmissionUtil(fsModelBuilder);
+
         // Step 1: Create a PackageStream
 
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
 
-        Map<File, DepositFileType> custodialContentWithTypes = prepareCustodialResources();
-
-        submission = prepareSubmission(custodialContentWithTypes);
+        submission = submissionUtil.asDepositSubmission(URI.create("fake:submission3"));
 
         PackageStream stream = dspaceMetsAssembler.assemble(submission);
 
@@ -146,8 +146,8 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
     @Test
     public void processStatusFromSubmittedToAccepted() throws Exception {
         assertEquals(SUBMITTED, toUpdate.getDepositStatus());
-        assertEquals(IN_PROGRESS,
-                passClient.readResource(toUpdate.getRepositoryCopy(), RepositoryCopy.class).getCopyStatus());
+        assertEquals(IN_PROGRESS, passClient.readResource(toUpdate.getRepositoryCopy(), RepositoryCopy.class)
+                .getCopyStatus());
 
         underTest.processDepositStatus(toUpdate);
 

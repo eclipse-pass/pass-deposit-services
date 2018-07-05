@@ -26,13 +26,16 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static submissions.SharedResourceUtil.lookupStream;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,6 +44,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +68,7 @@ public class FilesystemModelBuilderTest {
 
     private static final int EXPECTED_PI_COUNT = 1;
 
-    private static final int EXPECTED_CO_PI_COUNT = 1;
+    private static final int EXPECTED_CO_PI_COUNT = 2;
 
     private static final int EXPECTED_AUTHOR_COUNT = 6;
 
@@ -74,43 +78,38 @@ public class FilesystemModelBuilderTest {
 
     private FilesystemModelBuilder underTest = new FilesystemModelBuilder();
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE = "SampleSubmissionData.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE = URI.create("fake:submission1");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = "/SampleSubmissionData-with-null-common-md-fields.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS = URI.create("fake:submission7");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS = "/SampleSubmissionData-with-missing-common-md-fields.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS = URI.create("fake:submission5");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = "/SampleSubmissionData-null-doi.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_NULL_DOI = URI.create("fake:submission8");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI = "/SampleSubmissionData-missing-doi.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI = URI.create("fake:submission6");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = "/SampleSubmissionData-untrimmed-doi.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = URI.create("fake:submission9");
 
-    private static final String SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = "/SampleSubmissionData-with-figure-and-table-files.json";
+    private static final URI SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = URI.create("fake:submission4");
+
+    private SharedResourceUtil submissionUtil;
 
     @Before
     public void setup() throws Exception{
-        // Create submission data from sample data file
-        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-        submission = underTest.build(sampleDataUrl.getPath());
+        submissionUtil = new SharedResourceUtil();
+
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE), emptyMap());
     }
 
     @Test
-    public void testElementValues() {
+    public void testElementValues() throws Exception {
         // Load the PassEntity version of the sample data file
         Submission submissionEntity = null;
         HashMap<URI, PassEntity> entities = new HashMap<>();
-        URL sampleDataUrl = FilesystemModelBuilderTest.class.getClassLoader().getResource(SAMPLE_SUBMISSION_RESOURCE);
-        String sampleDataPath = sampleDataUrl.getPath();
-        try {
-            InputStream is = new FileInputStream(sampleDataPath);
+
+        try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)){
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             submissionEntity = reader.jsonToPass(is, entities);
-            is.close();
-        } catch (FileNotFoundException e) {
-            fail(String.format("Could not load sample data file '%s'", sampleDataPath));
-        } catch (IOException e) {
-            fail(String.format("Could not close the sample data file '%s'", sampleDataPath));
         }
 
         // Check that some basic things are in order
@@ -125,7 +124,7 @@ public class FilesystemModelBuilderTest {
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
 
         assertNotNull(submission.getFiles());
-        assertEquals(3, submission.getFiles().size());
+        assertEquals(8, submission.getFiles().size());
         // One of the uris is expected to contain an encoded space
         assertTrue(submission.getFiles().stream().anyMatch(f -> f.getLocation().contains("%20")));
 
@@ -156,9 +155,7 @@ public class FilesystemModelBuilderTest {
     @Test
     public void buildWithNullValues() throws Exception {
         // Create submission data from sample data file with null values
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS);
-        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_NULL_FIELDS), emptyMap());
 
         assertNotNull(submission);
         assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
@@ -167,10 +164,8 @@ public class FilesystemModelBuilderTest {
 
     @Test
     public void buildWithMissingValues() throws Exception {
-        // Create submission data from sample data file with null values
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS);
-        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        // Create submission data from sample data file with missing fields
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_MISSING_FIELDS), emptyMap());
 
         assertNotNull(submission);
         assertNull(submission.getMetadata().getManuscriptMetadata().getTitle());
@@ -179,10 +174,8 @@ public class FilesystemModelBuilderTest {
 
     @Test
     public void buildWithNullDoi() throws Exception {
-        // Create submission data from sample data file with null values
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_NULL_DOI);
-        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_NULL_DOI, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        // Create submission data from sample data file with null doi
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_NULL_DOI), emptyMap());
 
         assertNotNull(submission);
         assertNull(submission.getMetadata().getArticleMetadata().getDoi());
@@ -190,10 +183,8 @@ public class FilesystemModelBuilderTest {
 
     @Test
     public void buildWithMissingDoi() throws Exception {
-        // Create submission data from sample data file with null values
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI);
-        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        // Create submission data from sample data file with missing doi
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_MISSING_DOI), emptyMap());
 
         assertNotNull(submission);
         assertNull(submission.getMetadata().getArticleMetadata().getDoi());
@@ -201,11 +192,8 @@ public class FilesystemModelBuilderTest {
 
     @Test
     public void buildWithUntrimmedDoi() throws Exception {
-        // Create submission data from sample data file with null values
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI);
-        assertNotNull("Could not resolve classpath resource " +
-                SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        // Create submission data from sample data file with whitespace around the doi
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI), emptyMap());
 
         assertNotNull(submission);
         URI doi = submission.getMetadata().getArticleMetadata().getDoi();
@@ -217,9 +205,7 @@ public class FilesystemModelBuilderTest {
     @Test
     public void buildWithTableAndFigure() throws Exception {
         // Create submission data from sample data file with table and figure files
-        URL sampleDataUrl = this.getClass().getResource(SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE);
-        assertNotNull("Could not resolve classpath resource " + SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE, sampleDataUrl);
-        submission = underTest.build(sampleDataUrl.getPath());
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE), emptyMap());
 
         assertNotNull(submission);
         assertNotNull(submission.getFiles());

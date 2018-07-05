@@ -25,6 +25,8 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.commons.httpclient.Credentials;
 import org.dataconservancy.nihms.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.nihms.builder.fs.FcrepoModelBuilder;
+import org.dataconservancy.nihms.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.nihms.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.nihms.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -150,8 +152,13 @@ public class DepositConfig {
     }
 
     @Bean
-    public FcrepoModelBuilder modelBuilder() {
+    public FcrepoModelBuilder fcrepoModelBuilder() {
         return new FcrepoModelBuilder();
+    }
+
+    @Bean
+    public FilesystemModelBuilder fileSystemModelBuilder() {
+        return new FilesystemModelBuilder();
     }
 
     @Bean

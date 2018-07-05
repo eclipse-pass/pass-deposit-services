@@ -9,7 +9,7 @@
     "repositories" : [ "fake:repository1" ],
     "user" : "fake:user1",
     "grants" : [ "fake:grant1" ],
-    "@id" : "fake:submission1",
+    "@id" : "fake:submission8",
     "@type" : "Submission"
   },
   {
@@ -127,21 +127,21 @@
   },
   {
     "name" : "test_image",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/dektol.jpg",
+    "uri" : "classpath:/submissions/sample3/dektol.jpg",
     "description" : "A logo to test supplemental type",
     "fileRole" : "supplemental",
     "mimeType" : "image/png",
-    "submission" : "fake:submission1",
+    "submission" : "fake:submission8",
     "@id" : "fake:file1",
     "@type" : "File"
   },
   {
     "name" : "test_pdf",
-    "uri" : "classpath:/org/dataconservancy/nihms/builder/fs/ilford_film_processing_chart.pdf",
+    "uri" : "classpath:/submissions/sample3/ilford_film_processing_chart.pdf",
     "description" : "PDF hype to test manuscript type",
     "fileRole" : "manuscript",
     "mimeType" : "application/pdf",
-    "submission" : "fake:submission1",
+    "submission" : "fake:submission8",
     "@id" : "fake:file2",
     "@type" : "File"
   }

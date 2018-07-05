@@ -21,11 +21,13 @@ import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.nihms.assembler.PackageStream;
 import org.dataconservancy.nihms.assembler.ResourceBuilder;
+import org.dataconservancy.nihms.model.DepositFile;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.junit.Test;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -124,7 +126,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
         // Custodial resources have their file names sanitized before being written out to a package
         // If we are to locate the sanitized file name on the filesystem, we have to repeat the sanitization function
         // on each filename in order to check for its existence
-        Map<String, Resource> sanitizedCustodialResourcesMap = custodialResourcesMap.entrySet().stream()
+        Map<String, DepositFile> sanitizedCustodialResourcesMap = custodialResourcesMap.entrySet().stream()
                 .collect(Collectors.toMap(entry -> sanitizeFilename(entry.getKey()), Map.Entry::getValue));
 
         asList(metsDoc.getElementsByTagNameNS(METS_NS, METS_FILE))
@@ -132,12 +134,10 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
                     assertNotNull(fileElement.getAttribute(METS_MIMETYPE));
                     String sanitizedFileName = ((Element) fileElement.getFirstChild())
                             .getAttributeNS(XLINK_NS, XLINK_HREF).substring("data/".length());
-                    try {
-                        assertEquals((Long) sanitizedCustodialResourcesMap.get(sanitizedFileName).contentLength(),
-                                    Long.valueOf(fileElement.getAttribute(METS_SIZE)));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                    }
+                    File file = new File(extractedPackageDir,"data/" + sanitizedFileName);
+                    assertTrue("File metadata references non-existent file: " + sanitizedFileName,
+                            file.exists());
+                    assertEquals((Long) file.length(), Long.valueOf(fileElement.getAttribute(METS_SIZE)));
                 });
     }
 

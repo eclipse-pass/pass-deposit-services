@@ -26,6 +26,7 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,17 +41,16 @@ import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static submissions.SharedResourceUtil.lookupStream;
 
 public class PassJsonFedoraAdapterIT {
 
-    private String SAMPLE_DATA_FILE = "SampleSubmissionData.json";
-    private URL sampleDataUrl;
+    private URI SAMPLE_DATA_FILE = URI.create("fake:submission1");
     private PassJsonFedoraAdapter adapter;
     private HashMap<URI, PassEntity> entities = new HashMap<>();
 
     @Before
     public void setup() {
-        sampleDataUrl = this.getClass().getResource(SAMPLE_DATA_FILE);
         adapter = new PassJsonFedoraAdapter();
     }
 
@@ -58,27 +58,31 @@ public class PassJsonFedoraAdapterIT {
     public void roundTrip() {
         try {
             // Upload the sample data to the Fedora repo.
-            InputStream is = new FileInputStream(sampleDataUrl.getPath());
-            URI submissionUri = adapter.jsonToFcrepo(is, entities);
-            is.close();
+            URI submissionUri;
+            try (InputStream is = lookupStream(SAMPLE_DATA_FILE)) {
+                submissionUri = adapter.jsonToFcrepo(is, entities);
+            }
 
             // Download the data from the server to a temporary JSON file
             File tempFile = File.createTempFile("fcrepo", ".json");
             tempFile.deleteOnExit();
             String tempFilePath = tempFile.getCanonicalPath();
-            FileOutputStream fos = new FileOutputStream(tempFile);
-            adapter.fcrepoToJson(submissionUri, fos);
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                adapter.fcrepoToJson(submissionUri, fos);
+            }
 
             // Read the two files into JSON models
-            is = new FileInputStream(sampleDataUrl.getPath());
-            String origString = IOUtils.toString(is, Charset.defaultCharset());
+            String origString;
+            try (InputStream in = lookupStream(SAMPLE_DATA_FILE)) {
+                origString = IOUtils.toString(in, Charset.defaultCharset());
+            }
             JsonArray origJson = new JsonParser().parse(origString).getAsJsonArray();
-            is.close();
-            is = new FileInputStream(tempFilePath);
-            String resultString = IOUtils.toString(is, Charset.defaultCharset());
+
+            String resultString;
+            try (InputStream in = new FileInputStream(tempFilePath)) {
+                resultString = IOUtils.toString(in, Charset.defaultCharset());
+            }
             JsonArray resultJson = new JsonParser().parse(resultString).getAsJsonArray();
-            is.close();
 
             // Compare the two files.  Array contents may be in a different order, and URIs have changed,
             // so find objects with same @type field and compare the values of their first properties.
