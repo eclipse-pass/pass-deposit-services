@@ -104,8 +104,8 @@
         <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
         <jackson.version>2.9.4</jackson.version>
 
-        <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.2-SNAPSHOT-5</docker.fcrepo.version>
-        <docker.indexer.version>oapass/indexer:0.0.10-2.2-SNAPSHOT-1</docker.indexer.version>
+        <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.2-SNAPSHOT-10</docker.fcrepo.version>
+        <docker.indexer.version>oapass/indexer:0.0.12-2.2-SNAPSHOT</docker.indexer.version>
         <docker.elasticsearch.version>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</docker.elasticsearch.version>
 
         <!-- TODO properly tag these images -->
