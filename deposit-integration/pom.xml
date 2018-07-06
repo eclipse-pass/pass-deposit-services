@@ -25,7 +25,7 @@
         <version>0.0.9-2.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nihms-integration</artifactId>
+    <artifactId>deposit-integration</artifactId>
     <name>Integration Tests</name>
 
     <properties>
