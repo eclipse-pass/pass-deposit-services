@@ -91,13 +91,16 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                 .findAny().orElseThrow(() ->
                         new RuntimeException("Missing Deposit for Repository '" + dspaceRepo.getName() + "', '" + dspaceRepo.getId() + "'"));
 
-        Condition<Deposit> nonNullDepositRefCondition = new Condition<>(() ->
+        Condition<Deposit> depositCondition = new Condition<>(() ->
                 passClient.readResource(dspaceDeposit.getId(), Deposit.class), "Get J10P Deposit");
         assertTrue("Expected a non-null deposit status reference for " + J10P_REPO_NAME,
-                nonNullDepositRefCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
-        assertEquals(Deposit.DepositStatus.ACCEPTED, dspaceDeposit.getDepositStatus());
-        assertEquals("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy", COMPLETE,
-                passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class).getCopyStatus());
+                depositCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
+        assertTrue("Expected DepositStatus.ACCEPTED for the " + J10P_REPO_NAME + " Deposit.", depositCondition.awaitAndVerify((deposit -> deposit.getDepositStatus() == ACCEPTED)));
+
+        Condition<RepositoryCopy> repositoryCopyCondition = new Condition<>(() ->
+                passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class), "Get J10P Repository Copy");
+        assertTrue("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy",
+                repositoryCopyCondition.awaitAndVerify(repoCopy -> COMPLETE == repoCopy.getCopyStatus()));
 
         // 2b. If the Repository for the Deposit is for PubMed Central, then the 'depositStatusRef' should be null, and
         // the status of the Deposit should be SUBMITTED, and there should be no RepositoryCopy
