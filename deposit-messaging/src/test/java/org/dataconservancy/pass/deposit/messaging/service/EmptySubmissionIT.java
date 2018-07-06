@@ -17,8 +17,10 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import java.io.InputStream;
+import java.net.URI;
 
 import static org.hamcrest.CoreMatchers.isA;
 
@@ -27,11 +29,11 @@ import static org.hamcrest.CoreMatchers.isA;
  */
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
-    private static final String SUBMISSION_RESOURCES = "SubmissionProcessorIT-no-files.json";
+    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission10");
 
     @Override
     protected InputStream getSubmissionResources() {
-        return SubmissionTestUtil.getSubmissionResources(SUBMISSION_RESOURCES);
+        return SharedResourceUtil.lookupStream(SUBMISSION_RESOURCES);
     }
 
     @Test

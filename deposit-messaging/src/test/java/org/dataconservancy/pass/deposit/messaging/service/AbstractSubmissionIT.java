@@ -50,7 +50,9 @@ public abstract class AbstractSubmissionIT {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    protected static final String EXPECTED_REPO_NAME = "JScholarship";
+    protected static final String J10P_REPO_NAME = "JScholarship";
+
+    protected static final String PMC_REPO_NAME = "PubMed Central";
 
     protected Submission submission;
 
@@ -103,7 +105,7 @@ public abstract class AbstractSubmissionIT {
         assertNotNull(submission.getRepositories());
         assertTrue(submission.getRepositories().stream()
                 .map(uri -> (Repository)uriMap.get(uri))
-                .anyMatch(repo -> repo.getName().equals(EXPECTED_REPO_NAME)));
+                .anyMatch(repo -> repo.getName().equals(J10P_REPO_NAME)));
 
 
         submissionResources = uriMap;

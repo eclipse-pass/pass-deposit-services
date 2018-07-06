@@ -78,6 +78,18 @@
                 <fcrepo.jms.port>61616</fcrepo.jms.port>
                 <dspace.port>8181</dspace.port>
                 <postgres.port>6543</postgres.port>
+                <ftp-control.port>21</ftp-control.port>
+                <ftp-data-01.port>30000</ftp-data-01.port>
+                <ftp-data-02.port>30001</ftp-data-02.port>
+                <ftp-data-03.port>30002</ftp-data-03.port>
+                <ftp-data-04.port>30003</ftp-data-04.port>
+                <ftp-data-05.port>30004</ftp-data-05.port>
+                <ftp-data-06.port>30005</ftp-data-06.port>
+                <ftp-data-07.port>30006</ftp-data-07.port>
+                <ftp-data-08.port>30007</ftp-data-08.port>
+                <ftp-data-09.port>30008</ftp-data-09.port>
+                <ftp-data-10.port>30009</ftp-data-10.port>
+                <ftp-data-11.port>30010</ftp-data-11.port>
             </properties>
         </profile>
     </profiles>
