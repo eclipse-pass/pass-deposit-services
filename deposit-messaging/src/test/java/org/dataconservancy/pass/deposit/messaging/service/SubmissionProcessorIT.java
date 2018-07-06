@@ -20,16 +20,21 @@ import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.junit.Test;
+import submissions.SharedResourceUtil;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toSet;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -37,11 +42,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
-    private static final String SUBMISSION_RESOURCES = "SubmissionProcessorIT.json";
+    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission1");
 
     @Override
     protected InputStream getSubmissionResources() {
-        return SubmissionTestUtil.getSubmissionResources(SUBMISSION_RESOURCES);
+        return SharedResourceUtil.lookupStream(SUBMISSION_RESOURCES);
     }
 
     @Test
@@ -52,53 +57,67 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // 1. Deposit resources created for each Repository associated with the Submission
 
-        Condition<Collection<URI>> depositCreated = new Condition<>(() ->
+        Condition<Collection<URI>> depositUrisCondition = new Condition<>(() ->
                 getDepositUris(submission, passClient), "expectedDepositCount");
 
         assertTrue("SubmissionProcessor did not create the expected number of Deposit resources.",
-                depositCreated.awaitAndVerify(depositUris ->
+                depositUrisCondition.awaitAndVerify(depositUris ->
                         submission.getRepositories().size() == depositUris.size()));
 
-        // 2. The status of each Deposit should be 'ACCEPTED'
+        // 2. The Deposit resources should be in a SUBMITTED (for PubMed Central) or ACCEPTED (for JScholarship) state
 
-        Condition<Collection<URI>> allDepositsAccepted = new Condition<>(() ->
-                getDepositUris(submission, passClient), "expectedDepositStatus");
+        assertTrue("Deposit resource with unexpected status",
+                depositUrisCondition.awaitAndVerify(depositUris ->
+                                depositUris.stream().allMatch(uri -> {
+                                            Deposit deposit = passClient.readResource(uri, Deposit.class);
+                                            return deposit.getDepositStatus() == ACCEPTED ||
+                                                    deposit.getDepositStatus() == SUBMITTED;
+                                        })));
 
-        assertTrue("Unexpected number of successful Deposit resources",
-                allDepositsAccepted.awaitAndVerify(depositUris ->
-                        depositUris.size() == submission.getRepositories().size() &&
-                        depositUris.stream().allMatch(uri ->
-                                passClient.readResource(uri, Deposit.class).getDepositStatus() == ACCEPTED)));
+        // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository like JScholarship) then a
+        // non-null 'depositStatusRef' should be present, and the status of the Deposit should be ACCEPTED, and it's
+        // RepositoryCopy should be COMPLETE
 
-        // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository) then a non-null
-        // 'depositStatusRef' should be present
+        final Collection<URI> depositUris = getDepositUris(submission, passClient);
 
         Repository dspaceRepo = submission.getRepositories().stream()
                 .map(uri -> (Repository)submissionResources.get(uri))
-                .filter(repo -> repo.getName().equals(EXPECTED_REPO_NAME))
+                .filter(repo -> repo.getName().equals(J10P_REPO_NAME))
                 .findAny().orElseThrow(() ->
-                        new RuntimeException("Missing expected Repository named '" + EXPECTED_REPO_NAME + "' for " + submission.getId()));
+                        new RuntimeException("Missing expected Repository named '" + J10P_REPO_NAME + "' for " + submission.getId()));
 
-        Collection<URI> depositUris = getDepositUris(submission, passClient);
         Deposit dspaceDeposit = depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class))
                 .filter(deposit -> deposit.getRepository().toString().equals(dspaceRepo.getId().toString()))
                 .findAny().orElseThrow(() ->
                         new RuntimeException("Missing Deposit for Repository '" + dspaceRepo.getName() + "', '" + dspaceRepo.getId() + "'"));
-        assertNotNull(dspaceDeposit.getDepositStatusRef());
 
-        // 3. A RepositoryCopy created for each Deposit, with a copy status of 'COMPLETE'
+        Condition<Deposit> nonNullDepositRefCondition = new Condition<>(() ->
+                passClient.readResource(dspaceDeposit.getId(), Deposit.class), "Get J10P Deposit");
+        assertTrue("Expected a non-null deposit status reference for " + J10P_REPO_NAME,
+                nonNullDepositRefCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
+        assertEquals(Deposit.DepositStatus.ACCEPTED, dspaceDeposit.getDepositStatus());
+        assertEquals("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy", COMPLETE,
+                passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class).getCopyStatus());
 
-        Condition<Collection<URI>> repoCopiesComplete = new Condition<>(() ->
-                getDepositUris(submission, passClient).stream()
-                        .map(depUri ->
-                                passClient.readResource(depUri, Deposit.class).getRepositoryCopy()).collect(toSet()),
-                "repoCopiesComplete");
+        // 2b. If the Repository for the Deposit is for PubMed Central, then the 'depositStatusRef' should be null, and
+        // the status of the Deposit should be SUBMITTED, and there should be no RepositoryCopy
 
-        assertTrue("Unexpected number of successful RepositoryCopy resources",
-                repoCopiesComplete.awaitAndVerify(repoCopyUris ->
-                    repoCopyUris.size() == submission.getRepositories().size() &&
-                            repoCopyUris.stream().allMatch(uri ->
-                                    passClient.readResource(uri, RepositoryCopy.class).getCopyStatus() == COMPLETE)));
+        Repository pmcRepo = submission.getRepositories().stream()
+                .map(uri -> (Repository)submissionResources.get(uri))
+                .filter(repo -> repo.getName().equals(PMC_REPO_NAME))
+                .findAny().orElseThrow(() ->
+                        new RuntimeException("Missing expected Repository named '" + PMC_REPO_NAME + "' for " + submission.getId()));
+
+        Deposit pmcDeposit = depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class))
+                .filter(deposit -> deposit.getRepository().toString().equals(pmcRepo.getId().toString()))
+                .findAny().orElseThrow(() ->
+                        new RuntimeException("Missing Deposit for Repository '" + pmcRepo.getName() + "', '" + pmcRepo.getId() + "'"));
+        assertNull("Expected a null deposit status reference for " + PMC_REPO_NAME,
+                pmcDeposit.getDepositStatusRef());
+        assertEquals(Deposit.DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
+
+        assertNull("Expected no RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
+
     }
 
 }

@@ -6,7 +6,7 @@
     "submittedDate" : "2017-06-02T00:00:00.000Z",
     "aggregatedDepositStatus" : "not-started",
     "publication" : "fake:publication1",
-    "repositories" : [ "fake:repository1" ],
+    "repositories" : [ "fake:repository1", "fake:repository2" ],
     "user" : "fake:user2",
     "grants" : [ "fake:grant1" ],
     "@id" : "fake:submission1",
@@ -38,6 +38,14 @@
     "url" : "http://example.com",
     "formSchema" : "{}",
     "@id" : "fake:repository1",
+    "@type" : "Repository"
+  },
+  {
+    "name" : "JScholarship",
+    "description" : "Knowledge for the world",
+    "url" : "http://j10p.com",
+    "formSchema" : "{}",
+    "@id" : "fake:repository2",
     "@type" : "Repository"
   },
   {
