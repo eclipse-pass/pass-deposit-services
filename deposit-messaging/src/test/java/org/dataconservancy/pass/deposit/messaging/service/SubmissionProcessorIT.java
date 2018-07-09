@@ -19,6 +19,7 @@ import org.dataconservancy.pass.deposit.messaging.support.Condition;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.Submission;
 import org.junit.Test;
 import submissions.SharedResourceUtil;
 
@@ -66,37 +67,36 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // 2. The Deposit resources should be in a SUBMITTED (for PubMed Central) or ACCEPTED (for JScholarship) state
 
-        assertTrue("Deposit resource with unexpected status",
-                depositUrisCondition.awaitAndVerify(depositUris ->
-                                depositUris.stream().allMatch(uri -> {
-                                            Deposit deposit = passClient.readResource(uri, Deposit.class);
-                                            return deposit.getDepositStatus() == ACCEPTED ||
-                                                    deposit.getDepositStatus() == SUBMITTED;
-                                        })));
+        Condition<Deposit.DepositStatus> j10pStatusCondition = new Condition<>(() -> {
+            Repository j10p = repositoryForName(submission, J10P_REPO_NAME);
+            Deposit j10pDeposit = depositForRepositoryUri(submission, j10p.getId());
+            return j10pDeposit.getDepositStatus();
+        }, "J10P Deposit Status");
+
+        Condition<Deposit.DepositStatus> pubMedStatusCondition = new Condition<>(() -> {
+            Repository pmc = repositoryForName(submission, PMC_REPO_NAME);
+            Deposit pmcDeposit = depositForRepositoryUri(submission, pmc.getId());
+            return pmcDeposit.getDepositStatus();
+        }, "PMC Deposit Status");
+
+        assertTrue("Deposit resource with unexpected status for " + J10P_REPO_NAME,
+                j10pStatusCondition.awaitAndVerify(status -> ACCEPTED == status));
+
+        assertTrue("Deposit resource with unexpected status for " + PMC_REPO_NAME,
+                pubMedStatusCondition.awaitAndVerify(status -> SUBMITTED == status));
 
         // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository like JScholarship) then a
-        // non-null 'depositStatusRef' should be present, and the status of the Deposit should be ACCEPTED, and it's
-        // RepositoryCopy should be COMPLETE
+        // non-null 'depositStatusRef' should be present, and its RepositoryCopy should be COMPLETE
 
-        final Collection<URI> depositUris = getDepositUris(submission, passClient);
-
-        Repository dspaceRepo = submission.getRepositories().stream()
-                .map(uri -> (Repository)submissionResources.get(uri))
-                .filter(repo -> repo.getName().equals(J10P_REPO_NAME))
-                .findAny().orElseThrow(() ->
-                        new RuntimeException("Missing expected Repository named '" + J10P_REPO_NAME + "' for " + submission.getId()));
-
-        Deposit dspaceDeposit = depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class))
-                .filter(deposit -> deposit.getRepository().toString().equals(dspaceRepo.getId().toString()))
-                .findAny().orElseThrow(() ->
-                        new RuntimeException("Missing Deposit for Repository '" + dspaceRepo.getName() + "', '" + dspaceRepo.getId() + "'"));
+        Repository dspaceRepo = repositoryForName(submission, J10P_REPO_NAME);
+        Deposit dspaceDeposit = depositForRepositoryUri(submission, dspaceRepo.getId());
 
         Condition<Deposit> depositCondition = new Condition<>(() ->
                 passClient.readResource(dspaceDeposit.getId(), Deposit.class), "Get J10P Deposit");
         assertTrue("Expected a non-null deposit status reference for " + J10P_REPO_NAME,
                 depositCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
-        assertTrue("Expected DepositStatus.ACCEPTED for the " + J10P_REPO_NAME + " Deposit.", depositCondition.awaitAndVerify((deposit -> deposit.getDepositStatus() == ACCEPTED)));
-
+        assertTrue("Expected a RepositoryCopy to be linked to the " + J10P_REPO_NAME + " Deposit.",
+                depositCondition.awaitAndVerify(deposit -> deposit.getRepositoryCopy() != null));
         Condition<RepositoryCopy> repositoryCopyCondition = new Condition<>(() ->
                 passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class), "Get J10P Repository Copy");
         assertTrue("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy",
