@@ -250,7 +250,7 @@ public class DepositTaskHelper {
                         return false;
                     }
 
-                    if (criDeposit.getDepositStatus() == SUBMITTED && repoCopy.getCopyStatus() != IN_PROGRESS) {
+                    if (criDeposit.getDepositStatus() == SUBMITTED && criRepoCopy.getCopyStatus() != IN_PROGRESS) {
                         LOG.warn(POSTCONDITION_FAILED + " Expected RepoCopy.CopyStatus = {}, but was '{}' for Deposit.DepositStatus = '{}'",
                                 IN_PROGRESS, criRepoCopy.getCopyStatus(), SUBMITTED);
                         return false;
