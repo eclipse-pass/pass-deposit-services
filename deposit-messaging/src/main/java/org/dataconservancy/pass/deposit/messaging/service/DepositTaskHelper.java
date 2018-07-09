@@ -250,7 +250,7 @@ public class DepositTaskHelper {
                         return false;
                     }
 
-                    if (criDeposit.getDepositStatus() == SUBMITTED && repoCopy.getCopyStatus() != IN_PROGRESS) {
+                    if (criDeposit.getDepositStatus() == SUBMITTED && criRepoCopy.getCopyStatus() != IN_PROGRESS) {
                         LOG.warn(POSTCONDITION_FAILED + " Expected RepoCopy.CopyStatus = {}, but was '{}' for Deposit.DepositStatus = '{}'",
                                 IN_PROGRESS, criRepoCopy.getCopyStatus(), SUBMITTED);
                         return false;
@@ -314,11 +314,15 @@ public class DepositTaskHelper {
                     RepositoryCopy criRepoCopy;
 
                     try {
+                        // If the repoCopy passed into this method doesn't exist in the repository, create it.
+                        // Otherwise update it.
                         if (repoCopy.getId() == null) {
                             criRepoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
                         } else {
                             criRepoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                         }
+
+                        // Insure the Deposit resource carries the URI of the repository copy.
                         criDeposit.setRepositoryCopy(criRepoCopy.getId());
                     } catch (Exception e) {
                         String msg = String.format("Failed to create or update RepositoryCopy '%s' for %s",
