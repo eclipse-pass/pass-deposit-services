@@ -116,10 +116,15 @@ public class Sword2TransportSessionIT extends BaseIT {
     private static final String DSPACE_ADMIN_PASSWORD = getAdminPassword();
 
     /**
+     * Property used by the test framework to specify the port that DSpace is running on.
+     */
+    private static final String DSPACE_PORT_PROPERTY = "dspace.port";
+
+    /**
      * The format string used to format the <em>default</em> SWORD service document URL.  The default SWORD service
      * document URL can be overridden by defining a value for {@link #SWORD_SERVICEDOC_PROPERTY}.
      */
-    private static final String DEFAULT_SERVICEDOC_URL_FORMAT = "http://%s:8181/swordv2/servicedocument";
+    private static final String DEFAULT_SERVICEDOC_URL_FORMAT = "http://%s:%s/swordv2/servicedocument";
 
     /**
      * A hard-coded classpath resource that resolves to a package composed of a simple zip file according to the
@@ -652,7 +657,7 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     private static String formatSwordUrl(String format) {
         return String.format(format,
-                System.getProperty(DOCKER_HOST_PROPERTY, "localhost"));
+                System.getProperty(DOCKER_HOST_PROPERTY, "localhost"), System.getProperty(DSPACE_PORT_PROPERTY, "8181"));
     }
 
     /**

@@ -59,13 +59,13 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
 
         transportHints = new HashMap<String, String>() {
             {
-                put(Transport.TRANSPORT_SERVER_FQDN, System.getProperty("docker.host.address", "localhost"));
+                put(Transport.TRANSPORT_SERVER_FQDN, ftpHost);
                 put(FtpTransportHints.BASE_DIRECTORY, NIHMS_FTP_SUBMISSION_BASE_DIRECTORY);
                 put(Transport.TRANSPORT_PROTOCOL, "ftp");
                 put(Transport.TRANSPORT_AUTHMODE, "userpass");
                 put(Transport.TRANSPORT_USERNAME, "nihmsftpuser");
                 put(Transport.TRANSPORT_PASSWORD, "nihmsftppass");
-                put(Transport.TRANSPORT_SERVER_PORT, "21");
+                put(Transport.TRANSPORT_SERVER_PORT, String.valueOf(ftpPort));
                 put(FtpTransportHints.DATA_TYPE, "binary");
                 put(FtpTransportHints.USE_PASV, "true");
                 put(FtpTransportHints.TRANSFER_MODE, "stream");

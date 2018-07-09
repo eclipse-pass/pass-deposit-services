@@ -40,7 +40,7 @@ public class FtpBaseIT extends BaseIT {
 
     protected String ftpHost;
 
-    protected int ftpPort = 21;
+    protected int ftpPort;
 
     protected FTPClient ftpClient;
 
@@ -49,6 +49,7 @@ public class FtpBaseIT extends BaseIT {
     @Before
     public void setUp() throws Exception {
         ftpHost = System.getProperty(DOCKER_HOST_PROPERTY);
+        ftpPort = Integer.parseInt(System.getProperty("ftp.port", "21"));
         assertNotNull("Missing value for system property '" + DOCKER_HOST_PROPERTY + "'", ftpHost);
 
         ftpClient = new FTPClient();

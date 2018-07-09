@@ -39,6 +39,20 @@
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
         <pass.elasticsearch.host>${docker.host.address}</pass.elasticsearch.host>
         <pass.elasticsearch.url>http://${pass.elasticsearch.host}:${es.port}/pass/</pass.elasticsearch.url>
+        <dspace.server>${docker.host.address}</dspace.server>
+        <ftp.server>${docker.host.address}</ftp.server>
+        <ftp-control.port>21</ftp-control.port>
+        <ftp-data-01.port>30000</ftp-data-01.port>
+        <ftp-data-02.port>30001</ftp-data-02.port>
+        <ftp-data-03.port>30002</ftp-data-03.port>
+        <ftp-data-04.port>30003</ftp-data-04.port>
+        <ftp-data-05.port>30004</ftp-data-05.port>
+        <ftp-data-06.port>30005</ftp-data-06.port>
+        <ftp-data-07.port>30006</ftp-data-07.port>
+        <ftp-data-08.port>30007</ftp-data-08.port>
+        <ftp-data-09.port>30008</ftp-data-09.port>
+        <ftp-data-10.port>30009</ftp-data-10.port>
+        <ftp-data-11.port>30010</ftp-data-11.port>
     </properties>
 
 
@@ -78,6 +92,32 @@
             <properties>
                 <fcrepo.skip>true</fcrepo.skip>
                 <pass.fedora.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
+            </properties>
+        </profile>
+        <profile>
+            <id>standard</id>
+            <activation>
+                <property>
+                    <name>standard</name>
+                </property>
+            </activation>
+            <properties>
+                <fcrepo.http.port>8080</fcrepo.http.port>
+                <fcrepo.jms.port>61616</fcrepo.jms.port>
+                <dspace.port>8181</dspace.port>
+                <postgres.port>6543</postgres.port>
+                <ftp-control.port>21</ftp-control.port>
+                <ftp-data-01.port>30000</ftp-data-01.port>
+                <ftp-data-02.port>30001</ftp-data-02.port>
+                <ftp-data-03.port>30002</ftp-data-03.port>
+                <ftp-data-04.port>30003</ftp-data-04.port>
+                <ftp-data-05.port>30004</ftp-data-05.port>
+                <ftp-data-06.port>30005</ftp-data-06.port>
+                <ftp-data-07.port>30006</ftp-data-07.port>
+                <ftp-data-08.port>30007</ftp-data-08.port>
+                <ftp-data-09.port>30008</ftp-data-09.port>
+                <ftp-data-10.port>30009</ftp-data-10.port>
+                <ftp-data-11.port>30010</ftp-data-11.port>
             </properties>
         </profile>
     </profiles>
@@ -185,6 +225,20 @@
                                 <portName>fcrepo.jms.port</portName>
                                 <portName>fcrepo.stomp.port</portName>
                                 <portName>es.port</portName>
+                                <portName>postgres.port</portName>
+                                <portName>dspace.port</portName>
+                                <!--<portName>ftp-control.port</portName>-->
+                                <!--<portName>ftp-data-01.port</portName>-->
+                                <!--<portName>ftp-data-02.port</portName>-->
+                                <!--<portName>ftp-data-03.port</portName>-->
+                                <!--<portName>ftp-data-04.port</portName>-->
+                                <!--<portName>ftp-data-05.port</portName>-->
+                                <!--<portName>ftp-data-06.port</portName>-->
+                                <!--<portName>ftp-data-07.port</portName>-->
+                                <!--<portName>ftp-data-08.port</portName>-->
+                                <!--<portName>ftp-data-09.port</portName>-->
+                                <!--<portName>ftp-data-10.port</portName>-->
+                                <!--<portName>ftp-data-11.port</portName>-->
                             </portNames>
                         </configuration>
                     </execution>
@@ -199,9 +253,6 @@
                         <image>
                             <alias>ftpserver</alias>
                             <name>${docker.ftp.version}</name>
-                            <build>
-                                <dockerFile>${project.basedir}/src/test/resources/docker/Dockerfile</dockerFile>
-                            </build>
                             <run>
                                 <skip>${ftp.skip}</skip>
                                 <wait>
@@ -232,8 +283,11 @@
                                     <time>6000</time>
                                 </wait>
                                 <ports>
-                                    <port>6543:6543</port>
+                                    <port>${postgres.port}:${postgres.port}</port>
                                 </ports>
+                                <env>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
+                                </env>
                             </run>
                         </image>
                         <image>
@@ -242,17 +296,19 @@
                             <run>
                                 <skip>${dspace.skip}</skip>
                                 <wait>
-                                    <url>http://${docker.host.address}:8181/xmlui</url>
+                                    <url>http://${docker.host.address}:${dspace.port}/xmlui</url>
                                     <time>180000</time>
                                 </wait>
                                 <ports>
-                                    <port>8181:8181</port>
+                                    <port>${dspace.port}:${dspace.port}</port>
                                 </ports>
                                 <links>
                                     <link>postgres</link>
                                 </links>
                                 <env>
                                     <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
+                                    <DSPACE_PORT>${dspace.port}</DSPACE_PORT>
+                                    <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
                                 </env>
                             </run>
                         </image>
@@ -277,7 +333,6 @@
                                     <FCREPO_JMS_PORT>${fcrepo.jms.port}</FCREPO_JMS_PORT>
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
                                     <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
-                                    <COMPACTION_URI>https://oa-pass.github.io/pass-data-model/src/main/resources/context-2.2.jsonld</COMPACTION_URI>
                                     <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
                                 </env>
                             </run>
@@ -357,6 +412,15 @@
                         <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
                         <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
                         <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
+                        <fcrepo.host>${fcrepo.server}</fcrepo.host>
+                        <fcrepo.port>${fcrepo.http.port}</fcrepo.port>
+                        <fcrepo.jms.port>${fcrepo.jms.port}</fcrepo.jms.port>
+                        <dspace.host>${dspace.server}</dspace.host>
+                        <dspace.port>${dspace.port}</dspace.port>
+                        <ftp.host>${ftp.server}</ftp.host>
+                        <ftp.port>${ftp-control.port}</ftp.port>
+                        <sword.user>${sword.user}</sword.user>
+                        <sword.pass>${sword.pass}</sword.pass>
                     </systemProperties>
                 </configuration>
                 <executions>
