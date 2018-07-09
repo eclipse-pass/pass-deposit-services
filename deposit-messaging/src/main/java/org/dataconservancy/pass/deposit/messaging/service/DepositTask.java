@@ -242,6 +242,24 @@ public class DepositTask implements Runnable {
 
     }
 
+    /**
+     * Creates a new instance of a {@code RepositoryCopy}.  The initial state of the repository copy returned from this
+     * method is:
+     * <ul>
+     *     <li>a copy status set to {@code copyStatus}</li>
+     *     <li>a repository URI of the {@code Repository} maintained in the deposit context</li>
+     *     <li>a publication URI of the {@code Submission} maintained in the deposit context</li>
+     *     <li>a external id set to the {@code itemUri}</li>
+     *     <li>an access URL set to the URL form of {@code itemUri}</li>
+     * </ul>
+     *
+     * TODO: review the setting of {@code itemUrl}, as that is Repository-specific.
+     *
+     * @param dc
+     * @param itemUri
+     * @param copyStatus
+     * @return
+     */
     private static RepositoryCopy newRepositoryCopy(DepositWorkerContext dc, String itemUri, CopyStatus copyStatus) {
         RepositoryCopy repoCopy = new RepositoryCopy();
         repoCopy.setCopyStatus(copyStatus);

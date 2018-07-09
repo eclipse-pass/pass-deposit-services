@@ -105,22 +105,42 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         // 2b. If the Repository for the Deposit is for PubMed Central, then the 'depositStatusRef' should be null, and
         // the status of the Deposit should be SUBMITTED, and there should be no RepositoryCopy
 
-        Repository pmcRepo = submission.getRepositories().stream()
-                .map(uri -> (Repository)submissionResources.get(uri))
-                .filter(repo -> repo.getName().equals(PMC_REPO_NAME))
-                .findAny().orElseThrow(() ->
-                        new RuntimeException("Missing expected Repository named '" + PMC_REPO_NAME + "' for " + submission.getId()));
+        Repository pmcRepo = repositoryForName(submission, PMC_REPO_NAME);
+        Deposit pmcDeposit = depositForRepositoryUri(submission, pmcRepo.getId());
 
-        Deposit pmcDeposit = depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class))
-                .filter(deposit -> deposit.getRepository().toString().equals(pmcRepo.getId().toString()))
-                .findAny().orElseThrow(() ->
-                        new RuntimeException("Missing Deposit for Repository '" + pmcRepo.getName() + "', '" + pmcRepo.getId() + "'"));
         assertNull("Expected a null deposit status reference for " + PMC_REPO_NAME,
                 pmcDeposit.getDepositStatusRef());
         assertEquals(Deposit.DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
+        assertNull("Expected a null RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
 
-        assertNull("Expected no RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
+    }
 
+    /**
+     * Looks for, and returns, the Repository attached to the supplied Submission with the specified name.
+     *
+     * @param submission
+     * @param repositoryName
+     * @return
+     */
+    private Repository repositoryForName(Submission submission, String repositoryName) {
+        return submission.getRepositories().stream().map(uri -> passClient.readResource(uri, Repository.class))
+                .filter(repo -> repositoryName.equals(repo.getName())).findAny().orElseThrow(() -> new
+                        RuntimeException("Missing Repository with name " + repositoryName + " for Submission " +
+                        submission.getId()));
+    }
+
+    /**
+     * Looks for, and returns, the Deposit attached to the supplied Submission that references the specified Repository.
+     *
+     * @param submission
+     * @param repositoryUri
+     * @return
+     */
+    private Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
+        Collection<URI> depositUris = getDepositUris(submission, passClient);
+        return depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class)).filter(deposit ->
+                repositoryUri.equals(deposit.getRepository())).findAny().orElseThrow(() -> new RuntimeException
+                ("Missing Deposit for Repository " + repositoryUri + " on Submission " + submission.getId()));
     }
 
 }

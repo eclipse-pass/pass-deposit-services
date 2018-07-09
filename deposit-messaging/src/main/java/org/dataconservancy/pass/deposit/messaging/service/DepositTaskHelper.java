@@ -314,11 +314,15 @@ public class DepositTaskHelper {
                     RepositoryCopy criRepoCopy;
 
                     try {
+                        // If the repoCopy passed into this method doesn't exist in the repository, create it.
+                        // Otherwise update it.
                         if (repoCopy.getId() == null) {
                             criRepoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
                         } else {
                             criRepoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                         }
+
+                        // Insure the Deposit resource carries the URI of the repository copy.
                         criDeposit.setRepositoryCopy(criRepoCopy.getId());
                     } catch (Exception e) {
                         String msg = String.format("Failed to create or update RepositoryCopy '%s' for %s",
