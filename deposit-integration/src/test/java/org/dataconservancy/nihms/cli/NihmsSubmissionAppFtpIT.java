@@ -22,7 +22,7 @@ import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
 import org.junit.Before;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
+import submissions.SubmissionResourceUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,7 +73,7 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
         };
 
         assertNotNull("Unable to resolve " + SAMPLE_SUBMISSION_RESOURCE + " as a classpath resource",
-                SharedResourceUtil.lookupUri(SAMPLE_SUBMISSION_RESOURCE));
+                SubmissionResourceUtil.lookupUri(SAMPLE_SUBMISSION_RESOURCE));
         itUtil.connect();
         itUtil.login();
     }
@@ -100,7 +100,7 @@ public class NihmsSubmissionAppFtpIT extends FtpBaseIT {
         // Copy the sample submission data to a temporary file
         File sampleSubmission = File.createTempFile(this.getClass().getName() + "-", ".json");
         sampleSubmission.deleteOnExit();
-        IOUtils.copy(SharedResourceUtil.lookupStream(SAMPLE_SUBMISSION_RESOURCE),
+        IOUtils.copy(SubmissionResourceUtil.lookupStream(SAMPLE_SUBMISSION_RESOURCE),
                 new FileOutputStream(sampleSubmission));
 
         NihmsSubmissionApp app = new NihmsSubmissionApp(sampleSubmission, transportHints);

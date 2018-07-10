@@ -17,7 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
+import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -33,7 +33,7 @@ public class EmptySubmissionIT extends AbstractSubmissionIT {
 
     @Override
     protected InputStream getSubmissionResources() {
-        return SharedResourceUtil.lookupStream(SUBMISSION_RESOURCES);
+        return SubmissionResourceUtil.lookupStream(SUBMISSION_RESOURCES);
     }
 
     @Test

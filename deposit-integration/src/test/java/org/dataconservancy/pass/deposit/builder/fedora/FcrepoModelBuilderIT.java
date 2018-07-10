@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static submissions.SharedResourceUtil.lookupStream;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;

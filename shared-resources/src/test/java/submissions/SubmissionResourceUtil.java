@@ -21,6 +21,7 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import resources.SharedResourceUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,11 +45,25 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * A specialized class used to look up JSON representations of submission graphs.
+ * <p>
+ * The {@code submissions/} resource path contains JSON representations of a submission graph.  The graph is rooted in a <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission</a> object, which links to Grants, Publications, Repositories, Files, etc. that make up a sample Submission.  Each submission graph has a URI, equivalent to the URI of the Submission object in the graph.
+ * </p>
+ * <p>
+ * This class makes it possible to resolve submission graphs using URIs, which provides tests with a clean way of
+ * sharing and retrieving submission graphs.  The Deposit Services builder API can be used to build a {@code Submission}
+ * from the graph supplied by this class.
+ * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
+ * @see <a href="https://github.com/OA-PASS/pass-data-model">PASS Data Model</a>
+ * @see SubmissionBuilder
+ * @see StreamingSubmissionBuilder
+ * @see FilesystemModelBuilder
  */
-public class SharedResourceUtil {
+public class SubmissionResourceUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SharedResourceUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SubmissionResourceUtil.class);
 
     private static final Predicate<JsonNode> SUBMISSION_TYPE_FILTER = node ->
             node.has("@type") && node.get("@type").asText().equals("Submission");
@@ -60,13 +75,13 @@ public class SharedResourceUtil {
      * @return A Collection of submission URIs available for testing
      */
     public static Collection<URI> submissionUris() {
-        Set<ElementPathPair> seen = new HashSet<>();
+        Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         Set<URI> submissionUris = new HashSet<>();
         ObjectMapper mapper = new ObjectMapper();
-        FastClasspathScanner scanner = new FastClasspathScanner(SharedResourceUtil.class.getPackage().getName());
+        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
         scanner.matchFilenamePattern(".*.json", (classpathElement, relativePath, in, length) -> {
             LOG.trace("Processing match '{}', '{}'", classpathElement, relativePath);
-            ElementPathPair pathPair = new ElementPathPair(classpathElement, relativePath);
+            SharedResourceUtil.ElementPathPair pathPair = new SharedResourceUtil.ElementPathPair(classpathElement, relativePath);
             if (seen.contains(pathPair)) {
                 // We have already scanned classpath element/path pair; it probably appears on the classpath twice.
                 return;
@@ -123,12 +138,12 @@ public class SharedResourceUtil {
      * @return the URI of the test resource that contains the {@code submissionUri}
      */
     public static URI lookupUri(URI submissionUri) {
-        Set<ElementPathPair> seen = new HashSet<>();
+        Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         ObjectMapper mapper = new ObjectMapper();
         AtomicReference<URL> submissionResource = new AtomicReference<>();
-        FastClasspathScanner scanner = new FastClasspathScanner(SharedResourceUtil.class.getPackage().getName());
+        FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
         scanner.matchFilenamePattern(".*\\.json", (cpElt, relativePath, in, length) -> {
-            if (seen(seen, cpElt, relativePath)) {
+            if (SharedResourceUtil.seen(seen, cpElt, relativePath)) {
                 return;
             }
             JsonNode jsonNode = mapper.readTree(in);
@@ -188,7 +203,7 @@ public class SharedResourceUtil {
 
     private static InputStream toStream(String name, String variation) {
         String jsonResource = asResourcePath(name, variation);
-        InputStream jsonStream = SharedResourceUtil.class.getResourceAsStream(jsonResource);
+        InputStream jsonStream = SubmissionResourceUtil.class.getResourceAsStream(jsonResource);
 
         if (jsonStream == null) {
             throw new RuntimeException("Unable to resolve PASS entities for name: '" + name + "', " + "variation: '"
@@ -205,66 +220,6 @@ public class SharedResourceUtil {
             jsonResource = String.format("/submissions/%s.json", name);
         }
         return jsonResource;
-    }
-
-    /**
-     * Convenience method which checks for the presence of the {@code classpathElement}/{@code relativePath} pair in the
-     * {@code seen} {@code Set}.
-     *
-     * @param seen a {@code Set} which contains all of the {@code ElementPathPair}s seen so far
-     * @param classpathElement a classpath element, which combined with a relative path, may have been seen
-     *         before
-     * @param relativePath a relative path, when combined with a classpath element, may have been seen before
-     * @return true if the {@code classpathElement}/{@code relativePath} has been seen before
-     * @see ElementPathPair
-     */
-    private static boolean seen(Set<ElementPathPair> seen, java.io.File classpathElement, String relativePath) {
-        ElementPathPair pathPair = new ElementPathPair(classpathElement, relativePath);
-        if (seen.contains(pathPair)) {
-            return true;
-        }
-        seen.add(pathPair);
-        return false;
-    }
-
-
-    /**
-     * Pairs a Classpath element with the relative path of the Class for file matched by a {@link FastClasspathScanner}
-     * scan. <p> For some reason, some classpath elements can appear on the classpath twice (e.g. IDEA and Maven,
-     * actually, put `target/test-classes` on the classpath twice).  The {@link ElementPathPair} is used to insure that
-     * the same Classpath resource is not considered twice.  This allows the matching logic to warn users if a duplicate
-     * Submission URI is found. </p>
-     */
-    private static class ElementPathPair {
-        private java.io.File classpathElement;
-        private String relativePath;
-
-        public ElementPathPair(java.io.File classpathElement, String relativePath) {
-            this.classpathElement = classpathElement;
-            this.relativePath = relativePath;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-
-            ElementPathPair that = (ElementPathPair) o;
-
-            if (classpathElement != null ? !classpathElement.equals(that.classpathElement) : that.classpathElement !=
-                    null)
-                return false;
-            return relativePath != null ? relativePath.equals(that.relativePath) : that.relativePath == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = classpathElement != null ? classpathElement.hashCode() : 0;
-            result = 31 * result + (relativePath != null ? relativePath.hashCode() : 0);
-            return result;
-        }
     }
 
 }

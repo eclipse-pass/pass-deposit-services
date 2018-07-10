@@ -23,20 +23,20 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class SharedResourceUtilTest {
+public class SubmissionResourceUtilTest {
 
     @Test
     public void testSubmissionUriCount() throws Exception {
-        assertTrue(SharedResourceUtil.submissionUris().size() >= 7);
+        assertTrue(SubmissionResourceUtil.submissionUris().size() >= 7);
     }
 
     @Test
     public void testResolveToUri() throws Exception {
-        SharedResourceUtil.submissionUris().forEach(uri -> assertNotNull(SharedResourceUtil.lookupUri(uri)));
+        SubmissionResourceUtil.submissionUris().forEach(uri -> assertNotNull(SubmissionResourceUtil.lookupUri(uri)));
     }
 
     @Test
     public void testResolveToStream() throws Exception {
-        SharedResourceUtil.submissionUris().forEach(uri -> assertNotNull(SharedResourceUtil.lookupStream(uri)));
+        SubmissionResourceUtil.submissionUris().forEach(uri -> assertNotNull(SubmissionResourceUtil.lookupStream(uri)));
     }
 }

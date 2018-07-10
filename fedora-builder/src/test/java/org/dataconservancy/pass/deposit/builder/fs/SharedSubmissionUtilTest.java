@@ -17,7 +17,7 @@ package org.dataconservancy.pass.deposit.builder.fs;
 
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
+import submissions.SubmissionResourceUtil;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -32,7 +32,7 @@ public class SharedSubmissionUtilTest {
     public void testLookupByUri() throws Exception {
         String msg = "Unable to convert test submission uri '%s' to a DepositSubmission";
 
-        SharedResourceUtil.submissionUris().forEach(submissionUri -> {
+        SubmissionResourceUtil.submissionUris().forEach(submissionUri -> {
             try {
                 assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri));
             } catch (InvalidModel invalidModel) {
