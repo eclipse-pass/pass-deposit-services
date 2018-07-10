@@ -20,6 +20,8 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParserTest;
 
+import java.io.InputStream;
+
 /**
  * Utility methods for unit tests relating to Atom feeds.
  *
@@ -33,9 +35,8 @@ public class AtomTestUtil {
      * @param feedResource a classpath resource referencing an Atom feed
      * @return the parsed feed
      */
-    public static Document<Feed> parseFeed(String feedResource) {
-        return new FOMParserFactory().getParser().parse(AtomFeedStatusParserTest.class.getResourceAsStream
-                (feedResource));
+    public static Document<Feed> parseFeed(InputStream feedResource) {
+        return new FOMParserFactory().getParser().parse(feedResource);
     }
 
 }

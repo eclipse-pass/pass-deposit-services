@@ -15,12 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources;
 import org.dataconservancy.pass.model.Deposit;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomTestUtil.parseFeed;
 import static org.junit.Assert.assertEquals;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.ARCHIVED_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INPROGRESS_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INREVIEW_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
+import static resources.SharedResourceUtil.findStreamByName;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -38,27 +44,27 @@ public class AtomFeedStatusMapperTest extends AbstractStatusMapperTest {
     @Test
     public void testWildCardMapping() throws Exception {
         Deposit.DepositStatus expectedMapping = Deposit.DepositStatus.SUBMITTED;
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-inprogress.xml")));
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-inreview.xml")));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class))));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(INREVIEW_STATUS_RESOURCE, AtomResources.class))));
     }
 
     @Test
     public void testKnownAcceptedTerminalMapping() throws Exception {
         Deposit.DepositStatus expectedMapping = Deposit.DepositStatus.ACCEPTED;
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-archived.xml")));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class))));
     }
 
     @Test
     public void testKnownRejectedTerminalMapping() throws Exception {
         Deposit.DepositStatus expectedMapping = Deposit.DepositStatus.REJECTED;
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-withdrawn.xml")));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(WITHDRAWN_STATUS_RESOURCE, AtomResources.class))));
     }
 
     @Test
     public void testKnownWildcardIntermediateMapping() throws Exception {
         Deposit.DepositStatus expectedMapping = Deposit.DepositStatus.SUBMITTED;
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-inprogress.xml")));
-        assertEquals(expectedMapping, underTest.map(parseFeed("AtomStatusParser-inreview.xml")));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class))));
+        assertEquals(expectedMapping, underTest.map(parseFeed(findStreamByName(INREVIEW_STATUS_RESOURCE, AtomResources.class))));
     }
 
 }

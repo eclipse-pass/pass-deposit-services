@@ -18,8 +18,6 @@ package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
-import org.apache.abdera.protocol.client.AbderaClient;
-import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.http.ParseException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,17 +25,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.net.URI;
+import java.io.InputStream;
 
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INREVIEW;
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_WITHDRAWN;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.ARCHIVED_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INPROGRESS_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INREVIEW_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MISSING_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MULTIPLE_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.UNKNOWN_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
+import static resources.SharedResourceUtil.findStreamByName;
+import static resources.SharedResourceUtil.findUriByName;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -47,17 +54,14 @@ public class AtomFeedStatusParserTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private AbderaClient abderaClient;
-
     private Parser abderaParser;
 
     private AtomFeedStatusParser underTest;
 
     @Before
     public void setUp() throws Exception {
-        abderaClient = mock(AbderaClient.class);
         abderaParser = mock(Parser.class);
-        underTest = new AtomFeedStatusParser(abderaClient, abderaParser);
+        underTest = new AtomFeedStatusParser(abderaParser);
     }
 
     // Test cases
@@ -77,43 +81,43 @@ public class AtomFeedStatusParserTest {
      */
     @Test
     public void mapArchived() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-archived.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
         Assert.assertEquals(SWORD_STATE_ARCHIVED, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapInProgress() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-inprogress.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_INPROGRESS, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapInReview() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-inreview.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INREVIEW_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_INREVIEW, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapMissing() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-missing.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MISSING_STATUS_RESOURCE, AtomResources.class));
         assertEquals(null, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapMultiple() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-multiple.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MULTIPLE_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_ARCHIVED, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapUnknown() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-unknown.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(UNKNOWN_STATUS_RESOURCE, AtomResources.class));
         assertEquals(null, AtomUtil.parseAtomStatement(feed));
     }
 
     @Test
     public void mapWithdrawn() throws Exception {
-        Document<Feed> feed = AtomTestUtil.parseFeed("AtomStatusParser-withdrawn.xml");
+        Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(WITHDRAWN_STATUS_RESOURCE, AtomResources.class));
         assertEquals(SWORD_STATE_WITHDRAWN, AtomUtil.parseAtomStatement(feed));
     }
 
@@ -122,21 +126,22 @@ public class AtomFeedStatusParserTest {
         RuntimeException expected = new RuntimeException("Expected exception.");
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Expected exception.");
-        when(abderaClient.get(anyString())).thenThrow(expected);
+        expectedException.expectMessage("AtomStatusParser-archived.xml");
+        when(abderaParser.parse(any(InputStream.class))).thenThrow(expected);
 
-        underTest.parse(URI.create("http://url/to/atom/statement"));
+        underTest.parse(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
     }
 
     @Test
     public void parseWithParseException() throws Exception {
-        ParseException expected = new ParseException("Expected exception.");
-        expectedException.expect(ParseException.class);
-        expectedException.expectMessage("Expected exception.");
+        ParseException expectedCause = new ParseException("Expected cause.");
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectCause(is(expectedCause));
+        expectedException.expectMessage("Expected cause.");
+        expectedException.expectMessage("AtomStatusParser-archived.xml");
 
-        ClientResponse res = mock(ClientResponse.class);
-        when(abderaClient.get(any())).thenReturn(res);
-        when(res.getDocument()).thenThrow(expected);
+        when(abderaParser.parse(any(InputStream.class))).thenThrow(expectedCause);
 
-        underTest.parse(URI.create("http://url/to/atom/statement"));
+        underTest.parse(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
     }
 }
