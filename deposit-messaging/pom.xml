@@ -131,9 +131,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!--<configuration>-->
-                    <!--<classifier>exec</classifier>-->
-                <!--</configuration>-->
+                <configuration>
+                    <classifier>exec</classifier>
+                    <attach>true</attach>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
