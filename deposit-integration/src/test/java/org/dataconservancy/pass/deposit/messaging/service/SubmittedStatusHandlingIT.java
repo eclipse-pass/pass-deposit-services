@@ -78,8 +78,8 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
         // Step 1: Create a PackageStream
 
-        mbf = metadataBuilderFactory();
-        rbf = resourceBuilderFactory();
+        mbf = BaseAssemblerIT.metadataBuilderFactory();
+        rbf = BaseAssemblerIT.resourceBuilderFactory();
 
         submission = submissionUtil.asDepositSubmission(URI.create("fake:submission3"));
 

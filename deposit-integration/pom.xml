@@ -222,6 +222,31 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>shared-assembler</artifactId>
+            <version>${project.parent.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>fedora-builder</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>fedora-builder</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+        </dependency>
+
     </dependencies>
 
     <build>
