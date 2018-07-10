@@ -333,10 +333,11 @@ public class DepositConfig {
     }
 
     @Bean
-    public AtomFeedStatusParser atomFeedStatusParser(Registry<Packager> packagerRegistry, Parser abderaParser) {
+    public AtomFeedStatusParser atomFeedStatusParser(Map<String, Map<String, String>> transportRegistries,
+                                                     Parser abderaParser) {
         AtomFeedStatusParser feedStatusParser = new AtomFeedStatusParser(abderaParser);
-        feedStatusParser.setSwordUsername(packagerRegistry.get("js").getConfiguration().get(TRANSPORT_USERNAME));
-        feedStatusParser.setSwordPassword(packagerRegistry.get("js").getConfiguration().get(TRANSPORT_PASSWORD));
+        feedStatusParser.setSwordUsername(transportRegistries.get("js").get(TRANSPORT_USERNAME));
+        feedStatusParser.setSwordPassword(transportRegistries.get("js").get(TRANSPORT_PASSWORD));
         return feedStatusParser;
     }
 
