@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -38,10 +37,23 @@ public class SharedResourceUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(SharedResourceUtil.class);
 
+    /**
+     * Caller is responsible for closing the returned stream.
+     *
+     * @param resourceName
+     * @return
+     */
     public static InputStream findStreamByName(String resourceName) {
         return findStreamByName(resourceName, null);
     }
 
+    /**
+     * Caller is responsible for closing the returned stream.
+     *
+     * @param resourceName
+     * @param baseClass
+     * @return
+     */
     public static InputStream findStreamByName(String resourceName, Class<?> baseClass) {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         AtomicReference<URL> resourceUrl = new AtomicReference<>();
@@ -61,7 +73,8 @@ public class SharedResourceUtil {
                 LOG.warn("Ignoring resource at '{}', already found '{}'", foundUrl, resourceUrl.get());
             } else {
                 LOG.trace("Found resource '{}' matching name '{}'", foundUrl, resourceName);
-                resource.set(in);
+                // open the stream ourselves, as the supplied stream is closed by the caller
+                resource.set(foundUrl.openStream());
                 resourceUrl.set(foundUrl);
             }
         });
@@ -70,7 +83,6 @@ public class SharedResourceUtil {
         scanner.scan();
 
         assertFound(resourceName, resource);
-
         return resource.get();
     }
 
