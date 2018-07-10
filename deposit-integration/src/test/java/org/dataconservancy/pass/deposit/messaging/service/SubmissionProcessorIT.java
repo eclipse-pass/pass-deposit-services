@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.messaging.support.Condition;
+import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
@@ -26,9 +26,7 @@ import submissions.SharedResourceUtil;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Objects;
 
-import static java.util.stream.Collectors.toSet;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
