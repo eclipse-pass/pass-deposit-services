@@ -39,7 +39,7 @@ import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static submissions.SharedResourceUtil.lookupStream;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 public class PassJsonFedoraAdapterIT {
 

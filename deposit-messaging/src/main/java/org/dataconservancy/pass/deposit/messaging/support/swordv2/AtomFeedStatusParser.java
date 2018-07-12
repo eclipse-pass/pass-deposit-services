@@ -18,8 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
-import org.apache.abdera.protocol.client.AbderaClient;
-import org.apache.abdera.protocol.client.ClientResponse;
+import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.messaging.support.Constants;
@@ -27,14 +26,11 @@ import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptRes
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 
@@ -50,18 +46,17 @@ import java.net.URI;
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORDv2 Profile §11</a>
  * @see org.dataconservancy.pass.deposit.messaging.service.DepositTask
  */
-@Component
 public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspaceDepositStatus> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusParser.class);
 
-    private AbderaClient abderaClient;
-
     private Parser abderaParser;
 
-    @Autowired
-    public AtomFeedStatusParser(AbderaClient abderaClient, Parser abderaParser) {
-        this.abderaClient = abderaClient;
+    private String swordUsername;
+
+    private String swordPassword;
+
+    public AtomFeedStatusParser(Parser abderaParser) {
         this.abderaParser = abderaParser;
     }
 
@@ -94,7 +89,14 @@ public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspac
             }
         } else if (atomStatementUri.getScheme().startsWith("http")) {
             try {
-                resource = new UrlResource(atomStatementUri.toString());
+                resource = new AuthenticatedResource(atomStatementUri.toURL(), swordUsername, swordPassword);
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException("Atom statement could not be parsed as URL '" + atomStatementUri +
+                        "':" + e.getMessage(), e);
+            }
+        } else if (atomStatementUri.getScheme().startsWith("jar")) {
+            try {
+                resource = new UrlResource(atomStatementUri);
             } catch (MalformedURLException e) {
                 throw new IllegalArgumentException("Atom statement could not be parsed as URL '" + atomStatementUri +
                         "':" + e.getMessage(), e);
@@ -107,19 +109,30 @@ public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspac
         }
 
         Document<Feed> statementDoc = null;
-        if (resource instanceof UrlResource) {
-            LOG.trace(">>>> Retrieving Atom statement from: {}", atomStatementUri);
-            ClientResponse res = abderaClient.get(atomStatementUri.toString());
-            statementDoc = res.getDocument();
-        } else {
-            try {
-                statementDoc = abderaParser.parse(resource.getInputStream());
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing Atom resource '" + resource + "': " + e.getMessage(), e);
-            }
+        try {
+            LOG.trace("Retrieving SWORD Statement from: {}", atomStatementUri);
+            statementDoc = abderaParser.parse(resource.getInputStream());
+        } catch (Exception e) {
+            throw new RuntimeException("Error parsing Atom resource '" + resource + "' (resolved from '" +
+                    atomStatementUri + "'): " + e.getMessage(), e);
         }
 
         return AtomUtil.parseAtomStatement(statementDoc);
     }
 
+    public String getSwordUsername() {
+        return swordUsername;
+    }
+
+    public void setSwordUsername(String swordUsername) {
+        this.swordUsername = swordUsername;
+    }
+
+    public String getSwordPassword() {
+        return swordPassword;
+    }
+
+    public void setSwordPassword(String swordPassword) {
+        this.swordPassword = swordPassword;
+    }
 }

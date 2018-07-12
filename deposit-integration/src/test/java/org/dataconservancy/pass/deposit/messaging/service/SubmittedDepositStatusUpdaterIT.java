@@ -32,6 +32,7 @@ import java.io.File;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -489,8 +490,8 @@ public class SubmittedDepositStatusUpdaterIT {
      */
     private static String resolveResource(Class<?> parserClass, String atomResource) {
         URL atomStatement = parserClass.getResource(atomResource);
-        assertTrue("Expected classpath resource to exist as a file: " + atomStatement, new File(atomStatement.getPath
-                ()).exists());
+        assertNotNull("Could not resolve classpath resource '" + atomResource + "' using Class '" + parserClass
+                .getName() + "'", atomStatement);
         return atomStatement.toString();
     }
 

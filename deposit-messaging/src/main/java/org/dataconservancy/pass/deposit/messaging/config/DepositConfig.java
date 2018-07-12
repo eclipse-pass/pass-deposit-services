@@ -71,6 +71,8 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -331,10 +333,18 @@ public class DepositConfig {
     }
 
     @Bean
+    public AtomFeedStatusParser atomFeedStatusParser(Map<String, Map<String, String>> transportRegistries,
+                                                     Parser abderaParser) {
+        AtomFeedStatusParser feedStatusParser = new AtomFeedStatusParser(abderaParser);
+        feedStatusParser.setSwordUsername(transportRegistries.get("js").get(TRANSPORT_USERNAME));
+        feedStatusParser.setSwordPassword(transportRegistries.get("js").get(TRANSPORT_PASSWORD));
+        return feedStatusParser;
+    }
+
+    @Bean
     public AtomFeedStatusMapper swordv2DspaceStatusMapper(@Value("${pass.deposit.status.mapping}")
                                                                Resource depositMappingResource,
-                                                          ObjectMapper objectMapper,
-                                                          AtomFeedStatusParser atomFeedStatusParser) {
+                                                          ObjectMapper objectMapper) {
         try {
             return new AtomFeedStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
         } catch (IOException e) {

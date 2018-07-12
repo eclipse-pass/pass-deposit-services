@@ -26,7 +26,7 @@ import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
+import submissions.SubmissionResourceUtil;
 
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.fail;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
-import static submissions.SharedResourceUtil.lookupStream;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -87,11 +87,11 @@ public class FilesystemModelBuilderTest {
 
     private static final URI SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = URI.create("fake:submission4");
 
-    private SharedResourceUtil submissionUtil;
+    private SubmissionResourceUtil submissionUtil;
 
     @Before
     public void setup() throws Exception{
-        submissionUtil = new SharedResourceUtil();
+        submissionUtil = new SubmissionResourceUtil();
 
         submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE), emptyMap());
     }

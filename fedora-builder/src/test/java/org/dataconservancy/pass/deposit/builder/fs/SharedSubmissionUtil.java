@@ -22,7 +22,7 @@ import java.net.URI;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static submissions.SharedResourceUtil.lookupUri;
+import static submissions.SubmissionResourceUtil.lookupUri;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

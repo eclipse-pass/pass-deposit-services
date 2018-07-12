@@ -15,20 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.messaging.support.Condition;
+import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Test;
-import submissions.SharedResourceUtil;
+import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Objects;
 
-import static java.util.stream.Collectors.toSet;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
@@ -47,7 +45,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     @Override
     protected InputStream getSubmissionResources() {
-        return SharedResourceUtil.lookupStream(SUBMISSION_RESOURCES);
+        return SubmissionResourceUtil.lookupStream(SUBMISSION_RESOURCES);
     }
 
     @Test
