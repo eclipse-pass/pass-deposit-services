@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.dataconservancy.pass.deposit.messaging.config.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;

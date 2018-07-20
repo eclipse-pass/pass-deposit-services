@@ -1,0 +1,61 @@
+{
+
+  "J10P": {
+    "status-mapping": {
+      "http://dspace.org/state/archived": "http://oapass.org/status/deposit#accepted",
+      "http://dspace.org/state/withdrawn": "http://oapass.org/status/deposit#rejected",
+      "default-mapping": "http://oapass.org/status/deposit#submitted"
+    },
+
+    "transport-config": {
+      "auth-realms": [
+        {
+          "mech": "basic",
+          "username": "user",
+          "password": "pass",
+          "url": "https://jscholarship.library.jhu.edu/"
+        },
+        {
+          "mech": "basic",
+          "username": "user",
+          "password": "pass",
+          "url": "https://dspace-prod.mse.jhu.edu:8080/"
+        }
+      ],
+
+      "protocol-binding": {
+        "protocol": "SWORDv2",
+        "username": "sworduser",
+        "password": "swordpass",
+        "service-doc": "http://${dspace.host}:${dspace.port}/swordv2/servicedocument",
+        "default-collection": "http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2",
+        "on-behalf-of": null,
+        "deposit-receipt": true,
+        "user-agent": "pass-deposit/x.y.z"
+      }
+    }
+  },
+
+  "PubMed": {
+    "status-mapping": {
+      "INFO": "http://oapass.org/status/deposit#accepted",
+      "ERROR": "http://oapass.org/status/deposit#rejected",
+      "WARN": "http://oapass.org/status/deposit#rejected",
+      "default-mapping": "http://oapass.org/status/deposit#submitted"
+    },
+
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "ftp",
+        "username": "ftpuser",
+        "password": "ftppass",
+        "server-fqdn": "${ftp.host}",
+        "server-port": "${ftp.port}",
+        "data-type": "binary",
+        "transfer-mode": "stream",
+        "use-pasv": true,
+        "default-directory": "/logs/upload/%s"
+      }
+    }
+  }
+}
