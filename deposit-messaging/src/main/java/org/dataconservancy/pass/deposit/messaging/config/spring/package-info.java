@@ -17,4 +17,4 @@
 /**
  * Provides Spring bean configurations
  */
-package org.dataconservancy.pass.deposit.messaging.config;
+package org.dataconservancy.pass.deposit.messaging.config.spring;

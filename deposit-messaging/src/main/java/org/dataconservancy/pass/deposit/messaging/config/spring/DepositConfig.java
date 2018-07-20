@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.deposit.messaging.config;
+package org.dataconservancy.pass.deposit.messaging.config.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -26,6 +26,8 @@ import org.apache.commons.httpclient.Credentials;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -39,7 +41,6 @@ import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.AbderaDepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
@@ -108,6 +109,9 @@ public class DepositConfig {
 
     @Value("${pass.deposit.http.agent}")
     private String passHttpAgent;
+
+//    @Value("${pass.deposit.repository.configuration}")
+//    private Resource repositoryConfigResource;
 
     @Bean
     public PassClientDefault passClient() {
@@ -275,6 +279,12 @@ public class DepositConfig {
         return registries;
     }
 
+//    @Bean
+//    public RepositoryConfig repositoryConfig(Environment env) {
+//
+//        return null;
+//    }
+
     @Bean
     public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -354,11 +364,11 @@ public class DepositConfig {
     }
 
     @Bean
-    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                       Resource depositMappingResource,
-                                                             ObjectMapper objectMapper) {
+    public SwordDspaceDepositStatusMapper swordDspaceDepositStatusMapper(@Value("${pass.deposit.status.mapping}")
+                                                                                     Resource depositMappingResource,
+                                                                         ObjectMapper objectMapper) {
         try {
-            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
+            return new SwordDspaceDepositStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
         } catch (IOException e) {
             throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
                     e.getMessage(), e);
@@ -366,11 +376,11 @@ public class DepositConfig {
     }
 
     @Bean
-    public SwordDspaceDepositStatusMapper swordDspaceDepositStatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                                     Resource depositMappingResource,
-                                                                         ObjectMapper objectMapper) {
+    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
+                                                                     Resource depositMappingResource,
+                                                             ObjectMapper objectMapper) {
         try {
-            return new SwordDspaceDepositStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
+            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
         } catch (IOException e) {
             throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
                     e.getMessage(), e);

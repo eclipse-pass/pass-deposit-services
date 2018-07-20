@@ -1,0 +1,15 @@
+{
+  "RepositoryCopyv2": {
+    "COMPLETE": "http://oapass.org/status/deposit#accepted",
+    "*": "http://oapass.org/status/deposit#submitted"
+  },
+  "SWORDv2DspaceStatement": {
+    "http://dspace.org/state/archived": "http://oapass.org/status/deposit#accepted",
+    "http://dspace.org/state/withdrawn": "http://oapass.org/status/deposit#rejected",
+    "*": "http://oapass.org/status/deposit#submitted"
+  },
+  "SubmissionAggregatedStatusv2": {
+    "ACCEPTED": "http://oapass.org/status/deposit#accepted",
+    "*": "http://oapass.org/status/deposit#submitted"
+  }
+}
