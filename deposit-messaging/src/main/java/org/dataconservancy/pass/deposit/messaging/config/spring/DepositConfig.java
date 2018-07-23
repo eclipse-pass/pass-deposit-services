@@ -27,6 +27,7 @@ import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAss
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -108,6 +109,9 @@ public class DepositConfig {
 
     @Value("${pass.deposit.http.agent}")
     private String passHttpAgent;
+
+//    @Value("${pass.deposit.repository.configuration}")
+//    private Resource repositoryConfigResource;
 
     @Bean
     public PassClientDefault passClient() {
@@ -274,6 +278,12 @@ public class DepositConfig {
 
         return registries;
     }
+
+//    @Bean
+//    public RepositoryConfig repositoryConfig(Environment env) {
+//
+//        return null;
+//    }
 
     @Bean
     public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
