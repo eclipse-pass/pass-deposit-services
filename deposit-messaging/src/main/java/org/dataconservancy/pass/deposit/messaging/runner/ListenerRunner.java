@@ -18,7 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.runner;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.dataconservancy.pass.deposit.messaging.config.JmsConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.deposit.util.async.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

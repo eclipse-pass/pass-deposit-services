@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.deposit.messaging.config;
+package org.dataconservancy.pass.deposit.messaging.config.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -39,7 +39,6 @@ import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.AbderaDepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
@@ -347,18 +346,6 @@ public class DepositConfig {
                                                           ObjectMapper objectMapper) {
         try {
             return new AtomFeedStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
-    }
-
-    @Bean
-    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                       Resource depositMappingResource,
-                                                             ObjectMapper objectMapper) {
-        try {
-            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
         } catch (IOException e) {
             throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
                     e.getMessage(), e);
