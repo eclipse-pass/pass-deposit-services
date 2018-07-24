@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.Credentials;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -358,6 +359,18 @@ public class DepositConfig {
                                                                          ObjectMapper objectMapper) {
         try {
             return new SwordDspaceDepositStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
+                    e.getMessage(), e);
+        }
+    }
+
+    @Bean
+    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
+                                                                     Resource depositMappingResource,
+                                                             ObjectMapper objectMapper) {
+        try {
+            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
         } catch (IOException e) {
             throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
                     e.getMessage(), e);
