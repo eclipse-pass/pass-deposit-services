@@ -38,7 +38,6 @@ import java.util.Properties;
 @SpringBootApplication
 @Import({DepositConfig.class})
 @ComponentScan("org.dataconservancy.pass")
-@ComponentScan("org.dataconservancy.nihms")
 public class DepositApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositApp.class);
