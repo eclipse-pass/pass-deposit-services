@@ -137,11 +137,11 @@ public class Sword2TransportTest {
 
     @Test
     public void testGetServiceDocumentThrowsRuntimeException() throws Exception {
-        String exceptionMessage = "Expected RuntimeException!";
         expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage(exceptionMessage);
+        expectedException.expectCause(isA(RuntimeException.class));
+        expectedException.expectMessage("http");
 
-        when(swordClient.getServiceDocument(any(), any())).thenThrow(new RuntimeException(exceptionMessage));
+        when(swordClient.getServiceDocument(any(), any())).thenThrow(new RuntimeException());
 
         underTest.open(TRANSPORT_HINTS);
     }
