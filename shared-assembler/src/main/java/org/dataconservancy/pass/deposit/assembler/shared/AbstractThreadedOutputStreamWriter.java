@@ -198,6 +198,14 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
             if (closeStreamHandler != null) {
                 closeStreamHandler.closeAll();
             }
+
+            // Must re-throw this exception when an error occurs streaming the package so that the caller knows to
+            // fail the deposit
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
         }
     }
 
