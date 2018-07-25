@@ -73,7 +73,7 @@ public class FailedDepositRunner {
     }
 
     @Autowired
-    private SubmissionBuilder submissionBuilder;
+    private SubmissionBuilder fcrepoModelBuilder;
 
     @Autowired
     private DepositTaskHelper depositTaskHelper;
@@ -140,7 +140,7 @@ public class FailedDepositRunner {
 
                                 try {
                                     depositSubmission[0] =
-                                            submissionBuilder.build(submission.getId().toString());
+                                            fcrepoModelBuilder.build(submission.getId().toString());
                                 } catch (InvalidModel invalidModel) {
                                     LOG.info(FAILED_TO_PROCESS, deposit.getId(),
                                             "Failed to build the DepositSubmission model", invalidModel);
