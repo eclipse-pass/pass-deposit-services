@@ -16,9 +16,11 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.Map;
 import java.util.Objects;
 
 @JsonTypeInfo(
@@ -33,6 +35,12 @@ public abstract class ProtocolBinding {
 
     private String protocol;
 
+    @JsonProperty("server-fqdn")
+    private String serverFqdn;
+
+    @JsonProperty("server-port")
+    private String serverPort;
+
     public String getProtocol() {
         return protocol;
     }
@@ -41,16 +49,45 @@ public abstract class ProtocolBinding {
         this.protocol = protocol;
     }
 
+    public String getServerFqdn() {
+        return serverFqdn;
+    }
+
+    public void setServerFqdn(String serverFqdn) {
+        this.serverFqdn = serverFqdn;
+    }
+
+    public String getServerPort() {
+        return serverPort;
+    }
+
+    public void setServerPort(String serverPort) {
+        this.serverPort = serverPort;
+    }
+
+    public abstract Map<String, String> asPropertiesMap();
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
         ProtocolBinding that = (ProtocolBinding) o;
-        return Objects.equals(protocol, that.protocol);
+
+        if (protocol != null ? !protocol.equals(that.protocol) : that.protocol != null)
+            return false;
+        if (serverFqdn != null ? !serverFqdn.equals(that.serverFqdn) : that.serverFqdn != null)
+            return false;
+        return serverPort != null ? serverPort.equals(that.serverPort) : that.serverPort == null;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(protocol);
+        int result = protocol != null ? protocol.hashCode() : 0;
+        result = 31 * result + (serverFqdn != null ? serverFqdn.hashCode() : 0);
+        result = 31 * result + (serverPort != null ? serverPort.hashCode() : 0);
+        return result;
     }
 }
