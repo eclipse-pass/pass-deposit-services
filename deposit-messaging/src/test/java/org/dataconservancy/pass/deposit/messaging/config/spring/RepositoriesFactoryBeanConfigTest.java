@@ -63,7 +63,8 @@ public class RepositoriesFactoryBeanConfigTest {
         assertEquals("PubMed", pubMed.getId());
 
         assertNotNull(j10p.getTransportConfig());
-        assertNotNull(j10p.getStatusMapping());
+        assertNotNull(j10p.getDepositStatus());
+        assertNotNull(j10p.getDepositStatus().getDepositProcessing());
         assertNotNull(j10p.getTransportConfig().getProtocolBinding());
         assertTrue(j10p.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding);
         assertFalse(((SwordV2Binding) j10p.getTransportConfig().getProtocolBinding()).getDefaultCollectionUrl()
@@ -71,7 +72,8 @@ public class RepositoriesFactoryBeanConfigTest {
         assertNotNull(j10p.getTransportConfig().getAuthRealms());
 
         assertNotNull(pubMed.getTransportConfig());
-        assertNotNull(pubMed.getStatusMapping());
+        assertNotNull(pubMed.getDepositStatus());
+        assertNotNull(pubMed.getDepositStatus().getDepositProcessing());
         assertNotNull(pubMed.getTransportConfig().getProtocolBinding());
         assertTrue(pubMed.getTransportConfig().getProtocolBinding() instanceof FtpBinding);
         assertNull(pubMed.getTransportConfig().getAuthRealms());
