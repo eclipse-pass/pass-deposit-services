@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.RepositoriesFactoryBeanConfig;
 import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;
@@ -36,7 +37,7 @@ import java.util.Properties;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @SpringBootApplication
-@Import({DepositConfig.class})
+@Import({DepositConfig.class, RepositoriesFactoryBeanConfig.class})
 @ComponentScan("org.dataconservancy.pass")
 public class DepositApp {
 

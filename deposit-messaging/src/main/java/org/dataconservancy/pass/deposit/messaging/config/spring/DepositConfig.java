@@ -110,8 +110,8 @@ public class DepositConfig {
     @Value("${pass.deposit.http.agent}")
     private String passHttpAgent;
 
-//    @Value("${pass.deposit.repository.configuration}")
-//    private Resource repositoryConfigResource;
+    @Value("${pass.deposit.repository.configuration}")
+    private Resource repositoryConfigResource;
 
     @Bean
     public PassClientDefault passClient() {
