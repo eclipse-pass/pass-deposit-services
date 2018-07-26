@@ -1,0 +1,12 @@
+private String name;
+
+private Assembler assembler;
+
+private Transport transport;
+
+private DepositStatusRefProcessor depositStatusProcessor;
+
+private RepositoryConfig repositoryConfig;
+{
+
+}

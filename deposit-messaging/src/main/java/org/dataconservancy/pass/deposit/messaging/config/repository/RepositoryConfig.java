@@ -18,15 +18,26 @@ package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Contains parameters and configuration for communicating with a downstream repository for the purpose of transferring
+ * the custody of materials deposited by a user of PASS.
+ * <p>
+ * A "repository" may be a DSpace instance, an FTP server, a Fedora repository, or any system capable of receiving a
+ * package of materials.
+ * </p>
+ */
 public class RepositoryConfig {
 
     private String id;
 
-    @JsonProperty("status-mapping")
-    private StatusMapping statusMapping;
+    @JsonProperty("deposit-status")
+    private DepositStatus depositStatus;
 
     @JsonProperty("transport-config")
     private TransportConfig transportConfig;
+
+    @JsonProperty("assembler")
+    private AssemblerConfig assemblerConfig;
 
     public String getId() {
         return id;
@@ -36,12 +47,12 @@ public class RepositoryConfig {
         this.id = id;
     }
 
-    public StatusMapping getStatusMapping() {
-        return statusMapping;
+    public DepositStatus getDepositStatus() {
+        return depositStatus;
     }
 
-    public void setStatusMapping(StatusMapping statusMapping) {
-        this.statusMapping = statusMapping;
+    public void setDepositStatus(DepositStatus depositStatus) {
+        this.depositStatus = depositStatus;
     }
 
     public TransportConfig getTransportConfig() {
@@ -52,24 +63,38 @@ public class RepositoryConfig {
         this.transportConfig = transportConfig;
     }
 
+    public AssemblerConfig getAssemblerConfig() {
+        return assemblerConfig;
+    }
+
+    public void setAssemblerConfig(AssemblerConfig assemblerConfig) {
+        this.assemblerConfig = assemblerConfig;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         RepositoryConfig that = (RepositoryConfig) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (statusMapping != null ? !statusMapping.equals(that.statusMapping) : that.statusMapping != null)
+        if (id != null ? !id.equals(that.id) : that.id != null)
             return false;
-        return transportConfig != null ? transportConfig.equals(that.transportConfig) : that.transportConfig == null;
+        if (depositStatus != null ? !depositStatus.equals(that.depositStatus) : that.depositStatus != null)
+            return false;
+        if (transportConfig != null ? !transportConfig.equals(that.transportConfig) : that.transportConfig != null)
+            return false;
+        return assemblerConfig != null ? assemblerConfig.equals(that.assemblerConfig) : that.assemblerConfig == null;
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (statusMapping != null ? statusMapping.hashCode() : 0);
+        result = 31 * result + (depositStatus != null ? depositStatus.hashCode() : 0);
         result = 31 * result + (transportConfig != null ? transportConfig.hashCode() : 0);
+        result = 31 * result + (assemblerConfig != null ? assemblerConfig.hashCode() : 0);
         return result;
     }
 }

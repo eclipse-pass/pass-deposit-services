@@ -31,6 +31,13 @@ import org.springframework.lang.Nullable;
 import java.net.URI;
 import java.net.URL;
 
+/**
+ * Parses the global repository configuration file, and returns the configured {@link Repositories}.
+ * <p>
+ * The location of the repository configuration file isi identified as a Spring Resource using the {@code
+ * pass.deposit.repository.configuration} property key.
+ * <p>
+ */
 public class RepositoriesFactory implements FactoryBean<Repositories> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepositoriesFactory.class);
@@ -50,6 +57,12 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
         this.mapper = mapper;
     }
 
+    /**
+     * Parses the {@code repositories.json} configuration file.  Each entry in the file represents the configuration for
+     * a is mapped to a {@link RepositoryConfig}
+     * @return
+     * @throws Exception
+     */
     @Nullable
     @Override
     public Repositories getObject() throws Exception {

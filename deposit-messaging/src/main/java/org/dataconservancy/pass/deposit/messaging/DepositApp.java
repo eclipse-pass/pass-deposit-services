@@ -37,7 +37,7 @@ import java.util.Properties;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @SpringBootApplication
-@Import({DepositConfig.class, RepositoriesFactoryBeanConfig.class})
+@Import(DepositConfig.class)
 @ComponentScan("org.dataconservancy.pass")
 public class DepositApp {
 
