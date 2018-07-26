@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.model;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.messaging.service.DepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
@@ -53,19 +54,19 @@ public class Packager {
 
     private DepositStatusRefProcessor depositStatusProcessor;
 
-    private Map<String, String> configuration;
+    private RepositoryConfig repositoryConfig;
 
-    public Packager(String name, Assembler assembler, Transport transport, Map<String, String> configuration) {
-        this(name, assembler, transport, configuration, null);
+    public Packager(String name, Assembler assembler, Transport transport, RepositoryConfig repositoryConfig) {
+        this(name, assembler, transport, repositoryConfig, null);
     }
 
-    public Packager(String name, Assembler assembler, Transport transport, Map<String, String> configuration,
+    public Packager(String name, Assembler assembler, Transport transport, RepositoryConfig repositoryConfig,
                     DepositStatusRefProcessor depositStatusProcessor) {
         this.name = name;
         this.assembler = assembler;
         this.transport = transport;
         this.depositStatusProcessor = depositStatusProcessor;
-        this.configuration = configuration;
+        this.repositoryConfig = repositoryConfig;
     }
 
     public String getName() {
@@ -81,13 +82,7 @@ public class Packager {
     }
 
     public Map<String, String> getConfiguration() {
-        return configuration.entrySet().stream()
-                .filter(entry -> entry.getKey() != null && entry.getValue() != null)
-                .peek(entry -> LOG.trace(">>>> Configuring {}@{} with '{}'='{}'",
-                        this.getClass().getSimpleName(),
-                        toHexString(identityHashCode(this)),
-                        entry.getKey(), entry.getValue()))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return repositoryConfig.getTransportConfig().getProtocolBinding().asPropertiesMap();
     }
 
     /**

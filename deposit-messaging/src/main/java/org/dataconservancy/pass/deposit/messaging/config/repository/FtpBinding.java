@@ -17,8 +17,19 @@
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
 
 public class FtpBinding extends ProtocolBinding {
 
@@ -27,12 +38,6 @@ public class FtpBinding extends ProtocolBinding {
     private String username;
 
     private String password;
-
-    @JsonProperty("server-fqdn")
-    private String serverFqdn;
-
-    @JsonProperty("server-port")
-    private String serverPort;
 
     @JsonProperty("data-type")
     private String dataType;
@@ -64,22 +69,6 @@ public class FtpBinding extends ProtocolBinding {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getServerFqdn() {
-        return serverFqdn;
-    }
-
-    public void setServerFqdn(String serverFqdn) {
-        this.serverFqdn = serverFqdn;
-    }
-
-    public String getServerPort() {
-        return serverPort;
-    }
-
-    public void setServerPort(String serverPort) {
-        this.serverPort = serverPort;
     }
 
     public String getDataType() {
@@ -115,6 +104,24 @@ public class FtpBinding extends ProtocolBinding {
     }
 
     @Override
+    public Map<String, String> asPropertiesMap() {
+        Map<String, String> transportProperties = new HashMap<>();
+
+        transportProperties.put(TRANSPORT_USERNAME, getUsername());
+        transportProperties.put(TRANSPORT_PASSWORD, getPassword());
+        transportProperties.put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
+        transportProperties.put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.ftp.name());
+        transportProperties.put(TRANSPORT_SERVER_FQDN, getServerFqdn());
+        transportProperties.put(TRANSPORT_SERVER_PORT, getServerPort());
+        transportProperties.put(FtpTransportHints.BASE_DIRECTORY, getDefaultDirectory());
+        transportProperties.put(FtpTransportHints.TRANSFER_MODE, getTransferMode());
+        transportProperties.put(FtpTransportHints.DATA_TYPE, getDataType());
+        transportProperties.put(FtpTransportHints.USE_PASV, String.valueOf(isUsePasv()));
+
+        return transportProperties;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -123,8 +130,6 @@ public class FtpBinding extends ProtocolBinding {
         return usePasv == that.usePasv &&
                 Objects.equals(username, that.username) &&
                 Objects.equals(password, that.password) &&
-                Objects.equals(serverFqdn, that.serverFqdn) &&
-                Objects.equals(serverPort, that.serverPort) &&
                 Objects.equals(dataType, that.dataType) &&
                 Objects.equals(transferMode, that.transferMode) &&
                 Objects.equals(defaultDirectory, that.defaultDirectory);
@@ -132,7 +137,7 @@ public class FtpBinding extends ProtocolBinding {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), username, password, serverFqdn, serverPort, dataType, transferMode, usePasv, defaultDirectory);
+        return Objects.hash(super.hashCode(), username, password, dataType, transferMode, usePasv, defaultDirectory);
     }
 
 }

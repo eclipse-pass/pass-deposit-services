@@ -17,8 +17,19 @@
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
+import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
 
 public class SwordV2Binding extends ProtocolBinding {
 
@@ -101,6 +112,25 @@ public class SwordV2Binding extends ProtocolBinding {
 
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
+    }
+
+    @Override
+    public Map<String, String> asPropertiesMap() {
+        Map<String, String> transportProperties = new HashMap<>();
+
+        transportProperties.put(TRANSPORT_USERNAME, getUsername());
+        transportProperties.put(TRANSPORT_PASSWORD, getPassword());
+        transportProperties.put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
+        transportProperties.put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.SWORDv2.name());
+        transportProperties.put(TRANSPORT_SERVER_FQDN, getServerFqdn());
+        transportProperties.put(TRANSPORT_SERVER_PORT, getServerPort());
+        transportProperties.put(Sword2TransportHints.SWORD_SERVICE_DOC_URL, getServiceDocUrl());
+        transportProperties.put(Sword2TransportHints.SWORD_COLLECTION_URL, getDefaultCollectionUrl());
+        transportProperties.put(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER, getOnBehalfOf());
+        transportProperties.put(Sword2TransportHints.SWORD_DEPOSIT_RECEIPT_FLAG, String.valueOf(isDepositReceipt()));
+        transportProperties.put(Sword2TransportHints.SWORD_CLIENT_USER_AGENT, getUserAgent());
+
+        return transportProperties;
     }
 
     @Override

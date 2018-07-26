@@ -23,11 +23,15 @@ import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.commons.httpclient.Credentials;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
+import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -47,39 +51,37 @@ import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatus
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
-import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
-import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
+import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Configuration
 @EnableAutoConfiguration(exclude = {RestTemplateAutoConfiguration.class})
+@Import(RepositoriesFactoryBeanConfig.class)
 public class DepositConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepositConfig.class);
@@ -101,17 +103,14 @@ public class DepositConfig {
     @Value("${pass.elasticsearch.limit}")
     private int esLimit;
 
-    @Value("${pass.deposit.transport.configuration}")
-    private Resource transportResource;
-
     @Value("${pass.deposit.workers.concurrency}")
     private int depositWorkersConcurrency;
 
     @Value("${pass.deposit.http.agent}")
     private String passHttpAgent;
 
-//    @Value("${pass.deposit.repository.configuration}")
-//    private Resource repositoryConfigResource;
+    @Value("${pass.deposit.repository.configuration}")
+    private Resource repositoryConfigResource;
 
     @Bean
     public PassClientDefault passClient() {
@@ -225,19 +224,56 @@ public class DepositConfig {
         return new InMemoryMapRegistry<>(packagers);
     }
 
+    // TODO: assemble packagers map dynamically from the repositories.json
     @Bean
-    public Map<String, Packager> packagers(DspaceMetsAssembler dspaceAssembler, Sword2Transport swordTransport,
-                                           NihmsAssembler nihmsAssembler, FtpTransport ftpTransport,
-                                           Map<String, Map<String, String>> transportRegistries,
+    public Map<String, Packager> packagers(@Value("#{assemblers}") Map<String, Assembler> assemblers,
+                                           @Value("#{transports}") Map<String, Transport> transports,
+                                           Repositories repositories,
                                            AbderaDepositStatusRefProcessor abderaDepositStatusRefProcessor) {
         Map<String, Packager> packagers = new HashMap<>();
         // TODO: transport registries looked up by hard-coded strings.  Need a more reliable way of discovering repositories, the packagers for those repositories, and their configuration
         packagers.put("JScholarship",
-                new Packager("JScholarship", dspaceAssembler, swordTransport, transportRegistries.get("js"),
+                new Packager("JScholarship",
+                        assemblers.get(
+                                repositories.getConfig("J10P").getAssemblerConfig().getSpec()),
+                        transports.get(
+                                repositories.getConfig("J10P")
+                                        .getTransportConfig().getProtocolBinding().getProtocol()),
+                        repositories.getConfig("J10P"),
                         abderaDepositStatusRefProcessor));
         packagers.put("PubMed Central",
-                new Packager("PubMed Central", nihmsAssembler, ftpTransport, transportRegistries.get("nihms")));
+                new Packager("PubMed Central",
+                        assemblers.get(
+                                repositories.getConfig("PubMed").getAssemblerConfig().getSpec()),
+                        transports.get(
+                                repositories.getConfig("PubMed")
+                                        .getTransportConfig().getProtocolBinding().getProtocol()),
+                repositories.getConfig("PubMed")));
         return packagers;
+    }
+
+    // TODO: discover Assemblers on the classpath
+    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @Bean
+    public Map<String, Assembler> assemblers(DspaceMetsAssembler dspaceMetsAssembler, NihmsAssembler nihmsAssembler) {
+        return new HashMap<String, Assembler>() {
+            {
+                put(DspaceMetsAssembler.SPEC_DSPACE_METS, dspaceMetsAssembler);
+                put(NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07, nihmsAssembler);
+            }
+        };
+    }
+
+    // TODO: discover Transports on the classpath
+    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @Bean
+    public Map<String, Transport> transports(Sword2Transport sword2Transport, FtpTransport ftpTransport) {
+        return new HashMap<String, Transport>() {
+            {
+                put(Sword2Transport.PROTOCOL.SWORDv2.name(), sword2Transport);
+                put(FtpTransport.PROTOCOL.ftp.name(), ftpTransport);
+            }
+        };
     }
 
     @Bean
@@ -246,44 +282,6 @@ public class DepositConfig {
         dbf.setNamespaceAware(true);
         return dbf;
     }
-
-    @Bean
-    public Map<String, Map<String, String>> transportRegistries(Environment env) {
-        LOG.debug("Loading Packager (a/k/a Transports) configuration from '{}'", transportResource);
-
-        Properties properties = new Properties();
-        try {
-            properties.load(transportResource.getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException("Error loading properties from " + transportResource + ": " + e.getMessage(), e);
-        }
-
-        Map<String, Map<String, String>> registries = new HashMap<>();
-
-        properties.stringPropertyNames().forEach(key -> {
-            String[] keyParts = key.split("\\.");
-            if (keyParts.length < 3 || !"transport".equals(keyParts[0])) {
-                return;
-            }
-
-            String repoName = keyParts[1];
-            Map<String, String> registryMap = registries.getOrDefault(repoName, new HashMap<>());
-
-            String registryKey = Arrays.stream(keyParts, 2, keyParts.length).collect(Collectors.joining("."));
-            String registryValue = env.resolveRequiredPlaceholders(properties.getProperty(key));
-            LOG.debug(">>>> key: '{}' -> registryKey: '{}', registryValue: '{}'", key, registryKey, registryValue);
-            registryMap.put(registryKey, registryValue);
-            registries.putIfAbsent(repoName, registryMap);
-        });
-
-        return registries;
-    }
-
-//    @Bean
-//    public RepositoryConfig repositoryConfig(Environment env) {
-//
-//        return null;
-//    }
 
     @Bean
     public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
@@ -314,22 +312,20 @@ public class DepositConfig {
         return executor;
     }
 
+    // TODO: each SWORDv2 binding will need an AbderaClient
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public AbderaClient abderaClient(Map<String, Map<String, String>> transportRegistries) {
+    public AbderaClient abderaClient(Repositories repositories) {
         AbderaClient ac = new AbderaClient();
 
-        Map<String, String> jscholarship = transportRegistries.get("js");
+        SwordV2Binding swordV2Binding = (SwordV2Binding) repositories.getConfig("J10P")
+                .getTransportConfig().getProtocolBinding();
 
-        if (jscholarship == null) {
-            return ac;
-        }
-
-        if (jscholarship.containsKey("deposit.transport.authmode") && jscholarship.get("deposit.transport" +
-                ".authmode").equals("userpass")) {
+        if (swordV2Binding.getUsername() != null && swordV2Binding.getUsername().trim().length() > 0) {
 
             Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
-                    jscholarship.get("deposit.transport.username"),
-                    jscholarship.get("deposit.transport.password")
+                    swordV2Binding.getUsername(),
+                    swordV2Binding.getPassword()
             );
 
             try {
@@ -342,15 +338,19 @@ public class DepositConfig {
         return ac;
     }
 
+    // TODO: each SWORDv2 binding will need an AtomFeedStatusParser
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public AtomFeedStatusParser atomFeedStatusParser(Map<String, Map<String, String>> transportRegistries,
-                                                     Parser abderaParser) {
+    public AtomFeedStatusParser atomFeedStatusParser(Repositories repositories, Parser abderaParser) {
         AtomFeedStatusParser feedStatusParser = new AtomFeedStatusParser(abderaParser);
-        feedStatusParser.setSwordUsername(transportRegistries.get("js").get(TRANSPORT_USERNAME));
-        feedStatusParser.setSwordPassword(transportRegistries.get("js").get(TRANSPORT_PASSWORD));
+        RepositoryConfig repositoryConfig = repositories.getConfig("J10P");
+        SwordV2Binding swordV2Binding = (SwordV2Binding) repositoryConfig.getTransportConfig().getProtocolBinding();
+        feedStatusParser.setSwordUsername(swordV2Binding.getUsername());
+        feedStatusParser.setSwordPassword(swordV2Binding.getPassword());
         return feedStatusParser;
     }
 
+    // TODO: convert to using RepositoryConfig
     @Bean
     public AtomFeedStatusMapper swordv2DspaceStatusMapper(@Value("${pass.deposit.status.mapping}")
                                                                Resource depositMappingResource,
@@ -363,6 +363,7 @@ public class DepositConfig {
         }
     }
 
+    // TODO: convert to using RepositoryConfig
     @Bean
     public SwordDspaceDepositStatusMapper swordDspaceDepositStatusMapper(@Value("${pass.deposit.status.mapping}")
                                                                                      Resource depositMappingResource,
@@ -398,6 +399,7 @@ public class DepositConfig {
     }
 
     @Bean
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     DepositServiceErrorHandler errorHandler(CriticalRepositoryInteraction cri) {
         return new DepositServiceErrorHandler(cri);
     }

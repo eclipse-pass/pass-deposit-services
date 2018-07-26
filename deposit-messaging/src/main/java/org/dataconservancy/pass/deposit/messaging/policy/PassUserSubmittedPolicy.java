@@ -15,12 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
