@@ -74,8 +74,8 @@
     "transport-config": {
       "protocol-binding": {
         "protocol": "ftp",
-        "username": "ftpuser",
-        "password": "ftppass",
+        "username": "nihmsftpuser",
+        "password": "nihmsftppass",
         "server-fqdn": "${ftp.host}",
         "server-port": "${ftp.port}",
         "data-type": "binary",
