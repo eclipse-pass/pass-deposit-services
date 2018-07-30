@@ -21,15 +21,10 @@ import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.messaging.support.Constants;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
-import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,33 +56,24 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * Processes incoming JMS messages from the "deposit" queue, which describe the creation or updating of
      * {@code Submission} resources in Fedora.  The {@code Submission} is resolved, and sent to the
      * {@link SubmissionProcessor} for further processing.
-     *
      * @param passClient used to resolve {@code Submission} resources from the Fedora repository
      * @param jsonParser used to parse the {@code Submission} URI from the JMS message
      * @param fcrepoModelBuilder used to build a {@link DepositSubmission} from a {@code Submission}
      * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote
-     *                         repositories
+*                         repositories
      * @param passUserSubmittedPolicy whether or not a {@code Submission} should be accepted for processing
-     * @param dirtyDepositPolicy whether or not a {@code Deposit} should be accepted for processing
      * @param submissionMessagePolicy whether or not a JMS message should be accepted for processing
-     * @param depositStatusMapper maps the status of a {@code Deposit} as an <em>intermediate</em> or <em>terminal</em>
-     *                            status
-     * @param atomStatusParser used to parse Atom feeds that result from SWORD deposits
      */
     public JmsSubmissionProcessor(PassClient passClient, JsonParser jsonParser,
                                   SubmissionBuilder fcrepoModelBuilder,
                                   Registry<Packager> packagerRegistry,
                                   SubmissionPolicy passUserSubmittedPolicy,
-                                  Policy<Deposit.DepositStatus> dirtyDepositPolicy,
-                                  Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                   JmsMessagePolicy submissionMessagePolicy,
                                   DepositTaskHelper depositTaskHelper,
-                                  DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
-                                  DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                   CriticalRepositoryInteraction critical) {
 
         super(passClient, jsonParser, fcrepoModelBuilder, packagerRegistry, passUserSubmittedPolicy,
-                dirtyDepositPolicy, submissionMessagePolicy, terminalDepositStatusPolicy, depositTaskHelper, depositStatusMapper, atomStatusParser, critical);
+                submissionMessagePolicy, depositTaskHelper, critical);
 
     }
 
