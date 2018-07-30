@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -53,18 +52,18 @@ public class RepositoriesFactoryBeanConfigTest {
         
         assertEquals(2, underTest.keys().size());
         
-        RepositoryConfig j10p = underTest.getConfig("J10P");
+        RepositoryConfig j10p = underTest.getConfig("JScholarship");
         assertNotNull(j10p);
 
-        RepositoryConfig pubMed = underTest.getConfig("PubMed");
+        RepositoryConfig pubMed = underTest.getConfig("PubMed Central");
         assertNotNull(pubMed);
 
-        assertEquals("J10P", j10p.getId());
-        assertEquals("PubMed", pubMed.getId());
+        assertEquals("JScholarship", j10p.getId());
+        assertEquals("PubMed Central", pubMed.getId());
 
         assertNotNull(j10p.getTransportConfig());
-        assertNotNull(j10p.getDepositStatus());
-        assertNotNull(j10p.getDepositStatus().getDepositProcessing());
+        assertNotNull(j10p.getRepositoryDepositConfig());
+        assertNotNull(j10p.getRepositoryDepositConfig().getDepositProcessing());
         assertNotNull(j10p.getTransportConfig().getProtocolBinding());
         assertTrue(j10p.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding);
         assertFalse(((SwordV2Binding) j10p.getTransportConfig().getProtocolBinding()).getDefaultCollectionUrl()
@@ -72,8 +71,8 @@ public class RepositoriesFactoryBeanConfigTest {
         assertNotNull(j10p.getTransportConfig().getAuthRealms());
 
         assertNotNull(pubMed.getTransportConfig());
-        assertNotNull(pubMed.getDepositStatus());
-        assertNotNull(pubMed.getDepositStatus().getDepositProcessing());
+        assertNotNull(pubMed.getRepositoryDepositConfig());
+        assertNotNull(pubMed.getRepositoryDepositConfig().getDepositProcessing());
         assertNotNull(pubMed.getTransportConfig().getProtocolBinding());
         assertTrue(pubMed.getTransportConfig().getProtocolBinding() instanceof FtpBinding);
         assertNull(pubMed.getTransportConfig().getAuthRealms());

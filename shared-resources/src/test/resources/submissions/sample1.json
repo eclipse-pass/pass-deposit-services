@@ -34,6 +34,7 @@
   },
   {
     "name" : "PubMed Central",
+    "repositoryKey" : "PubMed Central",
     "description" : "Contains lots of medical papers",
     "url" : "http://example.com",
     "formSchema" : "{}",
@@ -42,6 +43,7 @@
   },
   {
     "name" : "JScholarship",
+    "repositoryKey" : "JScholarship",
     "description" : "Knowledge for the world",
     "url" : "http://j10p.com",
     "formSchema" : "{}",

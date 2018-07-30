@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.status;
 
 import org.dataconservancy.pass.deposit.messaging.support.Constants;
 
+import java.net.URI;
 import java.util.stream.Stream;
 
 /**
@@ -46,10 +47,10 @@ public enum SwordDspaceDepositStatus {
      */
     SWORD_STATE_INREVIEW(Constants.SWORD.SWORD_STATE_INREVIEW);
 
-    private String uri;
+    private URI uri;
 
     SwordDspaceDepositStatus(String uri) {
-        this.uri = uri;
+        this.uri = URI.create(uri);
     }
 
     /**
@@ -57,7 +58,7 @@ public enum SwordDspaceDepositStatus {
      *
      * @return the uri
      */
-    public String getUri() {
+    public URI asUri() {
         return uri;
     }
 
@@ -69,7 +70,7 @@ public enum SwordDspaceDepositStatus {
      * @throws IllegalArgumentException if the {@code uri} does not identify a valid status
      */
     public static SwordDspaceDepositStatus parseUri(String uri) {
-        return Stream.of(values()).filter(value -> value.getUri().equals(uri)).findAny().orElseThrow(() -> new
-                IllegalArgumentException("Unknown deposit status '" + uri + "'"));
+        return Stream.of(values()).filter(value -> value.asUri().toString().equals(uri)).findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown deposit status '" + uri + "'"));
     }
 }

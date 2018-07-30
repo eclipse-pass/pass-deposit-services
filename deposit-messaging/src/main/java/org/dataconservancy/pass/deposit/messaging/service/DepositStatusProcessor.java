@@ -15,15 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
 import org.dataconservancy.pass.model.Deposit;
 
-import java.net.URI;
+import java.util.Collection;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public interface DepositStatusRefProcessor {
+public interface DepositStatusProcessor {
 
-    Deposit.DepositStatus process(URI depositStatusRef);
+    Deposit.DepositStatus process(Deposit deposit, Collection<AuthRealm> authRealms, StatusMapping mapping);
 
 }

@@ -26,11 +26,11 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
     static final String SWORD_REPOSITORY_JSON = "" +
             "{\n" +
             "\n" +
-            "    \"deposit-status\": {\n" +
+            "    \"deposit-config\": {\n" +
             "\n" +
             /*
              * Empty elements aren't supported without additional mapping configuration:
-             * com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig["deposit-status"]->org.dataconservancy.pass.deposit.messaging.config.repository.DepositStatus["processing"])
+             * com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig["deposit-config"]->org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig["processing"])
              */
 //            "      \"processing\": {\n" +
 //            "\n" +
@@ -90,10 +90,10 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
         TransportConfig tsConfig = new TransportConfig();
         SwordV2Binding swordV2Binding = new SwordV2Binding();
         BasicAuthRealm realm = new BasicAuthRealm();
-        DepositStatus depositStatus = new DepositStatus();
+        RepositoryDepositConfig repositoryDepositConfig = new RepositoryDepositConfig();
         StatusMapping statusMapping = new StatusMapping();
 
-        realm.setBaseUrl(new URL("http://repository.org/"));
+        realm.setBaseUrl("http://repository.org/");
         realm.setRealmName("Repository");
         realm.setUsername("user");
         realm.setPassword("pass");
@@ -101,7 +101,7 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
         statusMapping.addStatusEntry("http://dspace.org/state/archived", "http://oapass.org/status/deposit#accepted");
         statusMapping.addStatusEntry("http://dspace.org/state/withdrawn", "http://oapass.org/status/deposit#rejected");
         statusMapping.setDefaultMapping("http://oapass.org/status/deposit#submitted");
-        depositStatus.setStatusMapping(statusMapping);
+        repositoryDepositConfig.setStatusMapping(statusMapping);
 
         swordV2Binding.setDefaultCollectionUrl("http://repository.org/swordv2/collection/1");
         swordV2Binding.setDepositReceipt(true);
@@ -114,7 +114,7 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
         tsConfig.setAuthRealms(Collections.singletonList(realm));
         tsConfig.setProtocolBinding(swordV2Binding);
 
-        repoConfig.setDepositStatus(depositStatus);
+        repoConfig.setRepositoryDepositConfig(repositoryDepositConfig);
         repoConfig.setTransportConfig(tsConfig);
         repoConfig.setId("J10P");
 

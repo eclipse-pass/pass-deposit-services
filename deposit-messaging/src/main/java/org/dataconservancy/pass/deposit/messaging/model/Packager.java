@@ -17,8 +17,8 @@ package org.dataconservancy.pass.deposit.messaging.model;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.service.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.messaging.service.DepositStatusRefProcessor;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -52,7 +50,7 @@ public class Packager {
 
     private Transport transport;
 
-    private DepositStatusRefProcessor depositStatusProcessor;
+    private DepositStatusProcessor depositStatusProcessor;
 
     private RepositoryConfig repositoryConfig;
 
@@ -61,7 +59,7 @@ public class Packager {
     }
 
     public Packager(String name, Assembler assembler, Transport transport, RepositoryConfig repositoryConfig,
-                    DepositStatusRefProcessor depositStatusProcessor) {
+                    DepositStatusProcessor depositStatusProcessor) {
         this.name = name;
         this.assembler = assembler;
         this.transport = transport;
@@ -86,11 +84,11 @@ public class Packager {
     }
 
     /**
-     * The {@link DepositStatusRefProcessor}, may be {@code null}.
+     * The {@link DepositStatusProcessor}, may be {@code null}.
      *
-     * @return the {@link DepositStatusRefProcessor}, may be {@code null}.
+     * @return the {@link DepositStatusProcessor}, may be {@code null}.
      */
-    public DepositStatusRefProcessor getDepositStatusProcessor() {
+    public DepositStatusProcessor getDepositStatusProcessor() {
         return depositStatusProcessor;
     }
 

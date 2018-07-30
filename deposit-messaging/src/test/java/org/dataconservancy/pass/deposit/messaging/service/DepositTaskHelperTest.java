@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -64,6 +65,8 @@ public class DepositTaskHelperTest {
 
     private DepositTaskHelper underTest;
 
+    private Repositories repositories;
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
@@ -73,9 +76,10 @@ public class DepositTaskHelperTest {
         terminalDepositStatusPolicy = mock(Policy.class);
         cri = mock(CriticalRepositoryInteraction.class);
         packagerRegistry = mock(Registry.class);
+        repositories = mock(Repositories.class);
 
         underTest = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-                terminalDepositStatusPolicy, cri, packagerRegistry);
+                terminalDepositStatusPolicy, cri, packagerRegistry, repositories);
 
         s = mock(Submission.class);
         ds = mock(DepositSubmission.class);

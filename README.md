@@ -27,7 +27,7 @@ The primary mechanism for configuring Deposit Services is through environment va
 |`PASS_FEDORA_BASEURL`                          |http://${fcrepo.host:localhost}:${fcrepo.port:8080}/fcrepo/rest/               |the URL used to communicate with the Fedora REST API.  Normally this variable does not need to be changed (see note below)
 |`PASS_FEDORA_USER`                             |fedoraAdmin                                                                    |the username used for `Basic` HTTP authentication to the Fedora REST API
 |`PASS_FEDORA_PASSWORD`                         |moo                                                                            |the password used for `Basic` HTTP authentication to the Fedora REST API
-|`PASS_DEPOSIT_TRANSPORT_CONFIGURATION`         |classpath:/packagers.properties                                                |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Values must be [Spring Resource URIs][1].  See below for customizing the Packager/Transport configuration values.
+|`PASS_DEPOSIT_REPOSITORY_CONFIGURATION`         |classpath:/repositories.json                                                |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Values must be [Spring Resource URIs][1].  See below for customizing the repository configuration values.
 |`PASS_DEPOSIT_WORKERS_CONCURRENCY`             |4                                                                              |the number of Deposit Worker threads that can simultaneously run.
 |`PASS_DEPOSIT_STATUS_MAPPING`                  |classpath:/statusmapping.json                                                  |points to a JSON file that identifies protocol-specific statuses as _terminal_ or _intermediate_.  Values must be [Spring Resource URIs][1].
 |`PASS_DEPOSIT_HTTP_AGENT`                      |pass-deposit/x.y.z                                                             |the value of the `User-Agent` header supplied on Deposit Services' HTTP requests.
@@ -44,40 +44,98 @@ The primary mechanism for configuring Deposit Services is through environment va
 
 > If the Elastic Search index is deployed under a url other than `/pass`, or if `https` ought to be used instead of `http`, the environment variable `PASS_ELASTICSEARCH_URL` must be set to the base of the Elastic Search HTTP API (e.g. `PASS_ELASTICSEARCH_URL=https://localhost:9200/index`)
 
-### Packager (Transport) Configuration
+### Repositories Configuration
 
-The Packager (a.k.a. Transport) configuration contains the parameters used for connecting to remote repositories.  Deposit Services comes with a default configuration, but a production environment will want to override the default.  Defaults are overridden by creating a copy of the default configuration, editing it to suit, and setting `PASS_DEPOSIT_TRANSPORT_CONFIGURATION` to point to the new location.
+The Repository configuration contains the parameters used for connecting to remote repositories.  Deposit Services comes with a default configuration, but a production environment will want to override the default.  Defaults are overridden by creating a copy of the default configuration, editing it to suit, and setting `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` to point to the new location.
 
-#### Packager configuration format
+The format of the configuration file is JSON, containing multiple repository configurations in a single file.  Each repository configuration has a top-level key that is used to identify that particular configuration.  The _default_ configuration is replicated below:
 
-The format of the configuration file are Java properties, and the keys are prefixed by well-known values.  Each remote repository will have a prefix for its keys.  There are two repositories supported, the NIH FTP server and the JScholarship DSpace instance: `transport.nihms.deposit.transport` for the NIH, and `transport.js.deposit.transport` for DSpace.  The _default_ configuration of Deposit Services is listed below:
+```json
+{
+  "J10P": {
+    "deposit-config": {
 
-        transport.nihms.deposit.transport.authmode=userpass
-        transport.nihms.deposit.transport.username=nihmsftpuser
-        transport.nihms.deposit.transport.password=nihmsftppass
-        transport.nihms.deposit.transport.server-fqdn=${ftp.host}
-        transport.nihms.deposit.transport.server-port=${ftp.port}
-        transport.nihms.deposit.transport.protocol=ftp
-        transport.nihms.deposit.transport.protocol.ftp.basedir=/logs/upload/%s
-        transport.nihms.deposit.transport.protocol.ftp.transfer-mode=stream
-        transport.nihms.deposit.transport.protocol.ftp.use-pasv=true
-        transport.nihms.deposit.transport.protocol.ftp.data-type=binary
-        
-        transport.js.deposit.transport.authmode=userpass
-        transport.js.deposit.transport.username=dspace-admin@oapass.org
-        transport.js.deposit.transport.password=foobar
-        transport.js.deposit.transport.server-fqdn=${dspace.host}
-        transport.js.deposit.transport.server-port=${dspace.port}
-        transport.js.deposit.transport.protocol=swordv2
-        transport.js.deposit.transport.protocol.swordv2.service-doc=http://${dspace.host}:${dspace.port}/swordv2/servicedocument
-        transport.js.deposit.transport.protocol.swordv2.target-collection=http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2
-        transport.js.deposit.transport.protocol.swordv2.on-behalf-of=
-        transport.js.deposit.transport.protocol.swordv2.deposit-receipt=true
-        transport.js.deposit.transport.protocol.swordv2.user-agent-string=pass-deposit/x.y.z 
+      "processing": {
 
-A few observations of this example configuration:
-* When the default configuration is overridden, _all_ values must be represented in the new configuration, even if they remain unchanged from the default.
-* Environment variables / properties are allowed in key values! Environment variables or properties may used to provide key values (keys themselves cannot use variables).
+      },
+
+      "mapping": {
+        "http://dspace.org/state/archived": "http://oapass.org/status/deposit#accepted",
+        "http://dspace.org/state/withdrawn": "http://oapass.org/status/deposit#rejected",
+        "default-mapping": "http://oapass.org/status/deposit#submitted"
+      }
+    },
+
+    "assembler": {
+      "specification": "http://purl.org/net/sword/package/METSDSpaceSIP"
+    },
+
+    "transport-config": {
+      "auth-realms": [
+        {
+          "mech": "basic",
+          "username": "user",
+          "password": "pass",
+          "url": "https://jscholarship.library.jhu.edu/"
+        },
+        {
+          "mech": "basic",
+          "username": "user",
+          "password": "pass",
+          "url": "https://dspace-prod.mse.jhu.edu:8080/"
+        }
+      ],
+
+      "protocol-binding": {
+        "protocol": "SWORDv2",
+        "username": "dspace-admin@oapass.org",
+        "password": "foobar",
+        "server-fqdn": "${dspace.host}",
+        "server-port": "${dspace.port}",
+        "service-doc": "http://${dspace.host}:${dspace.port}/swordv2/servicedocument",
+        "default-collection": "http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2",
+        "on-behalf-of": null,
+        "deposit-receipt": true,
+        "user-agent": "pass-deposit/x.y.z"
+      }
+    }
+  },
+
+  "PubMed": {
+    "deposit-config": {
+
+      "processing": {
+
+      },
+
+      "mapping": {
+        "INFO": "http://oapass.org/status/deposit#accepted",
+        "ERROR": "http://oapass.org/status/deposit#rejected",
+        "WARN": "http://oapass.org/status/deposit#rejected",
+        "default-mapping": "http://oapass.org/status/deposit#submitted"
+      }
+    },
+
+    "assembler": {
+      "specification": "nihms-native-2017-07"
+    },
+
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "ftp",
+        "username": "nihmsftpuser",
+        "password": "nihmsftppass",
+        "server-fqdn": "${ftp.host}",
+        "server-port": "${ftp.port}",
+        "data-type": "binary",
+        "transfer-mode": "stream",
+        "use-pasv": true,
+        "default-directory": "/logs/upload/%s"
+      }
+    }
+  }
+}
+```
 
 #### Important Packager keys
 
@@ -99,7 +157,7 @@ A production deployment of Deposit Services is likely to provide updated values 
 
 #### Creating and using an updated configuration
 
-To create your own configuration, copy and paste the default configuration into an empty file and modify the key values as described above.  The configuration _must_ be referenced by the `pass.deposit.transport.configuration` property, or is environment equivalent `PASS_DEPOSIT_TRANSPORT_CONFIGURATION`.  Allowed values are any Spring Resource path (e.g. `classpath:/`, `classpath*:`, `file:`, `http://`, `https://`).  For example, if your configuration is stored as a file in `/etc/deposit-services.cfg`, then you would set the environment variable `PASS_DEPOSIT_TRANSPORT_CONFIGURATION=file:/etc/deposit-services.cfg` prior to starting Deposit Services.  Likewise, if you kept the configuration accessible at a URL, you could use `PASS_DEPOSIT_TRANSPORT_CONFIGURATION=http://example.org/deposit-services.cfg`.
+To create your own configuration, copy and paste the default configuration into an empty file and modify the key values as described above.  The configuration _must_ be referenced by the `pass.deposit.repository.configuration` property, or is environment equivalent `PASS_DEPOSIT_REPOSITORY_CONFIGURATION`.  Allowed values are any Spring Resource path (e.g. `classpath:/`, `classpath*:`, `file:`, `http://`, `https://`).  For example, if your configuration is stored as a file in `/etc/deposit-services.json`, then you would set the environment variable `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=file:/etc/deposit-services.json` prior to starting Deposit Services.  Likewise, if you kept the configuration accessible at a URL, you could use `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=http://example.org/deposit-services.json`.
 
 ## Failure Handling
 
