@@ -29,8 +29,8 @@ import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
-import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.PassAbderaClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
@@ -43,15 +43,12 @@ import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
-import org.dataconservancy.pass.deposit.messaging.status.AbderaDepositStatusRefProcessor;
-import org.dataconservancy.pass.deposit.messaging.status.AtomFeedStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
+import org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -64,17 +61,18 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
-import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -224,31 +222,23 @@ public class DepositConfig {
         return new InMemoryMapRegistry<>(packagers);
     }
 
-    // TODO: assemble packagers map dynamically from the repositories.json
     @Bean
     public Map<String, Packager> packagers(@Value("#{assemblers}") Map<String, Assembler> assemblers,
                                            @Value("#{transports}") Map<String, Transport> transports,
-                                           Repositories repositories,
-                                           AbderaDepositStatusRefProcessor abderaDepositStatusRefProcessor) {
-        Map<String, Packager> packagers = new HashMap<>();
-        // TODO: transport registries looked up by hard-coded strings.  Need a more reliable way of discovering repositories, the packagers for those repositories, and their configuration
-        packagers.put("JScholarship",
-                new Packager("JScholarship",
-                        assemblers.get(
-                                repositories.getConfig("J10P").getAssemblerConfig().getSpec()),
-                        transports.get(
-                                repositories.getConfig("J10P")
-                                        .getTransportConfig().getProtocolBinding().getProtocol()),
-                        repositories.getConfig("J10P"),
-                        abderaDepositStatusRefProcessor));
-        packagers.put("PubMed Central",
-                new Packager("PubMed Central",
-                        assemblers.get(
-                                repositories.getConfig("PubMed").getAssemblerConfig().getSpec()),
-                        transports.get(
-                                repositories.getConfig("PubMed")
-                                        .getTransportConfig().getProtocolBinding().getProtocol()),
-                repositories.getConfig("PubMed")));
+                                           Repositories repositories) {
+
+        Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
+                .map(repoConfig -> {
+                    return new Packager(
+                            repoConfig.getId(),
+                            assemblers.get(repoConfig.getAssemblerConfig().getSpec()),
+                            transports.get(repoConfig.getTransportConfig().getProtocolBinding().getProtocol()),
+                            repoConfig,
+                            repoConfig.getRepositoryDepositConfig().getDepositProcessing().getProcessor());
+                })
+                .collect(Collectors.toMap(Packager::getName, Function.identity()));
+
+
         return packagers;
     }
 
@@ -312,80 +302,46 @@ public class DepositConfig {
         return executor;
     }
 
-    // TODO: each SWORDv2 binding will need an AbderaClient
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public AbderaClient abderaClient(Repositories repositories) {
-        AbderaClient ac = new AbderaClient();
+    public Map<String, PassAbderaClient> abderaClient(Repositories repositories) {
+        Map<String, PassAbderaClient> clients = repositories.keys().stream()
+                .map(repositories::getConfig)
+                .filter(repoConfig -> repoConfig.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding)
+                .map(repoConfig -> {
+                    PassAbderaClient ac = new PassAbderaClient();
+                    ac.setRepositoryKey(repoConfig.getRepositoryKey());
+                    SwordV2Binding swordBinding = (SwordV2Binding)repoConfig.getTransportConfig().getProtocolBinding();
+                    if (swordBinding.getUsername() != null && swordBinding.getUsername().trim().length() > 0) {
+                        Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
+                                swordBinding.getUsername(),
+                                swordBinding.getPassword()
+                        );
 
-        SwordV2Binding swordV2Binding = (SwordV2Binding) repositories.getConfig("J10P")
-                .getTransportConfig().getProtocolBinding();
+                        try {
+                            ac.addCredentials(null, null, null, creds);
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    }
 
-        if (swordV2Binding.getUsername() != null && swordV2Binding.getUsername().trim().length() > 0) {
+                    return ac;
+                })
+                .collect(Collectors.toMap(PassAbderaClient::getRepositoryKey, Function.identity()));
 
-            Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
-                    swordV2Binding.getUsername(),
-                    swordV2Binding.getPassword()
-            );
-
-            try {
-                ac.addCredentials(null, null, null, creds);
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        }
-
-        return ac;
+        return clients;
     }
 
-    // TODO: each SWORDv2 binding will need an AtomFeedStatusParser
+    // TODO: each SWORDv2 binding will need an AtomFeedStatusResolver
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public AtomFeedStatusParser atomFeedStatusParser(Repositories repositories, Parser abderaParser) {
-        AtomFeedStatusParser feedStatusParser = new AtomFeedStatusParser(abderaParser);
-        RepositoryConfig repositoryConfig = repositories.getConfig("J10P");
-        SwordV2Binding swordV2Binding = (SwordV2Binding) repositoryConfig.getTransportConfig().getProtocolBinding();
-        feedStatusParser.setSwordUsername(swordV2Binding.getUsername());
-        feedStatusParser.setSwordPassword(swordV2Binding.getPassword());
-        return feedStatusParser;
+    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser) {
+        return new AtomFeedStatusResolver(abderaParser);
     }
 
-    // TODO: convert to using RepositoryConfig
-    @Bean
-    public AtomFeedStatusMapper swordv2DspaceStatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                               Resource depositMappingResource,
-                                                          ObjectMapper objectMapper) {
-        try {
-            return new AtomFeedStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
-    }
-
-    // TODO: convert to using RepositoryConfig
-    @Bean
-    public SwordDspaceDepositStatusMapper swordDspaceDepositStatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                                     Resource depositMappingResource,
-                                                                         ObjectMapper objectMapper) {
-        try {
-            return new SwordDspaceDepositStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
-    }
-
-    @Bean
-    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                     Resource depositMappingResource,
-                                                             ObjectMapper objectMapper) {
-        try {
-            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
+    @Bean({"defaultDepositStatusProcessor", "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"})
+    public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
+        return new DefaultDepositStatusProcessor(statusResolver);
     }
 
     @Bean

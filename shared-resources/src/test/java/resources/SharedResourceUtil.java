@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Provides access to test resources found on the classpath.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SharedResourceUtil {
@@ -38,6 +40,7 @@ public class SharedResourceUtil {
     private static final Logger LOG = LoggerFactory.getLogger(SharedResourceUtil.class);
 
     /**
+     * Locates a test resource on the classpath by its name.
      * Caller is responsible for closing the returned stream.
      *
      * @param resourceName
@@ -48,6 +51,7 @@ public class SharedResourceUtil {
     }
 
     /**
+     * Locates a test resource on the classpath by its name.
      * Caller is responsible for closing the returned stream.
      *
      * @param resourceName
@@ -87,10 +91,23 @@ public class SharedResourceUtil {
     }
 
 
+    /**
+     * Finds the URI of a test resource using the resource's name.
+     *
+     * @param resourceName
+     * @return
+     */
     public static URI findUriByName(String resourceName) {
         return findUriByName(resourceName, null);
     }
 
+    /**
+     * Finds the URI of a test resource using the resource's name.
+     *
+     * @param resourceName
+     * @param baseClass
+     * @return
+     */
     public static URI findUriByName(String resourceName, Class<?> baseClass) {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
         AtomicReference<URL> resourceUrl = new AtomicReference<>();

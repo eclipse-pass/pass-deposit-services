@@ -18,6 +18,8 @@ package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Objects;
 
@@ -55,12 +57,28 @@ public class BasicAuthRealm extends AuthRealm {
         this.password = password;
     }
 
-    public URL getBaseUrl() {
-        return baseUrl;
+    /**
+     * Implementation note: typed as a String so Jackson and the SpringEnvironmentDeserializer can perform property
+     * interpolation.
+     *
+     * @return
+     */
+    public String getBaseUrl() {
+        return baseUrl.toString();
     }
 
-    public void setBaseUrl(URL baseUrl) {
-        this.baseUrl = baseUrl;
+    /**
+     * Implementation note: typed as a String so Jackson and the SpringEnvironmentDeserializer can perform property
+     * interpolation.
+     *
+     * @param baseUrl
+     */
+    public void setBaseUrl(String baseUrl) {
+        try {
+            this.baseUrl = new URL(baseUrl);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Supplied URL is not a valid: " + e.getMessage(), e);
+        }
     }
 
     public String getRealmName() {

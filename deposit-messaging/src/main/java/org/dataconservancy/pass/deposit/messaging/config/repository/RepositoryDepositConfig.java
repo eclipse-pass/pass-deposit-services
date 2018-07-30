@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DepositStatus {
+public class RepositoryDepositConfig {
 
     @JsonProperty("processing")
     private DepositProcessing depositProcessing;
@@ -51,7 +51,7 @@ public class DepositStatus {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        DepositStatus that = (DepositStatus) o;
+        RepositoryDepositConfig that = (RepositoryDepositConfig) o;
 
         if (depositProcessing != null ? !depositProcessing.equals(that.depositProcessing) : that.depositProcessing !=
                 null)

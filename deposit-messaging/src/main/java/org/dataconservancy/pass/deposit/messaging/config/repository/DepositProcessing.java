@@ -15,9 +15,49 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dataconservancy.pass.deposit.messaging.service.DepositStatusProcessor;
+
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DepositProcessing {
 
+    private String beanName;
+
+    @JsonIgnore
+    private DepositStatusProcessor processor;
+
+    public String getBeanName() {
+        return beanName;
+    }
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
+    }
+
+    public DepositStatusProcessor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(DepositStatusProcessor processor) {
+        this.processor = processor;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        DepositProcessing that = (DepositProcessing) o;
+
+        return beanName != null ? beanName.equals(that.beanName) : that.beanName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return beanName != null ? beanName.hashCode() : 0;
+    }
 }

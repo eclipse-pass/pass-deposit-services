@@ -189,7 +189,7 @@ public class DepositTask implements Runnable {
         } else {
             // Deposits for JScholarship are practically synchronous even though the API is asyc.
             // TODO: abstract out a configurable timer.
-            // Sleep here for a bit, let DSpace do its thing, and then we ought to be able to parse a deposit status
+            // Sleep here for a bit, let DSpace do its thing, and then we ought to be able to resolve a deposit status
             try {
                 LOG.debug(">>>> Sleeping {} ms for SWORD deposit to complete ...", swordSleepTimeMs);
                 Thread.sleep(swordSleepTimeMs);

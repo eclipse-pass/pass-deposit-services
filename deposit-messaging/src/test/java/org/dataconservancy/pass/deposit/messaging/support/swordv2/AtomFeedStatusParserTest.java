@@ -19,13 +19,13 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.apache.http.ParseException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.InputStream;
+import java.net.URI;
 
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
@@ -56,12 +56,12 @@ public class AtomFeedStatusParserTest {
 
     private Parser abderaParser;
 
-    private AtomFeedStatusParser underTest;
+    private AtomFeedStatusResolver underTest;
 
     @Before
     public void setUp() throws Exception {
         abderaParser = mock(Parser.class);
-        underTest = new AtomFeedStatusParser(abderaParser);
+        underTest = new AtomFeedStatusResolver(abderaParser);
     }
 
     // Test cases
@@ -82,43 +82,43 @@ public class AtomFeedStatusParserTest {
     @Test
     public void mapArchived() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
-        Assert.assertEquals(SWORD_STATE_ARCHIVED, AtomUtil.parseAtomStatement(feed));
+        assertEquals(SWORD_STATE_ARCHIVED.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapInProgress() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INPROGRESS_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(SWORD_STATE_INPROGRESS, AtomUtil.parseAtomStatement(feed));
+        assertEquals(SWORD_STATE_INPROGRESS.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapInReview() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(INREVIEW_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(SWORD_STATE_INREVIEW, AtomUtil.parseAtomStatement(feed));
+        assertEquals(SWORD_STATE_INREVIEW.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapMissing() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MISSING_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(null, AtomUtil.parseAtomStatement(feed));
+        assertEquals(null, AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapMultiple() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(MULTIPLE_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(SWORD_STATE_ARCHIVED, AtomUtil.parseAtomStatement(feed));
+        assertEquals(SWORD_STATE_ARCHIVED.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapUnknown() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(UNKNOWN_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(null, AtomUtil.parseAtomStatement(feed));
+        assertEquals(URI.create("http://dspace.org/state/moo"), AtomUtil.parseSwordState(feed));
     }
 
     @Test
     public void mapWithdrawn() throws Exception {
         Document<Feed> feed = AtomTestUtil.parseFeed(findStreamByName(WITHDRAWN_STATUS_RESOURCE, AtomResources.class));
-        assertEquals(SWORD_STATE_WITHDRAWN, AtomUtil.parseAtomStatement(feed));
+        assertEquals(SWORD_STATE_WITHDRAWN.asUri(), AtomUtil.parseSwordState(feed));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class AtomFeedStatusParserTest {
         expectedException.expectMessage("AtomStatusParser-archived.xml");
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expected);
 
-        underTest.parse(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
+        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), null);
     }
 
     @Test
@@ -142,6 +142,6 @@ public class AtomFeedStatusParserTest {
 
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expectedCause);
 
-        underTest.parse(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class));
+        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), null);
     }
 }
