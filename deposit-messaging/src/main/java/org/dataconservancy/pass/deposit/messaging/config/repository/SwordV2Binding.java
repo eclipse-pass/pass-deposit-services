@@ -121,7 +121,7 @@ public class SwordV2Binding extends ProtocolBinding {
         transportProperties.put(TRANSPORT_USERNAME, getUsername());
         transportProperties.put(TRANSPORT_PASSWORD, getPassword());
         transportProperties.put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
-        transportProperties.put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.swordv2.name());
+        transportProperties.put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.SWORDv2.name());
         transportProperties.put(TRANSPORT_SERVER_FQDN, getServerFqdn());
         transportProperties.put(TRANSPORT_SERVER_PORT, getServerPort());
         transportProperties.put(Sword2TransportHints.SWORD_SERVICE_DOC_URL, getServiceDocUrl());

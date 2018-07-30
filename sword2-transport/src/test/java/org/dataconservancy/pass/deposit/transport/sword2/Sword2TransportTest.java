@@ -71,7 +71,7 @@ public class Sword2TransportTest {
                     put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
                     put(TRANSPORT_USERNAME, USERNAME);
                     put(TRANSPORT_PASSWORD, PASSWORD);
-                    put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.swordv2.name());
+                    put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.SWORDv2.name());
                 }
             });
 

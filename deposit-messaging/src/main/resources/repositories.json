@@ -37,8 +37,8 @@
 
       "protocol-binding": {
         "protocol": "SWORDv2",
-        "username": "sworduser",
-        "password": "swordpass",
+        "username": "dspace-admin@oapass.org",
+        "password": "foobar",
         "server-fqdn": "${dspace.host}",
         "server-port": "${dspace.port}",
         "service-doc": "http://${dspace.host}:${dspace.port}/swordv2/servicedocument",

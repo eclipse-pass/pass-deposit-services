@@ -51,6 +51,7 @@ import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatus
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -59,26 +60,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
-import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
-import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
+import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -230,7 +226,8 @@ public class DepositConfig {
 
     // TODO: assemble packagers map dynamically from the repositories.json
     @Bean
-    public Map<String, Packager> packagers(Map<String, Assembler> assemblers, Map<String, Transport> transports,
+    public Map<String, Packager> packagers(@Value("#{assemblers}") Map<String, Assembler> assemblers,
+                                           @Value("#{transports}") Map<String, Transport> transports,
                                            Repositories repositories,
                                            AbderaDepositStatusRefProcessor abderaDepositStatusRefProcessor) {
         Map<String, Packager> packagers = new HashMap<>();
@@ -273,7 +270,7 @@ public class DepositConfig {
     public Map<String, Transport> transports(Sword2Transport sword2Transport, FtpTransport ftpTransport) {
         return new HashMap<String, Transport>() {
             {
-                put(Sword2Transport.PROTOCOL.swordv2.name(), sword2Transport);
+                put(Sword2Transport.PROTOCOL.SWORDv2.name(), sword2Transport);
                 put(FtpTransport.PROTOCOL.ftp.name(), ftpTransport);
             }
         };
