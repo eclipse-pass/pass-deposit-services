@@ -66,7 +66,7 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
     /**
      * {@inheritDoc}
      * <h4>Implementation notes</h4>
-     * Attempts to parse the JMS message body for a value of the {@code http://www.w3.org/ns/prov#SoftwareAgent}
+     * Attempts to resolve the JMS message body for a value of the {@code http://www.w3.org/ns/prov#SoftwareAgent}
      * property.  If the value is {@code null} or does <em>not</em> equal the user agent string supplied on
      * construction, the message is <em>accepted</em>.  If the value is equal to the user agent string supplied on
      * construction, this policy drops the message.
@@ -81,7 +81,7 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
             attribution = objectMapper.readTree(messageContext.message().getPayload().toString()).findValue
                     ("wasAttributedTo");
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse JMS message body: " + e.getMessage(), e);
+            throw new RuntimeException("Unable to resolve JMS message body: " + e.getMessage(), e);
         }
 
         if (attribution != null) {

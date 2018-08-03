@@ -15,6 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
@@ -38,6 +42,10 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
@@ -92,19 +100,23 @@ public class DepositTaskHelper {
 
     private Registry<Packager> packagerRegistry;
 
+    private Repositories repositories;
+
     @Autowired
     public DepositTaskHelper(PassClient passClient,
                              TaskExecutor taskExecutor,
                              Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
                              Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction cri,
-                             Registry<Packager> packagerRegistry) {
+                             Registry<Packager> packagerRegistry,
+                             Repositories repositories) {
         this.passClient = passClient;
         this.taskExecutor = taskExecutor;
         this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.cri = cri;
         this.packagerRegistry = packagerRegistry;
+        this.repositories = repositories;
     }
 
     /**
@@ -177,7 +189,7 @@ public class DepositTaskHelper {
                  * - The depositStatusRef on the 'deposit' *supplied to this method* must not be null, and must be a URI
                  * - The links between Deposit, Submission, Repository, and RepositoryCopy must be intact
                  * - The Deposit must be in a SUBMITTED state.
-                 * - Insure a DepositStatusRefProcessor exists for the Repository
+                 * - Insure a DepositStatusProcessor exists for the Repository
                  */
                 (criDeposit) -> {
                     if (criDeposit.getDepositStatus() != SUBMITTED) {
@@ -200,7 +212,7 @@ public class DepositTaskHelper {
 
                     if (packagerRegistry.get(repo.getName()) == null || packagerRegistry.get(repo.getName())
                             .getDepositStatusProcessor() == null) {
-                        LOG.warn(PRECONDITION_FAILED + " mising a DepositStatusRefProcessor for Repository with name " +
+                        LOG.warn(PRECONDITION_FAILED + " mising a DepositStatusProcessor for Repository with name " +
                                 "'{}' (id: '{}')", repo.getName(), repo.getId());
                         return false;
                     }
@@ -272,14 +284,27 @@ public class DepositTaskHelper {
                 },
 
                 (criDeposit) -> {
-                    Deposit.DepositStatus status;
+                    AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
 
                     criDeposit.setDepositStatusRef(deposit.getDepositStatusRef());
 
                     try {
-                        DepositStatusRefProcessor depositStatusProcessor =
-                                packagerRegistry.get(repo.getName()).getDepositStatusProcessor();
-                        status = depositStatusProcessor.process(URI.create(criDeposit.getDepositStatusRef()));
+                        Optional<RepositoryConfig> repoConfig = lookupConfig(repo, repositories);
+
+                        if (!repoConfig.isPresent()) {
+                            LOG.error("Unable to resolve Repository Configuration for Repository {} ({})",
+                                    repo.getName(), repo.getId());
+                        }
+
+                        repoConfig.ifPresent(config -> {
+                            status.set(
+                                    config.getRepositoryDepositConfig()
+                                    .getDepositProcessing()
+                                    .getProcessor()
+                                    .process(deposit, config.getTransportConfig().getAuthRealms(),
+                                            config.getRepositoryDepositConfig().getStatusMapping())
+                            );
+                        });
                     } catch (Exception e) {
                         String msg = format("Failed to update deposit status for [%s], " +
                                         "parsing the status document referenced by %s failed: %s",
@@ -288,14 +313,14 @@ public class DepositTaskHelper {
                         throw new DepositServiceRuntimeException(msg, e, criDeposit);
                     }
 
-                    if (status == null) {
+                    if (status.get() == null) {
                         String msg = format("Failed to update deposit status for [%s], " +
                                         "mapping the status obtained from  %s failed",
                                 criDeposit.getId(), criDeposit.getDepositStatusRef());
                         throw new DepositServiceRuntimeException(msg, criDeposit);
                     }
 
-                    switch (status) {
+                    switch (status.get()) {
                         case ACCEPTED: {
                             LOG.info("Deposit {} was accepted.", criDeposit.getId());
                             criDeposit.setDepositStatus(ACCEPTED);
@@ -396,6 +421,32 @@ public class DepositTaskHelper {
         }
 
         return true;
+    }
+
+    private static Optional<RepositoryConfig> lookupConfig(Repository repository, Repositories repositories) {
+        Set<String> repositoryKeys = repositories.keys();
+
+        if (repositoryKeys.contains(repository.getId().toString())) {
+            return Optional.of(repositories.getConfig(repository.getId().toString()));
+        }
+
+        if (repositoryKeys.contains(repository.getId().getPath())) {
+            return Optional.of(repositories.getConfig(repository.getId().getPath()));
+        }
+
+        if (repositoryKeys.contains(repository.getRepositoryKey())) {
+            return Optional.of(repositories.getConfig(repository.getRepositoryKey()));
+        }
+
+        return Optional.empty();
+    }
+
+    private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
+        return authRealms.stream()
+                .filter(realm -> realm instanceof BasicAuthRealm)
+                .map(realm -> (BasicAuthRealm) realm)
+                .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
+                .findAny();
     }
 
 }

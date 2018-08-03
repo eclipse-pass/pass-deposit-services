@@ -78,7 +78,7 @@ public abstract class AbstractStatusMapper<T> implements DepositStatusMapper<T> 
     protected JsonNode statusMap;
 
     /**
-     * Construct an abstract status mapper that is able to parse its configuration from the supplied JSON.
+     * Construct an abstract status mapper that is able to resolve its configuration from the supplied JSON.
      *
      * @param statusMap the JSON representing the status mapping as documented above
      */

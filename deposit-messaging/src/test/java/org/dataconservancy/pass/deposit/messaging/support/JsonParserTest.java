@@ -62,7 +62,7 @@ public class JsonParserTest {
         assertTrue("Empty resource " + jsonUrl, body.length > 0);
 
         String submissionUri = underTest.parseId(body);
-        assertNotNull("Failed to parse an id from resource " + jsonUrl, submissionUri);
+        assertNotNull("Failed to resolve an id from resource " + jsonUrl, submissionUri);
 
         assertEquals(expectedId, submissionUri);
     }

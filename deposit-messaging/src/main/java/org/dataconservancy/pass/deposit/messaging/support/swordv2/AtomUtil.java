@@ -18,9 +18,10 @@ package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
 
 import static org.dataconservancy.pass.deposit.messaging.support.Constants.SWORD.SWORD_STATE;
 
@@ -38,24 +39,25 @@ public class AtomUtil {
     }
 
     /**
-     * Parses the supplied Atom document for a {@link SwordDspaceDepositStatus SWORD deposit status}.
+     * Parses the supplied Atom document for a Category for {@code http://purl.org/net/sword/terms/state}, and returns
+     * the term value (a URI representing the status of the SWORD deposit).
      *
      * @param statementDoc the Atom document representing a SWORD v2 Statement
      * @return the SWORD deposit status, or {@code null} if none is found
+     * @throws IllegalArgumentException if the term value cannot be parsed as a URI
      */
-    public static SwordDspaceDepositStatus parseAtomStatement(Document<Feed> statementDoc) {
+    public static URI parseSwordState(Document<Feed> statementDoc) {
         Category category = statementDoc.getRoot().getCategories(SWORD_STATE).stream()
                 .findFirst().orElse(null);
 
         if (category != null) {
-            SwordDspaceDepositStatus dspaceDepositStatus = null;
             try {
-                return SwordDspaceDepositStatus.parseUri(category.getTerm());
+                return URI.create(category.getTerm());
             } catch (IllegalArgumentException e) {
-                // An unknown term value
-                LOG.warn("Unknown term value for Atom <feed>/<category> scheme " + SWORD_STATE + ": " +
-                        category.getTerm(), e);
-                return null;
+                // An unknown term value, which is exceptional
+                LOG.error("Unable to resolve the term value for Atom <feed>/<category> scheme " + SWORD_STATE + " " +
+                        "as a URI: " + category.getTerm());
+                throw e;
             }
         }
 

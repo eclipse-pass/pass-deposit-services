@@ -19,8 +19,9 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
+import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.Constants;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
@@ -46,17 +47,13 @@ import java.net.URI;
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORDv2 Profile §11</a>
  * @see org.dataconservancy.pass.deposit.messaging.service.DepositTask
  */
-public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspaceDepositStatus> {
+public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusResolver.class);
 
     private Parser abderaParser;
 
-    private String swordUsername;
-
-    private String swordPassword;
-
-    public AtomFeedStatusParser(Parser abderaParser) {
+    public AtomFeedStatusResolver(Parser abderaParser) {
         this.abderaParser = abderaParser;
     }
 
@@ -64,15 +61,15 @@ public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspac
      * Determine the deposit status represented in the referenced Atom statement.
      * <p>
      * Retrieves the Atom statement, parses it, and examines it for the {@link Constants.SWORD#SWORD_STATE} term. If
-     * the term exists, return the corresponding {@link SwordDspaceDepositStatus}.  If the term or the state cannot be
-     * determined, return {@code null}.
+     * the term exists, return the corresponding {@code URI}.  If the term or the state cannot be determined, return
+     * {@code null}.
      * </p>
      *
      * @param atomStatementUri the Atom statement URI
-     * @return the {@code SwordDspaceDepositStatus}, or {@code null} if one cannot be found
+     * @return the state {@code URI}, or {@code null} if one cannot be found
      * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
      */
-    public SwordDspaceDepositStatus parse(URI atomStatementUri) {
+    public URI resolve(URI atomStatementUri, AuthRealm authRealm) {
         if (atomStatementUri == null) {
             throw new IllegalArgumentException("Atom statement URI must not be null.");
         }
@@ -89,7 +86,23 @@ public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspac
             }
         } else if (atomStatementUri.getScheme().startsWith("http")) {
             try {
-                resource = new AuthenticatedResource(atomStatementUri.toURL(), swordUsername, swordPassword);
+                if (authRealm != null) {
+                    if (!(authRealm instanceof BasicAuthRealm)) {
+                        throw new IllegalArgumentException("Only instances of " + BasicAuthRealm.class.getName() +
+                                " are supported (authRealm was an instance of " + authRealm.getClass().getName() + ")");
+                    }
+
+                    BasicAuthRealm basicAuth = (BasicAuthRealm) authRealm;
+                    if (basicAuth.getUsername() != null && basicAuth.getUsername().trim().length() > 0) {
+                        resource = new AuthenticatedResource(atomStatementUri.toURL(),
+                                basicAuth.getUsername(), basicAuth.getPassword());
+                    } else {
+                        resource = new UrlResource(atomStatementUri.toURL());
+                    }
+                } else {
+                    LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", atomStatementUri);
+                    resource = new UrlResource(atomStatementUri.toURL());
+                }
             } catch (MalformedURLException e) {
                 throw new IllegalArgumentException("Atom statement could not be parsed as URL '" + atomStatementUri +
                         "':" + e.getMessage(), e);
@@ -117,22 +130,7 @@ public class AtomFeedStatusParser implements DepositStatusParser<URI, SwordDspac
                     atomStatementUri + "'): " + e.getMessage(), e);
         }
 
-        return AtomUtil.parseAtomStatement(statementDoc);
+        return AtomUtil.parseSwordState(statementDoc);
     }
 
-    public String getSwordUsername() {
-        return swordUsername;
-    }
-
-    public void setSwordUsername(String swordUsername) {
-        this.swordUsername = swordUsername;
-    }
-
-    public String getSwordPassword() {
-        return swordPassword;
-    }
-
-    public void setSwordPassword(String swordPassword) {
-        this.swordPassword = swordPassword;
-    }
 }

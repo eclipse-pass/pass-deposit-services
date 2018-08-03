@@ -19,7 +19,7 @@
  * <p>
  * {@link org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator} determines if a particular status is in its
  * terminal state; that is, the status will not change in the future by any automated process.  {@link
- * org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser} is able to parse a deposit status from an
+ * org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver} is able to resolve a deposit status from an
  * object, and {@link org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper} is able to map a deposit
  * status from domain to another.
  * </p>
@@ -31,8 +31,8 @@
  * {@code RepositoryCopy} {@link org.dataconservancy.pass.model.RepositoryCopy#copyStatus copy status}
  * </p>
  * <p>
- * The single implementation of {@link org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser} is the
- * {@link org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParser}, which is able to parse
+ * The single implementation of {@link org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver} is the
+ * {@link org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver}, which is able to resolve
  * an Atom feed and return a deposit status.
  * </p>
  */

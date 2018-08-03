@@ -17,12 +17,16 @@
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing;
+import org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessingDeserializer;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.SpringEnvironmentDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -37,10 +41,15 @@ public class RepositoriesFactoryBeanConfig {
     private Resource repositoryConfigResource;
 
     @Bean
-    public ObjectMapper repositoriesMapper(Environment env) {
+    public ObjectMapper repositoriesMapper(Environment env, ApplicationContext appCtx) {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(String.class, new SpringEnvironmentDeserializer(env));
+        SpringEnvironmentDeserializer envDeserialzier = new SpringEnvironmentDeserializer(env);
+        module.addDeserializer(String.class, envDeserialzier);
+
+        DepositProcessingDeserializer depositProcessingDeserializer = new DepositProcessingDeserializer();
+        depositProcessingDeserializer.setAppCtx(appCtx);
+        module.addDeserializer(DepositProcessing.class, depositProcessingDeserializer);
         mapper.registerModule(module);
         return mapper;
     }

@@ -30,7 +30,7 @@ import java.io.InputStream;
 public class AtomTestUtil {
 
     /**
-     * Relies on implementation classes present in Abdera to parse a classpath resource as an Atom feed.
+     * Relies on implementation classes present in Abdera to resolve a classpath resource as an Atom feed.
      *
      * @param feedResource a classpath resource referencing an Atom feed
      * @return the parsed feed

@@ -113,6 +113,7 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
         Repository repo = new Repository();
         repo.setName("JScholarship");
+        repo.setRepositoryKey("JScholarship");
 
         repo = passClient.createAndReadResource(repo, Repository.class);
 

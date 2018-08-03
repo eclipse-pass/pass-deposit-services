@@ -53,7 +53,7 @@ The format of the configuration file is JSON, containing multiple repository con
 ```json
 {
   "J10P": {
-    "deposit-status": {
+    "deposit-config": {
 
       "processing": {
 
@@ -102,7 +102,7 @@ The format of the configuration file is JSON, containing multiple repository con
   },
 
   "PubMed": {
-    "deposit-status": {
+    "deposit-config": {
 
       "processing": {
 

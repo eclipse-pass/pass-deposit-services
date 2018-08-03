@@ -104,7 +104,7 @@
         <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
         <jackson.version>2.9.6</jackson.version>
 
-        <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.2-SNAPSHOT-10</docker.fcrepo.version>
+        <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.3-SNAPSHOT</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.12-2.2-SNAPSHOT</docker.indexer.version>
         <docker.elasticsearch.version>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</docker.elasticsearch.version>
 
@@ -112,6 +112,8 @@
         <docker.postgres.version>oapass/postgres:latest</docker.postgres.version>
         <docker.dspace.version>oapass/dspace:latest</docker.dspace.version>
         <docker.ftp.version>oapass/ftpserver:latest</docker.ftp.version>
+
+        <pass.jsonld.context>https://github.com/emetsger/pass-data-model/blob/repo-model/src/main/resources/context-2.3.jsonld</pass.jsonld.context>
 
     </properties>
 

@@ -57,7 +57,7 @@ public class JmsSubmissionProcessor extends SubmissionProcessor {
      * {@code Submission} resources in Fedora.  The {@code Submission} is resolved, and sent to the
      * {@link SubmissionProcessor} for further processing.
      * @param passClient used to resolve {@code Submission} resources from the Fedora repository
-     * @param jsonParser used to parse the {@code Submission} URI from the JMS message
+     * @param jsonParser used to resolve the {@code Submission} URI from the JMS message
      * @param fcrepoModelBuilder used to build a {@link DepositSubmission} from a {@code Submission}
      * @param packagerRegistry maintains a registry of {@link Packager}s used to transfer custodial content to remote
 *                         repositories

@@ -174,12 +174,12 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
         realm1.setRealmName("Realm 1");
         realm1.setUsername("foo");
         realm1.setPassword("bar");
-        realm1.setBaseUrl(new URL("http://example.org/realm/1"));
+        realm1.setBaseUrl("http://example.org/realm/1");
 
         realm2.setRealmName("Realm 2");
         realm2.setUsername("biz");
         realm2.setPassword("baz");
-        realm2.setBaseUrl(new URL("http://example.org/realm/2"));
+        realm2.setBaseUrl("http://example.org/realm/2");
 
         assertRoundTrip(config, TransportConfig.class);
     }

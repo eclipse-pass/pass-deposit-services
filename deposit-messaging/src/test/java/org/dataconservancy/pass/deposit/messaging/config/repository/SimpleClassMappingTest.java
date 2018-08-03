@@ -88,7 +88,7 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
     @Test
     public void mapAuthRealmFromJavaRoundTrip() throws IOException {
         BasicAuthRealm realm = new BasicAuthRealm();
-        realm.setBaseUrl(new URL("http://example.org/"));
+        realm.setBaseUrl("http://example.org/");
         realm.setUsername("user");
         realm.setPassword("pass");
         realm.setRealmName("ream name");

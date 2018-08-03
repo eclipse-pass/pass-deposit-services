@@ -1,16 +1,16 @@
 {
 
-  "J10P": {
+  "JScholarship": {
 
-    "deposit-status": {
+    "deposit-config": {
 
       "processing": {
-
+        "beanName" : "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
       },
 
       "mapping": {
-        "http://dspace.org/state/archived": "http://oapass.org/status/deposit#accepted",
-        "http://dspace.org/state/withdrawn": "http://oapass.org/status/deposit#rejected",
+        "http://dspace.org/state/archived": "http://oapass.org/ns/status/deposit#accepted",
+        "http://dspace.org/state/withdrawn": "http://oapass.org/ns/status/deposit#rejected",
         "default-mapping": "http://oapass.org/status/deposit#submitted"
       }
     },
@@ -32,6 +32,12 @@
           "username": "user",
           "password": "pass",
           "url": "https://dspace-prod.mse.jhu.edu:8080/"
+        },
+        {
+          "mech": "basic",
+          "username": "dspace-admin@oapass.org",
+          "password": "foobar",
+          "url": "http://${dspace.host}:${dspace.port}/swordv2"
         }
       ],
 
@@ -50,10 +56,10 @@
     }
   },
 
-  "PubMed": {
+  "PubMed Central": {
 
 
-    "deposit-status": {
+    "deposit-config": {
 
       "processing": {
 

@@ -465,6 +465,7 @@
                         <ftp.port>${ftp-control.port}</ftp.port>
                         <sword.user>${sword.user}</sword.user>
                         <sword.pass>${sword.pass}</sword.pass>
+                        <pass.jsonld.context>${pass.jsonld.context}</pass.jsonld.context>
                     </systemProperties>
                 </configuration>
                 <executions>
