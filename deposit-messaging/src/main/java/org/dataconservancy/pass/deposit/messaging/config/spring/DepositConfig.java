@@ -28,10 +28,8 @@ import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAss
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
-import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
 import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
-import org.dataconservancy.pass.deposit.messaging.status.RepositoryCopyStatusMapper;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
@@ -45,7 +43,6 @@ import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatusMapper;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
@@ -63,7 +60,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -338,33 +334,8 @@ public class DepositConfig {
         return new AtomFeedStatusResolver(abderaParser);
     }
 
-    // TODO: convert to using RepositoryConfig
-    @Bean
-    public SwordDspaceDepositStatusMapper swordDspaceDepositStatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                                     Resource depositMappingResource,
-                                                                         ObjectMapper objectMapper) {
-        try {
-            return new SwordDspaceDepositStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
-    }
-
-    @Bean
-    public RepositoryCopyStatusMapper repoCopyv2StatusMapper(@Value("${pass.deposit.status.mapping}")
-                                                                     Resource depositMappingResource,
-                                                             ObjectMapper objectMapper) {
-        try {
-            return new RepositoryCopyStatusMapper(objectMapper.readTree(depositMappingResource.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading deposit status map resource " + depositMappingResource + ": " +
-                    e.getMessage(), e);
-        }
-    }
-
     @Bean({"defaultDepositStatusProcessor", "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"})
-    public DefaultDepositStatusProcessor abderaDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
+    public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
         return new DefaultDepositStatusProcessor(statusResolver);
     }
 
