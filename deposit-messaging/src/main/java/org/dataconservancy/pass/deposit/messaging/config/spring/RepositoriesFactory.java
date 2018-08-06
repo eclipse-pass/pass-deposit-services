@@ -29,7 +29,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 
 import java.net.URI;
-import java.net.URL;
 
 /**
  * Parses the global repository configuration file, and returns the configured {@link Repositories}.
@@ -95,7 +94,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
                         configurationUri, repositoryConfigNode.asText());
                 throw new RuntimeException(e);
             }
-            config.setId(id);
+            config.setRepositoryKey(id);
             result.addRepositoryConfig(id, config);
         });
 

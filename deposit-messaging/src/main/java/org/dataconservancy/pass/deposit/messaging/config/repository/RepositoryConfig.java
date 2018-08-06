@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RepositoryConfig {
 
-    private String id;
+    private String repositoryKey;
 
     @JsonProperty("deposit-config")
     private RepositoryDepositConfig repositoryDepositConfig;
@@ -39,12 +39,12 @@ public class RepositoryConfig {
     @JsonProperty("assembler")
     private AssemblerConfig assemblerConfig;
 
-    public String getId() {
-        return id;
+    public String getRepositoryKey() {
+        return repositoryKey;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setRepositoryKey(String repositoryKey) {
+        this.repositoryKey = repositoryKey;
     }
 
     public RepositoryDepositConfig getRepositoryDepositConfig() {
@@ -80,7 +80,7 @@ public class RepositoryConfig {
 
         RepositoryConfig that = (RepositoryConfig) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null)
+        if (repositoryKey != null ? !repositoryKey.equals(that.repositoryKey) : that.repositoryKey != null)
             return false;
         if (repositoryDepositConfig != null ? !repositoryDepositConfig.equals(that.repositoryDepositConfig) : that.repositoryDepositConfig != null)
             return false;
@@ -91,7 +91,7 @@ public class RepositoryConfig {
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
+        int result = repositoryKey != null ? repositoryKey.hashCode() : 0;
         result = 31 * result + (repositoryDepositConfig != null ? repositoryDepositConfig.hashCode() : 0);
         result = 31 * result + (transportConfig != null ? transportConfig.hashCode() : 0);
         result = 31 * result + (assemblerConfig != null ? assemblerConfig.hashCode() : 0);

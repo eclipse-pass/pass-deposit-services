@@ -58,8 +58,8 @@ public class RepositoriesFactoryBeanConfigTest {
         RepositoryConfig pubMed = underTest.getConfig("PubMed Central");
         assertNotNull(pubMed);
 
-        assertEquals("JScholarship", j10p.getId());
-        assertEquals("PubMed Central", pubMed.getId());
+        assertEquals("JScholarship", j10p.getRepositoryKey());
+        assertEquals("PubMed Central", pubMed.getRepositoryKey());
 
         assertNotNull(j10p.getTransportConfig());
         assertNotNull(j10p.getRepositoryDepositConfig());
