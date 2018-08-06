@@ -18,7 +18,6 @@ package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import org.junit.Test;
 
-import java.net.URL;
 import java.util.Collections;
 
 public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
@@ -116,7 +115,7 @@ public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
         repoConfig.setRepositoryDepositConfig(repositoryDepositConfig);
         repoConfig.setTransportConfig(tsConfig);
-        repoConfig.setId("J10P");
+        repoConfig.setRepositoryKey("J10P");
 
         assertRoundTrip(repoConfig, RepositoryConfig.class);
     }
