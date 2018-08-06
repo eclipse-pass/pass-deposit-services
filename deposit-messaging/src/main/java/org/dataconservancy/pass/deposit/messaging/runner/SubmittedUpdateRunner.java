@@ -50,6 +50,8 @@ public class SubmittedUpdateRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmittedUpdateRunner.class);
 
+    private static final String URIS_PARAM = "uri";
+
     @Autowired
     private DepositTaskHelper depositTaskHelper;
 
@@ -99,9 +101,9 @@ public class SubmittedUpdateRunner {
      * @return a {@code Collection} of URIs representing dirty deposits
      */
     private Collection<URI> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
-        if (args.containsOption("uris") && args.getOptionValues("uris").size() > 0) {
+        if (args.containsOption(URIS_PARAM) && args.getOptionValues(URIS_PARAM).size() > 0) {
             // maintain the order of the uris as they were supplied on the CLI
-            return args.getOptionValues("uris").stream().map(URI::create).collect(Collectors.toList());
+            return args.getOptionValues(URIS_PARAM).stream().map(URI::create).collect(Collectors.toList());
         } else {
             Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, SUBMITTED);
             if (uris.size() < 1) {

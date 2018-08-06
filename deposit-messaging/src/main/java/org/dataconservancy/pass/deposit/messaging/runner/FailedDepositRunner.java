@@ -67,6 +67,8 @@ public class FailedDepositRunner {
 
     private static final String FAILED_TO_PROCESS = "Failed to process {}: {}";
 
+    private static final String URIS_PARAM = "uri";
+
     private enum MODE {
         SYNC,
         ASYNC
@@ -221,9 +223,9 @@ public class FailedDepositRunner {
      * @return a {@code Collection} of URIs representing dirty deposits
      */
     private Collection<URI> depositsToUpdate(ApplicationArguments args, PassClient passClient) {
-        if (args.containsOption("uris") && args.getOptionValues("uris").size() > 0) {
+        if (args.containsOption(URIS_PARAM) && args.getOptionValues(URIS_PARAM).size() > 0) {
             // maintain the order of the uris as they were supplied on the CLI
-            return args.getOptionValues("uris").stream().map(URI::create).collect(Collectors.toList());
+            return args.getOptionValues(URIS_PARAM).stream().map(URI::create).collect(Collectors.toList());
         } else {
             Collection<URI> uris = passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, FAILED);
             uris.addAll(passClient.findAllByAttribute(Deposit.class, DEPOSIT_STATUS, null));
