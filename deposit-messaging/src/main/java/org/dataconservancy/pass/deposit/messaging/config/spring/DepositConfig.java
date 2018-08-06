@@ -229,7 +229,7 @@ public class DepositConfig {
         Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
                 .map(repoConfig -> {
                     return new Packager(
-                            repoConfig.getId(),
+                            repoConfig.getRepositoryKey(),
                             assemblers.get(repoConfig.getAssemblerConfig().getSpec()),
                             transports.get(repoConfig.getTransportConfig().getProtocolBinding().getProtocol()),
                             repoConfig,
