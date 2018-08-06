@@ -30,6 +30,7 @@ import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.PassAbderaClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
@@ -301,30 +302,34 @@ public class DepositConfig {
         return executor;
     }
 
-    // TODO: each SWORDv2 binding will need an AbderaClient
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public AbderaClient abderaClient(Repositories repositories) {
-        AbderaClient ac = new AbderaClient();
+    public Map<String, PassAbderaClient> abderaClient(Repositories repositories) {
+        Map<String, PassAbderaClient> clients = repositories.keys().stream()
+                .map(repositories::getConfig)
+                .filter(repoConfig -> repoConfig.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding)
+                .map(repoConfig -> {
+                    PassAbderaClient ac = new PassAbderaClient();
+                    ac.setRepositoryKey(repoConfig.getRepositoryKey());
+                    SwordV2Binding swordBinding = (SwordV2Binding)repoConfig.getTransportConfig().getProtocolBinding();
+                    if (swordBinding.getUsername() != null && swordBinding.getUsername().trim().length() > 0) {
+                        Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
+                                swordBinding.getUsername(),
+                                swordBinding.getPassword()
+                        );
 
-        SwordV2Binding swordV2Binding = (SwordV2Binding) repositories.getConfig("JScholarship")
-                .getTransportConfig().getProtocolBinding();
+                        try {
+                            ac.addCredentials(null, null, null, creds);
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    }
 
-        if (swordV2Binding.getUsername() != null && swordV2Binding.getUsername().trim().length() > 0) {
+                    return ac;
+                })
+                .collect(Collectors.toMap(PassAbderaClient::getRepositoryKey, Function.identity()));
 
-            Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
-                    swordV2Binding.getUsername(),
-                    swordV2Binding.getPassword()
-            );
-
-            try {
-                ac.addCredentials(null, null, null, creds);
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        }
-
-        return ac;
+        return clients;
     }
 
     // TODO: each SWORDv2 binding will need an AtomFeedStatusResolver
