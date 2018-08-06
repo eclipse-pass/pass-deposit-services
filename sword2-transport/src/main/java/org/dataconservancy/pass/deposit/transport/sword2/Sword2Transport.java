@@ -126,8 +126,8 @@ public class Sword2Transport implements Transport {
             }
 
             serviceDocument = client.getServiceDocument(serviceDocUrl, authCreds);
-        } catch (SWORDClientException|ProtocolViolationException e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading or parsing SWORD service document '" + serviceDocUrl + "'", e);
         }
 
         return new Sword2TransportSession(client, serviceDocument, authCreds);
