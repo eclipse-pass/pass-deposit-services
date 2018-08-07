@@ -18,7 +18,6 @@ package org.dataconservancy.pass.deposit.messaging.status;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
-import org.dataconservancy.pass.deposit.messaging.service.DepositStatusProcessor;
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -64,17 +64,21 @@ public class JmsDepositProcessor {
 
     private PassClient passClient;
 
+    private DepositTaskHelper depositHelper;
+
     @Autowired
     public JmsDepositProcessor(@Qualifier("depositMessagePolicy") JmsMessagePolicy messagePolicy,
                                Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
-                               JsonParser jsonParser, CriticalRepositoryInteraction critical, PassClient passClient) {
+                               JsonParser jsonParser, CriticalRepositoryInteraction critical, PassClient passClient,
+                               DepositTaskHelper depositHelper) {
         this.messagePolicy = messagePolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
-        this.terminalSubmissionStatusPolicy  = terminalSubmissionStatusPolicy;
+        this.terminalSubmissionStatusPolicy = terminalSubmissionStatusPolicy;
         this.jsonParser = jsonParser;
         this.critical = critical;
         this.passClient = passClient;
+        this.depositHelper = depositHelper;
     }
 
     @JmsListener(destination = "${pass.deposit.queue.deposit.name}")
@@ -99,16 +103,15 @@ public class JmsDepositProcessor {
 
         // Parse the identity of the Deposit and Submission from the message
         URI submissionUri;
+        Deposit deposit;
         try {
             byte[] payload = mc.message().getPayload().getBytes(Charset.forName("UTF-8"));
             URI depositUri = URI.create(jsonParser.parseId(payload));
 
             // If the status of the incoming Deposit is not terminal, then there's no point in continuing.
             // *All* Deposit resources for a Submission must be terminal before proceeding
-            if (! terminalDepositStatusPolicy.accept(passClient.readResource(depositUri, Deposit.class).getDepositStatus())) {
-                return;
-            }
-            submissionUri = passClient.readResource(depositUri, Deposit.class).getSubmission();
+            deposit = passClient.readResource(depositUri, Deposit.class);
+            submissionUri = deposit.getSubmission();
         } catch (Exception e) {
             LOG.error("Error parsing deposit URI from message: {}", e.getMessage(), e);
             return;
@@ -116,56 +119,75 @@ public class JmsDepositProcessor {
             ackMessage(mc);
         }
 
-        // obtain a critical over the submission
-        critical.performCritical(submissionUri, Submission.class,
 
-                /*
-                 * The Submission must not be in a terminal state in order for us to update its status
-                 */
-                (submission) -> !terminalSubmissionStatusPolicy.accept(submission.getAggregatedDepositStatus()),
+        if (terminalDepositStatusPolicy.accept(deposit.getDepositStatus())) {
+            // terminal Deposit status, so update its Submission aggregate deposit status.
 
-                /*
-                 * Any (or no) updates to the Submission are acceptable
-                 */
-                (submission) -> true,
+            // obtain a critical over the submission
+            critical.performCritical(submissionUri, Submission.class,
 
-                /*
-                 * Update the status of the Submission only if all of its Deposits are in a terminal state
-                 */
-                (submission) -> {
-                    Collection<Deposit> deposits = passClient.getIncoming(submission.getId())
-                        .getOrDefault("submission", Collections.emptySet()).stream()
-                        .map((uri) -> {
-                            try {
-                                return passClient.readResource(uri, Deposit.class);
-                            } catch (RuntimeException e) {
-                                // ignore exceptions whose cause is related to type coercion of JSON objects
-                                if (!(e.getCause() instanceof InvalidTypeIdException)) {
-                                    throw e;
-                                }
+                    /*
+                     * The Submission must not be in a terminal state in order for us to update its status
+                     */
+                    (criSubmission) -> !terminalSubmissionStatusPolicy.accept(criSubmission.getAggregatedDepositStatus()),
 
-                                return null;
+                    /*
+                     * Any (or no) updates to the Submission are acceptable
+                     */
+                    (criSubmission) -> true,
+
+                    /*
+                     * Update the status of the Submission only if all of its Deposits are in a terminal state
+                     */
+                    (criSubmission) -> {
+                        Collection<Deposit> deposits = passClient.getIncoming(criSubmission.getId())
+                                .getOrDefault("submission", Collections.emptySet()).stream()
+                                .map((uri) -> {
+                                    try {
+                                        return passClient.readResource(uri, Deposit.class);
+                                    } catch (RuntimeException e) {
+                                        // ignore exceptions whose cause is related to type coercion of JSON objects
+                                        if (!(e.getCause() instanceof InvalidTypeIdException)) {
+                                            throw e;
+                                        }
+
+                                        return null;
+                                    }
+                                })
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+
+                        // If all the statuses are terminal, then we can update the aggregated deposit status of
+                        // the submission
+                        if (deposits.stream().allMatch((criDeposit) ->
+                                terminalDepositStatusPolicy.accept(criDeposit.getDepositStatus()))) {
+                            if (deposits.stream().allMatch((criDeposit) -> deposit.getDepositStatus() == ACCEPTED)) {
+                                criSubmission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.ACCEPTED);
+                                LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(), ACCEPTED);
+                            } else {
+                                criSubmission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.REJECTED);
+                                LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(),
+                                        Submission.AggregatedDepositStatus.REJECTED);
                             }
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                    // If all the statuses are terminal, then we can update the aggregated deposit status of
-                    // the submission
-                    if (deposits.stream().allMatch((deposit) ->
-                            terminalDepositStatusPolicy.accept(deposit.getDepositStatus()))) {
-                        if (deposits.stream().allMatch((deposit) -> deposit.getDepositStatus() == ACCEPTED)) {
-                            submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.ACCEPTED);
-                            LOG.trace(">>>> Updating {} aggregated deposit status to {}", submission.getId(), ACCEPTED);
-                        } else {
-                            submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.REJECTED);
-                            LOG.trace(">>>> Updating {} aggregated deposit status to {}", submission.getId(),
-                                    Submission.AggregatedDepositStatus.REJECTED);
                         }
-                    }
 
-                return submission;
-        });
+                        return criSubmission;
+                    });
+        } else {
+            // intermediate status, process the Deposit depositStatusRef
+
+            // determine the RepositoryConfig for the Deposit
+            // retrieve and invoke the DepositStatusProcessor from the RepositoryConfig
+            //   - requires Collection<AuthRealm> and StatusMapping
+
+            // if result is still intermediate, add Deposit to queue for processing?  Or just process from an ES query?
+            //   - ES query prioritized?  What if ES query/queue is processed at the same time? Need to do w/in CRI
+
+            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy in
+            // the Fedora repository
+            depositHelper.processDepositStatus(deposit.getId());
+
+        }
 
     }
 }

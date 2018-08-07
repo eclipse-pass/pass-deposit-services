@@ -41,7 +41,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -52,9 +51,6 @@ import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
-import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.IN_PROGRESS;
 
 /**
  * Encapsulates functionality common to performing the submission of a Deposit to the TaskExecutor.
@@ -98,8 +94,6 @@ public class DepositTaskHelper {
     @Value("${jscholarship.hack.sword.statement.uri-replacement}")
     private String statementUriReplacement;
 
-    private Registry<Packager> packagerRegistry;
-
     private Repositories repositories;
 
     @Autowired
@@ -108,14 +102,12 @@ public class DepositTaskHelper {
                              Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
                              Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction cri,
-                             Registry<Packager> packagerRegistry,
                              Repositories repositories) {
         this.passClient = passClient;
         this.taskExecutor = taskExecutor;
         this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.cri = cri;
-        this.packagerRegistry = packagerRegistry;
         this.repositories = repositories;
     }
 
@@ -161,15 +153,11 @@ public class DepositTaskHelper {
         }
     }
 
-    public void processDepositStatus(Deposit deposit) {
-       processDepositStatus(
-                passClient.readResource(deposit.getSubmission(), Submission.class),
-                passClient.readResource(deposit.getRepository(), Repository.class),
-                passClient.readResource(deposit.getRepositoryCopy(), RepositoryCopy.class), deposit);
-    }
+    public void processDepositStatus(URI depositUri) {
 
-    void processDepositStatus(Submission submission, Repository repo, RepositoryCopy repoCopy, Deposit deposit) {
-
+        // FIXME: the Deposit in the repository *must* have a depositStatusRef (the caller must have persisted the Deposit)
+        // FIXME: the Deposit in the repository *must* have a RepositoryCopy (even if the caller persisted a place-holder resource)
+        //
         // Subtle issue to be aware of:
         //
         // The Deposit being passed into this method may contain state (e.g. a depositStatusRef) that is not
@@ -182,38 +170,29 @@ public class DepositTaskHelper {
         // the CRI, the field is copied in the "critical update" lambda below.  This insures if a conflict arises,
         // the ConflictHandler will retry the critical update, including the copy of the depositStatusRef.
 
-        CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(deposit.getId(), Deposit.class,
+        CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositUri, Deposit.class,
 
                 /*
                  * Preconditions:
-                 * - The depositStatusRef on the 'deposit' *supplied to this method* must not be null, and must be a URI
-                 * - The links between Deposit, Submission, Repository, and RepositoryCopy must be intact
-                 * - The Deposit must be in a SUBMITTED state.
-                 * - Insure a DepositStatusProcessor exists for the Repository
+                 *  - Deposit must be in a non-terminal state
+                 *  - Deposit must have a depositStatusRef
+                 *  - Deposit must have a Repository
                  */
                 (criDeposit) -> {
-                    if (criDeposit.getDepositStatus() != SUBMITTED) {
-                        LOG.warn(PRECONDITION_FAILED + " Expected Deposit.DepositStatus = {}, but was '{}'",
-                                SUBMITTED, deposit.getDepositStatus());
+                    if (terminalDepositStatusPolicy.accept(criDeposit.getDepositStatus())) {
+                        LOG.warn(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
+                                criDeposit.getId(), criDeposit.getDepositStatus());
                         return false;
                     }
 
-                    if (!verifyNullityAndLinks(submission, repo, repoCopy, criDeposit)) {
+                    if (criDeposit.getDepositStatusRef() == null ||
+                            criDeposit.getDepositStatusRef().trim().length() == 0) {
+                        LOG.warn(PRECONDITION_FAILED + " missing Deposit status reference.", depositUri);
                         return false;
                     }
 
-                    try {
-                        new URI(deposit.getDepositStatusRef());
-                    } catch (URISyntaxException|NullPointerException e) {
-                        LOG.warn(PRECONDITION_FAILED + " depositStatusRef must be a valid URI: {}",
-                                deposit.getId(), e.getMessage(), e);
-                        return false;
-                    }
-
-                    if (packagerRegistry.get(repo.getName()) == null || packagerRegistry.get(repo.getName())
-                            .getDepositStatusProcessor() == null) {
-                        LOG.warn(PRECONDITION_FAILED + " mising a DepositStatusProcessor for Repository with name " +
-                                "'{}' (id: '{}')", repo.getName(), repo.getId());
+                    if (criDeposit.getRepository() == null) {
+                        LOG.warn(PRECONDITION_FAILED + " missing Repository URI.", depositUri);
                         return false;
                     }
 
@@ -221,74 +200,18 @@ public class DepositTaskHelper {
                 },
 
                 /*
-                 * Postconditions:
-                 * - The criRepoCopy must not be null
-                 * - The criDeposit must have a depositStatusRef
-                 * - The criDeposit must be linked to the criRepoCopy
-                 * - The criDeposit cannot be in a FAILED state
-                 * - If the criDeposit is still in SUBMITTED state, then the RepositoryCopy must remain (or be in) an IN-PROGRESS state
-                 * - If the criDeposit is in a REJECTED state, then the RepositoryCopy must be in a REJECTED state
-                 * - If the criDeposit is in an ACCEPTED stated, then the RepositoryCopy must be in an ACCEPTED state
+                 * Postconditions: none to satisfy.  The completion of the critical path without an exception is
+                 *                 considered success.
                  */
-                (criDeposit, criRepoCopy) -> {
-                    if (criRepoCopy == null) {
-                        LOG.warn(POSTCONDITION_FAILED + " RepositoryCopy was null.");
-                        return false;
-                    }
-
-                    if (criDeposit.getDepositStatusRef() == null) {
-                        LOG.warn(POSTCONDITION_FAILED + " Deposit must have a depositStatusRef.");
-                        return false;
-                    }
-
-                    if (criDeposit.getRepositoryCopy() == null || !criDeposit.getRepositoryCopy().equals(criRepoCopy.getId())) {
-                        LOG.warn(POSTCONDITION_FAILED + " Deposit RepositoryCopy URI was '{}', and does not equal the" +
-                                " expected URI {}", criDeposit.getRepositoryCopy(), criRepoCopy.getId());
-                        return false;
-                    }
-
-                    // A SWORD deposit may have taken longer than 10s (they are async, after all), so the Deposit
-                    // may be in the SUBMITTED state still.
-                    //
-                    // NIHMS FTP deposits will always be in the SUBMITTED state upon success, because there is no
-                    // way to determine the acceptability of the package simply by dropping it off at the FTP server
-                    //
-                    // So, the status of the Deposit might be REJECTED, ACCEPTED, or SUBMITTED, as long as it isn't
-                    // FAILED.
-                    if (!terminalDepositStatusPolicy.accept(criDeposit.getDepositStatus()) &&
-                            criDeposit.getDepositStatus() != SUBMITTED) {
-                        LOG.warn(POSTCONDITION_FAILED + " Expected Deposit.DepositStatus to be {}, {}, or {}, but was '{}'",
-                                ACCEPTED, REJECTED, SUBMITTED, criDeposit.getDepositStatus());
-                        return false;
-                    }
-
-                    if (criDeposit.getDepositStatus() == SUBMITTED && criRepoCopy.getCopyStatus() != IN_PROGRESS) {
-                        LOG.warn(POSTCONDITION_FAILED + " Expected RepoCopy.CopyStatus = {}, but was '{}' for Deposit.DepositStatus = '{}'",
-                                IN_PROGRESS, criRepoCopy.getCopyStatus(), SUBMITTED);
-                        return false;
-                    }
-
-                    if (criDeposit.getDepositStatus() == REJECTED && criRepoCopy.getCopyStatus() != RepositoryCopy.CopyStatus.REJECTED) {
-                        LOG.warn(POSTCONDITION_FAILED + " Expected RepoCopy.CopyStatus = {}, but was '{}' for Deposit.DepositStatus = '{}'",
-                                RepositoryCopy.CopyStatus.REJECTED, criRepoCopy.getCopyStatus(), REJECTED);
-                        return false;
-                    }
-
-                    if (criDeposit.getDepositStatus() == ACCEPTED && criRepoCopy.getCopyStatus() != RepositoryCopy.CopyStatus.COMPLETE) {
-                        LOG.warn(POSTCONDITION_FAILED + " Expected RepoCopy.CopyStatus = {}, but was '{}' for Deposit.DepositStatus = '{}'",
-                                RepositoryCopy.CopyStatus.COMPLETE, criRepoCopy.getCopyStatus(), ACCEPTED);
-                        return false;
-                    }
-
-                    return true;
-                },
+                (criDeposit, criRepoCopy) -> true,
 
                 (criDeposit) -> {
                     AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
-
-                    criDeposit.setDepositStatusRef(deposit.getDepositStatusRef());
-
+                    RepositoryCopy repoCopy;
                     try {
+                        Repository repo = passClient.readResource(criDeposit.getRepository(), Repository.class);
+                        repoCopy = passClient.readResource(
+                                criDeposit.getRepositoryCopy(), RepositoryCopy.class);
                         Optional<RepositoryConfig> repoConfig = lookupConfig(repo, repositories);
 
                         if (!repoConfig.isPresent()) {
@@ -301,7 +224,7 @@ public class DepositTaskHelper {
                                     config.getRepositoryDepositConfig()
                                     .getDepositProcessing()
                                     .getProcessor()
-                                    .process(deposit, config.getTransportConfig().getAuthRealms(),
+                                    .process(criDeposit, config.getTransportConfig().getAuthRealms(),
                                             config.getRepositoryDepositConfig().getStatusMapping())
                             );
                         });
@@ -336,37 +259,33 @@ public class DepositTaskHelper {
                         }
                     }
 
-                    RepositoryCopy criRepoCopy;
-
                     try {
-                        // If the repoCopy passed into this method doesn't exist in the repository, create it.
-                        // Otherwise update it.
-                        if (repoCopy.getId() == null) {
-                            criRepoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
-                        } else {
-                            criRepoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
-                        }
-
-                        // Insure the Deposit resource carries the URI of the repository copy.
-                        criDeposit.setRepositoryCopy(criRepoCopy.getId());
+                        repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                     } catch (Exception e) {
                         String msg = String.format("Failed to create or update RepositoryCopy '%s' for %s",
                                 repoCopy.getId(), criDeposit.getId());
                         throw new DepositServiceRuntimeException(msg, e, criDeposit);
                     }
 
-                    return criRepoCopy;
+                    return repoCopy;
                 });
 
         if (!cr.success()) {
-            String msg = format("Failed to update Deposit tuple [%s, %s, %s]",
-                    submission.getId(), repo.getId(), deposit.getId());
-
+            Throwable t = cr.throwable().get();
             if (cr.throwable().isPresent()) {
-                throw new DepositServiceRuntimeException(msg, cr.throwable().get(), deposit);
+                if (t instanceof DepositServiceRuntimeException) {
+                    throw (DepositServiceRuntimeException) t;
+                }
+
+                if (cr.resource().isPresent()) {
+                    throw new DepositServiceRuntimeException(
+                            format("Failed to update Deposit %s: %s", depositUri, t.getMessage()),
+                                t, cr.resource().get());
+                }
             }
 
-            throw new DepositServiceRuntimeException(msg, deposit);
+            throw new RuntimeException(format("Failed to update Deposit %s: %s", depositUri, t.getMessage()), t);
+
         }
     }
 
@@ -384,43 +303,6 @@ public class DepositTaskHelper {
 
     void setStatementUriReplacement(String statementUriReplacement) {
         this.statementUriReplacement = statementUriReplacement;
-    }
-
-    private static boolean verifyNullityAndLinks(Submission s, Repository r, RepositoryCopy rc, Deposit d) {
-        if (d.getDepositStatus() != SUBMITTED) {
-            LOG.warn(PRECONDITION_FAILED + " expected DepositStatus = '{}', but was '{}'",
-                    d.getId(), SUBMITTED, d.getDepositStatus());
-            return false;
-        }
-
-        if (rc.getId() != null && !rc.getId().equals(d.getRepositoryCopy())) {
-            LOG.warn(PRECONDITION_FAILED + " RepositoryCopy URI mismatch: deposit RepositoryCopy URI: '{}', supplied RepositoryCopy URI: '{}'",
-                    d.getId(), d.getRepositoryCopy(), rc.getId());
-            return false;
-        }
-
-        if (d.getSubmission() == null) {
-            LOG.warn(PRECONDITION_FAILED + " it has a 'null' Submission.", d.getId());
-            return false;
-        }
-
-        if (!s.getId().equals(d.getSubmission())) {
-            LOG.warn(PRECONDITION_FAILED + " Submission URI mismatch: deposit Submission URI: '{}', supplied Submission URI: '{}'",
-                    d.getId(), d.getSubmission(), s.getId());
-        }
-
-        if (d.getRepository() == null) {
-            LOG.warn(PRECONDITION_FAILED + " it has a 'null' Repository.", d.getId());
-            return false;
-        }
-
-        if (!r.getId().equals(d.getRepository())) {
-            LOG.warn(PRECONDITION_FAILED + " Repository URI mismatch: deposit Repository URI: '{}', supplied Repository URI: '{}'",
-                    d.getId(), d.getRepository(), r.getId());
-            return false;
-        }
-
-        return true;
     }
 
     private static Optional<RepositoryConfig> lookupConfig(Repository repository, Repositories repositories) {

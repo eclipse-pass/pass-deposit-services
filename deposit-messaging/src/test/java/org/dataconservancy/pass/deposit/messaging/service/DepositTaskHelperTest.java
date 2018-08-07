@@ -79,7 +79,7 @@ public class DepositTaskHelperTest {
         repositories = mock(Repositories.class);
 
         underTest = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-                terminalDepositStatusPolicy, cri, packagerRegistry, repositories);
+                terminalDepositStatusPolicy, cri, repositories);
 
         s = mock(Submission.class);
         ds = mock(DepositSubmission.class);

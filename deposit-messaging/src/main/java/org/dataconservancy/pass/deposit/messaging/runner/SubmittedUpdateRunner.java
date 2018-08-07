@@ -76,7 +76,7 @@ public class SubmittedUpdateRunner {
             Collection<URI> deposits = depositsToUpdate(args, passClient);
             deposits.forEach(depositUri -> {
                 try {
-                    depositTaskHelper.processDepositStatus(passClient.readResource(depositUri, Deposit.class));
+                    depositTaskHelper.processDepositStatus(depositUri);
                 } catch (Exception e) {
                     errorHandler.handleError(e);
                 }

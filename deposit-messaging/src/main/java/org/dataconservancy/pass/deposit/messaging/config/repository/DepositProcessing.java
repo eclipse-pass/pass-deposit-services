@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.dataconservancy.pass.deposit.messaging.service.DepositStatusProcessor;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

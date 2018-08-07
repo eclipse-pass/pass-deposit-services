@@ -16,11 +16,15 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.deposit.util.async.Condition;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
@@ -39,6 +43,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@SpringBootTest(properties = { "spring.jms.listener.auto-startup=true" })
+@Import({DepositConfig.class, JmsConfig.class})
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission1");
