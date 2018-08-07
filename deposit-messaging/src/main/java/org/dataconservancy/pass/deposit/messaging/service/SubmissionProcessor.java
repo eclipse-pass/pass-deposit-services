@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
@@ -26,9 +27,7 @@ import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
@@ -71,9 +70,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected JmsMessagePolicy messagePolicy;
 
-    protected DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper;
-
-    protected DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
+    protected DepositStatusResolver<URI, SwordDspaceDepositStatus> atomStatusParser;
 
     protected Policy<Deposit.DepositStatus> dirtyDepositPolicy;
 
@@ -87,12 +84,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
     public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder fcrepoModelBuilder,
                                Registry<Packager> packagerRegistry,
                                SubmissionPolicy passUserSubmittedPolicy,
-                               Policy<Deposit.DepositStatus> dirtyDepositPolicy,
                                JmsMessagePolicy submissionMessagePolicy,
-                               Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                                DepositTaskHelper depositTaskHelper,
-                               DepositStatusMapper<SwordDspaceDepositStatus> depositStatusMapper,
-                               DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser,
                                CriticalRepositoryInteraction critical) {
 
         this.passClient = passClient;
@@ -101,10 +94,6 @@ public class SubmissionProcessor implements Consumer<Submission> {
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
         this.messagePolicy = submissionMessagePolicy;
-        this.depositStatusMapper = depositStatusMapper;
-        this.atomStatusParser = atomStatusParser;
-        this.dirtyDepositPolicy = dirtyDepositPolicy;
-        this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.critical = critical;
         this.depositTaskHelper = depositTaskHelper;
     }

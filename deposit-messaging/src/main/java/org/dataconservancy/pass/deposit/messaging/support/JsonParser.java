@@ -53,7 +53,7 @@ public class JsonParser {
     public String parseId(byte[] json) {
         JsonNode node = toJsonNode(json, objectMapper);
         if (node == null) {
-            throw new RuntimeException("Unable to parse the following to JSON:\n" + new String(json));
+            throw new RuntimeException("Unable to resolve the following to JSON:\n" + new String(json));
         }
         JsonNode value = node.findValue(JSON_ID);
         return (value == null) ? null : value.asText();
@@ -62,7 +62,7 @@ public class JsonParser {
     public String parseEtag(byte[] json) {
         JsonNode node = toJsonNode(json, objectMapper);
         if (node == null) {
-            throw new RuntimeException("Unable to parse the following to JSON:\n" + new String(json));
+            throw new RuntimeException("Unable to resolve the following to JSON:\n" + new String(json));
         }
         JsonNode value = node.findValue(ETAG);
         return (value == null) ? null : value.asText();
@@ -78,11 +78,11 @@ public class JsonParser {
     public Collection<String> parseRepositoryUris(byte[] json) {
         JsonNode node = toJsonNode(json, objectMapper);
         if (node == null) {
-            throw new RuntimeException("Unable to parse the following to JSON:\n" + new String(json));
+            throw new RuntimeException("Unable to resolve the following to JSON:\n" + new String(json));
         }
         JsonNode contains = node.findValue(LDP_CONTAINS);
         if (contains == null) {
-            throw new RuntimeException("JSON is missing '" + LDP_CONTAINS + "': unable to parse repository URIs from " +
+            throw new RuntimeException("JSON is missing '" + LDP_CONTAINS + "': unable to resolve repository URIs from " +
                     "the following JSON:\n" + new String(json));
         }
         ArrayList<String> repoUris = new ArrayList<>();
@@ -95,7 +95,7 @@ public class JsonParser {
      * Parses the supplied bytes into a {@link JsonNode} using the supplied {@link ObjectMapper}.
      *
      * @param json the raw json
-     * @param objectMapper the Jackson {@code ObjectMapper}, configured to parse JSON
+     * @param objectMapper the Jackson {@code ObjectMapper}, configured to resolve JSON
      * @return the {@code JsonNode}
      */
     private static JsonNode toJsonNode(byte[] json, ObjectMapper objectMapper) {

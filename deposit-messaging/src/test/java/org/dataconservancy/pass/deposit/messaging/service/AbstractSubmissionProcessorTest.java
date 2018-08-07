@@ -17,13 +17,14 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusParser;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
@@ -60,11 +61,13 @@ public abstract class AbstractSubmissionProcessorTest {
 
     DepositStatusMapper<SwordDspaceDepositStatus> dspaceStatusMapper;
 
-    DepositStatusParser<URI, SwordDspaceDepositStatus> atomStatusParser;
+    DepositStatusResolver<URI, SwordDspaceDepositStatus> atomStatusParser;
 
     CriticalRepositoryInteraction cri;
 
     DepositTaskHelper depositTaskHelper;
+
+    Repositories repositories;
 
     @Before
     @SuppressWarnings("unchecked")
@@ -78,10 +81,11 @@ public abstract class AbstractSubmissionProcessorTest {
         messagePolicy = mock(JmsMessagePolicy.class);
         taskExecutor = mock(TaskExecutor.class);
         dspaceStatusMapper = mock(DepositStatusMapper.class);
-        atomStatusParser = mock(DepositStatusParser.class);
+        atomStatusParser = mock(DepositStatusResolver.class);
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
-        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy, terminalDepositStatusPolicy, cri, packagerRegistry);
+        repositories = mock(Repositories.class);
+        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy, terminalDepositStatusPolicy, cri, packagerRegistry, repositories);
     }
     
 }

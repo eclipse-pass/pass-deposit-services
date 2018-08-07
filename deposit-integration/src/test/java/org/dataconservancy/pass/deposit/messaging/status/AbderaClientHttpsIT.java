@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
  * External CA Root</em>, expiring 5/30/2020, with SHA-1 fingerprint {@code 02 FA F3 E2 91 43 54 68 60 78 57 69 4D F5
  * E4 5B 68 85 18 68}.  We care about JScholarship and this certificate because it terminates the SSL connection to
  * the SWORD endpoint used for deposit by Deposit Services.  The {@code AbderaClient} must be able to negotiate an SSL
- * connection to this server in order to parse SWORD service-related documents.
+ * connection to this server in order to resolve SWORD service-related documents.
  * </p>
  * <p>
  * As it happens, more recent JREs already trust the <em>AddTrust</em> CA.  The Alpine Linux image that runs Deposit
@@ -61,7 +61,7 @@ import static org.junit.Assert.assertTrue;
  * </p>
  * <p>
  * Future implementations of this test should probably use a lower-level library to verify SSL/TLS connectivity without
- * relying on Abdera. There is no need to login and parse the service document to prove SSL/TLS connectivity, but for
+ * relying on Abdera. There is no need to login and resolve the service document to prove SSL/TLS connectivity, but for
  * now it was expedient.
  * </p>
  *

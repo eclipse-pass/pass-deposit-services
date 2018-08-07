@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.lang.Integer.toHexString;
@@ -311,6 +312,7 @@ public class Sword2TransportSessionIT extends BaseIT {
                 .getHref(), receipt.getEntry().getAlternateLink().getHref().toString());
 
         toRetrieve.forEach(url -> {
+            LOG.debug("Retrieving '{}' ...", url);
             try (Response res = okHttp.newCall(new Request.Builder().url(url).build()).execute()) {
                 int code = res.code();
                 LOG.debug("Retrieved '{}', {}", url, code);
@@ -680,6 +682,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
     private OkHttpClient newOkHttpClient(AuthCredentials authCreds) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.readTimeout(30, TimeUnit.SECONDS);
 
         String builderName = builder.getClass().getSimpleName();
         String builderHashcode = toHexString(identityHashCode(builder.getClass()));
