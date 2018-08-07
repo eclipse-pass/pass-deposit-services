@@ -85,7 +85,7 @@ public abstract class AbstractSubmissionProcessorTest {
         cri = mock(CriticalRepositoryInteraction.class);
         terminalDepositStatusPolicy = mock(Policy.class);
         repositories = mock(Repositories.class);
-        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy, terminalDepositStatusPolicy, cri, packagerRegistry, repositories);
+        depositTaskHelper = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy, terminalDepositStatusPolicy, cri, repositories);
     }
     
 }

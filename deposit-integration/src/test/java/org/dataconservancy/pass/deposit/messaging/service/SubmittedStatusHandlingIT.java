@@ -150,7 +150,7 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
         assertEquals(IN_PROGRESS, passClient.readResource(toUpdate.getRepositoryCopy(), RepositoryCopy.class)
                 .getCopyStatus());
 
-        underTest.processDepositStatus(toUpdate);
+        underTest.processDepositStatus(toUpdate.getId());
 
         Deposit deposit = passClient.readResource(toUpdate.getId(), Deposit.class);
         RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(), RepositoryCopy.class);

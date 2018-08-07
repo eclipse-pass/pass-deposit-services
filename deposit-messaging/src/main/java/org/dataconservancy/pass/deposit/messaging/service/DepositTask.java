@@ -177,28 +177,7 @@ public class DepositTask implements Runnable {
         // Determine *logical* success: was the Deposit accepted by the remote system?
 
         // TODO: response handlers should be decoupled, this will require an update the the TransportResponse interface; e.g. is the response terminal, or should it be polled?
-        if (!(transportResponse instanceof Sword2DepositReceiptResponse)) {
-            // Currently two remote repositories are supported: NIHMS FTP, and JScholarship
-            // JScholarship will return a Sword2DepositReceiptResponse containing information that will allow us
-            //   to determine logical success
-            // NIHMS will return an anonymous implementation which has no information in it to determine logical
-            //   success
-
-            // If we don't have a Sword2DepositReceiptResponse, then there is nothing we can do to determine logical
-            // success.  All we know is that the deposit has been submitted.
-        } else {
-            // Deposits for JScholarship are practically synchronous even though the API is asyc.
-            // TODO: abstract out a configurable timer.
-            // Sleep here for a bit, let DSpace do its thing, and then we ought to be able to resolve a deposit status
-            try {
-                LOG.debug(">>>> Sleeping {} ms for SWORD deposit to complete ...", swordSleepTimeMs);
-                Thread.sleep(swordSleepTimeMs);
-            } catch (InterruptedException e) {
-                LOG.debug(">>>> DepositTask {}@{} interrupted!",
-                        DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
-                Thread.interrupted();
-            }
-
+        if (transportResponse instanceof Sword2DepositReceiptResponse) {
             String statementUri = null;
             String itemUri = null;
             try {
@@ -228,16 +207,50 @@ public class DepositTask implements Runnable {
                 throw new DepositServiceRuntimeException(msg, e, dc.deposit());
             }
 
-            // TransportResponse was successfully parsed, set the status ref
-            dc.deposit().setDepositStatusRef(statementUri);
+            // Update and persist the Deposit and RepositoryCopy in the repository
 
-            // Create a RepositoryCopy, which will record the URL of the Item in DSpace
-            RepositoryCopy repoCopy = newRepositoryCopy(dc, itemUri, CopyStatus.IN_PROGRESS);
-            dc.repoCopy(repoCopy);
+            String finalStatementUri = statementUri;
+            String finalItemUri = itemUri;
+            CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(dc.deposit().getId(), Deposit.class,
 
-            // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy in
-            // the Fedora repository
-            depositHelper.processDepositStatus(dc.submission(), dc.repository(), dc.repoCopy(), dc.deposit());
+                    (criDeposit) -> true,
+                    (criDeposit) -> true,
+                    (criDeposit) -> {
+                        if (finalItemUri != null) {
+                            // TransportResponse was successfully parsed, set the status ref
+                            criDeposit.setDepositStatusRef(finalStatementUri);
+                        }
+
+                        // Create a RepositoryCopy, which will record the URL of the Item in DSpace
+                        RepositoryCopy repoCopy = null;
+                        if (finalItemUri != null) {
+                            repoCopy = passClient.createAndReadResource(newRepositoryCopy(dc,
+                                    finalItemUri, CopyStatus.IN_PROGRESS), RepositoryCopy.class);
+                            criDeposit.setRepositoryCopy(repoCopy.getId());
+                        }
+                        return repoCopy;
+                    });
+
+            if (cr.success()) {
+                dc.deposit(cr.resource().orElseThrow(() -> new RuntimeException("Missing expected Deposit resource.")));
+                dc.repoCopy(cr.result().orElseThrow(() -> new RuntimeException("Missing expected RepositoryCopy")));
+            } else {
+                if (cr.throwable().isPresent()) {
+                    Throwable t = cr.throwable().get();
+                    if (t instanceof DepositServiceRuntimeException) {
+                        throw (DepositServiceRuntimeException) t;
+                    }
+
+                    if (t instanceof RuntimeException) {
+                        throw (RuntimeException) t;
+                    }
+
+                    throw new RuntimeException(t.getMessage(), t);
+                } else {
+                    throw new RuntimeException(String.format("Failed updating Deposit and RepositoryCopy for tuple " +
+                            "[%s, %s, %s]", dc.submission().getId(), dc.repository().getId(), dc.deposit().getId()));
+                }
+            }
         }
 
     }
