@@ -79,6 +79,8 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         // stack trace of the exception will be reported when it is encountered by the reader
         Thread.UncaughtExceptionHandler exceptionHandler = (t, e) -> {
             // Make the exception caught by the writer available to the reader; set it on the PipedInputStream
+            // The reader will use this to close any resources it has open when an exception occurs, and allow the
+            // thread to be cleaned up.
             pipedIn.setWriterEx(e);
         };
 
