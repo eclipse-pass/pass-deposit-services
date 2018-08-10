@@ -271,8 +271,8 @@ public class DepositTaskHelper {
                 });
 
         if (!cr.success()) {
-            Throwable t = cr.throwable().get();
             if (cr.throwable().isPresent()) {
+                Throwable t = cr.throwable().get();
                 if (t instanceof DepositServiceRuntimeException) {
                     throw (DepositServiceRuntimeException) t;
                 }
@@ -283,9 +283,6 @@ public class DepositTaskHelper {
                                 t, cr.resource().get());
                 }
             }
-
-            throw new RuntimeException(format("Failed to update Deposit %s: %s", depositUri, t.getMessage()), t);
-
         }
     }
 
