@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.PassEntity;
@@ -26,15 +33,18 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,6 +64,17 @@ public abstract class AbstractSubmissionIT {
 
     protected static final String PMC_REPO_NAME = "PubMed Central";
 
+    private static final String MERGE_PATCH = "application/merge-patch+json";
+
+    private static final String CONTEXT_URI = "https://github.com/emetsger/pass-data-model/blob/repo-model/src/main/resources/context-2.3.jsonld";
+
+    private static final String SUBMIT_TRUE_PATCH = "" +
+            "{\n" +
+            "   \"@id\": \"%s\",\n" +
+            "   \"@context\": \"%s\",\n" +
+            "   \"submitted\": \"true\"\n" +
+            "}";
+
     protected Submission submission;
 
     protected Map<URI, PassEntity> submissionResources;
@@ -64,6 +85,35 @@ public abstract class AbstractSubmissionIT {
 
     @Autowired
     protected PassClient passClient;
+
+    protected OkHttpClient okHttp;
+
+    @Value("${pass.fedora.user}")
+    private String fcrepoUser;
+
+    @Value("${pass.fedora.password}")
+    private String fcrepoPass;
+
+    /**
+     * An OkHttp client used to trigger a submission.  The {@link JmsSubmissionProcessor} will drop messages from the
+     * {@link #passClient} (so it doesn't respond to changes it makes to resources).  This OkHttpClient does not share
+     * the user agent string of the {@link #passClient}, so it can be used to modify a Submission, and have its messages
+     * processed by {@link JmsSubmissionProcessor}.
+     *
+     * @throws Exception
+     */
+    @Before
+    public void setUpOkHttp() throws Exception {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.authenticator((route, response) -> {
+            if (response.header("Authorization") != null) {
+                return null;
+            }
+            return response.request().newBuilder()
+                    .header("Authorization", Credentials.basic(fcrepoUser, fcrepoPass)).build();
+        });
+        okHttp = builder.build();
+    }
 
     /**
      * Populates Fedora with a Submission, as if it was submitted interactively by a user of the PASS UI.
@@ -94,7 +144,6 @@ public abstract class AbstractSubmissionIT {
 
         // verify state of the initial Submission
         assertEquals(Submission.Source.PASS, submission.getSource());
-        assertEquals(Boolean.TRUE, submission.getSubmitted());
         assertEquals(NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
@@ -113,5 +162,24 @@ public abstract class AbstractSubmissionIT {
     }
 
     protected abstract InputStream getSubmissionResources();
+
+    protected void triggerSubmission(URI submissionUri) {
+        String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, CONTEXT_URI);
+
+        Request post = new Request.Builder()
+                .addHeader("Content-Type", MERGE_PATCH)
+                .method("PATCH", RequestBody.create(MediaType.parse(MERGE_PATCH), body))
+                .url(submissionUri.toString())
+                .build();
+
+        try (Response response = okHttp.newCall(post).execute()) {
+            int expected = 204;
+            assertEquals("Triggering 'submission' flag to 'true' for " + submissionUri + " failed.  " +
+                    "Expected " + expected + ", got " +
+                    response.code() + " (" + response.message() + ")", expected, response.code());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

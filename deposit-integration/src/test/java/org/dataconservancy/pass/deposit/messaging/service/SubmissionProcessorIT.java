@@ -32,6 +32,7 @@ import java.net.URI;
 import java.util.Collection;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 @Import({DepositConfig.class, JmsConfig.class})
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
-    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission1");
+    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission11");
 
     @Override
     protected InputStream getSubmissionResources() {
@@ -56,7 +57,11 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     @Test
     public void smokeSubmission() throws Exception {
-        underTest.accept(submission);
+
+        assertEquals(Boolean.FALSE, submission.getSubmitted());
+        assertTrue(getFileUris(submission, passClient).size() > 0);
+
+        triggerSubmission(submission.getId());
 
         // After successfully processing a submission to JScholarship we should observe:
 
