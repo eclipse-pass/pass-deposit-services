@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.ackMessage;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toMessageContext;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
@@ -104,8 +105,9 @@ public class JmsDepositProcessor {
         // Parse the identity of the Deposit and Submission from the message
         URI submissionUri;
         Deposit deposit;
+        byte[] payload = {};
         try {
-            byte[] payload = mc.message().getPayload().getBytes(Charset.forName("UTF-8"));
+            payload = mc.message().getPayload().getBytes(Charset.forName("UTF-8"));
             URI depositUri = URI.create(jsonParser.parseId(payload));
 
             // If the status of the incoming Deposit is not terminal, then there's no point in continuing.
@@ -113,7 +115,8 @@ public class JmsDepositProcessor {
             deposit = passClient.readResource(depositUri, Deposit.class);
             submissionUri = deposit.getSubmission();
         } catch (Exception e) {
-            LOG.error("Error parsing deposit URI from message: {}", e.getMessage(), e);
+            LOG.error("Error parsing deposit URI from JMS message: {}\nPayload (if available): '{}'",
+                    e.getMessage(), new String(payload, UTF_8), e);
             return;
         } finally {
             ackMessage(mc);
