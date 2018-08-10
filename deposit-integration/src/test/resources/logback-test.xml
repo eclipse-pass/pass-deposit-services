@@ -13,6 +13,9 @@
     <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
         <appender-ref ref="STDERR"/>
     </logger>
+    <logger name="org.fcrepo.client" additivity="false" level="WARN">
+        <appender-ref ref="STDERR"/>
+    </logger>
     <logger name="org.dataconservancy.nihms" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
         <appender-ref ref="STDERR"/>
     </logger>
