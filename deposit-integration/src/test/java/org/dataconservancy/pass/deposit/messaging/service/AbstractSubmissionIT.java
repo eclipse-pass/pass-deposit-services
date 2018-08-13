@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import okhttp3.Authenticator;
 import okhttp3.Credentials;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -44,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
-import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,7 +64,6 @@ public abstract class AbstractSubmissionIT {
 
     private static final String MERGE_PATCH = "application/merge-patch+json";
 
-    private static final String CONTEXT_URI = "https://github.com/emetsger/pass-data-model/blob/repo-model/src/main/resources/context-2.3.jsonld";
 
     private static final String SUBMIT_TRUE_PATCH = "" +
             "{\n" +
@@ -93,6 +90,9 @@ public abstract class AbstractSubmissionIT {
 
     @Value("${pass.fedora.password}")
     private String fcrepoPass;
+
+    @Value("${pass.jsonld.context}")
+    private String contextUri;
 
     /**
      * An OkHttp client used to trigger a submission.  The {@link JmsSubmissionProcessor} will drop messages from the
@@ -164,7 +164,7 @@ public abstract class AbstractSubmissionIT {
     protected abstract InputStream getSubmissionResources();
 
     protected void triggerSubmission(URI submissionUri) {
-        String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, CONTEXT_URI);
+        String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, contextUri);
 
         Request post = new Request.Builder()
                 .addHeader("Content-Type", MERGE_PATCH)
@@ -174,7 +174,7 @@ public abstract class AbstractSubmissionIT {
 
         try (Response response = okHttp.newCall(post).execute()) {
             int expected = 204;
-            assertEquals("Triggering 'submission' flag to 'true' for " + submissionUri + " failed.  " +
+            assertEquals("Triggering 'submitted' flag to 'true' for " + submissionUri + " failed.  " +
                     "Expected " + expected + ", got " +
                     response.code() + " (" + response.message() + ")", expected, response.code());
         } catch (IOException e) {
