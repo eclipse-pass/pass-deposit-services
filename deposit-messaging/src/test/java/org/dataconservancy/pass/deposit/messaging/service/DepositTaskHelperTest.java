@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -29,6 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.core.task.TaskExecutor;
+
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -120,6 +123,77 @@ public class DepositTaskHelperTest {
 
         assertEquals(prefix, depositTask.getPrefixToMatch());
         assertEquals(replacement, depositTask.getReplacementPrefix());
+    }
+
+    @Test
+    public void lookupRepositoryConfigByKey() {
+        String key = "repoKey";
+        Repository repo = newRepositoryWithKey(key);
+        Repositories repositories = newRepositoriesWithConfigFor(key);
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for key '" + key + "'"));
+    }
+
+    @Test
+    public void lookupRepositoryConfigByUri() {
+        String uri = "http://pass.jhu.edu/fcrepo/repositories/ab/cd/ef/gh/abcdefghilmnop";
+        Repository repo = newRepositoryWithUri(uri);
+        Repositories repositories = newRepositoriesWithConfigFor(uri);
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for uri '" + uri + "'"));
+    }
+
+    @Test
+    public void lookupRepositoryConfigByUriPath() {
+        String path = "/fcrepo/repositories/a-repository";
+        String uri = "http://pass.jhu.edu" + path;
+        Repository repo = newRepositoryWithUri(uri);
+        Repositories repositories = newRepositoriesWithConfigFor(path);
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '" + path + "'"));
+    }
+
+    @Test
+    public void lookupRepositoryConfigByUriPathComponent() {
+        String uri = "http://pass.jhu.edu/fcrepo/repositories/a-repository";
+        Repository repo = newRepositoryWithUri(uri);
+        Repositories repositories = newRepositoriesWithConfigFor("a-repository");
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path 'a-repository'"));
+
+        repositories = newRepositoriesWithConfigFor("/a-repository");
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '/a-repository'"));
+
+        repositories = newRepositoriesWithConfigFor("/fcrepo/repositories/a-repository");
+
+        DepositTaskHelper.lookupConfig(repo, repositories)
+                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '/fcrepo/repositories/a-repository'"));
+    }
+
+    private static Repository newRepositoryWithKey(String key) {
+        Repository repo = new Repository();
+        repo.setRepositoryKey(key);
+        return repo;
+    }
+
+    private static Repository newRepositoryWithUri(String uri) {
+        Repository repo = new Repository();
+        repo.setId(URI.create(uri));
+        return repo;
+    }
+
+    private static Repositories newRepositoriesWithConfigFor(String key) {
+        Repositories repos = new Repositories();
+        RepositoryConfig config = new RepositoryConfig();
+        config.setRepositoryKey(key);
+        repos.addRepositoryConfig(key, config);
+        return repos;
     }
 
 }
