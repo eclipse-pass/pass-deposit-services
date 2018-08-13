@@ -302,25 +302,44 @@ public class DepositTaskHelper {
         this.statementUriReplacement = statementUriReplacement;
     }
 
-    private static Optional<RepositoryConfig> lookupConfig(Repository repository, Repositories repositories) {
+    static Optional<RepositoryConfig> lookupConfig(Repository repository, Repositories repositories) {
         Set<String> repositoryKeys = repositories.keys();
 
-        if (repositoryKeys.contains(repository.getId().toString())) {
+        // Look up the RepositoryConfig by the Repository URI
+        if (repository.getId() != null && repositoryKeys.contains(repository.getId().toString())) {
             return Optional.of(repositories.getConfig(repository.getId().toString()));
         }
 
-        if (repositoryKeys.contains(repository.getId().getPath())) {
+        // Look up the RepositoryConfig by the Repository Key
+        if (repository.getRepositoryKey() != null && repositoryKeys.contains(repository.getRepositoryKey())) {
+            return Optional.of(repositories.getConfig(repository.getRepositoryKey()));
+        }
+
+        // Look up the RepositoryConfig by a path component in the Repository URI
+        if (repository.getId() != null && repositoryKeys.contains(repository.getId().getPath())) {
             return Optional.of(repositories.getConfig(repository.getId().getPath()));
         }
 
-        if (repositoryKeys.contains(repository.getRepositoryKey())) {
-            return Optional.of(repositories.getConfig(repository.getRepositoryKey()));
+        if (repository.getId() != null) {
+            String path = repository.getId().getPath();
+            int idx;
+            while ((idx = path.indexOf("/")) > -1) {
+                path = path.substring(idx+1);
+
+                if (repositoryKeys.contains("/" + path)) {
+                    return Optional.of(repositories.getConfig("/" + path));
+                }
+
+                if (repositoryKeys.contains(path)) {
+                    return Optional.of(repositories.getConfig(path));
+                }
+            }
         }
 
         return Optional.empty();
     }
 
-    private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
+    static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
         return authRealms.stream()
                 .filter(realm -> realm instanceof BasicAuthRealm)
                 .map(realm -> (BasicAuthRealm) realm)
