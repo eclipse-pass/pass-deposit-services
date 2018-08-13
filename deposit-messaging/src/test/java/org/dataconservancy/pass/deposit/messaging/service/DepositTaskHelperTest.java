@@ -20,7 +20,6 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryCo
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
@@ -54,8 +53,6 @@ public class DepositTaskHelperTest {
 
     private CriticalRepositoryInteraction cri;
 
-    private Registry<Packager> packagerRegistry;
-
     private Submission s;
 
     private DepositSubmission ds;
@@ -78,7 +75,6 @@ public class DepositTaskHelperTest {
         intermediateDepositStatusPolicy = mock(Policy.class);
         terminalDepositStatusPolicy = mock(Policy.class);
         cri = mock(CriticalRepositoryInteraction.class);
-        packagerRegistry = mock(Registry.class);
         repositories = mock(Repositories.class);
 
         underTest = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
