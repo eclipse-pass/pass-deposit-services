@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -77,7 +76,7 @@ public class DefaultDepositStatusProcessorTest {
         when(resolver.resolve(refUri, authRealm)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
         when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
             {
-                put(SWORD_STATE_ARCHIVED.asUri().toString(), Deposit.DepositStatus.ACCEPTED.asUri().toString());
+                put(SWORD_STATE_ARCHIVED.asUri().toString(), Deposit.DepositStatus.ACCEPTED.name().toLowerCase());
             }
         });
 
