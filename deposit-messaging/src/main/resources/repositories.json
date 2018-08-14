@@ -9,9 +9,9 @@
       },
 
       "mapping": {
-        "http://dspace.org/state/archived": "http://oapass.org/ns/status/deposit#accepted",
-        "http://dspace.org/state/withdrawn": "http://oapass.org/ns/status/deposit#rejected",
-        "default-mapping": "http://oapass.org/status/deposit#submitted"
+        "http://dspace.org/state/archived": "accepted",
+        "http://dspace.org/state/withdrawn": "rejected",
+        "default-mapping": "submitted"
       }
     },
 
@@ -66,10 +66,10 @@
       },
 
       "mapping": {
-        "INFO": "http://oapass.org/status/deposit#accepted",
-        "ERROR": "http://oapass.org/status/deposit#rejected",
-        "WARN": "http://oapass.org/status/deposit#rejected",
-        "default-mapping": "http://oapass.org/status/deposit#submitted"
+        "INFO": "accepted",
+        "ERROR": "rejected",
+        "WARN": "rejected",
+        "default-mapping": "submitted"
       }
     },
 
