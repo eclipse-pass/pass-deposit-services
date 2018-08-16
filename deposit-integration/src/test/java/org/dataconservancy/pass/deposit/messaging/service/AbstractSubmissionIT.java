@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -52,7 +53,8 @@ import static org.junit.Assert.assertTrue;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
+@SpringBootTest
+@TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
 public abstract class AbstractSubmissionIT {
 
     @Rule
