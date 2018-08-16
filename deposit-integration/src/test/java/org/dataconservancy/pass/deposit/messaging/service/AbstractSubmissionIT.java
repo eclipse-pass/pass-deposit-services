@@ -21,21 +21,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,9 +48,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
 public abstract class AbstractSubmissionIT {
 
     @Rule
@@ -97,10 +90,10 @@ public abstract class AbstractSubmissionIT {
     private String contextUri;
 
     /**
-     * An OkHttp client used to trigger a submission.  The {@link JmsSubmissionProcessor} will drop messages from the
+     * An OkHttp client used to trigger a submission.  The {@link SubmissionProcessor} will drop messages from the
      * {@link #passClient} (so it doesn't respond to changes it makes to resources).  This OkHttpClient does not share
      * the user agent string of the {@link #passClient}, so it can be used to modify a Submission, and have its messages
-     * processed by {@link JmsSubmissionProcessor}.
+     * processed by {@link SubmissionProcessor}.
      *
      * @throws Exception
      */

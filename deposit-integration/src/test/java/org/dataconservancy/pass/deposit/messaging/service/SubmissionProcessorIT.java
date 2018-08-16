@@ -23,8 +23,11 @@ import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
@@ -37,14 +40,15 @@ import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@SpringBootTest(properties = { "spring.jms.listener.auto-startup=true" })
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
 @Import({DepositConfig.class, JmsConfig.class})
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 

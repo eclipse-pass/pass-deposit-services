@@ -17,6 +17,8 @@
 package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -24,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
@@ -32,7 +36,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
+@SpringBootTest
+@Import(DrainQueueConfig.class)
 public class PassClientIT {
 
     @Autowired

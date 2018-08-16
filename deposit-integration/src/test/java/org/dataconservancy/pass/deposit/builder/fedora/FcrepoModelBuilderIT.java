@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Johns Hopkins University
+ * Copyright 2018 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.dataconservancy.pass.deposit.builder.fedora;
 
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import static org.junit.Assert.assertEquals;
@@ -33,6 +35,12 @@ import org.dataconservancy.pass.model.Submission;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -41,6 +49,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = DepositConfig.class)
+@ComponentScan("org.dataconservancy.pass.deposit")
+@Import(DrainQueueConfig.class)
 public class FcrepoModelBuilderIT {
 
     private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";

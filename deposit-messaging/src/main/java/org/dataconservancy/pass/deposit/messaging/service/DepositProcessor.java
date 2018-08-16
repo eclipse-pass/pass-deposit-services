@@ -18,116 +18,58 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.support.JmsHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
-import javax.jms.Session;
-import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.ackMessage;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toMessageContext;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 
 @Component
-public class JmsDepositProcessor {
+public class DepositProcessor implements Consumer<Deposit> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JmsDepositProcessor.class);
-
-    private JmsMessagePolicy messagePolicy;
+    private static final Logger LOG = LoggerFactory.getLogger(DepositProcessor.class);
 
     private Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
 
     private Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy;
 
-    private JsonParser jsonParser;
-
-    private CriticalRepositoryInteraction critical;
+    private CriticalRepositoryInteraction cri;
 
     private PassClient passClient;
 
     private DepositTaskHelper depositHelper;
 
     @Autowired
-    public JmsDepositProcessor(@Qualifier("depositMessagePolicy") JmsMessagePolicy messagePolicy,
-                               Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
-                               Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
-                               JsonParser jsonParser, CriticalRepositoryInteraction critical, PassClient passClient,
-                               DepositTaskHelper depositHelper) {
-        this.messagePolicy = messagePolicy;
+    public DepositProcessor(Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
+                            Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
+                            CriticalRepositoryInteraction cri,
+                            PassClient passClient,
+                            DepositTaskHelper depositHelper) {
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.terminalSubmissionStatusPolicy = terminalSubmissionStatusPolicy;
-        this.jsonParser = jsonParser;
-        this.critical = critical;
+        this.cri = cri;
         this.passClient = passClient;
         this.depositHelper = depositHelper;
     }
 
-    @JmsListener(destination = "deposit", containerFactory = "jmsListenerContainerFactory")
-    public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
-                               @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
-                               @Header(JmsHeaders.TIMESTAMP) long timeStamp,
-                               @Header(JmsHeaders.MESSAGE_ID) String id,
-                               Session session,
-                               Message<String> message,
-                               javax.jms.Message jmsMessage) {
-
-        DepositUtil.MessageContext mc = toMessageContext(
-                resourceType, eventType, timeStamp, id, session, message, jmsMessage);
-        LOG.trace(">>>> Processing message (ack mode: {}) {} body:\n{}",
-                mc.ackMode(), mc.id(), mc.message().getPayload());
-
-        // verify the message is one we want, otherwise ack it right away and return
-        if (!messagePolicy.accept(mc)) {
-            ackMessage(mc);
-            return;
-        }
-
-        // Parse the identity of the Deposit and Submission from the message
-        URI submissionUri;
-        Deposit deposit;
-        byte[] payload = {};
-        try {
-            payload = mc.message().getPayload().getBytes(Charset.forName("UTF-8"));
-            URI depositUri = URI.create(jsonParser.parseId(payload));
-
-            // If the status of the incoming Deposit is not terminal, then there's no point in continuing.
-            // *All* Deposit resources for a Submission must be terminal before proceeding
-            deposit = passClient.readResource(depositUri, Deposit.class);
-            submissionUri = deposit.getSubmission();
-        } catch (Exception e) {
-            LOG.error("Error parsing deposit URI from JMS message: {}\nPayload (if available): '{}'",
-                    e.getMessage(), new String(payload, UTF_8), e);
-            return;
-        } finally {
-            ackMessage(mc);
-        }
-
+    public void accept(Deposit deposit) {
 
         if (terminalDepositStatusPolicy.accept(deposit.getDepositStatus())) {
             // terminal Deposit status, so update its Submission aggregate deposit status.
 
             // obtain a critical over the submission
-            critical.performCritical(submissionUri, Submission.class,
+            cri.performCritical(deposit.getSubmission(), Submission.class,
 
                     /*
                      * The Submission must not be in a terminal state in order for us to update its status
@@ -189,8 +131,6 @@ public class JmsDepositProcessor {
             // Determine the logical success or failure of the Deposit, and persist the Deposit and RepositoryCopy in
             // the Fedora repository
             depositHelper.processDepositStatus(deposit.getId());
-
         }
-
     }
 }
