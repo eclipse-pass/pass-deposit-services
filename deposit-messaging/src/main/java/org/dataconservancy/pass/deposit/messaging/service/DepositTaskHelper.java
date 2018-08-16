@@ -24,7 +24,6 @@ import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
@@ -98,13 +97,13 @@ public class DepositTaskHelper {
 
     @Autowired
     public DepositTaskHelper(PassClient passClient,
-                             TaskExecutor taskExecutor,
+                             TaskExecutor depositWorkers,
                              Policy<Deposit.DepositStatus> intermediateDepositStatusPolicy,
                              Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                              CriticalRepositoryInteraction cri,
                              Repositories repositories) {
         this.passClient = passClient;
-        this.taskExecutor = taskExecutor;
+        this.taskExecutor = depositWorkers;
         this.intermediateDepositStatusPolicy = intermediateDepositStatusPolicy;
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.cri = cri;
