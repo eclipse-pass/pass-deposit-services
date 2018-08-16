@@ -16,11 +16,15 @@
 package org.dataconservancy.pass.deposit.messaging.support;
 
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.dataconservancy.pass.model.Deposit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -34,6 +38,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = { "spring.jms.listener.auto-startup=false" })
+@Import(DrainQueueConfig.class)
 public class CriticalPathIT {
 
     @Autowired

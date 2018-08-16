@@ -15,22 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
-import org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus;
-import org.dataconservancy.pass.deposit.model.DepositFile;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -39,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -68,32 +63,20 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     protected SubmissionPolicy submissionPolicy;
 
-    protected JmsMessagePolicy messagePolicy;
-
-    protected DepositStatusResolver<URI, SwordDspaceDepositStatus> atomStatusParser;
-
-    protected Policy<Deposit.DepositStatus> dirtyDepositPolicy;
-
-    protected Policy<Deposit.DepositStatus> terminalDepositStatusPolicy;
-
     protected CriticalRepositoryInteraction critical;
 
     protected DepositTaskHelper depositTaskHelper;
 
     @Autowired
     public SubmissionProcessor(PassClient passClient, JsonParser jsonParser, SubmissionBuilder fcrepoModelBuilder,
-                               Registry<Packager> packagerRegistry,
-                               SubmissionPolicy passUserSubmittedPolicy,
-                               JmsMessagePolicy submissionMessagePolicy,
-                               DepositTaskHelper depositTaskHelper,
-                               CriticalRepositoryInteraction critical) {
+                               Registry<Packager> packagerRegistry, SubmissionPolicy passUserSubmittedPolicy,
+                               DepositTaskHelper depositTaskHelper, CriticalRepositoryInteraction critical) {
 
         this.passClient = passClient;
         this.jsonParser = jsonParser;
         this.fcrepoModelBuilder = fcrepoModelBuilder;
         this.packagerRegistry = packagerRegistry;
         this.submissionPolicy = passUserSubmittedPolicy;
-        this.messagePolicy = submissionMessagePolicy;
         this.critical = critical;
         this.depositTaskHelper = depositTaskHelper;
     }

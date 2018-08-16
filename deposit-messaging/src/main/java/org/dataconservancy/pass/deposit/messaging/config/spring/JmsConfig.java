@@ -15,22 +15,63 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
+import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
+import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
+import org.dataconservancy.pass.deposit.messaging.support.Constants;
+import org.dataconservancy.pass.deposit.messaging.support.JsonParser;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Submission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.jms.support.JmsHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.Header;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
+import java.net.URI;
+import java.util.function.Consumer;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.ackMessage;
+import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toMessageContext;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
 @EnableJms
 public class JmsConfig {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JmsConfig.class);
+
+    @Autowired
+    private PassClient passClient;
+
+    @Autowired
+    private JsonParser jsonParser;
+
+    @Autowired
+    @Qualifier("submissionMessagePolicy")
+    private JmsMessagePolicy submissionPolicy;
+
+    @Autowired
+    @Qualifier("depositMessagePolicy")
+    private JmsMessagePolicy depositPolicy;
+
+    @Autowired
+    private Consumer<Submission> submissionConsumer;
+
+    @Autowired
+    private Consumer<Deposit> depositConsumer;
 
     @Bean
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(DepositServiceErrorHandler errorHandler,
@@ -46,6 +87,97 @@ public class JmsConfig {
         factory.setConnectionFactory(connectionFactory);
         factory.setAutoStartup(autoStart);
         return factory;
+    }
+
+    @JmsListener(destination = "${pass.deposit.queue.submission.name}", containerFactory = "jmsListenerContainerFactory")
+    public void processSubmissionMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
+                               @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
+                               @Header(JmsHeaders.TIMESTAMP) long timeStamp,
+                               @Header(JmsHeaders.MESSAGE_ID) String id,
+                               Session session,
+                               Message<String> message,
+                               javax.jms.Message jmsMessage) {
+
+
+        DepositUtil.MessageContext mc =
+                toMessageContext(resourceType, eventType, timeStamp, id, session, message, jmsMessage);
+
+        if (filterMessage(mc, submissionPolicy)) {
+            return;
+        }
+
+        // Parse the identity of the Submission from the message
+
+        try {
+            URI submissionUri = parseResourceUri(mc, jsonParser);
+            submissionConsumer.accept(passClient.readResource(submissionUri, Submission.class));
+        } catch (Exception e) {
+            LOG.error("Error parsing submission URI from JMS message: {}\nPayload (if available): '{}'",
+                    e.getMessage(), mc.message().getPayload(), e);
+        } finally {
+            ackMessage(mc);
+        }
+
+    }
+
+    @JmsListener(destination = "${pass.deposit.queue.deposit.name}", containerFactory = "jmsListenerContainerFactory")
+    public void processDepositMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
+                               @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
+                               @Header(JmsHeaders.TIMESTAMP) long timeStamp,
+                               @Header(JmsHeaders.MESSAGE_ID) String id,
+                               Session session,
+                               Message<String> message,
+                               javax.jms.Message jmsMessage) {
+
+        DepositUtil.MessageContext mc =
+                toMessageContext(resourceType, eventType, timeStamp, id, session, message, jmsMessage);
+
+        if (filterMessage(mc, depositPolicy)) {
+            return;
+        }
+
+        // Parse the identity of the Deposit from the message
+        try {
+            URI depositUri = parseResourceUri(mc, jsonParser);
+            depositConsumer.accept(passClient.readResource(depositUri, Deposit.class));
+        } catch (Exception e) {
+            LOG.error("Error parsing deposit URI from JMS message: {}\nPayload (if available): '{}'",
+                    e.getMessage(), mc.message().getPayload(), e);
+        } finally {
+            ackMessage(mc);
+        }
+
+    }
+
+    /**
+     * Determine if the message should be accepted for further processing according to the supplied {@code policy}.
+     *
+     * @param mc the message context
+     * @param jmsPolicy the policy
+     * @return true if the message should be filtered (i.e., <em>not</em> accepted for further processing)
+     */
+    private static boolean filterMessage(DepositUtil.MessageContext mc, JmsMessagePolicy jmsPolicy) {
+        LOG.trace(">>>> Processing message (ack mode: {}) {} body:\n{}",
+                mc.ackMode(), mc.id(), mc.message().getPayload());
+
+        // verify the message is one we want, otherwise ack it right away and return
+        if (!jmsPolicy.accept(mc)) {
+            ackMessage(mc);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Parse the Fedora repository URI of the PASS entity represented in the message.
+     *
+     * @param mc the message context
+     * @param jsonParser vanilla Jackson JSON parser used to parse the JMS message payload
+     * @return the URI of the PASS resource in the Fedora repository
+     */
+    private static URI parseResourceUri(DepositUtil.MessageContext mc, JsonParser jsonParser) {
+        byte[] payload = mc.message().getPayload().getBytes(UTF_8);
+        return URI.create(jsonParser.parseId(payload));
     }
 
 }

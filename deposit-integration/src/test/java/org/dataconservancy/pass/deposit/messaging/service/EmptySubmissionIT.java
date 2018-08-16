@@ -16,7 +16,13 @@
 package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit4.SpringRunner;
 import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
@@ -27,6 +33,9 @@ import static org.hamcrest.CoreMatchers.isA;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@Import({DepositConfig.class, DrainQueueConfig.class})
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
     private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission10");

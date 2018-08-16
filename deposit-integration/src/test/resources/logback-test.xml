@@ -2,7 +2,7 @@
     <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %d{HH:mm:ss.SSS} [%10.30thread] %-5level [%15.-30C{0}] - %msg%n
+                %d{HH:mm:ss.SSS} [%20.20thread] %-5level [%30.-30C{0}] - %msg%n
             </pattern>
         </encoder>
         <target>System.err</target>
@@ -23,6 +23,10 @@
         <appender-ref ref="STDERR"/>
     </logger>
     <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
+        <appender-ref ref="STDERR"/>
+    </logger>
+    <!-- the rest client is noisy, and detracts from looking at test logging output -->
+    <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
         <appender-ref ref="STDERR"/>
     </logger>
 </configuration>

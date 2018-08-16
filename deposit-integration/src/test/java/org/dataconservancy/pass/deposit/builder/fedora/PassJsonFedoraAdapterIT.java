@@ -22,10 +22,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.dataconservancy.pass.model.PassEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,6 +48,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = DepositConfig.class)
+@ComponentScan("org.dataconservancy.pass.deposit")
+@Import(DrainQueueConfig.class)
 public class PassJsonFedoraAdapterIT {
 
     private URI SAMPLE_DATA_FILE = URI.create("fake:submission1");
