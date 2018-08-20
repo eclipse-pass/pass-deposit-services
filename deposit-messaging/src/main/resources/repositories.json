@@ -23,14 +23,14 @@
       "auth-realms": [
         {
           "mech": "basic",
-          "username": "user",
-          "password": "pass",
+          "username": "dspace-admin@oapass.org",
+          "password": "foobar",
           "url": "https://jscholarship.library.jhu.edu/"
         },
         {
           "mech": "basic",
-          "username": "user",
-          "password": "pass",
+          "username": "dspace-admin@oapass.org",
+          "password": "foobar",
           "url": "https://dspace-prod.mse.jhu.edu:8080/"
         },
         {
