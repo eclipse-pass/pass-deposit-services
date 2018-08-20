@@ -54,17 +54,19 @@ The format of the configuration file is JSON, containing multiple repository con
 
 ```json
 {
-  "J10P": {
+
+  "JScholarship": {
+
     "deposit-config": {
 
       "processing": {
-
+        "beanName" : "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
       },
 
       "mapping": {
-        "http://dspace.org/state/archived": "http://oapass.org/status/deposit#accepted",
-        "http://dspace.org/state/withdrawn": "http://oapass.org/status/deposit#rejected",
-        "default-mapping": "http://oapass.org/status/deposit#submitted"
+        "http://dspace.org/state/archived": "accepted",
+        "http://dspace.org/state/withdrawn": "rejected",
+        "default-mapping": "submitted"
       }
     },
 
@@ -85,6 +87,12 @@ The format of the configuration file is JSON, containing multiple repository con
           "username": "user",
           "password": "pass",
           "url": "https://dspace-prod.mse.jhu.edu:8080/"
+        },
+        {
+          "mech": "basic",
+          "username": "dspace-admin@oapass.org",
+          "password": "foobar",
+          "url": "http://${dspace.host}:${dspace.port}/swordv2"
         }
       ],
 
@@ -103,7 +111,8 @@ The format of the configuration file is JSON, containing multiple repository con
     }
   },
 
-  "PubMed": {
+  "PubMed Central": {
+
     "deposit-config": {
 
       "processing": {
@@ -111,10 +120,10 @@ The format of the configuration file is JSON, containing multiple repository con
       },
 
       "mapping": {
-        "INFO": "http://oapass.org/status/deposit#accepted",
-        "ERROR": "http://oapass.org/status/deposit#rejected",
-        "WARN": "http://oapass.org/status/deposit#rejected",
-        "default-mapping": "http://oapass.org/status/deposit#submitted"
+        "INFO": "accepted",
+        "ERROR": "rejected",
+        "WARN": "rejected",
+        "default-mapping": "submitted"
       }
     },
 
