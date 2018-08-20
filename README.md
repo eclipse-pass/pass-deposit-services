@@ -48,9 +48,24 @@ The primary mechanism for configuring Deposit Services is through environment va
 
 ### Repositories Configuration
 
-The Repository configuration contains the parameters used for connecting to remote repositories.  Deposit Services comes with a default configuration, but a production environment will want to override the default.  Defaults are overridden by creating a copy of the default configuration, editing it to suit, and setting `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` to point to the new location.
+The Repository configuration contains the parameters used for connecting and depositing custodial material to downstream repositories.  The format of the configuration file is JSON, defining multiple downstream repositories in a single file.  
 
-The format of the configuration file is JSON, containing multiple repository configurations in a single file.  Each repository configuration has a top-level key that is used to identify that particular configuration.  The _default_ configuration is replicated below:
+Each repository configuration has a top-level key that is used to identify a particular configuration.  Importantly, each top-level key _must_ map to a [`Repository` resource][5] within the PASS repository.  This implies that the top-level keys in `repositories.json` are not arbitrary.  In fact, the top level key must be one of:
+* the value of a `Repository.repositoryKey` field (of a `Repository` resource in the PASS repository)
+* the full URI of a `Repository` resource in the PASS repository
+* a portion of the URI path of a `Repository` resource in the PASS repository
+    
+Given a `Repository` with a `repositoryKey` of `my-repo` and a URI of `https://pass.my.edu/fcrepo/rest/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`, any of the following top level keys are acceptable:
+* `my-repo`
+* `https://pass.my.edu/fcrepo/rest/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`
+* `/repositories/77/cc/80/64/77cc8064-a918-4823-968d-2b17386db76d`
+* `77cc8064-a918-4823-968d-2b17386db76d`
+
+Deposit Services comes with a default repository configuration, but a production environment will want to override the default.  Defaults are overridden by creating a copy of the default configuration, editing it to suit, and setting `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` to point to the new location.
+
+> Acceptable values for `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` must be a form of [Spring Resource URI][1].
+
+The _default_ configuration is replicated below:
 
 ```json
 {
@@ -148,27 +163,13 @@ The format of the configuration file is JSON, containing multiple repository con
 }
 ```
 
-#### Important Packager keys
+#### Customizing Repository Configuration Elements
 
-A production deployment of Deposit Services is likely to provide updated values for the following keys:
-> Remember: if the default configuration is overridden, _all_ keys with their values must be in the new configuration, even if their value remains unchanged
+The default repository configuration will not be suitable for production.  A production deployment needs to provide updated authentication credentials and insure the correct value for the default SWORD collection URL - `default-collection`.  Each `transport-config` section should be reviewed for correctness, paying special attention to `protocol-binding` and `auth-realm` blocks: update `username` and `password` elements, and insure correct values for URLs.
 
-|Property name                                                       |Default value                                                         |Description|
-|--------------------------------------------------------------------|----------------------------------------------------------------------|-----------|
-|`transport.nihms.deposit.transport.username`                        |nihmsftpuser                                                          |the username used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
-|`transport.nihms.deposit.transport.password`                        |nihmsftppass                                                          |the password used when authenticating to the FTP server specified by `transport.nihms.deposit.transport.server-fqdn`
-|`transport.nihms.deposit.transport.server-fqdn`                     |localhost                                                             |the IP address or hostname of the NIH FTP server 
-|`transport.nihms.deposit.transport.server-port`                     |21                                                                    |the FTP control port of the NIH FTP server
-|`transport.js.deposit.transport.username`                           |dspace-admin@oapass.org                                               |the username used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
-|`transport.js.deposit.transport.password`                           |foobar                                                                |the password used when accessing the SWORD protocol version 2 service document, and creating SWORD protocol version 2 deposits within DSpace
-|`transport.js.deposit.transport.server-fqdn`                        |localhost                                                             |the IP address or hostname of the DSpace SWORD endpoint
-|`transport.js.deposit.transport.server-port`                        |8181                                                                  |the TCP port of the DSpace SWORD endpoint
-|`transport.js.deposit.transport.protocol.swordv2.service-doc`       |http://${dspace.host}:${dspace.port}/swordv2/servicedocument          |the location of the SWORD service document
-|`transport.js.deposit.transport.protocol.swordv2.target-collection` |http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2   |the location of the SWORD collection accepting deposits (note that this collection _must_ be enumerated in the SWORD service document)
+Values may be parameterized by any property or environment variable.
 
-#### Creating and using an updated configuration
-
-To create your own configuration, copy and paste the default configuration into an empty file and modify the key values as described above.  The configuration _must_ be referenced by the `pass.deposit.repository.configuration` property, or is environment equivalent `PASS_DEPOSIT_REPOSITORY_CONFIGURATION`.  Allowed values are any Spring Resource path (e.g. `classpath:/`, `classpath*:`, `file:`, `http://`, `https://`).  For example, if your configuration is stored as a file in `/etc/deposit-services.json`, then you would set the environment variable `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=file:/etc/deposit-services.json` prior to starting Deposit Services.  Likewise, if you kept the configuration accessible at a URL, you could use `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=http://example.org/deposit-services.json`.
+To create your own configuration, copy and paste the default configuration into an empty file and modify the JSON as described above.  The configuration _must_ be referenced by the `pass.deposit.repository.configuration` property, or is environment equivalent `PASS_DEPOSIT_REPOSITORY_CONFIGURATION`.  Allowed values are any [Spring Resource path][1] (e.g. `classpath:/`, `classpath*:`, `file:`, `http://`, `https://`).  For example, if your configuration is stored as a file in `/etc/deposit-services.json`, then you would set the environment variable `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=file:/etc/deposit-services.json` prior to starting Deposit Services.  Likewise, if you kept the configuration accessible at a URL, you could use `PASS_DEPOSIT_REPOSITORY_CONFIGURATION=http://example.org/deposit-services.json`.
 
 ## Failure Handling
 
@@ -441,3 +442,4 @@ There are some common permutations of these statuses that will be observed:
 [2]: https://docs.spring.io/spring/docs/5.0.7.RELEASE/javadoc-api/org/springframework/util/ErrorHandler.html
 [3]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.UncaughtExceptionHandler.html
 [4]: https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RejectedExecutionHandler.html
+[5]: https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Repository.md
