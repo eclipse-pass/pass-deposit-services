@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.SWORD.SWORD_STATE;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.SWORD.SWORD_STATE;
 
 /**
  * Utility methods for parsing Atom documents

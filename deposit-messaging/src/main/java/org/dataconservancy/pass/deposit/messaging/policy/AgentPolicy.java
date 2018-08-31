@@ -18,7 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.policy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

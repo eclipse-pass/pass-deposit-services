@@ -21,8 +21,8 @@ import org.dataconservancy.pass.deposit.messaging.policy.TerminalDepositStatusPo
 import org.dataconservancy.pass.deposit.messaging.policy.TerminalSubmissionStatusPolicy;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusEvaluator;
 import org.dataconservancy.pass.deposit.messaging.status.SubmissionStatusEvaluator;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;

@@ -44,7 +44,7 @@ import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.slf4j.Logger;

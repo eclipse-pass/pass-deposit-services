@@ -16,9 +16,9 @@
 package org.dataconservancy.pass.deposit.messaging.policy;
 
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
-import org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent;
-import org.dataconservancy.pass.deposit.messaging.support.Constants.PassType;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
+import org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent;
+import org.dataconservancy.pass.support.messaging.constants.Constants.PassType;
 import org.dataconservancy.pass.model.Submission;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +27,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.SUBMISSION_RESOURCE;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.SUBMISSION_RESOURCE;
 
 /**
  * Accepts messages that represent the creation or modification of a PASS {@link Submission}.  Messages that do not meet
