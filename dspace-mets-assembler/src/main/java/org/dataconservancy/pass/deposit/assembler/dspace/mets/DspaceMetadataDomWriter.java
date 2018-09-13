@@ -56,9 +56,13 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.MetsMdType.
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCTERMS_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_ABSTRACT;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_HASVERSION;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_ABSTRACT;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CITATION;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CONTRIBUTOR;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_DESCRIPTION;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_IDENTIFIER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_NS;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_PUBLISHER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_TITLE;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DIM;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DIM_DESCRIPTION;
@@ -102,6 +106,8 @@ public class DspaceMetadataDomWriter {
     private DocumentBuilderFactory dbf;
 
     private METS mets;
+
+    private int authorIndex;
 
     DspaceMetadataDomWriter(DocumentBuilderFactory dbf) {
         try {
@@ -198,7 +204,7 @@ public class DspaceMetadataDomWriter {
 
     Collection<DmdSec> mapDmdSec(DepositSubmission submission) throws METSException {
         List<DmdSec> result = new ArrayList<>();
-        Element dcRecord = createDublinCoreMetadata(submission);
+        Element dcRecord = createDublinCoreMetadataDCMES(submission);
         DmdSec dcDmdSec = getDmdSec(null);   // creates a new DmdSec
 
         try {
@@ -290,7 +296,7 @@ public class DspaceMetadataDomWriter {
     }
 
     /**
-     * Creates the Dublin Core metadata from the submission.  Includes:
+     * Creates the Dublin Core metadata from the submission using the Qualified Dublin Core schema.  Includes:
      * <ul>
      *     <li>dc:contributor for each Person associated with the Manuscript</li>
      *     <li>dc:title for the Manuscript</li>
@@ -305,7 +311,7 @@ public class DspaceMetadataDomWriter {
      * @param submission
      * @return
      */
-    Element createDublinCoreMetadata(DepositSubmission submission) {
+    Element createDublinCoreMetadataQualified(DepositSubmission submission) {
         Document dcDocument = newDocument();
 
         // Root <record> element
@@ -366,6 +372,121 @@ public class DspaceMetadataDomWriter {
             dcEmbargoDesc.setTextContent(String.format("Submission published under an embargo, which will last until %s",
                     articleMd.getEmbargoLiftDate().format(DateTimeFormatter.ISO_LOCAL_DATE)));
             record.appendChild(dcEmbargoDesc);
+        }
+
+        return record;
+    }
+
+    /**
+     * Creates the Dublin Core metadata from the submission using the original DCMES schema.
+     * These contents explicitly match only those elements requested by JScholarship.  Includes:
+     * <ul>
+     *     <li>dc:title for the Manuscript</li>
+     *     <li>dc:publisher for the publisher name</li>
+     *     <li>dc:identifier.citation for the Manuscript</li>
+     *     <li>dc:contributor for each Person associated with the Manuscript</li>
+     *     <li>dc:description:abstract for the Manuscript</li>
+     *     <li>dc:description with the embargo lift date, if an embargo is on the Article</li>
+     * </ul>
+     * The returned Element will have a name {@code qualifieddc}, which has "special" meaning to DSpace.
+     * <p>
+     * Package-private for unit testing
+     * </p>
+     * @param submission
+     * @return
+     */
+    Element createDublinCoreMetadataDCMES(DepositSubmission submission) {
+        Document dcDocument = newDocument();
+
+        // Root <record> element
+        // TODO - What is the correct qualified name for DCMES data?
+        Element record = newRootElement(dcDocument, DC_NS, "qualifieddc");
+
+        dcDocument.appendChild(record);
+
+        // Attach a <dc:contributor> for each Person associated with the submission to the Manuscript metadata
+        DepositMetadata nimsMd = submission.getMetadata();
+        DepositMetadata.Manuscript manuscriptMd = nimsMd.getManuscriptMetadata();
+        DepositMetadata.Article articleMd = nimsMd.getArticleMetadata();
+        DepositMetadata.Journal journalMd = nimsMd.getJournalMetadata();
+
+        // Attach a <dc:title> for the Manuscript title
+        if (manuscriptMd.getTitle() != null) {
+            Element titleElement = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_TITLE));
+            titleElement.setTextContent(manuscriptMd.getTitle());
+            record.appendChild(titleElement);
+        } else {
+            throw new RuntimeException("No title found in the manuscript metadata!");
+        }
+
+        // Attach a <dc:description:abstract> for the manuscript, if one was provided
+        if (manuscriptMd.getMsAbstract() != null) {
+            Element description = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_DESCRIPTION));
+            record.appendChild(description);
+            Element msAbstractElement = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_ABSTRACT));
+            msAbstractElement.setTextContent(manuscriptMd.getMsAbstract());
+            description.appendChild(msAbstractElement);
+        }
+
+        // Attach a <dc:publisher> for the journal, if one was provided
+        if (journalMd != null && journalMd.getPublisherName() != null) {
+            Element publisher = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_PUBLISHER));
+            publisher.setTextContent(journalMd.getPublisherName());
+            record.appendChild(publisher);
+        }
+
+        // Begin building citation string
+        StringBuilder citationBldr = new StringBuilder();
+
+        // Attach a <dc:contributor> for each author of the manuscript and add authorIndex to citation
+        authorIndex = 0;
+        nimsMd.getPersons().forEach(p -> {
+            // Only include authorIndex, PIs and CoPIs as contributors
+            if (p.getType() != DepositMetadata.PERSON_TYPE.submitter) {
+                Element contributor = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CONTRIBUTOR));
+                contributor.setTextContent(p.getName());
+                record.appendChild(contributor);
+
+                // Citation: For author 0, add name.  For authorIndex 1 and 2, add comma then name.
+                // For author 3, add comma and "et al".  For later authorIndex, do nothing.
+                if (authorIndex == 0)
+                    citationBldr.append(p.getReversedName());
+                else if (authorIndex <= 2)
+                    citationBldr.append(", " + p.getReversedName());
+                else if (authorIndex == 3)
+                    citationBldr.append(", et al");
+                authorIndex++;
+            }
+        });
+        if (authorIndex == 0)
+            throw new RuntimeException("No authors found in the manuscript metadata!");
+        // Add period at end of author list in citation
+        citationBldr.append(".");
+
+        // Attach a <dc:identifier:citation> if not empty
+        // TODO - when we have it, add the publication date - after a single space, in parens, followed by "."
+        // article title - after single space, in double quotes with "." inside
+        if (articleMd != null && articleMd.getTitle() != null && ! articleMd.getTitle().isEmpty())
+            citationBldr.append(" \"" + articleMd.getTitle() + ".\"");
+        // journal title - after single space, followed by "."
+        if (journalMd != null && journalMd.getJournalTitle() != null && ! journalMd.getJournalTitle().isEmpty())
+            citationBldr.append(" " + journalMd.getJournalTitle() + ".");
+        // volume - after single space
+        if (articleMd != null && articleMd.getVolume() != null && ! articleMd.getVolume().isEmpty())
+            citationBldr.append(" " + articleMd.getVolume());
+        // issue - after single space, inside parens, followed by "."
+        if (articleMd != null && articleMd.getIssue() != null && ! articleMd.getIssue().isEmpty())
+            citationBldr.append(" (" + articleMd.getIssue() + ").");
+        // DOI - after single space, followed by "."
+        if (articleMd != null && articleMd.getDoi() != null)
+            citationBldr.append(" " + articleMd.getDoi().toString() + ".");
+
+        if (! citationBldr.toString().isEmpty()) {
+            Element identifier = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_IDENTIFIER));
+            record.appendChild(identifier);
+            Element citation = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CITATION));
+            citation.setTextContent(citationBldr.toString());
+            identifier.appendChild(citation);
         }
 
         return record;

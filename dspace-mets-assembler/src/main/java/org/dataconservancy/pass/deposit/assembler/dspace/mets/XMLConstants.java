@@ -102,11 +102,15 @@ class XMLConstants {
 
     static final String DC_DESCRIPTION = "description";
 
+    static final String DC_ABSTRACT = "abstract";
+
     static final String DC_IDENTIFIER = "identifier";
 
     static final String DC_SUBJECT = "subject";
 
     static final String DC_RIGHTS = "rights";
+
+    static final String DC_CITATION = "citation";
 
 
     /*

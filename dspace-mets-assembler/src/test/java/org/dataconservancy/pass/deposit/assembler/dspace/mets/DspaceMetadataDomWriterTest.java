@@ -155,15 +155,24 @@ public class DspaceMetadataDomWriterTest {
 
         DepositSubmission submission = mock(DepositSubmission.class);
         DepositMetadata mdHolder = mock(DepositMetadata.class);
-        DepositMetadata.Person contributorOne = mock(DepositMetadata.Person.class);
-        DepositMetadata.Person contributorTwo = mock(DepositMetadata.Person.class);
         DepositMetadata.Manuscript manuscript = mock(DepositMetadata.Manuscript.class);
         DepositMetadata.Journal journal = mock(DepositMetadata.Journal.class);
         DepositMetadata.Article article = mock(DepositMetadata.Article.class);
 
         when(submission.getMetadata()).thenReturn(mdHolder);
 
-        when(mdHolder.getPersons()).thenReturn(Arrays.asList(contributorOne, contributorTwo));
+        DepositMetadata.Person contributorOne = mock(DepositMetadata.Person.class);
+        DepositMetadata.Person contributorTwo = mock(DepositMetadata.Person.class);
+        DepositMetadata.Person contributorThree = mock(DepositMetadata.Person.class);
+        DepositMetadata.Person contributorFour = mock(DepositMetadata.Person.class);
+        List<DepositMetadata.Person> contributors = Arrays.asList(contributorOne, contributorTwo, contributorThree, contributorFour);
+        when(mdHolder.getPersons()).thenReturn(contributors);
+        for (DepositMetadata.Person contributor : contributors)
+        {
+            when(contributor.getName()).thenCallRealMethod();
+            when(contributor.getReversedName()).thenCallRealMethod();
+        }
+
         when(mdHolder.getManuscriptMetadata()).thenReturn(manuscript);
         when(mdHolder.getArticleMetadata()).thenReturn(article);
         when(mdHolder.getJournalMetadata()).thenReturn(journal);
@@ -172,6 +181,11 @@ public class DspaceMetadataDomWriterTest {
         when(contributorOne.getLastName()).thenReturn("Einstein");
         when(contributorTwo.getFirstName()).thenReturn("Stephen");
         when(contributorTwo.getLastName()).thenReturn("Hawking");
+        when(contributorThree.getFirstName()).thenReturn("John");
+        when(contributorThree.getMiddleName()).thenReturn("Q.");
+        when(contributorThree.getLastName()).thenReturn("Public");
+        when(contributorFour.getFirstName()).thenReturn("Jane");
+        when(contributorFour.getLastName()).thenReturn("Doe");
 
         when(manuscript.getTitle()).thenReturn("Two stupendous minds.");
         when(manuscript.getManuscriptUrl()).thenReturn(
@@ -180,9 +194,12 @@ public class DspaceMetadataDomWriterTest {
         when(manuscript.getMsAbstract()).thenReturn("This is an abstract for the manuscript, provided by the" +
                 " submitter.");
 
-        when(article.getTitle()).thenReturn("Two stupendous minds.");
+        when(article.getTitle()).thenReturn("Two stupendous minds");
         when(article.getDoi()).thenReturn(URI.create("https://dx.doi.org/123/456"));
         when(article.getEmbargoLiftDate()).thenReturn(ZonedDateTime.now());
+        when(article.getVolume()).thenReturn("1");
+        when(article.getIssue()).thenReturn("2");
+
         when(journal.getIssnPubTypes()).thenReturn(new HashMap<String, DepositMetadata.IssnPubType>() {
             {
                 put("1236-5678", new DepositMetadata.IssnPubType("1236-5678", JournalPublicationType.PPUB));
@@ -190,6 +207,7 @@ public class DspaceMetadataDomWriterTest {
         });
         when(journal.getJournalTitle()).thenReturn("American Journal of XYZ Research");
         when(journal.getJournalId()).thenReturn("Am J of XYZ Res");
+        when(journal.getPublisherName()).thenReturn("Super Publisher");
 
         underTest.addResource(r);
         underTest.addSubmission(submission);
@@ -473,7 +491,7 @@ public class DspaceMetadataDomWriterTest {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("No title found");
 
-        underTest.createDublinCoreMetadata(submission);
+        underTest.createDublinCoreMetadataDCMES(submission);
     }
 
     /**
