@@ -446,7 +446,9 @@ public class DspaceMetadataDomWriter {
                 Element contributor = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CONTRIBUTOR));
                 contributor.setTextContent(p.getName());
                 record.appendChild(contributor);
+            }
 
+            if (p.getType() == DepositMetadata.PERSON_TYPE.author) {
                 // Citation: For author 0, add name.  For authorIndex 1 and 2, add comma then name.
                 // For author 3, add comma and "et al".  For later authorIndex, do nothing.
                 if (authorIndex == 0)

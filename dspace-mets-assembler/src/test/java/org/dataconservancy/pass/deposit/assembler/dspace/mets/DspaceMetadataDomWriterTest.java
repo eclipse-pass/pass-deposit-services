@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,11 +56,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCTERMS_NS;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_ABSTRACT;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_HASVERSION;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_ABSTRACT;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CITATION;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CONTRIBUTOR;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_DESCRIPTION;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_IDENTIFIER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_TITLE;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DIM;
@@ -140,6 +139,32 @@ public class DspaceMetadataDomWriterTest {
     }
 
     /**
+     * Creates a Mockito object for the DepositMetadata.Person class using the provided names and type.
+     *
+     * @param first The person's first name
+     * @param middle The person's middle name, or null
+     * @param last The person's last name
+     * @param type The person's type (pi, copi, submitter, author)
+     * @return The newly created mock Person
+     */
+    private DepositMetadata.Person createMockPerson(String first, String middle, String last, DepositMetadata.PERSON_TYPE type) {
+        DepositMetadata.Person contributor = mock(DepositMetadata.Person.class);
+        when(contributor.getName()).thenCallRealMethod();
+        when(contributor.getReversedName()).thenCallRealMethod();
+
+        if (first != null)
+            when(contributor.getFirstName()).thenReturn(first);
+        if (middle != null)
+            when(contributor.getMiddleName()).thenReturn(middle);
+        if (last != null)
+            when(contributor.getLastName()).thenReturn(last);
+        if (type != null)
+            when(contributor.getType()).thenReturn(type);
+
+        return contributor;
+    }
+
+    /**
      * Writes a sample METS.xml file, and copies it to stderr if DEBUG is enabled
      * @throws Exception
      */
@@ -161,31 +186,16 @@ public class DspaceMetadataDomWriterTest {
 
         when(submission.getMetadata()).thenReturn(mdHolder);
 
-        DepositMetadata.Person contributorOne = mock(DepositMetadata.Person.class);
-        DepositMetadata.Person contributorTwo = mock(DepositMetadata.Person.class);
-        DepositMetadata.Person contributorThree = mock(DepositMetadata.Person.class);
-        DepositMetadata.Person contributorFour = mock(DepositMetadata.Person.class);
-        List<DepositMetadata.Person> contributors = Arrays.asList(contributorOne, contributorTwo, contributorThree, contributorFour);
+        DepositMetadata.Person contributor1 = createMockPerson("Albert", null, "Einstein", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person contributor2 = createMockPerson("Stephen", null, "Hawking", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person contributor3  = createMockPerson("John", "Q.", "Public", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person contributor4  = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
+        List<DepositMetadata.Person> contributors = Arrays.asList(contributor1, contributor2, contributor3, contributor4);
         when(mdHolder.getPersons()).thenReturn(contributors);
-        for (DepositMetadata.Person contributor : contributors)
-        {
-            when(contributor.getName()).thenCallRealMethod();
-            when(contributor.getReversedName()).thenCallRealMethod();
-        }
 
         when(mdHolder.getManuscriptMetadata()).thenReturn(manuscript);
         when(mdHolder.getArticleMetadata()).thenReturn(article);
         when(mdHolder.getJournalMetadata()).thenReturn(journal);
-
-        when(contributorOne.getFirstName()).thenReturn("Albert");
-        when(contributorOne.getLastName()).thenReturn("Einstein");
-        when(contributorTwo.getFirstName()).thenReturn("Stephen");
-        when(contributorTwo.getLastName()).thenReturn("Hawking");
-        when(contributorThree.getFirstName()).thenReturn("John");
-        when(contributorThree.getMiddleName()).thenReturn("Q.");
-        when(contributorThree.getLastName()).thenReturn("Public");
-        when(contributorFour.getFirstName()).thenReturn("Jane");
-        when(contributorFour.getLastName()).thenReturn("Doe");
 
         when(manuscript.getTitle()).thenReturn("Two stupendous minds.");
         when(manuscript.getManuscriptUrl()).thenReturn(
@@ -408,19 +418,6 @@ public class DspaceMetadataDomWriterTest {
      */
     @Test
     public void testCreateDublinCoreMetadata() throws Exception {
-        DepositMetadata.Person person1 = mock(DepositMetadata.Person.class);
-        when(person1.getName()).thenReturn("Jane Doe");
-        when(person1.getType()).thenReturn(DepositMetadata.PERSON_TYPE.author);
-
-        DepositMetadata.Person person2 = mock(DepositMetadata.Person.class);
-        when(person2.getName()).thenReturn("John Doe");
-        when(person2.getType()).thenReturn(DepositMetadata.PERSON_TYPE.pi);
-
-        // Submitter - should not show up in metadata's contributor list
-        DepositMetadata.Person person3 = mock(DepositMetadata.Person.class);
-        when(person3.getName()).thenReturn("John Q Public");
-        when(person3.getType()).thenReturn(DepositMetadata.PERSON_TYPE.submitter);
-
         DepositMetadata md = mock(DepositMetadata.class);
         DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
         String msAbs = "This is the manuscript abstract";
@@ -435,9 +432,14 @@ public class DspaceMetadataDomWriterTest {
         when(artMd.getDoi()).thenReturn(URI.create(artDoi));
         when(md.getArticleMetadata()).thenReturn(artMd);
         when(md.getManuscriptMetadata()).thenReturn(msMd);
-        when(md.getPersons()).thenReturn(Arrays.asList(person1, person2));
         DepositSubmission submission = mock(DepositSubmission.class);
         when(submission.getMetadata()).thenReturn(md);
+
+        // Only Jane Doe (author) will appear in the citation.
+        DepositMetadata.Person person1 = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person person2 = createMockPerson("John", null, "Doe", DepositMetadata.PERSON_TYPE.pi);
+        List<DepositMetadata.Person> contributors = Arrays.asList(person1, person2);
+        when(md.getPersons()).thenReturn(contributors);
 
         underTest.mapDmdSec(submission);
 
@@ -466,10 +468,18 @@ public class DspaceMetadataDomWriterTest {
         assertEquals("John Doe", contributor2.getTextContent());
 
         assertEquals(msTitle, qdc.getElementsByTagNameNS(DC_NS, DC_TITLE).item(0).getTextContent());
-        assertEquals(msAbs, qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_ABSTRACT).item(0).getTextContent());
-        assertTrue(qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(0).getTextContent().contains
-                (DateTimeFormatter.ISO_LOCAL_DATE.format(embargoLiftDate)));
-        assertEquals(artDoi, qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_HASVERSION).item(0).getTextContent());
+        Element description = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(0);
+        assertEquals(msAbs, description.getElementsByTagNameNS(DC_NS, DC_ABSTRACT).item(0).getTextContent());
+        Element identifier = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_IDENTIFIER).item(0);
+        assertNotNull(identifier.getElementsByTagNameNS(DC_NS, DC_CITATION).item(0).getTextContent());
+
+        // These tests were targeted at the Qualified version of the DC metadata
+//        description = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(1);
+//        assertTrue(description.getElementsByTagNameNS(DC_NS, DC_ABSTRACT).item(0).getTextContent().contains
+//                (DateTimeFormatter.ISO_LOCAL_DATE.format(embargoLiftDate)));
+//        assertTrue(qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(0).getTextContent().contains
+//                (DateTimeFormatter.ISO_LOCAL_DATE.format(embargoLiftDate)));
+//        assertEquals(artDoi, qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_HASVERSION).item(0).getTextContent());
     }
 
     /**
@@ -494,13 +504,33 @@ public class DspaceMetadataDomWriterTest {
         underTest.createDublinCoreMetadataDCMES(submission);
     }
 
+    @Test
+    public void testMissingAuthors() throws Exception {
+        DepositMetadata md = mock(DepositMetadata.class);
+        DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
+        String msAbs = "This is the manuscript abstract";
+        when(msMd.getMsAbstract()).thenReturn(msAbs);
+        when(msMd.getTitle()).thenReturn("This is the manuscript title");
+        when(md.getManuscriptMetadata()).thenReturn(msMd);
+        DepositSubmission submission = mock(DepositSubmission.class);
+        when(submission.getMetadata()).thenReturn(md);
+        // Submission has no authors
+
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage("No authors found");
+
+        underTest.createDublinCoreMetadataDCMES(submission);
+    }
+
     /**
      * Insures the proper dim metadata is written when an embargo date is present on article metadata.
      * Insures that the dim metadata are in a different group (different groupid) than the dc metadata.
      *
+     * Test is currently disabled, as the embargo date is not included in the DCMES metadata.
+     *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void testCreateEmbargoMd() throws Exception {
         DepositMetadata md = mock(DepositMetadata.class);
         DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
@@ -513,6 +543,8 @@ public class DspaceMetadataDomWriterTest {
         when(md.getManuscriptMetadata()).thenReturn(msMd);
         DepositSubmission submission = mock(DepositSubmission.class);
         when(submission.getMetadata()).thenReturn(md);
+        DepositMetadata.Person person1 = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
+        when(md.getPersons()).thenReturn(Arrays.asList(person1));
 
         underTest.mapDmdSec(submission);
 
