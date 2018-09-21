@@ -466,7 +466,9 @@ public class DspaceMetadataDomWriter {
         citationBldr.append(".");
 
         // Attach a <dc:identifier:citation> if not empty
-        // TODO - when we have it, add the publication date - after a single space, in parens, followed by "."
+        // publication date - after a single space, in parens, followed by "."
+        if (journalMd != null && journalMd.getPublicationDate() != null && ! journalMd.getPublicationDate().isEmpty())
+            citationBldr.append(" (" + journalMd.getPublicationDate() + ").");
         // article title - after single space, in double quotes with "." inside
         if (articleMd != null && articleMd.getTitle() != null && ! articleMd.getTitle().isEmpty())
             citationBldr.append(" \"" + articleMd.getTitle() + ".\"");

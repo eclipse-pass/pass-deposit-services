@@ -223,6 +223,11 @@ public class DepositMetadata {
         public String publisherName;
 
         /**
+         * Date of publication
+         */
+        public String publicationDate;
+
+        /**
          * ISSN mapped to journal publication type
          */
         public Map<String, IssnPubType> issnPubTypes = new HashMap<>(2);
@@ -254,6 +259,10 @@ public class DepositMetadata {
         public String getPublisherName() { return publisherName; }
 
         public void setPublisherName(String publisherName) { this.publisherName = publisherName; }
+
+        public String getPublicationDate() { return publicationDate; }
+
+        public void setPublicationDate(String publicationDate) { this.publicationDate = publicationDate; }
 
         public Map<String, IssnPubType> getIssnPubTypes() {
             return issnPubTypes;

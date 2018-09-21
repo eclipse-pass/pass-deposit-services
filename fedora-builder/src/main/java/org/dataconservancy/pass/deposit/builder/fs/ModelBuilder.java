@@ -73,6 +73,8 @@ abstract class ModelBuilder {
 
     private static final String PUBLISHER_KEY = "publisher";
 
+    private static final String PUBLICATION_DATE_KEY = "publicationDate";
+
     private static final String COMMON_ID_KEY = "common";
 
     private static final String DATA_KEY = "data";
@@ -265,6 +267,9 @@ abstract class ModelBuilder {
 
         getStringProperty(submissionData, PUBLISHER_KEY)
                 .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
+
+        getStringProperty(submissionData, PUBLICATION_DATE_KEY)
+                .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
     }
 
     private void processPmcMetadata(DepositMetadata metadata, JsonObject submissionData) {

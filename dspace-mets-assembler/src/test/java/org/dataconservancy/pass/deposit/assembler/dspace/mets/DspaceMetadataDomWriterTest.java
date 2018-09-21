@@ -218,6 +218,7 @@ public class DspaceMetadataDomWriterTest {
         when(journal.getJournalTitle()).thenReturn("American Journal of XYZ Research");
         when(journal.getJournalId()).thenReturn("Am J of XYZ Res");
         when(journal.getPublisherName()).thenReturn("Super Publisher");
+        when(journal.getPublicationDate()).thenReturn("2018-09-12");
 
         underTest.addResource(r);
         underTest.addSubmission(submission);
