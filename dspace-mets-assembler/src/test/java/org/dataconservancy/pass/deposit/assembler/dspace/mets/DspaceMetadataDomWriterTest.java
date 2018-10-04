@@ -56,11 +56,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_ABSTRACT;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CITATION;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCTERMS_NS;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_ABSTRACT;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_BIBLIOCITATION;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CONTRIBUTOR;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_DESCRIPTION;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_IDENTIFIER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_TITLE;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DIM;
@@ -469,10 +468,8 @@ public class DspaceMetadataDomWriterTest {
         assertEquals("John Doe", contributor2.getTextContent());
 
         assertEquals(msTitle, qdc.getElementsByTagNameNS(DC_NS, DC_TITLE).item(0).getTextContent());
-        Element description = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(0);
-        assertEquals(msAbs, description.getElementsByTagNameNS(DC_NS, DC_ABSTRACT).item(0).getTextContent());
-        Element identifier = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_IDENTIFIER).item(0);
-        assertNotNull(identifier.getElementsByTagNameNS(DC_NS, DC_CITATION).item(0).getTextContent());
+        assertEquals(msAbs, qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_ABSTRACT).item(0).getTextContent());
+        assertNotNull(qdc.getElementsByTagNameNS(DCTERMS_NS, DCT_BIBLIOCITATION).item(0).getTextContent());
 
         // These tests were targeted at the Qualified version of the DC metadata
 //        description = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_DESCRIPTION).item(1);

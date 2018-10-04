@@ -55,12 +55,10 @@ import static org.dataconservancy.pass.deposit.assembler.dspace.mets.MetsMdType.
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.MetsMdType.OTHER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCTERMS_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_ABSTRACT;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_BIBLIOCITATION;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DCT_HASVERSION;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_ABSTRACT;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CITATION;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_CONTRIBUTOR;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_DESCRIPTION;
-import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_IDENTIFIER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_NS;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_PUBLISHER;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.XMLConstants.DC_TITLE;
@@ -421,11 +419,9 @@ public class DspaceMetadataDomWriter {
 
         // Attach a <dc:description:abstract> for the manuscript, if one was provided
         if (manuscriptMd.getMsAbstract() != null) {
-            Element description = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_DESCRIPTION));
-            record.appendChild(description);
-            Element msAbstractElement = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_ABSTRACT));
+            Element msAbstractElement = dcDocument.createElementNS(DCTERMS_NS, asQname(DCTERMS_NS, DCT_ABSTRACT));
             msAbstractElement.setTextContent(manuscriptMd.getMsAbstract());
-            description.appendChild(msAbstractElement);
+            record.appendChild(msAbstractElement);
         }
 
         // Attach a <dc:publisher> for the journal, if one was provided
@@ -486,11 +482,9 @@ public class DspaceMetadataDomWriter {
             citationBldr.append(" " + articleMd.getDoi().toString() + ".");
 
         if (! citationBldr.toString().isEmpty()) {
-            Element identifier = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_IDENTIFIER));
-            record.appendChild(identifier);
-            Element citation = dcDocument.createElementNS(DC_NS, asQname(DC_NS, DC_CITATION));
+            Element citation = dcDocument.createElementNS(DCTERMS_NS, asQname(DCTERMS_NS, DCT_BIBLIOCITATION));
             citation.setTextContent(citationBldr.toString());
-            identifier.appendChild(citation);
+            record.appendChild(citation);
         }
 
         return record;
