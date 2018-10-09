@@ -140,13 +140,15 @@ public class DspaceMetadataDomWriterTest {
     /**
      * Creates a Mockito object for the DepositMetadata.Person class using the provided names and type.
      *
-     * @param first The person's first name
+     * @param first The person's first name, or null
      * @param middle The person's middle name, or null
-     * @param last The person's last name
+     * @param last The person's last name, or null
+     * @param full The person's full name, or null
      * @param type The person's type (pi, copi, submitter, author)
      * @return The newly created mock Person
      */
-    private DepositMetadata.Person createMockPerson(String first, String middle, String last, DepositMetadata.PERSON_TYPE type) {
+    private DepositMetadata.Person createMockPerson(String first, String middle, String last, String full,
+                                                    DepositMetadata.PERSON_TYPE type) {
         DepositMetadata.Person contributor = mock(DepositMetadata.Person.class);
         when(contributor.getName()).thenCallRealMethod();
         when(contributor.getReversedName()).thenCallRealMethod();
@@ -157,6 +159,8 @@ public class DspaceMetadataDomWriterTest {
             when(contributor.getMiddleName()).thenReturn(middle);
         if (last != null)
             when(contributor.getLastName()).thenReturn(last);
+        if (full != null)
+            when(contributor.getFullName()).thenReturn(full);
         if (type != null)
             when(contributor.getType()).thenReturn(type);
 
@@ -185,11 +189,12 @@ public class DspaceMetadataDomWriterTest {
 
         when(submission.getMetadata()).thenReturn(mdHolder);
 
-        DepositMetadata.Person contributor1 = createMockPerson("Albert", null, "Einstein", DepositMetadata.PERSON_TYPE.author);
-        DepositMetadata.Person contributor2 = createMockPerson("Stephen", null, "Hawking", DepositMetadata.PERSON_TYPE.author);
-        DepositMetadata.Person contributor3  = createMockPerson("John", "Q.", "Public", DepositMetadata.PERSON_TYPE.author);
-        DepositMetadata.Person contributor4  = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
-        List<DepositMetadata.Person> contributors = Arrays.asList(contributor1, contributor2, contributor3, contributor4);
+        // Test persons with only first/middle/last names and with only full names and with both
+        List<DepositMetadata.Person> contributors = new ArrayList<DepositMetadata.Person>();
+        contributors.add(createMockPerson("John", "Q.", "Public", null, DepositMetadata.PERSON_TYPE.author));
+        contributors.add(createMockPerson(null, null, null, "Jane Doe", DepositMetadata.PERSON_TYPE.author));
+        contributors.add(createMockPerson("Albert", null, "Einstein", "Albert Einstein", DepositMetadata.PERSON_TYPE.author));
+        contributors.add(createMockPerson("Stephen", null, "Hawking", "Stephen Hawking", DepositMetadata.PERSON_TYPE.author));
         when(mdHolder.getPersons()).thenReturn(contributors);
 
         when(mdHolder.getManuscriptMetadata()).thenReturn(manuscript);
@@ -436,8 +441,8 @@ public class DspaceMetadataDomWriterTest {
         when(submission.getMetadata()).thenReturn(md);
 
         // Only Jane Doe (author) will appear in the citation.
-        DepositMetadata.Person person1 = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
-        DepositMetadata.Person person2 = createMockPerson("John", null, "Doe", DepositMetadata.PERSON_TYPE.pi);
+        DepositMetadata.Person person1 = createMockPerson(null, null, null, "Jane Doe", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person person2 = createMockPerson("John", null, "Doe", null, DepositMetadata.PERSON_TYPE.pi);
         List<DepositMetadata.Person> contributors = Arrays.asList(person1, person2);
         when(md.getPersons()).thenReturn(contributors);
 
@@ -541,7 +546,7 @@ public class DspaceMetadataDomWriterTest {
         when(md.getManuscriptMetadata()).thenReturn(msMd);
         DepositSubmission submission = mock(DepositSubmission.class);
         when(submission.getMetadata()).thenReturn(md);
-        DepositMetadata.Person person1 = createMockPerson("Jane", null, "Doe", DepositMetadata.PERSON_TYPE.author);
+        DepositMetadata.Person person1 = createMockPerson("Jane", null, "Doe", null, DepositMetadata.PERSON_TYPE.author);
         when(md.getPersons()).thenReturn(Arrays.asList(person1));
 
         underTest.mapDmdSec(submission);

@@ -394,7 +394,7 @@ public class DepositMetadata {
                     return String.format("%s, %s", getLastName(), getFirstName());
                 }
             }
-            return "";
+            return getFullName();
         }
 
         /**
