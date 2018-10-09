@@ -35,10 +35,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.IN_PROGRESS;
 
 /**
@@ -163,7 +168,12 @@ public class SubmissionProcessor implements Consumer<Submission> {
                     Packager packager = null;
                     try {
                         deposit = createDeposit(updatedS, repo);
-                        packager = packagerRegistry.get(repo.getName());
+
+                        for (final String key : getLookupKeys(repo)) {
+                            if ((packager = packagerRegistry.get(key)) != null)
+                                break;
+                        }
+                        
                         if (packager == null) {
                             throw new NullPointerException(format("No Packager found for tuple [%s, %s, %s]: " +
                                             "Missing Packager for Repository named '%s'",
@@ -178,6 +188,23 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
                     depositTaskHelper.submitDeposit(updatedS, depositSubmission, repo, deposit, packager);
                 });
+    }
+    
+    static Collection<String> getLookupKeys(Repository repo) {
+        final List<String> keys = new ArrayList<>();
+        
+        ofNullable(repo.getName()).ifPresent(keys::add);
+        ofNullable(repo.getRepositoryKey()).ifPresent(keys::add);
+        ofNullable(repo.getId()).map(Object::toString).ifPresent(keys::add);
+        
+        String path = ofNullable(repo.getId()).map(URI::getPath).orElse("");
+
+        while (path.contains("/")) {
+            path = path.substring(path.indexOf("/") + 1);
+            keys.add(path);
+        }
+
+        return keys;
     }
 
     private Deposit createDeposit(Submission submission, Repository repo) {

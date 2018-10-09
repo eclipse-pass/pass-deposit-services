@@ -31,18 +31,21 @@ import org.springframework.core.task.TaskRejectedException;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -419,6 +422,34 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         verify(packagerRegistry).get(any());
         verify(passClient).createAndReadResource(any(Deposit.class), eq(Deposit.class));
         verifyZeroInteractions(taskExecutor);
+    }
+    
+    /* Assure the right repo keys are used for lookup */
+    @Test
+    public void lookupTest() {
+        Repository repo = new Repository();
+        repo.setId(URI.create("http://example.org/a/b/c"));
+        repo.setName("The name");
+        repo.setRepositoryKey("the key");
+        
+        Collection<String> keys = getLookupKeys(repo);
+        
+        assertTrue(keys.contains(repo.getId().toString()));
+        assertTrue(keys.contains(repo.getName()));
+        assertTrue(keys.contains(repo.getRepositoryKey()));
+        assertTrue(keys.contains("a/b/c"));
+        assertTrue(keys.contains("b/c"));
+        assertTrue(keys.contains("c"));
+    }
+    
+    /* Just to make sure things don't blow up with null values */
+    @Test
+    public void lookupNullsTest() {
+        Repository repo = new Repository();
+        
+        Collection<String> keys = getLookupKeys(repo);
+        
+        assertTrue(keys.isEmpty());
     }
 
 }
