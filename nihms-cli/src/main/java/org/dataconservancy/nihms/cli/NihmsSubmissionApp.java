@@ -119,7 +119,7 @@ public class NihmsSubmissionApp {
     void run(SubmissionEngine engine) throws NihmsCliException {
         try {
             if (sampleDataFile != null) {
-                engine.submit(sampleDataFile.getCanonicalPath());
+                engine.submit(sampleDataFile.toURI().toString());
             } else {
                 throw new NihmsCliException("No data was supplied for the submission!");
             }
