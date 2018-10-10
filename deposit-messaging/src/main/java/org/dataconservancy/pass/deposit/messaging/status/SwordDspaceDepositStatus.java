@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
 
 import java.net.URI;
 import java.util.stream.Stream;

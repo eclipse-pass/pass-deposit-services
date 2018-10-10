@@ -16,7 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;

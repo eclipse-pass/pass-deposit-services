@@ -19,9 +19,9 @@ import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.SUBMISSION_RESOURCE;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.SUBMISSION_RESOURCE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;

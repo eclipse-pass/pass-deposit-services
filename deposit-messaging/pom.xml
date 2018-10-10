@@ -86,6 +86,22 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.dataconservancy.pass.support.messaging</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.support.messaging</groupId>
+            <artifactId>cri</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.support.messaging</groupId>
+            <artifactId>constants</artifactId>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>

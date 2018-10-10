@@ -19,6 +19,8 @@ import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -33,7 +33,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.Indexer.DEPOSIT_STATUS;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 /**

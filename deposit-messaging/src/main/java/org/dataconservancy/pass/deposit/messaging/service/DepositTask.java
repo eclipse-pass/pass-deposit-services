@@ -23,8 +23,8 @@ import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction.CriticalResult;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.RepositoryCopy;

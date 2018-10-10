@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
-import static org.dataconservancy.pass.deposit.messaging.support.Constants.PassType.DEPOSIT_RESOURCE;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.DEPOSIT_RESOURCE;
 
 /**
  * Accepts messages that represent the creation or modification of a PASS {@link Deposit}.  Messages that do not meet

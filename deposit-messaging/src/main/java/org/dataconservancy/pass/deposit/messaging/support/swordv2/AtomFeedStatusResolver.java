@@ -22,7 +22,7 @@ import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
-import org.dataconservancy.pass.deposit.messaging.support.Constants;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;

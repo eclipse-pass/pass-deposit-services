@@ -21,7 +21,7 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;

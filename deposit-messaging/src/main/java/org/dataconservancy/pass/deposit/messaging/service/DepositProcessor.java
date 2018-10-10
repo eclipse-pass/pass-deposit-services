@@ -19,7 +19,7 @@ package org.dataconservancy.pass.deposit.messaging.service;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.support.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
