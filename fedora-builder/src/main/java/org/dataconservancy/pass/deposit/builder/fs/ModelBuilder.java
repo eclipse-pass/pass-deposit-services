@@ -65,7 +65,15 @@ abstract class ModelBuilder {
 
     private static final String JOURNAL_TITLE_KEY = "journal-title";
 
+    private static final String VOLUME_KEY = "volume";
+
+    private static final String ISSUE_KEY = "issue";
+
     private static final String DOI_KEY = "doi";
+
+    private static final String PUBLISHER_KEY = "publisher";
+
+    private static final String PUBLICATION_DATE_KEY = "publicationDate";
 
     private static final String COMMON_ID_KEY = "common";
 
@@ -195,6 +203,12 @@ abstract class ModelBuilder {
         getStringProperty(submissionData, JOURNAL_TITLE_KEY)
                 .ifPresent(jTitle -> metadata.getJournalMetadata().setJournalTitle(jTitle));
 
+        getStringProperty(submissionData, VOLUME_KEY)
+                .ifPresent(volume -> metadata.getArticleMetadata().setVolume(volume));
+
+        getStringProperty(submissionData, ISSUE_KEY)
+                .ifPresent(issue -> metadata.getArticleMetadata().setIssue(issue));
+
         getArrayProperty(submissionData, AUTHORS_KEY).ifPresent(authors -> {
             authors.forEach(authorElement -> {
                 getStringProperty(authorElement.getAsJsonObject(), AUTHOR_KEY)
@@ -250,6 +264,12 @@ abstract class ModelBuilder {
                 throw new RuntimeException(im.getMessage(), im);
             }
         });
+
+        getStringProperty(submissionData, PUBLISHER_KEY)
+                .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
+
+        getStringProperty(submissionData, PUBLICATION_DATE_KEY)
+                .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
     }
 
     private void processPmcMetadata(DepositMetadata metadata, JsonObject submissionData) {

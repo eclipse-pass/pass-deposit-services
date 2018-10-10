@@ -218,6 +218,16 @@ public class DepositMetadata {
         public String journalTitle;
 
         /**
+         * Name of publisher
+         */
+        public String publisherName;
+
+        /**
+         * Date of publication
+         */
+        public String publicationDate;
+
+        /**
          * ISSN mapped to journal publication type
          */
         public Map<String, IssnPubType> issnPubTypes = new HashMap<>(2);
@@ -244,9 +254,15 @@ public class DepositMetadata {
             return journalTitle;
         }
 
-        public void setJournalTitle(String journalTitle) {
-            this.journalTitle = journalTitle;
-        }
+        public void setJournalTitle(String journalTitle) { this.journalTitle = journalTitle; }
+
+        public String getPublisherName() { return publisherName; }
+
+        public void setPublisherName(String publisherName) { this.publisherName = publisherName; }
+
+        public String getPublicationDate() { return publicationDate; }
+
+        public void setPublicationDate(String publicationDate) { this.publicationDate = publicationDate; }
 
         public Map<String, IssnPubType> getIssnPubTypes() {
             return issnPubTypes;
@@ -275,6 +291,16 @@ public class DepositMetadata {
         public URI doi;
 
         /**
+         * The publication volume in which the article appears
+         */
+        public String volume;
+
+        /**
+         * The publication's issue in which the article appears
+         */
+        public String issue;
+
+        /**
          * The title of the article
          */
         public String title;
@@ -284,6 +310,14 @@ public class DepositMetadata {
         public String getTitle() { return title; }
 
         public void setTitle(String title) { this.title = title; }
+
+        public String getVolume() { return volume; }
+
+        public void setVolume(String volume) { this.volume = volume; }
+
+        public String getIssue() { return issue; }
+
+        public void setIssue(String issue) { this.issue = issue; }
 
         public URI getDoi() {
             return doi;
@@ -331,7 +365,7 @@ public class DepositMetadata {
         /**
          * Returns the "total" name for the person, regardless of how that name was supplied.
          * If a "full" name (single string) was supplied, it will be returned.
-         * Othewise, a name will be constructed from the supplied first/middle/last names.
+         * Otherwise, a name will be constructed from the supplied first/middle/last names.
          * @return the complete name for the person, or empty string if none assigned.
          */
         public String getName() {
@@ -345,6 +379,22 @@ public class DepositMetadata {
                 }
             }
             return "";
+        }
+
+        /**
+         * Returns the last-name-first version of the "total" name for a person
+         * whose name was supplied as a combination of a first, a last and an optional middle name.
+         * @return the complete name for the person, or empty string if none assigned.
+         */
+        public String getReversedName() {
+            if (getFirstName() != null && getLastName() != null) {
+                if (getMiddleName() != null) {
+                    return String.format("%s, %s %s", getLastName(), getFirstName(), getMiddleName());
+                } else {
+                    return String.format("%s, %s", getLastName(), getFirstName());
+                }
+            }
+            return getFullName();
         }
 
         /**

@@ -48,6 +48,7 @@ import java.util.Map;
 public class FilesystemModelBuilderTest {
 
     private static final String EXPECTED_TITLE = "Food & Function";
+    private static final String EXPECTED_PUB_DATE = "2018-09-12";
 
     private static final Map<String, JournalPublicationType> EXPECTED_ISSN_PUBTYPES =
             new HashMap<String, JournalPublicationType>() {
@@ -126,6 +127,7 @@ public class FilesystemModelBuilderTest {
         // Confirm that some values were set correctly from the Submission metadata
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
         assertEquals(EXPECTED_TITLE, journalMetadata.getJournalTitle());
+        assertEquals(EXPECTED_PUB_DATE, journalMetadata.getPublicationDate());
         journalMetadata.getIssnPubTypes().values().forEach(pubType -> {
             assertTrue(EXPECTED_ISSN_PUBTYPES.containsKey(pubType.issn));
             assertEquals(EXPECTED_ISSN_PUBTYPES.get(pubType.issn), pubType.pubType);
