@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Arrays;
 
+import static org.dataconservancy.pass.model.Submission.SubmissionStatus.SUBMITTED;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -106,7 +107,8 @@ public class IndexSmokeIT extends BaseIT {
         Submission submission = new Submission();
         submission.setSource(Submission.Source.PASS);
         submission.setSubmitted(Boolean.TRUE);
-        submission.setUser(userUri);
+        submission.setSubmitter(userUri);
+        submission.setSubmissionStatus(SUBMITTED);
         submission.setMetadata("{ \"key\": \"value\" }");
         submission.setRepositories(Arrays.asList(repoNihUri, repoJsUri));
 

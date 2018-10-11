@@ -212,7 +212,7 @@ public class PassJsonFedoraAdapter {
                 submissionUri = uriMap.get(oldUri);
                 Submission submission = (Submission)entity;
                 submission.setPublication(uriMap.get(submission.getPublication()));
-                submission.setUser(uriMap.get(submission.getUser()));
+                submission.setSubmitter(uriMap.get(submission.getSubmitter()));
                 submission.setRepositories(getUpdatedUris(uriMap, submission.getRepositories()));
                 submission.setGrants(getUpdatedUris(uriMap, submission.getGrants()));
             } else if (entity instanceof Grant) {
@@ -359,8 +359,8 @@ public class PassJsonFedoraAdapter {
 
         Submission submission = client.readResource(submissionUri, Submission.class);
         entities.put(submissionUri, submission);
-        User user = client.readResource(submission.getUser(), User.class);
-        entities.put(submission.getUser(), user);
+        User user = client.readResource(submission.getSubmitter(), User.class);
+        entities.put(submission.getSubmitter(), user);
 
         Publication publication = client.readResource(submission.getPublication(), Publication.class);
         entities.put(submission.getPublication(), publication);
