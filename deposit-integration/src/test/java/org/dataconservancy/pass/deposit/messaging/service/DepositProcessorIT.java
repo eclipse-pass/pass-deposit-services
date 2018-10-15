@@ -15,6 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import java.io.InputStream;
+
+import java.net.URI;
+
+import java.util.Collection;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
@@ -22,46 +31,40 @@ import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import submissions.SubmissionResourceUtil;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Collection;
+import submissions.SubmissionResourceUtil;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Elliot Metsger (emetsger@jhu.edu)
+ * @author Karen Hanson (karen.hanson@jhu.edu)
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
 @Import({DepositConfig.class, JmsConfig.class})
-public class SubmissionProcessorIT extends AbstractSubmissionIT {
+public class DepositProcessorIT extends AbstractSubmissionIT {
 
-    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission11");
-
+    private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission12");
+    
     @Override
     protected InputStream getSubmissionResources() {
         return SubmissionResourceUtil.lookupStream(SUBMISSION_RESOURCES);
     }
 
     @Test
-    public void smokeSubmission() throws Exception {
+    public void submissionStatusChangeCompleteTest() throws Exception {
 
         assertEquals(Boolean.FALSE, submission.getSubmitted());
         assertTrue(getFileUris(submission, passClient).size() > 0);
@@ -82,7 +85,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                 depositUrisCondition.awaitAndVerify(depositUris ->
                         submission.getRepositories().size() == depositUris.size()));
 
-        // 2. The Deposit resources should be in a SUBMITTED (for PubMed Central) or ACCEPTED (for JScholarship) state
+        // 2. The Deposit resources should be ACCEPTED state
 
         Condition<Deposit.DepositStatus> j10pStatusCondition = new Condition<>(() -> {
             Repository j10p = repositoryForName(submission, J10P_REPO_NAME);
@@ -90,17 +93,8 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
             return j10pDeposit.getDepositStatus();
         }, "J10P Deposit Status");
 
-        Condition<Deposit.DepositStatus> pubMedStatusCondition = new Condition<>(() -> {
-            Repository pmc = repositoryForName(submission, PMC_REPO_NAME);
-            Deposit pmcDeposit = depositForRepositoryUri(submission, pmc.getId());
-            return pmcDeposit.getDepositStatus();
-        }, "PMC Deposit Status");
-
         assertTrue("Deposit resource with unexpected status for " + J10P_REPO_NAME,
                 j10pStatusCondition.awaitAndVerify(status -> ACCEPTED == status));
-
-        assertTrue("Deposit resource with unexpected status for " + PMC_REPO_NAME,
-                pubMedStatusCondition.awaitAndVerify(status -> SUBMITTED == status));
 
         // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository like JScholarship) then a
         // non-null 'depositStatusRef' should be present, and its RepositoryCopy should be COMPLETE
@@ -119,17 +113,19 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertTrue("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy",
                 repositoryCopyCondition.awaitAndVerify(repoCopy -> COMPLETE == repoCopy.getCopyStatus()));
 
-        // 2b. If the Repository for the Deposit is for PubMed Central, then the 'depositStatusRef' should be null, and
-        // the status of the Deposit should be SUBMITTED, and there should be no RepositoryCopy
+        //3. SubmissionStatus should be changed to COMPLETE, AggregatedDepositStatus to ACCEPTED
+        
+        Condition<Submission> submissionStatusCondition = new Condition<>(() -> 
+            passClient.readResource(submission.getId(), Submission.class), "Get updated Submission");
 
-        Repository pmcRepo = repositoryForName(submission, PMC_REPO_NAME);
-        Deposit pmcDeposit = depositForRepositoryUri(submission, pmcRepo.getId());
+        assertTrue("Expected an aggregatedDepositStatus of ACCEPTED", 
+                   submissionStatusCondition.awaitAndVerify(sub -> 
+                       AggregatedDepositStatus.ACCEPTED == sub.getAggregatedDepositStatus()));
 
-        assertNull("Expected a null deposit status reference for " + PMC_REPO_NAME,
-                pmcDeposit.getDepositStatusRef());
-        assertEquals(Deposit.DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
-        assertNull("Expected a null RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
-
+        assertTrue("Expected a submissionStatus of COMPLETE", 
+                   submissionStatusCondition.awaitAndVerify(sub -> 
+                       SubmissionStatus.COMPLETE == sub.getSubmissionStatus()));
+        
     }
 
 }

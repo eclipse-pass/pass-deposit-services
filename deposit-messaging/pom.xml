@@ -168,6 +168,11 @@
 
         <dependency>
             <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-status-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
             <artifactId>pass-json-adapter</artifactId>
         </dependency>
 
