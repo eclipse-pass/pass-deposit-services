@@ -336,7 +336,7 @@ abstract class ModelBuilder {
         submission.setName(submissionEntity.getId().toString());
 
         // Data from the Submission's user resource
-        User userEntity = (User)entities.get(submissionEntity.getUser());
+        User userEntity = (User)entities.get(submissionEntity.getSubmitter());
         persons.add(createPerson(userEntity, DepositMetadata.PERSON_TYPE.submitter));
 
         // As of 5/14/18, the following data is available from both the Submission metadata

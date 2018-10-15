@@ -64,7 +64,8 @@ public abstract class AbstractSubmissionIT {
             "{\n" +
             "   \"@id\": \"%s\",\n" +
             "   \"@context\": \"%s\",\n" +
-            "   \"submitted\": \"true\"\n" +
+            "   \"submitted\": \"true\",\n" +
+            "   \"submissionStatus\": \"submitted\"\n" +
             "}";
 
     protected Submission submission;
