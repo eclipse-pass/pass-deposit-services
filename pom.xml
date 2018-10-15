@@ -446,6 +446,12 @@
                 <version>${pass-client.version}</version>
             </dependency>
 
+	        <dependency>
+	            <groupId>org.dataconservancy.pass</groupId>
+	            <artifactId>pass-status-service</artifactId>
+                <version>${pass-client.version}</version>
+	        </dependency>
+
             <dependency>
                 <groupId>org.dataconservancy.pass</groupId>
                 <artifactId>pass-json-adapter</artifactId>

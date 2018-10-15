@@ -18,10 +18,14 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.client.SubmissionStatusService;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
+import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +36,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import static java.lang.String.format;
 
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 
@@ -102,6 +107,8 @@ public class DepositProcessor implements Consumer<Deposit> {
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
 
+                        AggregatedDepositStatus origDepStatus = criSubmission.getAggregatedDepositStatus();
+                        
                         // If all the statuses are terminal, then we can update the aggregated deposit status of
                         // the submission
                         if (deposits.stream().allMatch((criDeposit) ->
@@ -116,6 +123,20 @@ public class DepositProcessor implements Consumer<Deposit> {
                             }
                         }
 
+                        //calculate an updated SubmissionStatus if the aggregatedDepositStatus has changed
+                        if (!origDepStatus.equals(criSubmission.getAggregatedDepositStatus())) {
+                            try {
+                                SubmissionStatusService statusService = new SubmissionStatusService(criSubmission, passClient);
+                                SubmissionStatus submissionStatus = statusService.calculateSubmissionStatus();
+                                criSubmission.setSubmissionStatus(submissionStatus);
+                                LOG.trace(">>>> Updating {} submission status to {}", criSubmission.getId(), submissionStatus);
+                            } catch (Exception ex) {
+                                String msg = format("Failed to update status for Submission [%s]. "
+                                        + "Submission status may now be out of sync", criSubmission.getId());
+                                throw new DepositServiceRuntimeException(msg, ex, criSubmission);
+                            }
+                        }
+                        
                         return criSubmission;
                     });
         } else {

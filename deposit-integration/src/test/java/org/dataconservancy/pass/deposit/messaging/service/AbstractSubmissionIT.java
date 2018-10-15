@@ -21,8 +21,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import java.util.Collection;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
@@ -177,5 +179,35 @@ public abstract class AbstractSubmissionIT {
             throw new RuntimeException(e);
         }
     }
+
+
+    /**
+     * Looks for, and returns, the Repository attached to the supplied Submission with the specified name.
+     *
+     * @param submission
+     * @param repositoryName
+     * @return
+     */
+    protected Repository repositoryForName(Submission submission, String repositoryName) {
+        return submission.getRepositories().stream().map(uri -> passClient.readResource(uri, Repository.class))
+                .filter(repo -> repositoryName.equals(repo.getName())).findAny().orElseThrow(() -> new
+                        RuntimeException("Missing Repository with name " + repositoryName + " for Submission " +
+                        submission.getId()));
+    }
+
+    /**
+     * Looks for, and returns, the Deposit attached to the supplied Submission that references the specified Repository.
+     *
+     * @param submission
+     * @param repositoryUri
+     * @return
+     */
+    protected Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
+        Collection<URI> depositUris = getDepositUris(submission, passClient);
+        return depositUris.stream().map(uri -> passClient.readResource(uri, Deposit.class)).filter(deposit ->
+                repositoryUri.equals(deposit.getRepository())).findAny().orElseThrow(() -> new RuntimeException
+                ("Missing Deposit for Repository " + repositoryUri + " on Submission " + submission.getId()));
+    }
+    
 
 }
