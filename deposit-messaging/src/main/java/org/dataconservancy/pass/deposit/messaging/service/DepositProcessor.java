@@ -54,18 +54,22 @@ public class DepositProcessor implements Consumer<Deposit> {
     private PassClient passClient;
 
     private DepositTaskHelper depositHelper;
+    
+    private SubmissionStatusService statusService;
 
     @Autowired
     public DepositProcessor(Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                             Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
                             CriticalRepositoryInteraction cri,
                             PassClient passClient,
-                            DepositTaskHelper depositHelper) {
+                            DepositTaskHelper depositHelper,
+                            SubmissionStatusService statusService) {
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.terminalSubmissionStatusPolicy = terminalSubmissionStatusPolicy;
         this.cri = cri;
         this.passClient = passClient;
         this.depositHelper = depositHelper;
+        this.statusService = statusService;
     }
 
     public void accept(Deposit deposit) {
@@ -126,8 +130,7 @@ public class DepositProcessor implements Consumer<Deposit> {
                         //calculate an updated SubmissionStatus if the aggregatedDepositStatus has changed
                         if (!origDepStatus.equals(criSubmission.getAggregatedDepositStatus())) {
                             try {
-                                SubmissionStatusService statusService = new SubmissionStatusService(criSubmission, passClient);
-                                SubmissionStatus submissionStatus = statusService.calculateSubmissionStatus();
+                                SubmissionStatus submissionStatus = statusService.calculateSubmissionStatus(criSubmission);
                                 criSubmission.setSubmissionStatus(submissionStatus);
                                 LOG.trace(">>>> Updating {} submission status to {}", criSubmission.getId(), submissionStatus);
                             } catch (Exception ex) {
