@@ -23,6 +23,7 @@ import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.commons.httpclient.Credentials;
+import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
@@ -142,6 +143,11 @@ public class DepositConfig {
         return new PassClientDefault();
     }
 
+    @Bean
+    public SubmissionStatusService submissionStatusService() {
+        return new SubmissionStatusService(passClient());
+    }
+    
     @Bean
     public PassJsonAdapterBasic passJsonAdapter() {
         return new PassJsonAdapterBasic();
