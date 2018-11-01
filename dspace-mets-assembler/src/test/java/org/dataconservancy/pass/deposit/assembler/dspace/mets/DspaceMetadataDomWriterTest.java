@@ -151,6 +151,7 @@ public class DspaceMetadataDomWriterTest {
                                                     DepositMetadata.PERSON_TYPE type) {
         DepositMetadata.Person contributor = mock(DepositMetadata.Person.class);
         when(contributor.getName()).thenCallRealMethod();
+        when(contributor.getConstructedName()).thenCallRealMethod();
         when(contributor.getReversedName()).thenCallRealMethod();
 
         if (first != null)
