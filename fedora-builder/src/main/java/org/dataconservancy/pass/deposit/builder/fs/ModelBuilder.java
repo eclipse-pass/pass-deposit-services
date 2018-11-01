@@ -109,6 +109,7 @@ abstract class ModelBuilder {
         person.setFirstName(userEntity.getFirstName());
         person.setMiddleName(userEntity.getMiddleName());
         person.setLastName(userEntity.getLastName());
+        person.setFullName(userEntity.getDisplayName());
         person.setEmail(userEntity.getEmail());
         person.setType(type);
 
@@ -216,6 +217,13 @@ abstract class ModelBuilder {
             });
         });
 
+        // The publisher name and publication date can also be found in the "crossref" section.
+        getStringProperty(submissionData, PUBLISHER_KEY)
+                .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
+
+        getStringProperty(submissionData, PUBLICATION_DATE_KEY)
+                .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
+
         getObjectProperty(submissionData, ISSN_MAP_KEY).ifPresent(issnMapObject -> {
             issnMapObject.keySet().forEach(issn -> {
                 getObjectProperty(issnMapObject, issn).ifPresent(issnObj -> {
@@ -288,6 +296,8 @@ abstract class ModelBuilder {
     private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
             throws InvalidModel {
         JsonArray metadataJson = new JsonParser().parse(metadataStr).getAsJsonArray();
+        // The "crossref data has precedence and must be processed last
+        JsonObject crossRefData = null;
         for (JsonElement element : metadataJson) {
             JsonObject obj = element.getAsJsonObject();
             String type = obj.get(ID_KEY).getAsString();
@@ -296,10 +306,13 @@ abstract class ModelBuilder {
                 processCommonMetadata(depositMetadata, data);
             }
             else if (type.equals(CROSSREF_KEY)) {
-                processCrossrefMetadata(depositMetadata, data);
+                crossRefData = data;
             } else if (type.equals(PMC_KEY)) {
                 processPmcMetadata(depositMetadata, data);
             }
+        }
+        if (crossRefData != null) {
+            processCrossrefMetadata(depositMetadata, crossRefData);
         }
     }
 
