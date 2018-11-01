@@ -15,21 +15,29 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
+import org.apache.commons.lang.StringUtils;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
-import org.dataconservancy.pass.deposit.messaging.config.spring.RepositoriesFactoryBeanConfig;
 import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
 import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -91,11 +99,15 @@ public class DepositApp {
 
         switch (args[0]) {
             case "listen": {
-                app = new SpringApplication(DepositApp.class, ListenerRunner.class);
+                app = new SpringApplicationBuilder(DepositApp.class, ListenerRunner.class)
+                        .banner(new DepositAppBanner())
+                        .build();
                 break;
             }
             case "refresh": {
-                app = new SpringApplication(DepositApp.class, SubmittedUpdateRunner.class);
+                app = new SpringApplicationBuilder(DepositApp.class, SubmittedUpdateRunner.class)
+                        .banner(new DepositAppBanner())
+                        .build();
                 // TODO figure out elegant way to exclude JMS-related beans like SubmissionProcessor from being spun up
                 app.setDefaultProperties(new HashMap<String, Object>() { {
                     put("spring.jms.listener.auto-startup", Boolean.FALSE);
@@ -103,7 +115,9 @@ public class DepositApp {
                 break;
             }
             case "retry": {
-                app = new SpringApplication(DepositApp.class, FailedDepositRunner.class);
+                app = new SpringApplicationBuilder(DepositApp.class, FailedDepositRunner.class)
+                        .banner(new DepositAppBanner())
+                        .build();
                 app.setDefaultProperties(new HashMap<String, Object>() { {
                     put("spring.jms.listener.auto-startup", Boolean.FALSE);
                 }});
@@ -119,4 +133,54 @@ public class DepositApp {
         app.run(args);
     }
 
+    // When the Spring application starts and calls the Banner implementation, we take that opportunity
+    // to print the contents of the environment variables and resolved Spring properties using the
+    // provided Environment.
+    private static class DepositAppBanner implements Banner {
+
+        @Override
+        public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
+            LOG.info(">>>> Environment variable values:");
+
+            // Sort the variables by name and find the longest name
+            Map<String, String> vars = System.getenv();
+            List<String> keys = new ArrayList<>();
+            int maxLen = 0;
+            for (String varName : vars.keySet()) {
+                keys.add(varName);
+                if (varName.length() > maxLen) {
+                    maxLen = varName.length();
+                }
+            }
+            Collections.sort(keys);
+
+            // Print the variable names and values
+            for (String varName : keys) {
+                String nameString = StringUtils.rightPad(varName, maxLen);
+                LOG.info(">>>>   {} '{}'", nameString, vars.get(varName));
+            }
+
+            // Print out any resolved Spring property placeholders
+            boolean firstOne = true;
+            for (String varName : keys) {
+                String origValue = vars.get(varName);
+                String resolvedValue;
+                String errorMsg = "";
+                try {
+                    resolvedValue = environment.resolvePlaceholders(origValue);
+                } catch (Exception e) {
+                    resolvedValue = origValue;
+                    errorMsg = "(could not resolve property: " + e.getMessage() + ")";
+                }
+                if (! resolvedValue.equals(origValue) || ! errorMsg.isEmpty()) {
+                    if (firstOne) {
+                        LOG.info(">>>> Resolved Spring Environment property values:");
+                        firstOne = false;
+                    }
+                    String nameString = StringUtils.rightPad(varName, maxLen);
+                    LOG.info(">>>>   {} '{}' {}", nameString, resolvedValue, errorMsg);
+                }
+            }
+        }
+    }
 }
