@@ -208,7 +208,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         // Insure that the Person in the metadata matches a Person on the Submission, and that the person is a corresponding pi
         asPersons.stream().forEach(person -> {
             assertTrue(submission.getMetadata().getPersons().stream().anyMatch(candidate ->
-                    candidate.getName().equals(person.getName()) &&
+                    // NIHMS metadata only use first/last/middle names, so never compare against the "full" version
+                    candidate.getConstructedName().equals(person.getName()) &&
                     candidate.getType() == person.getType()));
         });
 
