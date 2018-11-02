@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dataconservancy.pass.deposit</groupId>
     <artifactId>deposit-parent</artifactId>
-    <version>0.1.0-3.1-SNAPSHOT</version>
+    <version>0.1.0-3.2</version>
     <packaging>pom</packaging>
     <name>NIH Package and Submission Parent Project</name>
 
@@ -103,7 +103,7 @@
         <pass-client.version>0.5.0</pass-client.version>
         <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
         <jackson.version>2.9.6</jackson.version>
-        <messaging-support.version>0.1.0-3.1-SNAPSHOT</messaging-support.version>
+        <messaging-support.version>0.1.0-3.2-SNAPSHOT</messaging-support.version>
 
         <docker.fcrepo.version>oapass/fcrepo:4.7.5-3.2-2</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.17-3.2-SNAPSHOT</docker.indexer.version>
