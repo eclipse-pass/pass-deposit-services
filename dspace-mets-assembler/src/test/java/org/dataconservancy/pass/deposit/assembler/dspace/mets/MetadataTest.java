@@ -45,8 +45,8 @@ public class MetadataTest {
     private DspaceMetadataDomWriter domWriter;
     private FilesystemModelBuilder modelBuilder;
 
-    private static final URI SUBMISSION_RESOURCE_1 = URI.create("fake:submission12");
-    private static final URI SUBMISSION_RESOURCE_2 = URI.create("fake:submission13");
+    private static final URI SUBMISSION_RESOURCE_1 = URI.create("fake:submission13");
+    private static final URI SUBMISSION_RESOURCE_2 = URI.create("fake:submission14");
 
     @Before
     public void setup() {

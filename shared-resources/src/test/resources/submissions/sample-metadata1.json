@@ -7,9 +7,9 @@
     "aggregatedDepositStatus" : "not-started",
     "publication" : "fake:publication1",
     "repositories" : [ "fake:repository1", "fake:repository2" ],
-    "user" : "fake:user2",
+    "submitter" : "fake:user2",
     "grants" : [ "fake:grant1" ],
-    "@id" : "fake:submission12",
+    "@id" : "fake:submission13",
     "@type" : "Submission"
   },
   {
