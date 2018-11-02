@@ -29,6 +29,28 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+/**
+ * Provides a JMS listener which immediately {@link Message#acknowledge() acknowledge} each message received for its
+ * configured queue or topic.  Effectively the listener will absorb any JMS messages without invoking any other
+ * business logic.
+ * <p>
+ * This is useful, for example, when an executing IT produces JMS messages as a byproduct of test execution.  The IT may
+ * not be interested at all in the JMS messages produced - they just occur as side affect of manipulating resources in
+ * the Fedora repository, for example.
+ * </p>
+ * <p>
+ * When {@code DrainQueueConfig} is introduced, it will connect to the {@code deposit} and {@code submission} queues.
+ * The included {@code JmsListenerContainerFactory} insures the the listeners are started automatically, and set the
+ * correct acknowledgement mode.
+ * </p>
+ * <p>
+ * Importantly, {@code DrainQueueConfig} will conflict with {@link JmsConfig} if they are both present in a Spring
+ * Application Context.  Only one or the other should be present.  Concretely, once an IT introduces
+ * {@code DrainQueueConfig} into the Spring Application Context, it will be present in the context until removed.  To
+ * easily avoid this issue, a good rule of thumb is: <em>If an IT uses {@code DrainQueueConfig}, the IT ought to
+ * annotate the class as {@code DirtiesContext}</em>
+ * </p>
+ */
 @EnableJms
 public class DrainQueueConfig {
     private static final Logger LOG = LoggerFactory.getLogger(DrainQueueConfig.class);
