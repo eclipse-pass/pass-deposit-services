@@ -336,7 +336,17 @@ abstract class ModelBuilder {
         submission.setName(submissionEntity.getId().toString());
 
         // Data from the Submission's user resource
+      
+        if (submissionEntity.getSubmitter() == null) {
+            throw new InvalidModel("Submitter is undefined for submission " + submissionEntity.getId());
+        }
+        
         User userEntity = (User)entities.get(submissionEntity.getSubmitter());
+        
+        if (userEntity == null) {
+            throw new InvalidModel("Could not find User entity for " + submissionEntity.getSubmitter());
+        }
+        
         persons.add(createPerson(userEntity, DepositMetadata.PERSON_TYPE.submitter));
 
         // As of 5/14/18, the following data is available from both the Submission metadata
