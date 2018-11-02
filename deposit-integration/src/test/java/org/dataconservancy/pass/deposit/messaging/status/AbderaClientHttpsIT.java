@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -74,6 +75,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Import(DrainQueueConfig.class)
+@DirtiesContext
 @Ignore("To be run manually, see class Javadoc.")
 public class AbderaClientHttpsIT {
 

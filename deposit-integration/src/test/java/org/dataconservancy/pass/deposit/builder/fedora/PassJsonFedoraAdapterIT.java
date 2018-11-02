@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -52,6 +53,7 @@ import static submissions.SubmissionResourceUtil.lookupStream;
 @SpringBootTest(classes = DepositConfig.class)
 @ComponentScan("org.dataconservancy.pass.deposit")
 @Import(DrainQueueConfig.class)
+@DirtiesContext
 public class PassJsonFedoraAdapterIT {
 
     private URI SAMPLE_DATA_FILE = URI.create("fake:submission1");

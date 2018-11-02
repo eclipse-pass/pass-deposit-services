@@ -40,6 +40,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.InputStream;
@@ -53,6 +54,7 @@ import java.util.Map;
 @SpringBootTest(classes = DepositConfig.class)
 @ComponentScan("org.dataconservancy.pass.deposit")
 @Import(DrainQueueConfig.class)
+@DirtiesContext
 public class FcrepoModelBuilderIT {
 
     private static final String EXPECTED_JOURNAL_TITLE = "Food & Function";

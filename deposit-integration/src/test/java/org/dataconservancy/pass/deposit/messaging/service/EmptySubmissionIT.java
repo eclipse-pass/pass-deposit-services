@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import submissions.SubmissionResourceUtil;
 
@@ -36,6 +37,7 @@ import static org.hamcrest.CoreMatchers.isA;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Import({DepositConfig.class, DrainQueueConfig.class})
+@DirtiesContext
 public class EmptySubmissionIT extends AbstractSubmissionIT {
 
     private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission10");
