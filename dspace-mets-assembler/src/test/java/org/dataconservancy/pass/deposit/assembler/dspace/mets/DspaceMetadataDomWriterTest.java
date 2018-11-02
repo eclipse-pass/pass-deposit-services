@@ -151,6 +151,7 @@ public class DspaceMetadataDomWriterTest {
                                                     DepositMetadata.PERSON_TYPE type) {
         DepositMetadata.Person contributor = mock(DepositMetadata.Person.class);
         when(contributor.getName()).thenCallRealMethod();
+        when(contributor.getConstructedName()).thenCallRealMethod();
         when(contributor.getReversedName()).thenCallRealMethod();
 
         if (first != null)
@@ -423,27 +424,37 @@ public class DspaceMetadataDomWriterTest {
      */
     @Test
     public void testCreateDublinCoreMetadata() throws Exception {
-        DepositMetadata md = mock(DepositMetadata.class);
         DepositMetadata.Manuscript msMd = mock(DepositMetadata.Manuscript.class);
         String msAbs = "This is the manuscript abstract";
         when(msMd.getMsAbstract()).thenReturn(msAbs);
         String msTitle = "This is the manuscript title.";
         when(msMd.getTitle()).thenReturn(msTitle);
+
         DepositMetadata.Article artMd = mock(DepositMetadata.Article.class);
         when(artMd.getTitle()).thenReturn("This is the article title");
         ZonedDateTime embargoLiftDate = ZonedDateTime.now().plusDays(10);
         when(artMd.getEmbargoLiftDate()).thenReturn(embargoLiftDate);
         String artDoi = "http://dx.doi.org/1234";
         when(artMd.getDoi()).thenReturn(URI.create(artDoi));
+
+        DepositMetadata.Journal jMd = mock(DepositMetadata.Journal.class);
+        String publisherName = "Big Publisher";
+        when(jMd.getPublisherName()).thenReturn(publisherName);
+        String publicationDate = "1/9/1919";
+        when(jMd.getPublicationDate()).thenReturn(publicationDate);
+
+        DepositMetadata md = mock(DepositMetadata.class);
         when(md.getArticleMetadata()).thenReturn(artMd);
         when(md.getManuscriptMetadata()).thenReturn(msMd);
+        when(md.getJournalMetadata()).thenReturn(jMd);
         DepositSubmission submission = mock(DepositSubmission.class);
         when(submission.getMetadata()).thenReturn(md);
 
         // Only Jane Doe (author) will appear in the citation.
         DepositMetadata.Person person1 = createMockPerson(null, null, null, "Jane Doe", DepositMetadata.PERSON_TYPE.author);
         DepositMetadata.Person person2 = createMockPerson("John", null, "Doe", null, DepositMetadata.PERSON_TYPE.pi);
-        List<DepositMetadata.Person> contributors = Arrays.asList(person1, person2);
+        DepositMetadata.Person person3 = createMockPerson(null, null, null, "Hulk Hogan", DepositMetadata.PERSON_TYPE.pi);
+        List<DepositMetadata.Person> contributors = Arrays.asList(person1, person2, person3);
         when(md.getPersons()).thenReturn(contributors);
 
         underTest.mapDmdSec(submission);
@@ -466,7 +477,7 @@ public class DspaceMetadataDomWriterTest {
         Element qdc = (Element)mdWrap.getFirstChild().getFirstChild();
         assertEquals("qualifieddc", qdc.getTagName());
 
-        assertEquals(2, qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).getLength());
+        assertEquals(3, qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).getLength());
         Element contributor1 = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).item(0);
         Element contributor2 = (Element) qdc.getElementsByTagNameNS(DC_NS, DC_CONTRIBUTOR).item(1);
         assertEquals("Jane Doe", contributor1.getTextContent());

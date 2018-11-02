@@ -1,0 +1,134 @@
+[
+  {
+    "metadata" : "[{\"id\" : \"JScholarship\", \"data\" : {\"authors\" : [{\"author\" : \"Christine Cagney\"},{\"author\" : \"Mary Beth Lacey\"}], \"embargo\" : \"Text removed.\", \"agreement-to-deposit\" : \"true\"}},{ \"id\" : \"common\", \"data\" : {\"title\" : \"My Test Article\",\"journal-title\":\"Nature Communications\",\"ISSN\":\"2041-1723\",\"publisher\":\"Elsevier\",\"publicationDate\":\"Fall 2016\",\"abstract\":\"Abstract text\",\"authors\":[{\"author\" : \"Christine Cagney\"},{\"author\" : \"Mary Beth Lacey\"}]} },{ \"id\":\"crossref\", \"data\":{} },{ \"id\":\"pmc\", \"data\":{\"nlmta\":\"Nat Commun\"} },{ \"id\":\"agent_information\", \"data\":{\"information\":{\"name\":\"Chrome\",\"version\":\"69\"}} }]",
+    "source" : "pass",
+    "submitted" : true,
+    "submittedDate" : "2017-06-02T00:00:00.000Z",
+    "aggregatedDepositStatus" : "not-started",
+    "publication" : "fake:publication1",
+    "repositories" : [ "fake:repository1", "fake:repository2" ],
+    "submitter" : "fake:user2",
+    "grants" : [ "fake:grant1" ],
+    "@id" : "fake:submission13",
+    "@type" : "Submission"
+  },
+  {
+    "title" : "This is the first submission",
+    "abstract" : "This is a great paper!",
+    "doi" : "abcdef",
+    "pmid" : "fedcba",
+    "journal" : "fake:journal1",
+    "volume" : "123",
+    "issue" : "May 2015",
+    "@id" : "fake:publication1",
+    "@type" : "Publication"
+  },
+  {
+    "name" : "AAPS PharmSci",
+    "issns" : [ "issn123", "issn456" ],
+    "nlmta" : "AAPS PharmSci",
+    "pmcParticipation" : "A",
+    "publisher" : "",
+    "@id" : "fake:journal1",
+    "@type" : "Journal"
+  },
+  {
+    "name" : "PubMed Central",
+    "repositoryKey" : "PubMed Central",
+    "description" : "Contains lots of medical papers",
+    "url" : "http://example.com",
+    "formSchema" : "{}",
+    "@id" : "fake:repository1",
+    "@type" : "Repository"
+  },
+  {
+    "name" : "JScholarship",
+    "repositoryKey" : "JScholarship",
+    "description" : "Knowledge for the world",
+    "url" : "http://j10p.com",
+    "formSchema" : "{}",
+    "@id" : "fake:repository2",
+    "@type" : "Repository"
+  },
+  {
+    "awardNumber" : "R01EY026617",
+    "awardStatus" : "active",
+    "localKey" : "112233",
+    "projectName" : "Optimal magnification and oculomotor strategies in low vision patients",
+    "awardDate" : "2017-06-01T00:00:00.000Z",
+    "startDate" : "2017-05-01T00:00:00.000Z",
+    "endDate" : "2018-06-01T00:00:00.000Z",
+    "primaryFunder" : "fake:funder1",
+    "directFunder" : "fake:funder2",
+    "pi" : "fake:user2",
+    "coPis" : [ "fake:user3" ],
+    "@id" : "fake:grant1",
+    "@type" : "Grant"
+  },
+  {
+    "name" : "National Eye Institute",
+    "url" : "http://example.com/eyeguys",
+    "localKey" : "aabbcc",
+    "policy" : "fake:policy1",
+    "@id" : "fake:funder1",
+    "@type" : "Funder"
+  },
+  {
+    "title" : "Be Nice to People With Eyes",
+    "description" : "We only have eyes for you.",
+    "policyUrl" : "http://theeyeshaveit.com/policy",
+    "repositories" : [ "fake:repository1" ],
+    "institution" : "fake:institution1",
+    "funder" : "fake:funder1",
+    "@id" : "fake:policy1",
+    "@type" : "Policy"
+  },
+  {
+    "name" : "International Eye Institute",
+    "url" : "http://example.com/othereyeguys",
+    "localKey" : "ddeeff",
+    "policy" : "fake:policy1",
+    "@id" : "fake:funder2",
+    "@type" : "Funder"
+  },
+  {
+    "username" : "bobsmith",
+    "firstName" : "Robert",
+    "lastName" : "Smith",
+    "displayName" : "Bob Smith",
+    "email" : "bobsmith@jhu.edu",
+    "affiliation" : "Johns Hopkins",
+    "institutionalId" : "bs1",
+    "localKey" : "key123",
+    "orcidId" : "orcid123",
+    "roles" : [ "submitter" ],
+    "@id" : "fake:user1",
+    "@type" : "User"
+  },
+  {
+    "username" : "suzyv",
+    "firstName" : "Suzanne",
+    "middleName" : "X",
+    "lastName" : "Vega",
+    "email" : "suzannev@jhu.edu",
+    "affiliation" : "Johns Hopkins",
+    "institutionalId" : "sxv3",
+    "localKey" : "keyabc",
+    "orcidId" : "orc456",
+    "roles" : [ "admin" ],
+    "@id" : "fake:user2",
+    "@type" : "User"
+  },
+  {
+    "username" : "johndoe",
+    "displayName" : "John Doe",
+    "email" : "jd@jhu.edu",
+    "affiliation" : "Johns Hopkins",
+    "institutionalId" : "jd123",
+    "localKey" : "keyabc123",
+    "orcidId" : "orc789",
+    "roles" : [ "submitter", "admin" ],
+    "@id" : "fake:user3",
+    "@type" : "User"
+  }
+]
