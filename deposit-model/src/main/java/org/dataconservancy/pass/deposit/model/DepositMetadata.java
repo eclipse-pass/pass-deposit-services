@@ -363,6 +363,21 @@ public class DepositMetadata {
         }
 
         /**
+         * Returns the assembled name for the person using the first/middle/last names.
+         * @return the complete name for the person, or empty string if first or last are missing.
+         */
+        public String getConstructedName() {
+            if (getFirstName() != null && getLastName() != null) {
+                if (getMiddleName() != null) {
+                    return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName());
+                } else {
+                    return String.format("%s %s", getFirstName(), getLastName());
+                }
+            }
+            return "";
+        }
+
+        /**
          * Returns the "total" name for the person, regardless of how that name was supplied.
          * If a "full" name (single string) was supplied, it will be returned.
          * Otherwise, a name will be constructed from the supplied first/middle/last names.
@@ -371,14 +386,9 @@ public class DepositMetadata {
         public String getName() {
             if (getFullName() != null) {
                 return getFullName();
-            } else if (getFirstName() != null && getLastName() != null) {
-                if (getMiddleName() != null) {
-                    return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName());
-                } else {
-                    return String.format("%s %s", getFirstName(), getLastName());
-                }
+            } else {
+                return getConstructedName();
             }
-            return "";
         }
 
         /**
