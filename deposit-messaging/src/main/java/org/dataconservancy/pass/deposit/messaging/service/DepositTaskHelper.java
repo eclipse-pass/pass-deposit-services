@@ -209,26 +209,20 @@ public class DepositTaskHelper {
                     RepositoryCopy repoCopy;
                     try {
                         Repository repo = passClient.readResource(criDeposit.getRepository(), Repository.class);
-                        repoCopy = passClient.readResource(
-                                criDeposit.getRepositoryCopy(), RepositoryCopy.class);
-                        Optional<RepositoryConfig> repoConfig = lookupConfig(repo, repositories);
+                        repoCopy = passClient.readResource(criDeposit.getRepositoryCopy(), RepositoryCopy.class);
+                        RepositoryConfig repoConfig = lookupConfig(repo, repositories)
+                                .orElseThrow(() -> new RemedialDepositException(
+                                                format("Unable to resolve Repository Configuration for Repository %s " +
+                                                        "(%s).  " + "Verify the Deposit Services runtime " +
+                                                        "configuration location and content.",
+                                                        repo.getName(), repo.getId()), repo));
 
-                        if (!repoConfig.isPresent()) {
-                            throw new RemedialDepositException(format(
-                                    "Unable to resolve Repository Configuration " + "for" + " Repository %s (%s).  " +
-                                            "Verify the Deposit Services runtime configuration location and content.",
-                                    repo.getName(), repo.getId()), repo);
-                        }
-
-                        repoConfig.ifPresent(config -> {
-                            status.set(
-                                    config.getRepositoryDepositConfig()
-                                    .getDepositProcessing()
-                                    .getProcessor()
-                                    .process(criDeposit, config.getTransportConfig().getAuthRealms(),
-                                            config.getRepositoryDepositConfig().getStatusMapping())
-                            );
-                        });
+                        status.set(repoConfig.getRepositoryDepositConfig()
+                                .getDepositProcessing()
+                                .getProcessor()
+                                .process(criDeposit,
+                                        repoConfig.getTransportConfig().getAuthRealms(),
+                                        repoConfig.getRepositoryDepositConfig().getStatusMapping()));
                     } catch (RemedialDepositException e) {
                         throw e;
                     } catch (Exception e) {
