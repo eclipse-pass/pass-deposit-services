@@ -199,10 +199,9 @@ public class DepositTaskHelper {
                 },
 
                 /*
-                 * Postconditions: none to satisfy.  The completion of the critical path without an exception is
-                 *                 considered success.
+                 * Postconditions: the repoCopy returned from the critical section must not be null.
                  */
-                (criDeposit, criRepoCopy) -> true,
+                (criDeposit, criRepoCopy) -> criRepoCopy != null,
 
                 (criDeposit) -> {
                     AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
@@ -216,6 +215,7 @@ public class DepositTaskHelper {
                         if (!repoConfig.isPresent()) {
                             LOG.error("Unable to resolve Repository Configuration for Repository {} ({})",
                                     repo.getName(), repo.getId());
+                            return null;
                         }
 
                         repoConfig.ifPresent(config -> {
