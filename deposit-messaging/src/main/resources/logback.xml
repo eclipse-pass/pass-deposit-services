@@ -31,7 +31,7 @@
   <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-TRACE}">
+  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-WARN}">

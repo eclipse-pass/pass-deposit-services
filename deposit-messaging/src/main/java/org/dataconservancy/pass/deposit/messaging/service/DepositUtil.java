@@ -203,6 +203,7 @@ public class DepositUtil {
      */
     public static void ackMessage(MessageContext mc) {
         try {
+            LOG.trace("Acking JMS message {}", mc.id());
             mc.jmsMessage().acknowledge();
         } catch (JMSException e) {
             LOG.error("Error acknowledging message (ack mode: {}): {} {}", mc.ackMode(), mc.dateTime(), mc.id(), e);

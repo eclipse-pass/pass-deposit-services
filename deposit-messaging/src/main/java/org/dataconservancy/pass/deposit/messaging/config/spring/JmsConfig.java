@@ -141,8 +141,12 @@ public class JmsConfig {
             URI depositUri = parseResourceUri(mc, jsonParser);
             depositConsumer.accept(passClient.readResource(depositUri, Deposit.class));
         } catch (Exception e) {
-            LOG.error("Error parsing deposit URI from JMS message: {}\nPayload (if available): '{}'",
-                    e.getMessage(), mc.message().getPayload(), e);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Error processing a JMS message for a 'Deposit' resource {}: {}\nPayload (if available): '{}'",
+                        mc.id(), e.getMessage(), mc.message().getPayload(), e);
+            } else {
+                LOG.error("Error processing a JMS message for a 'Deposit' resource {}: {}", mc.id(), e.getMessage(), e);
+            }
         } finally {
             ackMessage(mc);
         }
