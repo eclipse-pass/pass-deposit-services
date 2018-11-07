@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
@@ -213,9 +214,10 @@ public class DepositTaskHelper {
                         Optional<RepositoryConfig> repoConfig = lookupConfig(repo, repositories);
 
                         if (!repoConfig.isPresent()) {
-                            LOG.error("Unable to resolve Repository Configuration for Repository {} ({})",
-                                    repo.getName(), repo.getId());
-                            return null;
+                            throw new RemedialDepositException(format(
+                                    "Unable to resolve Repository Configuration " + "for" + " Repository %s (%s).  " +
+                                            "Verify the Deposit Services runtime configuration location and content.",
+                                    repo.getName(), repo.getId()), repo);
                         }
 
                         repoConfig.ifPresent(config -> {
@@ -227,11 +229,12 @@ public class DepositTaskHelper {
                                             config.getRepositoryDepositConfig().getStatusMapping())
                             );
                         });
+                    } catch (RemedialDepositException e) {
+                        throw e;
                     } catch (Exception e) {
                         String msg = format("Failed to update deposit status for [%s], " +
                                         "parsing the status document referenced by %s failed: %s",
                                 criDeposit.getId(), criDeposit.getDepositStatusRef(), e.getMessage());
-                        LOG.warn(msg, e);
                         throw new DepositServiceRuntimeException(msg, e, criDeposit);
                     }
 
@@ -272,6 +275,11 @@ public class DepositTaskHelper {
         if (!cr.success()) {
             if (cr.throwable().isPresent()) {
                 Throwable t = cr.throwable().get();
+                if (t instanceof RemedialDepositException) {
+                    LOG.error(format("Failed to update Deposit %s", depositUri), t);
+                    return;
+                }
+
                 if (t instanceof DepositServiceRuntimeException) {
                     throw (DepositServiceRuntimeException) t;
                 }
@@ -282,6 +290,8 @@ public class DepositTaskHelper {
                                 t, cr.resource().get());
                 }
             }
+
+            LOG.error(format("Failed to update Deposit %s", depositUri));
         }
     }
 
