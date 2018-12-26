@@ -541,4 +541,11 @@
 
     </distributionManagement>
 
+    <scm>
+        <connection>scm:git:https://github.com/OA-PASS/deposit-services.git</connection>
+        <developerConnection>scm:git:https://github.com/OA-PASS/deposit-services.git</developerConnection>
+        <url>https://github.com/OA-PASS/deposit-services</url>
+        <tag>HEAD</tag>
+    </scm>
+
 </project>
