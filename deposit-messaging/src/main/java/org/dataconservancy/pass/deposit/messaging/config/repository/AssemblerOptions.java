@@ -15,34 +15,42 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.List;
 import java.util.Objects;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class AssemblerConfig {
+public class AssemblerOptions {
 
-    @JsonProperty("specification")
-    private String spec;
+    private String compression;
 
-    private AssemblerOptions options;
+    private String archive;
 
-    public String getSpec() {
-        return spec;
+    private List<String> algorithms;
+
+    public String getCompression() {
+        return compression;
     }
 
-    public void setSpec(String spec) {
-        this.spec = spec;
+    public void setCompression(String compression) {
+        this.compression = compression;
     }
 
-    public AssemblerOptions getOptions() {
-        return options;
+    public String getArchive() {
+        return archive;
     }
 
-    public void setOptions(AssemblerOptions options) {
-        this.options = options;
+    public void setArchive(String archive) {
+        this.archive = archive;
+    }
+
+    public List<String> getAlgorithms() {
+        return algorithms;
+    }
+
+    public void setAlgorithms(List<String> algorithms) {
+        this.algorithms = algorithms;
     }
 
     @Override
@@ -51,12 +59,12 @@ public class AssemblerConfig {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AssemblerConfig that = (AssemblerConfig) o;
-        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options);
+        AssemblerOptions that = (AssemblerOptions) o;
+        return Objects.equals(compression, that.compression) && Objects.equals(archive, that.archive) && Objects.equals(algorithms, that.algorithms);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(spec, options);
+        return Objects.hash(compression, archive, algorithms);
     }
 }
