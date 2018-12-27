@@ -27,6 +27,7 @@ import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -150,8 +151,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
 
                     ContentLengthObserver clObs = new ContentLengthObserver(rb);
-                    DigestObserver md5Obs = new DigestObserver(rb, PackageStream.Algo.MD5);
-                    DigestObserver sha256Obs = new DigestObserver(rb, PackageStream.Algo.SHA_256);
+                    DigestObserver md5Obs = new DigestObserver(rb, PackageOptions.Algo.MD5);
+                    DigestObserver sha256Obs = new DigestObserver(rb, PackageOptions.Algo.SHA_256);
                     try (ObservableInputStream observableIn = new ObservableInputStream(in)) {
                         observableIn.add(clObs);
                         observableIn.add(md5Obs);
@@ -236,13 +237,13 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      */
     protected ArchiveEntry createEntry(String name, long length) {
         PackageStream.Metadata metadata = metadata();
-        if(metadata.archive().equals(PackageStream.ARCHIVE.TAR)) {
+        if(metadata.archive().equals(PackageOptions.ARCHIVE.TAR)) {
             TarArchiveEntry entry = new TarArchiveEntry(name);
             if (length >= 0) {
                 entry.setSize(length);
             }
             return entry;
-        } else if (metadata.archive().equals(PackageStream.ARCHIVE.ZIP)) {
+        } else if (metadata.archive().equals(PackageOptions.ARCHIVE.ZIP)) {
             ZipArchiveEntry entry = new ZipArchiveEntry(name);
             if (length >= 0) {
                 entry.setSize(length);

@@ -19,7 +19,7 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -61,10 +61,10 @@ public class DspaceMetsPackageStreamTest {
         when(metsWriterFactory.newInstance()).thenReturn(metsWriter);
 
         mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archive(PackageOptions.ARCHIVE.ZIP);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.compression(PackageOptions.COMPRESSION.ZIP);
         mb.mimeType(APPLICATION_ZIP);
 
         String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";

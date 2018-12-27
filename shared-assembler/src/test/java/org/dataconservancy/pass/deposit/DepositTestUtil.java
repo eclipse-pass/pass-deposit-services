@@ -21,7 +21,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -190,7 +190,7 @@ public class DepositTestUtil {
      * @return the directory that the package file was extracted to
      * @throws IOException if an error occurs opening the file or extracting its contents
      */
-    public static File openArchive(File packageFile, PackageStream.ARCHIVE archive, PackageStream.COMPRESSION compression) throws IOException {
+    public static File openArchive(File packageFile, PackageOptions.ARCHIVE archive, PackageOptions.COMPRESSION compression) throws IOException {
         File tmpDir = tmpDir();
 
      //   if (!packageFile.getName().endsWith(".zip")) {
@@ -202,13 +202,13 @@ public class DepositTestUtil {
 
         try (InputStream packageFileIn = Files.newInputStream(packageFile.toPath())) {
             ArchiveInputStream zipIn = null;
-            if(archive.equals(PackageStream.ARCHIVE.TAR)) {
-                if(compression.equals(PackageStream.COMPRESSION.GZIP)){
+            if(archive.equals(PackageOptions.ARCHIVE.TAR)) {
+                if(compression.equals(PackageOptions.COMPRESSION.GZIP)){
                     zipIn = new TarArchiveInputStream(new GzipCompressorInputStream(packageFileIn));
                 } else {
                     zipIn = new TarArchiveInputStream(packageFileIn);
                 }
-            } else if (archive.equals(PackageStream.ARCHIVE.ZIP)) {
+            } else if (archive.equals(PackageOptions.ARCHIVE.ZIP)) {
                 zipIn = new ZipArchiveInputStream(packageFileIn);
             }
 

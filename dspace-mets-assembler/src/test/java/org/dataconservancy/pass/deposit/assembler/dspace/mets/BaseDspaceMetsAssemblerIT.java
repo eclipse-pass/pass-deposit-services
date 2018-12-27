@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -62,8 +63,8 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageStream.COMPRESSION.ZIP, metadata.compression());
-        assertEquals(PackageStream.ARCHIVE.ZIP, metadata.archive());
+        assertEquals(PackageOptions.COMPRESSION.ZIP, metadata.compression());
+        assertEquals(PackageOptions.ARCHIVE.ZIP, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_DSPACE_METS, metadata.spec());
         assertEquals(APPLICATION_ZIP, metadata.mimeType());

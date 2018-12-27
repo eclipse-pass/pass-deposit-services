@@ -17,6 +17,7 @@
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
@@ -62,10 +63,10 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf) {
         mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archive(PackageOptions.ARCHIVE.ZIP);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.compression(PackageOptions.COMPRESSION.ZIP);
         mb.mimeType(APPLICATION_ZIP);
         return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory);
     }

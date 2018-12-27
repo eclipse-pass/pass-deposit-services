@@ -17,6 +17,7 @@
 package org.dataconservancy.pass.deposit.transport.ftp;
 
 import org.apache.commons.io.input.BrokenInputStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.nihms.integration.FtpBaseIT;
@@ -381,8 +382,8 @@ public class FtpTransportIT extends FtpBaseIT {
         when(md.name()).thenReturn(name);
         when(md.sizeBytes()).thenReturn(length);
         when(md.mimeType()).thenReturn("application/octet-stream");
-        when(md.compression()).thenReturn(PackageStream.COMPRESSION.NONE);
-        when(md.archive()).thenReturn(PackageStream.ARCHIVE.NONE);
+        when(md.compression()).thenReturn(PackageOptions.COMPRESSION.NONE);
+        when(md.archive()).thenReturn(PackageOptions.ARCHIVE.NONE);
 
         when(stream.metadata()).thenReturn(md);
         when(stream.open()).thenReturn(resource);

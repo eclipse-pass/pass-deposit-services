@@ -21,6 +21,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.COMPRESSION;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,8 @@ import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.dataconservancy.pass.deposit.assembler.PackageStream.ARCHIVE.TAR;
-import static org.dataconservancy.pass.deposit.assembler.PackageStream.ARCHIVE.ZIP;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE.TAR;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE.ZIP;
 
 public abstract class AbstractZippedPackageStream implements PackageStream {
 

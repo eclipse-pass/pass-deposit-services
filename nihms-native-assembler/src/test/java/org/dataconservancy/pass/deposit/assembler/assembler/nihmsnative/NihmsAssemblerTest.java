@@ -17,6 +17,7 @@
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.Extension;
@@ -66,8 +67,8 @@ public class NihmsAssemblerTest {
 
     @Test
     public void packageNameForTarGz() throws Exception {
-        when(metadata.archive()).thenReturn(PackageStream.ARCHIVE.TAR);
-        when(metadata.compression()).thenReturn(PackageStream.COMPRESSION.GZIP);
+        when(metadata.archive()).thenReturn(PackageOptions.ARCHIVE.TAR);
+        when(metadata.compression()).thenReturn(PackageOptions.COMPRESSION.GZIP);
 
         NihmsAssembler.namePackage(submission, mdBuilder);
 
@@ -78,8 +79,8 @@ public class NihmsAssemblerTest {
 
     @Test
     public void packageNameForZip() throws Exception {
-        when(metadata.archive()).thenReturn(PackageStream.ARCHIVE.ZIP);
-        when(metadata.compression()).thenReturn(PackageStream.COMPRESSION.ZIP);
+        when(metadata.archive()).thenReturn(PackageOptions.ARCHIVE.ZIP);
+        when(metadata.compression()).thenReturn(PackageOptions.COMPRESSION.ZIP);
 
         NihmsAssembler.namePackage(submission, mdBuilder);
 

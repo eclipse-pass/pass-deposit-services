@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
@@ -81,8 +82,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageStream.COMPRESSION.GZIP, metadata.compression());
-        assertEquals(PackageStream.ARCHIVE.TAR, metadata.archive());
+        assertEquals(PackageOptions.COMPRESSION.GZIP, metadata.compression());
+        assertEquals(PackageOptions.ARCHIVE.TAR, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());

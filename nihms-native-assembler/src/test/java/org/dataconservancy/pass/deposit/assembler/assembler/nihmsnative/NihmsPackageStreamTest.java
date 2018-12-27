@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -72,10 +73,10 @@ public class NihmsPackageStreamTest {
 
         MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
         metadataBuilder.spec(NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
-        metadataBuilder.archive(PackageStream.ARCHIVE.TAR);
+        metadataBuilder.archive(PackageOptions.ARCHIVE.TAR);
         metadataBuilder.archived(true);
         metadataBuilder.compressed(true);
-        metadataBuilder.compression(PackageStream.COMPRESSION.GZIP);
+        metadataBuilder.compression(PackageOptions.COMPRESSION.GZIP);
         metadataBuilder.mimeType(NihmsAssembler.APPLICATION_GZIP);
 
         String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";

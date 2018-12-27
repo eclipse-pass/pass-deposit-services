@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.util.ArrayList;
@@ -42,11 +43,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     
     private boolean compressed = true;
 
-    private PackageStream.COMPRESSION compression = PackageStream.COMPRESSION.GZIP;
+    private PackageOptions.COMPRESSION compression = PackageOptions.COMPRESSION.GZIP;
 
     private boolean archived = true;
 
-    private PackageStream.ARCHIVE archive = PackageStream.ARCHIVE.TAR;
+    private PackageOptions.ARCHIVE archive = PackageOptions.ARCHIVE.TAR;
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
@@ -89,7 +90,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageStream.COMPRESSION compression() {
+    public PackageOptions.COMPRESSION compression() {
         return compression;
     }
 
@@ -99,7 +100,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageStream.ARCHIVE archive() {
+    public PackageOptions.ARCHIVE archive() {
         return archive;
     }
 
@@ -157,11 +158,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.compressed = compressed;
     }
 
-    PackageStream.COMPRESSION getCompression() {
+    PackageOptions.COMPRESSION getCompression() {
         return compression;
     }
 
-    void setCompression(PackageStream.COMPRESSION compression) {
+    void setCompression(PackageOptions.COMPRESSION compression) {
         this.compression = compression;
     }
 
@@ -173,11 +174,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.archived = archived;
     }
 
-    PackageStream.ARCHIVE getArchive() {
+    PackageOptions.ARCHIVE getArchive() {
         return archive;
     }
 
-    void setArchive(PackageStream.ARCHIVE archive) {
+    void setArchive(PackageOptions.ARCHIVE archive) {
         this.archive = archive;
     }
 

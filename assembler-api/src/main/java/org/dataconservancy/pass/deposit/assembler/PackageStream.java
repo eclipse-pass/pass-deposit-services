@@ -28,19 +28,6 @@ import java.util.Iterator;
  */
 public interface PackageStream {
 
-    enum COMPRESSION {
-        NONE,
-        GZIP,
-        BZIP2,
-        ZIP
-    }
-
-    enum ARCHIVE {
-        NONE,
-        TAR,
-        ZIP
-    }
-
     /**
      * Opens the package in its entirety, and streams back the bytes as specified by the archive and compression
      * settings used when creating the package.
@@ -116,7 +103,7 @@ public interface PackageStream {
 
         /**
          * If the package stream returned by {@link #open()} is compressed.  If {@code false}, then {@link
-         * #compression()} should return {@link PackageStream.COMPRESSION#NONE}.
+         * #compression()} should return {@link PackageOptions.COMPRESSION#NONE}.
          *
          * @return true if the package stream returned by {@link #open()} is compressed
          */
@@ -127,11 +114,11 @@ public interface PackageStream {
          *
          * @return the compression used
          */
-        COMPRESSION compression();
+        PackageOptions.COMPRESSION compression();
 
         /**
          * If the package uses to an archive format, such as tar.  If {@code false}, then {@link #archive()} should
-         * return {@link PackageStream.ARCHIVE#NONE}.
+         * return {@link PackageOptions.ARCHIVE#NONE}.
          */
         boolean archived();
 
@@ -140,7 +127,7 @@ public interface PackageStream {
          *
          * @return the archive form
          */
-        ARCHIVE archive();
+        PackageOptions.ARCHIVE archive();
 
         /**
          * The primary or preferred checksum of the package serialization as returned by {@link #open()}
@@ -211,7 +198,7 @@ public interface PackageStream {
          *
          * @return the checksum algorithm
          */
-        Algo algorithm();
+        PackageOptions.Algo algorithm();
 
         /**
          * The value of the checksum, as a byte array
@@ -234,12 +221,4 @@ public interface PackageStream {
 
     }
 
-    /**
-     * Checksum algorithms
-     */
-    enum Algo {
-        SHA_512,
-        SHA_256,
-        MD5
-    }
 }

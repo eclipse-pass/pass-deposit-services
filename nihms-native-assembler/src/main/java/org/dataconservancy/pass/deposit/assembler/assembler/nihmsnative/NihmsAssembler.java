@@ -17,6 +17,7 @@
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
@@ -59,10 +60,10 @@ public class NihmsAssembler extends AbstractAssembler {
                                                 List<DepositFileResource> custodialResources, MetadataBuilder mb,
                                                 ResourceBuilderFactory rbf) {
         mb.spec(SPEC_NIHMS_NATIVE_2017_07);
-        mb.archive(PackageStream.ARCHIVE.TAR);
+        mb.archive(PackageOptions.ARCHIVE.TAR);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.GZIP);
+        mb.compression(PackageOptions.COMPRESSION.GZIP);
         mb.mimeType(APPLICATION_GZIP);
 
         namePackage(submission, mb);
