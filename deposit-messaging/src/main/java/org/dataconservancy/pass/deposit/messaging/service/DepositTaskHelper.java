@@ -220,9 +220,7 @@ public class DepositTaskHelper {
                         status.set(repoConfig.getRepositoryDepositConfig()
                                 .getDepositProcessing()
                                 .getProcessor()
-                                .process(criDeposit,
-                                        repoConfig.getTransportConfig().getAuthRealms(),
-                                        repoConfig.getRepositoryDepositConfig().getStatusMapping()));
+                                .process(criDeposit, repoConfig));
                     } catch (RemedialDepositException e) {
                         throw e;
                     } catch (Exception e) {

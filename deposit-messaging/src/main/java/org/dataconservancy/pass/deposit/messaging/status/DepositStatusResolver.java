@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 
 /**
  * Resolve a deposit status from an object.
@@ -23,6 +23,7 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
  * @param <T> the type of the object that references or contains a deposit status
  * @param <R> the type of the object that represents a deposit status
  */
+@FunctionalInterface
 public interface DepositStatusResolver<T, R> {
 
 
@@ -32,9 +33,9 @@ public interface DepositStatusResolver<T, R> {
      * authentication parameters.
      *
      * @param o the object that contains or references a deposit status
-     * @param authRealm provides any authentication parameters, if needed, for parsing.  May be {@code null}.
+     * @param repositoryConfig the configuration for the downstream repository that the deposit targeted
      * @return the deposit status
      */
-    R resolve(T o, AuthRealm authRealm);
+    R resolve(T o, RepositoryConfig repositoryConfig);
 
 }

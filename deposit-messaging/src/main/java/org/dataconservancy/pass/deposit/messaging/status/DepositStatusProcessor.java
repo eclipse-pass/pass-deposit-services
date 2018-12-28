@@ -15,17 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.model.Deposit;
-
-import java.util.Collection;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface DepositStatusProcessor {
 
-    Deposit.DepositStatus process(Deposit deposit, Collection<AuthRealm> authRealms, StatusMapping mapping);
+    Deposit.DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig);
 
 }

@@ -21,6 +21,7 @@ import org.apache.abdera.parser.Parser;
 import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
@@ -34,6 +35,9 @@ import org.springframework.core.io.UrlResource;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
 
 /**
  * Attempts to determine the status of a {@link Deposit} by retrieving the Atom Statement associated with the
@@ -66,10 +70,12 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
      * </p>
      *
      * @param atomStatementUri the Atom statement URI
+     * @param repositoryConfig the configuration containing an {@code auth-realm} with authentication credentials for
+     *                         retrieving the {@code atomStatementUri}
      * @return the state {@code URI}, or {@code null} if one cannot be found
      * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
      */
-    public URI resolve(URI atomStatementUri, AuthRealm authRealm) {
+    public URI resolve(URI atomStatementUri, RepositoryConfig repositoryConfig) {
         if (atomStatementUri == null) {
             throw new IllegalArgumentException("Atom statement URI must not be null.");
         }
@@ -85,28 +91,29 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
                 resource = new ClassPathResource(atomStatementUri.toString().substring("classpath:".length()));
             }
         } else if (atomStatementUri.getScheme().startsWith("http")) {
-            try {
-                if (authRealm != null) {
-                    if (!(authRealm instanceof BasicAuthRealm)) {
-                        throw new IllegalArgumentException("Only instances of " + BasicAuthRealm.class.getName() +
-                                " are supported (authRealm was an instance of " + authRealm.getClass().getName() + ")");
-                    }
-
-                    BasicAuthRealm basicAuth = (BasicAuthRealm) authRealm;
-                    if (basicAuth.getUsername() != null && basicAuth.getUsername().trim().length() > 0) {
-                        resource = new AuthenticatedResource(atomStatementUri.toURL(),
-                                basicAuth.getUsername(), basicAuth.getPassword());
-                    } else {
-                        resource = new UrlResource(atomStatementUri.toURL());
-                    }
-                } else {
-                    LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", atomStatementUri);
-                    resource = new UrlResource(atomStatementUri.toURL());
-                }
-            } catch (MalformedURLException e) {
-                throw new IllegalArgumentException("Atom statement could not be parsed as URL '" + atomStatementUri +
-                        "':" + e.getMessage(), e);
-            }
+            resource = matchRealm(atomStatementUri.toString(),
+                    repositoryConfig.getTransportConfig().getAuthRealms())
+                        .map(realm -> {
+                            try {
+                                if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
+                                    return new AuthenticatedResource(atomStatementUri.toURL(),
+                                            realm.getUsername(), realm.getPassword());
+                                } else {
+                                    return new UrlResource(atomStatementUri.toURL());
+                                }
+                            } catch (MalformedURLException e) {
+                                throw new IllegalArgumentException(
+                                        "Atom statement could not be parsed as URL: '" + atomStatementUri + "'", e);
+                            }
+                        }).orElseGet(() -> {
+                            LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", atomStatementUri);
+                            try {
+                                return new UrlResource(atomStatementUri.toURL());
+                            } catch (MalformedURLException e) {
+                                throw new IllegalArgumentException(
+                                        "Atom statement could not be parsed as URL: '" + atomStatementUri + "'", e);
+                            }
+                        });
         } else if (atomStatementUri.getScheme().startsWith("jar")) {
             try {
                 resource = new UrlResource(atomStatementUri);
@@ -133,4 +140,16 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
         return AtomUtil.parseSwordState(statementDoc);
     }
 
+    private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
+        if (authRealms == null || authRealms.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return authRealms
+                .stream()
+                .filter(realm -> realm instanceof BasicAuthRealm)
+                .map(realm -> (BasicAuthRealm) realm)
+                .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
+                .max(Comparator.comparingInt(realm -> realm.getBaseUrl().length()));
+    }
 }
