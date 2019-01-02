@@ -40,6 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.net.URI;
 import java.util.Collections;
 
+import static java.util.Collections.emptyMap;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
@@ -83,7 +84,7 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
         submission = submissionUtil.asDepositSubmission(URI.create("fake:submission3"));
 
-        PackageStream stream = dspaceMetsAssembler.assemble(submission);
+        PackageStream stream = dspaceMetsAssembler.assemble(submission, emptyMap());
 
         // Step 2: Deposit the Package to DSpace.
 

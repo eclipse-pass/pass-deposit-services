@@ -32,6 +32,7 @@ import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -56,9 +57,7 @@ public class NihmsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission,
-                                                List<DepositFileResource> custodialResources, MetadataBuilder mb,
-                                                ResourceBuilderFactory rbf) {
+    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
         mb.spec(SPEC_NIHMS_NATIVE_2017_07);
         mb.archive(PackageOptions.ARCHIVE.TAR);
         mb.archived(true);

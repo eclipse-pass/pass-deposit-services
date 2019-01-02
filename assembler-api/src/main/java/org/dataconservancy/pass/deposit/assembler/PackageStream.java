@@ -67,7 +67,7 @@ public interface PackageStream {
 
         /**
          * A suggested name for this package.  The {@link #spec() specification} used for
-         * {@link Assembler#assemble(DepositSubmission) assembling} a package may place requirements on the name of the
+         * {@link Assembler#assemble(DepositSubmission, java.util.Map) assembling} a package may place requirements on the name of the
          * package file in the target system.  For example, BagIt recommends that the name of the package file be based
          * on the name of the base directory of the bag.  Submission components responsible for streaming {@link
          * PackageStream this package} to target systems can use the name returned by this method as the name of the

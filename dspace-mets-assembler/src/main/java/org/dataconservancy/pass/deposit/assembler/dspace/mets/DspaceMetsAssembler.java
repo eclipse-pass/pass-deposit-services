@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DspaceMetsAssembler extends AbstractAssembler {
@@ -61,8 +62,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
-                                                MetadataBuilder mb, ResourceBuilderFactory rbf) {
+    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
 
         // TODO: receive these from the AssemblerConfig and AssemblerOptions
         mb.spec(SPEC_DSPACE_METS);

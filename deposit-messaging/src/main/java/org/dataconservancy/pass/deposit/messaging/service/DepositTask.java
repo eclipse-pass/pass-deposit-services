@@ -40,6 +40,7 @@ import java.util.Map;
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
+import static java.util.Collections.emptyMap;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
@@ -138,7 +139,7 @@ public class DepositTask implements Runnable {
                  */
                 (deposit) -> {
                     Packager packager = dc.packager();
-                    PackageStream packageStream = packager.getAssembler().assemble(dc.depositSubmission());
+                    PackageStream packageStream = packager.getAssembler().assemble(dc.depositSubmission(), emptyMap());
                     Map<String, String> packagerConfig = packager.getConfiguration();
                     try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
                         TransportResponse tr = transport.send(packageStream, packagerConfig);

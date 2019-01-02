@@ -25,6 +25,7 @@ import org.junit.Test;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.net.URI;
+import java.util.Collections;
 
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceDepositTestUtil.getMetsXml;
 
@@ -36,7 +37,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
     /**
      * Re-use the same assembler instance across tests.  This is to demonstrate that the collaborating objects,
      * including the DspaceMetsDomWriter, do not maintain state across invocations of {@link
-     * Assembler#assemble(DepositSubmission)}
+     * Assembler#assemble(DepositSubmission, java.util.Map)}
      */
     private static DspaceMetsAssembler underTest;
 
@@ -71,7 +72,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
 
         // Both tests in this IT will execute assemble(...) on the same instance of DspaceMetsAssembler because the
         // field is static
-        PackageStream stream = underTest.assemble(submission);
+        PackageStream stream = underTest.assemble(submission, Collections.emptyMap());
 
         File packageArchive = savePackage(stream);
 
