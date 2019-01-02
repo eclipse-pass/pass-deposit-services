@@ -17,7 +17,6 @@
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
@@ -34,6 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
 
 @Component
 public class NihmsAssembler extends AbstractAssembler {
@@ -58,13 +59,7 @@ public class NihmsAssembler extends AbstractAssembler {
 
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
-        mb.spec(SPEC_NIHMS_NATIVE_2017_07);
-        mb.archive(PackageOptions.ARCHIVE.TAR);
-        mb.archived(true);
-        mb.compressed(true);
-        mb.compression(PackageOptions.COMPRESSION.GZIP);
-        mb.mimeType(APPLICATION_GZIP);
-
+        buildMetadata(mb, options);
         namePackage(submission, mb);
 
         NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);

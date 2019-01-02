@@ -17,7 +17,6 @@
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
@@ -29,6 +28,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
 
 @Component
 public class DspaceMetsAssembler extends AbstractAssembler {
@@ -63,17 +64,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
 
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
-
-        // TODO: receive these from the AssemblerConfig and AssemblerOptions
-        mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageOptions.ARCHIVE.ZIP);
-        mb.archived(true);
-        mb.compressed(true);
-        mb.compression(PackageOptions.COMPRESSION.ZIP);
-
-        // TODO: infer mime type from the compression/archive options
-        mb.mimeType(APPLICATION_ZIP);
-
+        buildMetadata(mb, options);
         return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory);
     }
 

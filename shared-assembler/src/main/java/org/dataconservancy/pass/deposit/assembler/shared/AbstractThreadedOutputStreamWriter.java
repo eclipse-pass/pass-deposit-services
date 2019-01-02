@@ -24,8 +24,6 @@ import org.apache.commons.io.input.ContentLengthObserver;
 import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
@@ -41,6 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
  * A {@link Thread} responsible for assembling the custodial content and metadata of a package, and writing each
@@ -143,13 +143,10 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                         in = resourceIn;
                     }
 
-                    DefaultDetector detector = new DefaultDetector();
-                    MediaType mimeType = detector.detect(in, new Metadata());
-                    in.reset();
-                    rb.mimeType(mimeType.toString());
+                    rb.mimeType(detectMediaType(in, new DefaultDetector()).toString());
 
-
-
+                    // TODO: input stream observers for checksum algorithms should be configured from the package
+                    //          options
                     ContentLengthObserver clObs = new ContentLengthObserver(rb);
                     DigestObserver md5Obs = new DigestObserver(rb, PackageOptions.Algo.MD5);
                     DigestObserver sha256Obs = new DigestObserver(rb, PackageOptions.Algo.SHA_256);
