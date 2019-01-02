@@ -49,6 +49,7 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
             throw new IllegalArgumentException("Submission must not be null.");
         }
 
+        // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
         this.metsWriterFactory = metsWriterFactory;
         this.submission = submission;
         this.metadataBuilder = metadataBuilder;
