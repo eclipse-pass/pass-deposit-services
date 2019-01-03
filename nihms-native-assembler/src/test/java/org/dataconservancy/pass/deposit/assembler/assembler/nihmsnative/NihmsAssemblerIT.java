@@ -70,6 +70,18 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         metadata = new File(extractedPackageDir, "bulk_meta.xml");
     }
 
+    @Override
+    protected Map<String, Object> getOptions() {
+        return new HashMap<String, Object>() {
+            {
+                put(PackageOptions.SPEC, SPEC_NIHMS_NATIVE_2017_07);
+                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.TAR);
+                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.GZIP);
+            }
+        };
+    }
+
+
     @Test
     public void testSimple() throws Exception {
         assertTrue(extractedPackageDir.exists());

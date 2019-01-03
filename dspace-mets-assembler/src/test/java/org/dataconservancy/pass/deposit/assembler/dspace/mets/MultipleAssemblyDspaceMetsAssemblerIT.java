@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -26,6 +27,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceDepositTestUtil.getMetsXml;
 
@@ -72,7 +74,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
 
         // Both tests in this IT will execute assemble(...) on the same instance of DspaceMetsAssembler because the
         // field is static
-        PackageStream stream = underTest.assemble(submission, Collections.emptyMap());
+        PackageStream stream = underTest.assemble(submission, getOptions());
 
         File packageArchive = savePackage(stream);
 

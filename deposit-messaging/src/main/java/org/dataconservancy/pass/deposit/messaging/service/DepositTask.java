@@ -139,7 +139,8 @@ public class DepositTask implements Runnable {
                  */
                 (deposit) -> {
                     Packager packager = dc.packager();
-                    PackageStream packageStream = packager.getAssembler().assemble(dc.depositSubmission(), emptyMap());
+
+                    PackageStream packageStream = packager.getAssembler().assemble(dc.depositSubmission(), packager.getAssemblerOptions());
                     Map<String, String> packagerConfig = packager.getConfiguration();
                     try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
                         TransportResponse tr = transport.send(packageStream, packagerConfig);

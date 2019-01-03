@@ -149,7 +149,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                     //          options
                     ContentLengthObserver clObs = new ContentLengthObserver(rb);
                     DigestObserver md5Obs = new DigestObserver(rb, PackageOptions.Algo.MD5);
-                    DigestObserver sha256Obs = new DigestObserver(rb, PackageOptions.Algo.SHA_256);
+                    DigestObserver sha256Obs = new DigestObserver(rb, PackageOptions.Algo.SHA256);
                     try (ObservableInputStream observableIn = new ObservableInputStream(in)) {
                         observableIn.add(clObs);
                         observableIn.add(md5Obs);

@@ -292,7 +292,7 @@ public class DspaceMetadataDomWriterTest {
         String checksumMd5Val = "abcdef12345";
         String checksumMd5 = PackageOptions.Algo.MD5.name();
         String checksumShaVal = "123456abcdef";
-        String checksumSha = PackageOptions.Algo.SHA_256.name();
+        String checksumSha = PackageOptions.Algo.SHA256.name();
 
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
         when(checksum.algorithm()).thenReturn(PackageOptions.Algo.MD5);
@@ -403,7 +403,7 @@ public class DspaceMetadataDomWriterTest {
         when(md5.algorithm()).thenReturn(PackageOptions.Algo.MD5);
         when(md5.asHex()).thenReturn(checksumMd5Val);
         PackageStream.Checksum sha = mock(PackageStream.Checksum.class);
-        when(sha.algorithm()).thenReturn(PackageOptions.Algo.SHA_256);
+        when(sha.algorithm()).thenReturn(PackageOptions.Algo.SHA256);
         when(sha.asHex()).thenReturn(checksumShaVal);
         PackageStream.Resource resource = mock(PackageStream.Resource.class);
         when(resource.name()).thenReturn(name);

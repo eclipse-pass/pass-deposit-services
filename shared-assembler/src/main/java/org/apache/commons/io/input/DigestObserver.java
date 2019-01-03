@@ -50,10 +50,10 @@ public class DigestObserver extends ResourceBuilderObserver {
                 case MD5:
                     this.digest = MessageDigest.getInstance("MD5");
                     break;
-                case SHA_256:
+                case SHA256:
                     this.digest = MessageDigest.getInstance("SHA-256");
                     break;
-                case SHA_512:
+                case SHA512:
                     this.digest = MessageDigest.getInstance("SHA-512");
                     break;
                 default:

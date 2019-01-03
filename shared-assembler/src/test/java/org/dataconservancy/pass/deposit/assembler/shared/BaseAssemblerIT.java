@@ -128,7 +128,7 @@ public abstract class BaseAssemblerIT {
 
         prepareCustodialResources();
 
-        PackageStream stream = underTest.assemble(submission, Collections.emptyMap());
+        PackageStream stream = underTest.assemble(submission, getOptions());
 
         File packageArchive = savePackage(stream);
 
@@ -136,6 +136,8 @@ public abstract class BaseAssemblerIT {
 
         extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
     }
+
+    protected abstract Map<String, Object> getOptions();
 
     protected void prepareSubmission() throws InvalidModel {
         prepareSubmission(URI.create("fake:submission1"));

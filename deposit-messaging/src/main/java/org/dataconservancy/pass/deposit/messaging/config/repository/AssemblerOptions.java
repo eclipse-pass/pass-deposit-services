@@ -15,8 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -51,6 +56,19 @@ public class AssemblerOptions {
 
     public void setAlgorithms(List<String> algorithms) {
         this.algorithms = algorithms;
+    }
+
+    public Map<String, Object> asOptionsMap() {
+        return new HashMap<String, Object>() {
+            {
+                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.valueOf(compression.toUpperCase()));
+                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.valueOf(archive.toUpperCase()));
+                put(PackageOptions.ALGO_KEY,
+                        algorithms.stream()
+                                .map(algo -> PackageOptions.Algo.valueOf(algo.toUpperCase()))
+                                .collect(Collectors.toList()));
+            }
+        };
     }
 
     @Override

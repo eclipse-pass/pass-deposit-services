@@ -15,10 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
@@ -39,6 +41,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
@@ -84,24 +88,35 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
         submission = submissionUtil.asDepositSubmission(URI.create("fake:submission3"));
 
-        PackageStream stream = dspaceMetsAssembler.assemble(submission, emptyMap());
+        Packager packager = packagerRegistry.get("JScholarship");
+        PackageStream stream = packager
+                .getAssembler()
+                .assemble(submission, packager.getAssemblerOptions());
 
         // Step 2: Deposit the Package to DSpace.
 
-        Packager packager = packagerRegistry.get("JScholarship");
         Transport transport = packager.getTransport();
         TransportSession session = transport.open(packager.getConfiguration());
-        Sword2DepositReceiptResponse tr = (Sword2DepositReceiptResponse) session.send(stream, packager
-                .getConfiguration());
+        TransportResponse tr = session.send(stream, packager.getConfiguration());
+        if (!tr.success()) {
+            if (tr.error() instanceof RuntimeException) {
+                throw (RuntimeException) tr.error();
+            }
+
+            throw new RuntimeException(tr.error());
+        }
+
         assertTrue(tr.success());
+        assertTrue(tr instanceof Sword2DepositReceiptResponse);
+        Sword2DepositReceiptResponse swordReceiptResponse = (Sword2DepositReceiptResponse) tr;
 
         // 2a. Keep a reference to the SWORD Statement
 
-        URI swordStatement = tr.getReceipt().getAtomStatementLink().getIRI().toURI();
+        URI swordStatement = swordReceiptResponse.getReceipt().getAtomStatementLink().getIRI().toURI();
 
         // 2.b Keep a reference to the DSpace Item URL
 
-        URI dspaceItem = tr.getReceipt().getSplashPageLink().getIRI().toURI();
+        URI dspaceItem = swordReceiptResponse.getReceipt().getSplashPageLink().getIRI().toURI();
 
         // Step 3: Manufacture a Deposit and RepositoryCopy for this test (normally created by the SubmissionProcessor)
 
@@ -137,6 +152,17 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
     @Override
     protected AbstractAssembler assemblerUnderTest() {
         return dspaceMetsAssembler;
+    }
+
+    @Override
+    protected Map<String, Object> getOptions() {
+        return new HashMap<String, Object>() {
+            {
+                put(PackageOptions.SPEC, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
+                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.ZIP);
+            }
+        };
     }
 
     @Override

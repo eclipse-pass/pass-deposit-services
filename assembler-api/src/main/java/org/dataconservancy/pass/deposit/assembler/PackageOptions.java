@@ -60,8 +60,8 @@ public interface PackageOptions {
      * Supported checksum algorithms
      */
     enum Algo {
-        SHA_512,
-        SHA_256,
+        SHA512,
+        SHA256,
         MD5
     }
 

@@ -101,7 +101,7 @@ public abstract class AbstractAssembler implements Assembler {
 
         List<DepositFileResource> custodialResources = resolveCustodialResources(submission.getFiles());
 
-        return createPackageStream(submission, custodialResources, metadataBuilder, rbf, Collections.emptyMap());
+        return createPackageStream(submission, custodialResources, metadataBuilder, rbf, options);
     }
 
     /**

@@ -26,7 +26,9 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
@@ -53,6 +55,17 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
     public void setUp() throws Exception {
         super.setUp();
         metsDoc = DspaceDepositTestUtil.getMetsXml(extractedPackageDir);
+    }
+
+    @Override
+    protected Map<String, Object> getOptions() {
+        return new HashMap<String, Object>() {
+            {
+                put(PackageOptions.SPEC, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
+                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.ZIP);
+            }
+        };
     }
 
     @Override
