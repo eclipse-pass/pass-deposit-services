@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
 
@@ -40,14 +41,18 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
 
     private MetadataBuilder metadataBuilder;
 
+    private Map<String, Object> packageOptions;
+
 
     public ThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                      List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder,
-                                      StreamingSerializer manifestSerializer, StreamingSerializer metadataSerializer) {
-        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
+                                      List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf,
+                                      MetadataBuilder metadataBuilder, StreamingSerializer manifestSerializer,
+                                      StreamingSerializer metadataSerializer, Map<String, Object> packageOptions) {
+        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder, packageOptions);
         this.manifestSerializer = manifestSerializer;
         this.metadataSerializer = metadataSerializer;
         this.metadataBuilder = metadataBuilder;
+        this.packageOptions = packageOptions;
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
@@ -47,9 +48,12 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     private MetadataBuilder metadata;
 
-    public NihmsZippedPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
-                                    MetadataBuilder metadata, ResourceBuilderFactory rbf) {
-        super(custodialResources, metadata, rbf);
+    public NihmsZippedPackageStream(DepositSubmission submission,
+                                    List<DepositFileResource> custodialResources,
+                                    MetadataBuilder metadata,
+                                    ResourceBuilderFactory rbf,
+                                    Map<String, Object> packageOptions) {
+        super(custodialResources, metadata, rbf, packageOptions);
         this.submission = submission;
         this.metadata = metadata;
     }
@@ -58,7 +62,8 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
     public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
                                                               ResourceBuilderFactory rbf) {
         ThreadedOutputStreamWriter threadedWriter = new ThreadedOutputStreamWriter("Archive Piped Writer",
-                archiveOut, submission, custodialContent, rbf, metadata, manifestSerializer, metadataSerializer);
+                archiveOut, submission, custodialContent, rbf, metadata, manifestSerializer, metadataSerializer,
+                packageOptions);
 
         return threadedWriter;
     }

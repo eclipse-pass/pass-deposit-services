@@ -59,11 +59,15 @@ public class NihmsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
+    protected PackageStream createPackageStream(DepositSubmission submission,
+                                                List<DepositFileResource> custodialResources,
+                                                MetadataBuilder mb, ResourceBuilderFactory rbf,
+                                                Map<String, Object> options) {
         buildMetadata(mb, options);
         namePackage(submission, mb);
 
-        NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);
+        NihmsZippedPackageStream stream =
+                new NihmsZippedPackageStream(submission, custodialResources, mb, rbf, options);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;
