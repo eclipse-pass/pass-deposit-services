@@ -25,6 +25,7 @@ import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
 import java.util.List;
+import java.util.Map;
 
 public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
 
@@ -37,9 +38,10 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
     public DspaceMetsZippedPackageStream(DepositSubmission submission,
                                          List<DepositFileResource> custodialResources,
                                          MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
-                                         DspaceMetadataDomWriterFactory metsWriterFactory) {
+                                         DspaceMetadataDomWriterFactory metsWriterFactory,
+                                         Map<String, Object> packageOptions) {
 
-        super(custodialResources, metadataBuilder, rbf);
+        super(custodialResources, metadataBuilder, rbf, packageOptions);
 
         if (metsWriterFactory == null) {
             throw new IllegalArgumentException("METS writer must not be null.");
@@ -59,6 +61,6 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
     public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
                                                               ResourceBuilderFactory rbf) {
         return new DspaceMetsThreadedOutputStreamWriter("DSpace Archive Writer", archiveOutputStream,
-                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance());
+                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance(), packageOptions);
     }
 }

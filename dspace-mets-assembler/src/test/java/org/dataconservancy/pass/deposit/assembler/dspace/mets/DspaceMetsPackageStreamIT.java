@@ -19,6 +19,7 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
@@ -36,9 +37,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.SPEC;
+import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -56,6 +62,8 @@ public class DspaceMetsPackageStreamIT {
             DocumentBuilderFactory.newInstance());
 
     private List<DepositFileResource> custodialContent;
+
+    private Map<String, Object> packageOptions;
 
     @Before
     public void setUp() throws Exception {
@@ -83,6 +91,13 @@ public class DspaceMetsPackageStreamIT {
         custodialContent = Arrays.asList(
                 new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
                 new DepositFileResource(figure, new ClassPathResource(figureLocation)));
+
+        packageOptions = new HashMap<String, Object>() {
+            {
+                put(ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
+                put(SPEC, SPEC_DSPACE_METS);
+            }
+        };
     }
 
     @Test
@@ -100,7 +115,7 @@ public class DspaceMetsPackageStreamIT {
 
         // Construct a package stream using mocks and two example files
         DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(submission, custodialContent, mb, rbf, metsWriter);
+                new DspaceMetsZippedPackageStream(submission, custodialContent, mb, rbf, metsWriter, packageOptions);
 
         File outFile = new File(tempDir, "testStream.tar.gz");
         FileOutputStream out = new FileOutputStream(outFile);

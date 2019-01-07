@@ -63,9 +63,12 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources, MetadataBuilder mb, ResourceBuilderFactory rbf, Map<String, Object> options) {
+    protected PackageStream createPackageStream(DepositSubmission submission,
+                                                List<DepositFileResource> custodialResources,
+                                                MetadataBuilder mb, ResourceBuilderFactory rbf,
+                                                Map<String, Object> options) {
         buildMetadata(mb, options);
-        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory);
+        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
     }
 
 }

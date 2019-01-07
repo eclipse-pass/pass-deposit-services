@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -41,10 +42,12 @@ public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutput
 
     public DspaceMetsThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
                                                 DepositSubmission submission,
-                                                List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf,
+                                                List<DepositFileResource> packageFiles,
+                                                ResourceBuilderFactory rbf,
                                                 MetadataBuilder metadataBuilder,
-                                                DspaceMetadataDomWriter metsWriter) {
-        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder);
+                                                DspaceMetadataDomWriter metsWriter,
+                                                Map<String, Object> packageOptions) {
+        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder, packageOptions);
 
         if (metsWriter == null) {
             throw new IllegalArgumentException("DspaceMetadataDomWriter must not be null.");

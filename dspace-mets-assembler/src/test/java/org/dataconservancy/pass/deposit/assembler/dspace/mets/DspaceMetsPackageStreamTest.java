@@ -32,8 +32,12 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.SPEC;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.junit.Assert.assertTrue;
@@ -54,6 +58,8 @@ public class DspaceMetsPackageStreamTest {
     private DspaceMetadataDomWriter metsWriter = mock(DspaceMetadataDomWriter.class);
 
     private List<DepositFileResource> custodialContent;
+
+    private Map<String, Object> packageOptions;
 
     @Before
     public void setUp() throws Exception {
@@ -85,6 +91,13 @@ public class DspaceMetsPackageStreamTest {
         custodialContent = Arrays.asList(
                 new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
                 new DepositFileResource(figure, new ClassPathResource(figureLocation)));
+
+        packageOptions = new HashMap<String, Object>() {
+            {
+                put(ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
+                put(SPEC, SPEC_DSPACE_METS);
+            }
+        };
     }
 
     @Test
@@ -92,7 +105,7 @@ public class DspaceMetsPackageStreamTest {
         // Construct a package stream using mocks and two example files
         DspaceMetsZippedPackageStream underTest =
                 new DspaceMetsZippedPackageStream(
-                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory);
+                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions);
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written
         assertTrue("Expected bytes written to be greater than 0!",
