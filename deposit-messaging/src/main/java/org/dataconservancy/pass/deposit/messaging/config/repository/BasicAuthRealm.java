@@ -61,7 +61,7 @@ public class BasicAuthRealm extends AuthRealm {
      * Implementation note: typed as a String so Jackson and the SpringEnvironmentDeserializer can perform property
      * interpolation.
      *
-     * @return
+     * @return the base url of the authentication realm
      */
     public String getBaseUrl() {
         return baseUrl.toString();

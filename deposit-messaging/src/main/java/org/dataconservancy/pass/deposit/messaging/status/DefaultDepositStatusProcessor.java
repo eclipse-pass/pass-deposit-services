@@ -46,9 +46,9 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
     /**
      * Parses the SWORD statement at {@code depositStatusRef}, and returns a corresponding {@link Deposit.DepositStatus}
      *
-     * @param deposit
-     * @param authRealms
-     * @param statusMapping
+     * @param deposit the Deposit
+     * @param authRealms the auth realms used to authenticate access to any web resources
+     * @param statusMapping the status mapping
      * @return the deposit status, may be {@code null}
      */
     @Override

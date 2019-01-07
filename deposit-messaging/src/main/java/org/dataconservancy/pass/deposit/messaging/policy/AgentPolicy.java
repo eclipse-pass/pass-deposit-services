@@ -65,11 +65,13 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
 
     /**
      * {@inheritDoc}
-     * <h4>Implementation notes</h4>
+     * <em>Implementation notes</em>
+     * <p>
      * Attempts to resolve the JMS message body for a value of the {@code http://www.w3.org/ns/prov#SoftwareAgent}
      * property.  If the value is {@code null} or does <em>not</em> equal the user agent string supplied on
      * construction, the message is <em>accepted</em>.  If the value is equal to the user agent string supplied on
      * construction, this policy drops the message.
+     * </p>
      *
      * @param messageContext {@inheritDoc}
      * @return false if the JMS message user agent is equal to the user agent string supplied on construction

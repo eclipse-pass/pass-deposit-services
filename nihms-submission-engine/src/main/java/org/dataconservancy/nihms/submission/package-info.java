@@ -15,7 +15,7 @@
  */
 
 /**
- * Coordinates the building, assembly, and deposit of a {@link org.dataconservancy.nihms.model.NihmsSubmission
+ * Coordinates the building, assembly, and deposit of a {@link org.dataconservancy.pass.deposit.model.DepositSubmission
  * submission}.
  */
 package org.dataconservancy.nihms.submission;

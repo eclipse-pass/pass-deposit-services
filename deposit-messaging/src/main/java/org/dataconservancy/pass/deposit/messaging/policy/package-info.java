@@ -23,7 +23,7 @@
  * <p> Messages representing the creation or modification of a
  * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission
  * repository resource</a> are considered for further processing by the {@link
- * org.dataconservancy.pass.deposit.messaging.service.JmsSubmissionProcessor}. After retrieving the {@link
+ * org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor}. After retrieving the {@link
  * org.dataconservancy.pass.model.Submission} from the repository, the {@link
  * org.dataconservancy.pass.deposit.messaging.policy.PassUserSubmittedPolicy} determines whether or not the {@code
  * Submission} should be processed by Deposit Services.

@@ -65,7 +65,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
      * {@link #getStreamWriter(ArchiveOutputStream, ResourceBuilderFactory)}
      * </p>
      *
-     * @return
+     * @return {@inheritDoc}
      */
     @Override
     public InputStream open() {

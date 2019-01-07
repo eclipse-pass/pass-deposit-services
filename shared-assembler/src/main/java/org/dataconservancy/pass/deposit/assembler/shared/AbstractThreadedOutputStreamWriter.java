@@ -87,6 +87,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param packageFiles the custodial content of the package
      * @param rbf factory for building {@link PackageStream.Resource
      *            package resources}
+     * @param metadataBuilder interface for adding metadata describing this stream
      */
     public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
                                               DepositSubmission submission, List<DepositFileResource> packageFiles,
@@ -230,7 +231,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * Create an ArchiveEntry from a {@code String} name and a {@code long} length
      * @param name the name for the antry
      * @param length the length to be assigned to the entry if the entry type supports setSize()
-     *               setSize() is not attempted if length < 0
+     *               setSize() is not attempted if length &lt; 0
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {

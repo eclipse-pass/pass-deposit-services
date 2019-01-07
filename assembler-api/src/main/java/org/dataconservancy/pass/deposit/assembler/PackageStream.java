@@ -45,7 +45,7 @@ public interface PackageStream {
      * Opens the package in its entirety, and streams back the bytes as specified by the archive and compression
      * settings used when creating the package.
      *
-     * @return
+     * @return the stream for reading the entire package
      */
     InputStream open();
 
@@ -54,15 +54,15 @@ public interface PackageStream {
      * resource from within a package (e.g. a file from within a ZIP archive).  To open the package as a whole, use
      * {@link #open()}.
      *
-     * @param packageResource
-     * @return
+     * @param packageResource the identifier for a resource within the package
+     * @return the stream for reading a singular resource within the package
      */
     InputStream open(String packageResource);
 
     /**
      * Returns an iterator over the resources in the package.
      *
-     * @return
+     * @return an Iterator over the resources in the package
      */
     Iterator<Resource> resources();
 
@@ -95,14 +95,14 @@ public interface PackageStream {
          * The specification adhered to by the package serialization returned by {@link #open()}.  Examples include
          * BagIt, NIHMS native, BOREM, etc.
          *
-         * @return
+         * @return the identifier for the specification
          */
         String spec();
 
         /**
          * The mime type of the package serialization returned by {@link #open()}.
          *
-         * @return
+         * @return the mime type of the package
          */
         String mimeType();
 
@@ -125,7 +125,7 @@ public interface PackageStream {
         /**
          * The compression algorithm, if {@link #compression()} is used.
          *
-         * @return
+         * @return the compression used
          */
         COMPRESSION compression();
 
@@ -138,14 +138,14 @@ public interface PackageStream {
         /**
          * The archive form, if the package is {@link #archived()}.
          *
-         * @return
+         * @return the archive form
          */
         ARCHIVE archive();
 
         /**
          * The primary or preferred checksum of the package serialization as returned by {@link #open()}
          *
-         * @return
+         * @return the preferred checksum
          */
         Checksum checksum();
 
@@ -153,7 +153,7 @@ public interface PackageStream {
          * All available checksums of the package serialization as returned by {@link #open()}.  The primary or
          * preferred checksum will be at the head of the list.
          *
-         * @return
+         * @return all available checksums
          */
         Collection<Checksum> checksums();
 
@@ -188,14 +188,14 @@ public interface PackageStream {
         /**
          * The primary or preferred checksum of the resource
          *
-         * @return
+         * @return the preferred checksum
          */
         Checksum checksum();
 
         /**
          * All available checksums of the resource
          *
-         * @return
+         * @return all available checksums
          */
         Collection<Checksum> checksums();
 

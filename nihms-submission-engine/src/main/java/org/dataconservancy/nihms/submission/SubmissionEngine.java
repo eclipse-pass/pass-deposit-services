@@ -53,7 +53,7 @@ import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.U
 
 /**
  * Performs the submission of a manuscript and associated files to a target repository.
- * <p>
+ *
  * A {@code SubmissionEngine} instance requires three collaborators:
  * <dl>
  *     <dt>{@link SubmissionBuilder Submission Builder}</dt>
@@ -74,7 +74,7 @@ import static org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints.U
  *         Different target repositories will support different transports, so this component is largely influenced by
  *         the technical platform and policies of the target repository.</dd>
  * </dl>
- * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionEngine {
