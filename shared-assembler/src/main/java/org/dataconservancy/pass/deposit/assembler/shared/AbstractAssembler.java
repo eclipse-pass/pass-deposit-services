@@ -117,10 +117,10 @@ public abstract class AbstractAssembler implements Assembler {
      * </p>
      *
      * @param submission the submission of content and metadata
-     * @param custodialResources
-     * @param mdb
-     * @param rbf
-     * @return
+     * @param custodialResources the custodial content to be streamed
+     * @param mdb the interface for adding metadata describing package stream
+     * @param rbf the interface for adding metadata for individual resources in the package stream
+     * @return the package stream
      */
     protected abstract PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
                                                          MetadataBuilder mdb, ResourceBuilderFactory rbf);

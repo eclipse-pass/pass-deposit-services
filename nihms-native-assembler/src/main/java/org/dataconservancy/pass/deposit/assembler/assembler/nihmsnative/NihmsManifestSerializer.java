@@ -35,7 +35,7 @@ import java.util.Set;
  * NIHMS Bulk Submission Specifications for Publishers document. For each file in the manifest's file list,
  * we have a line
  *
- * {file_type}<tab>{label}<tab>{file_name}
+ * {file_type}&lt;tab&gt;{label}&lt;tab&gt;{file_name}
  *
  * where the file type is one of
  *

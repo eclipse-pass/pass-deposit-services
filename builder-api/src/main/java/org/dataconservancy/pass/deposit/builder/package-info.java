@@ -15,7 +15,7 @@
  */
 
 /**
- * Provides an API for building an instance of a {@link org.dataconservancy.nihms.model.NihmsSubmission submission
+ * Provides an API for building an instance of a {@link org.dataconservancy.pass.deposit.model.DepositSubmission submission}
  * model}.
  */
 package org.dataconservancy.pass.deposit.builder;

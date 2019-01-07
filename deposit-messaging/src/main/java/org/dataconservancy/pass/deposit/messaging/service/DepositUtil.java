@@ -290,7 +290,7 @@ public class DepositUtil {
         /**
          * The type of the resource in Fedora, comma-delimited multi-value
          *
-         * @return
+         * @return the multi-valued Fedora resource type
          */
         public String resourceType() {
             return resourceType;
@@ -299,7 +299,7 @@ public class DepositUtil {
         /**
          * The type of the event from Fedora, comma-delimited multi-value
          *
-         * @return
+         * @return the multi-valued Fedora event type
          */
         public String eventType() {
             return eventType;
@@ -308,7 +308,7 @@ public class DepositUtil {
         /**
          * The identifier of the message
          *
-         * @return
+         * @return the message identifier
          */
         public String id() {
             return id;
@@ -317,7 +317,7 @@ public class DepositUtil {
         /**
          * The JMS acknowledgement mode, as a String
          *
-         * @return
+         * @return the JMS acknowledgement mode
          */
         public String ackMode() {
             return ackMode;
@@ -326,7 +326,7 @@ public class DepositUtil {
         /**
          * The formatted timestamp of the message
          *
-         * @return
+         * @return the formatted message timestamp
          */
         public String dateTime() {
             return dateTime;
@@ -335,7 +335,7 @@ public class DepositUtil {
         /**
          * The timestamp of the message
          *
-         * @return
+         * @return the message timestamp
          */
         public long timestamp() {
             return timestamp;
@@ -344,7 +344,7 @@ public class DepositUtil {
         /**
          * The JMS session that received the message
          *
-         * @return
+         * @return the JMS Session
          */
         public Session session() {
             return session;
@@ -353,7 +353,7 @@ public class DepositUtil {
         /**
          * The message, in the Spring domain model
          *
-         * @return
+         * @return the Spring JMS Message
          */
         public Message<String> message() {
             return message;
@@ -362,7 +362,7 @@ public class DepositUtil {
         /**
          * The message, in the native JMS model
          *
-         * @return
+         * @return the native JMS Message
          */
         public javax.jms.Message jmsMessage() {
             return jmsMessage;
@@ -383,7 +383,7 @@ public class DepositUtil {
 
         /**
          * the {@code Deposit} itself
-         * @return
+         * @return the Deposit
          */
         public Deposit deposit() {
             return depositResource;
@@ -396,7 +396,7 @@ public class DepositUtil {
         /**
          * the {@code Submission} adapted to the deposit services model
          *
-         * @return
+         * @return the DepositSubmission
          */
         public DepositSubmission depositSubmission() {
             return depositSubmission;
@@ -405,7 +405,7 @@ public class DepositUtil {
         /**
          * the {@code Repository} the custodial content should be transferred to
          *
-         * @return
+         * @return the Repository
          */
         public Repository repository() {
             return repository;
@@ -414,7 +414,7 @@ public class DepositUtil {
         /**
          * the {@code Packager} used to assemble and stream the custodial content
          *
-         * @return
+         * @return the Packager
          */
         public Packager packager() {
             return packager;
@@ -423,7 +423,7 @@ public class DepositUtil {
         /**
          * the {@code Submission} the {@code Deposit} is for
          *
-         * @return
+         * @return the Submission
          */
         public Submission submission() {
             return submission;
@@ -432,7 +432,7 @@ public class DepositUtil {
         /**
          * the {@code RepositoryCopy} created by a successful deposit
          *
-         * @return
+         * @return the RepositoryCopy
          */
         public RepositoryCopy repoCopy() {
             return repoCopy;
@@ -445,7 +445,7 @@ public class DepositUtil {
         /**
          * a URI that may be polled to determine the status of a Deposit
          *
-         * @return
+         * @return the status URI
          */
         public String statusUri() {
             return statusUri;

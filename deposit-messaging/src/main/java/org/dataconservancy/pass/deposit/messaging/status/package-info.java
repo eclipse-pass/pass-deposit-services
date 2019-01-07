@@ -23,17 +23,5 @@
  * object, and {@link org.dataconservancy.pass.deposit.messaging.status.DepositStatusMapper} is able to map a deposit
  * status from domain to another.
  * </p>
- * <p>
- * The most complicated implementation is the {@link
- * org.dataconservancy.pass.deposit.messaging.status.AbstractStatusMapper}, which uses a JSON configuration file located
- * in the classpath as {@code /statusmapping.json}.  The configuration file provides mappings to PASS {@link
- * org.dataconservancy.pass.model.Deposit.DepositStatus} from two different domains: SWORDv2 Atom feeds, and a PASS
- * {@code RepositoryCopy} {@link org.dataconservancy.pass.model.RepositoryCopy#copyStatus copy status}
- * </p>
- * <p>
- * The single implementation of {@link org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver} is the
- * {@link org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver}, which is able to resolve
- * an Atom feed and return a deposit status.
- * </p>
  */
 package org.dataconservancy.pass.deposit.messaging.status;

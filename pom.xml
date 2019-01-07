@@ -20,9 +20,29 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dataconservancy.pass.deposit</groupId>
     <artifactId>deposit-parent</artifactId>
-    <version>0.1.1-3.2-SNAPSHOT</version>
+    <version>0.2.0-3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>NIH Package and Submission Parent Project</name>
+    <name>Deposit Services Parent Project</name>
+    <description>Responsible for the transfer of custody to downstream repositories</description>
+    <url>https://github.com/OA-PASS/deposit-services</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Elliot Metsger</name>
+            <email>emetsger@jhu.edu</email>
+            <organization>Johns Hopkins University, Sheridan Libraries, Digital Research and Curation Center
+            </organization>
+            <organizationUrl>https://www.library.jhu.edu/library-departments/digital-research-curation-center/
+            </organizationUrl>
+        </developer>
+    </developers>
 
     <modules>
         <module>deposit-model</module>
@@ -46,6 +66,38 @@
     </modules>
 
     <profiles>
+
+        <profile>
+            <id>release</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>${maven-gpg-plugin.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>sign-artifacts</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>sign</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <useAgent>true</useAgent>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
         <profile>
             <id>external</id>
@@ -79,6 +131,10 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.wagon.ssh.version>2.10</maven.wagon.ssh.version>
         <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
+        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+        <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
         <fabric8.docker.maven.plugin.version>0.24.0</fabric8.docker.maven.plugin.version>
         <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
@@ -103,7 +159,7 @@
         <pass-client.version>0.5.0</pass-client.version>
         <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
         <jackson.version>2.9.6</jackson.version>
-        <messaging-support.version>0.1.0-3.2-SNAPSHOT</messaging-support.version>
+        <messaging-support.version>0.1.2-3.2-SNAPSHOT</messaging-support.version>
 
         <docker.fcrepo.version>oapass/fcrepo:4.7.5-3.2-2</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.17-3.2-SNAPSHOT</docker.indexer.version>
@@ -119,6 +175,26 @@
     </properties>
 
     <build>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.plugin.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+
+        </plugins>
 
         <pluginManagement>
 
@@ -218,6 +294,64 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven.release.plugin.version}</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <pushChanges>false</pushChanges>
+                        <localCheckout>true</localCheckout>
+                        <goals>deploy</goals>
+                        <releaseProfiles>release</releaseProfiles>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <useAgent>true</useAgent>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
             </plugins>
@@ -527,18 +661,22 @@
     <distributionManagement>
 
         <repository>
-            <id>dc.public.releases</id>
-            <name>Data Conservancy Release Maven Repository</name>
-            <url>scp://maven.dataconservancy.org:${scp.port}/data/maven-dc/public/releases/</url>
+            <id>maven-central-staging</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
 
         <snapshotRepository>
-            <id>dc.public.snapshots</id>
-            <name>Data Conservancy Snapshot Maven Repository</name>
-            <url>scp://maven.dataconservancy.org:${scp.port}/data/maven-dc/public/snapshots/</url>
-            <uniqueVersion>false</uniqueVersion>
+            <id>oss.snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
 
     </distributionManagement>
+
+    <scm>
+        <connection>scm:git:https://github.com/OA-PASS/deposit-services.git</connection>
+        <developerConnection>scm:git:https://github.com/OA-PASS/deposit-services.git</developerConnection>
+        <url>https://github.com/OA-PASS/deposit-services</url>
+        <tag>HEAD</tag>
+    </scm>
 
 </project>

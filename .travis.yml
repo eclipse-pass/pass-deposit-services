@@ -17,13 +17,12 @@ before_install:
 - sudo service sshguard stop
 - sudo service ssh stop
 - sudo service rsyslog stop
-- if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then openssl aes-256-cbc -K $encrypted_6f2ab57107e3_key -iv $encrypted_6f2ab57107e3_iv -in settings.tar.enc -out settings.tar -d && tar
-  -xf settings.tar && cat known_hosts >> ~/.ssh/known_hosts ; fi
+- if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then openssl aes-256-cbc -K $encrypted_a8bae9369974_key -iv $encrypted_a8bae9369974_iv -in settings-central.tar.enc -out settings-central.tar -d && tar -xf settings-central.tar ; fi
 
 install: mvn -U install -Ddocker.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml deploy
-  -Dexternal -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false; fi
+   -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false; fi
 
 jdk:
 - oraclejdk8

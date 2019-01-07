@@ -16,6 +16,6 @@
 
 /**
  * Provides an API for the creation of submission {@link org.dataconservancy.pass.deposit.assembler.PackageStream packages}
- * from a {@link org.dataconservancy.nihms.model.NihmsSubmission model}
+ * from a {@link org.dataconservancy.pass.deposit.model.DepositSubmission model}
  */
 package org.dataconservancy.pass.deposit.assembler;

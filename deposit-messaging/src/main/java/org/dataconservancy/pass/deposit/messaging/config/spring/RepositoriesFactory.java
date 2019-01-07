@@ -35,7 +35,7 @@ import java.net.URI;
  * <p>
  * The location of the repository configuration file isi identified as a Spring Resource using the {@code
  * pass.deposit.repository.configuration} property key.
- * <p>
+ * </p>
  */
 public class RepositoriesFactory implements FactoryBean<Repositories> {
 
@@ -59,8 +59,8 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
     /**
      * Parses the {@code repositories.json} configuration file.  Each entry in the file represents the configuration for
      * a is mapped to a {@link RepositoryConfig}
-     * @return
-     * @throws Exception
+     * @return the configured Repositories object
+     * @throws Exception if the object cannot be configured
      */
     @Nullable
     @Override
