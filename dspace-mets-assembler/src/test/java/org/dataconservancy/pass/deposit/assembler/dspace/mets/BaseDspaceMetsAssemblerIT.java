@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,7 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
                 put(PackageOptions.SPEC, DspaceMetsAssembler.SPEC_DSPACE_METS);
                 put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
                 put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.ZIP);
+                put(PackageOptions.ALGO_KEY, Arrays.asList(PackageOptions.Algo.SHA256, PackageOptions.Algo.MD5));
             }
         };
     }

@@ -25,8 +25,8 @@ import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Algo;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ALGO_KEY;
 import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
 import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
@@ -123,6 +125,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      *         specific metadata to the output stream</li>
      * </ol>
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         List<PackageStream.Resource> assembledResources = new ArrayList<>();
@@ -154,15 +157,12 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
                     rb.mimeType(detectMediaType(in, new DefaultDetector()).toString());
 
-                    // TODO: input stream observers for checksum algorithms should be configured from the package
-                    //          options
-                    ContentLengthObserver clObs = new ContentLengthObserver(rb);
-                    DigestObserver md5Obs = new DigestObserver(rb, PackageOptions.Algo.MD5);
-                    DigestObserver sha256Obs = new DigestObserver(rb, PackageOptions.Algo.SHA256);
                     try (ObservableInputStream observableIn = new ObservableInputStream(in)) {
+                        ContentLengthObserver clObs = new ContentLengthObserver(rb);
                         observableIn.add(clObs);
-                        observableIn.add(md5Obs);
-                        observableIn.add(sha256Obs);
+
+                        ((List<Algo>) packageOptions.getOrDefault(ALGO_KEY, emptyList())).forEach(algo ->
+                                observableIn.add(new DigestObserver(rb, algo)));
 
                         rb.name(nameResource(resource));
                         PackageStream.Resource packageResource = rb.build();
