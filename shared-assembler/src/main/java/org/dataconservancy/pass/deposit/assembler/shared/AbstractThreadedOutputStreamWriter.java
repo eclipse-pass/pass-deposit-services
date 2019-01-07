@@ -26,6 +26,7 @@ import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -39,7 +40,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
 import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
@@ -78,6 +81,8 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     protected ArchiveOutputStream archiveOut;
 
+    protected Map<String, Object> packageOptions;
+
     /**
      * Constructs an {@code ArchiveOutputStream} that is supplied with the output stream being written to, the custodial
      * content being packaged, the submission, and other supporting classes.
@@ -86,19 +91,23 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param archiveOut the output stream being written to by this writer
      * @param submission the submission
      * @param packageFiles the custodial content of the package
-     * @param rbf factory for building {@link PackageStream.Resource
-     *            package resources}
-     * @param metadataBuilder interface for adding metadata describing this stream
+     * @param rbf factory for building {@link PackageStream.Resource package resources}
+     * @param packageOptions options used for building the package
      */
-    public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
-                                              DepositSubmission submission, List<DepositFileResource> packageFiles,
-                                              ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder) {
+    public AbstractThreadedOutputStreamWriter(String threadName,
+                                              ArchiveOutputStream archiveOut,
+                                              DepositSubmission submission,
+                                              List<DepositFileResource> packageFiles,
+                                              ResourceBuilderFactory rbf,
+                                              MetadataBuilder metadataBuilder,
+                                              Map<String, Object> packageOptions) {
         super(threadName);
         this.archiveOut = archiveOut;
         this.packageFiles = packageFiles;
         this.rbf = rbf;
         this.submission = submission;
         this.metadataBuilder = metadataBuilder;
+        this.packageOptions = packageOptions;
     }
 
     /**
@@ -233,20 +242,25 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {
-        PackageStream.Metadata metadata = metadata();
-        if(metadata.archive().equals(PackageOptions.ARCHIVE.TAR)) {
-            TarArchiveEntry entry = new TarArchiveEntry(name);
-            if (length >= 0) {
-                entry.setSize(length);
+        switch ((ARCHIVE) packageOptions.getOrDefault(ARCHIVE_KEY, ARCHIVE.NONE)) {
+            case TAR: {
+                TarArchiveEntry entry = new TarArchiveEntry(name);
+                if (length >= 0) {
+                    entry.setSize(length);
+                }
+                return entry;
             }
-            return entry;
-        } else if (metadata.archive().equals(PackageOptions.ARCHIVE.ZIP)) {
-            ZipArchiveEntry entry = new ZipArchiveEntry(name);
-            if (length >= 0) {
-                entry.setSize(length);
+
+            case ZIP: {
+                ZipArchiveEntry entry = new ZipArchiveEntry(name);
+                if (length >= 0) {
+                    entry.setSize(length);
+                }
+                return entry;
             }
-            return entry;
-        } else return null;
+
+            default: return null;
+        }
     }
 
     /**
@@ -338,7 +352,4 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
         void closeAll();
     }
 
-    protected PackageStream.Metadata metadata() {
-        return metadataBuilder.build();
-    }
 }

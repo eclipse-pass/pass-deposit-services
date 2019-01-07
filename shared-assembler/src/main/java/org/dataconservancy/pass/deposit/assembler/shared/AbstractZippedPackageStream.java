@@ -21,6 +21,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.COMPRESSION;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
@@ -31,9 +32,12 @@ import java.io.InputStream;
 import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE.TAR;
 import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE.ZIP;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.COMPRESSION_KEY;
 
 public abstract class AbstractZippedPackageStream implements PackageStream {
 
@@ -48,15 +52,20 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
 
     protected List<DepositFileResource> custodialContent;
 
+    protected Map<String, Object> packageOptions;
+
     private MetadataBuilder metadataBuilder;
 
     private ResourceBuilderFactory rbf;
 
     public AbstractZippedPackageStream(List<DepositFileResource> custodialContent,
-                                       MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf) {
+                                       MetadataBuilder metadataBuilder,
+                                       ResourceBuilderFactory rbf,
+                                       Map<String, Object> packageOptions) {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;
         this.rbf = rbf;
+        this.packageOptions = packageOptions;
     }
 
     /**
@@ -95,11 +104,10 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         // Wrap the output stream in an ArchiveOutputStream
         // we support zip, tar and tar.gz so far
         ArchiveOutputStream archiveOut;
-        PackageStream.Metadata metadata = metadata();
 
-        if (metadata.archive().equals(TAR)) {
+        if (packageOptions.getOrDefault(ARCHIVE_KEY, ARCHIVE.NONE) == TAR) {
             try {
-                if (metadata.compression().equals(COMPRESSION.GZIP)) {
+                if (packageOptions.getOrDefault(COMPRESSION_KEY, COMPRESSION.NONE) == COMPRESSION.GZIP) {
                     archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
                 } else {
                     archiveOut = new TarArchiveOutputStream(pipedOut);
@@ -107,7 +115,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
             } catch (Exception e) {
                 throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
             }
-        } else if (metadata.archive().equals(ZIP)) {
+        } else if (packageOptions.getOrDefault(ARCHIVE_KEY, ARCHIVE.NONE) == ZIP) {
             try {
                 archiveOut = new ZipArchiveOutputStream(pipedOut);
             } catch (Exception e) {
