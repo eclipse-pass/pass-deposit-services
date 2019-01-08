@@ -16,6 +16,8 @@
 package org.dataconservancy.pass.deposit.messaging.status;
 
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
 import org.dataconservancy.pass.model.Deposit;
 import org.junit.Before;
@@ -32,6 +34,7 @@ import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepos
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -58,22 +61,29 @@ public class DefaultDepositStatusProcessorTest {
 
     private BasicAuthRealm authRealm;
 
+    private RepositoryConfig repositoryConfig;
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         resolver = mock(DepositStatusResolver.class);
         mapping = mock(StatusMapping.class);
+        authRealm = mock(BasicAuthRealm.class);
+        when(authRealm.getBaseUrl()).thenReturn(depositStatusRefBaseUrl);
+        repositoryConfig = mock(RepositoryConfig.class);
+        RepositoryDepositConfig depositConfig = mock(RepositoryDepositConfig.class);
+        when(repositoryConfig.getRepositoryDepositConfig()).thenReturn(depositConfig);
+        when(depositConfig.getStatusMapping()).thenReturn(mapping);
+
         underTest = new DefaultDepositStatusProcessor(resolver);
         deposit = mock(Deposit.class);
         when(deposit.getDepositStatusRef()).thenReturn(depositStatusRef);
-        authRealm = mock(BasicAuthRealm.class);
-        when(authRealm.getBaseUrl()).thenReturn(depositStatusRefBaseUrl);
     }
 
     @Test
     public void processingOk() throws Exception {
         URI refUri = URI.create(depositStatusRef);
-        when(resolver.resolve(refUri, authRealm)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
+        when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
         when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
             {
                 put(SWORD_STATE_ARCHIVED.asUri().toString(), Deposit.DepositStatus.ACCEPTED.name().toLowerCase());
@@ -81,9 +91,9 @@ public class DefaultDepositStatusProcessorTest {
         });
 
         assertEquals(Deposit.DepositStatus.ACCEPTED,
-                underTest.process(deposit, Collections.singletonList(authRealm), mapping));
+                underTest.process(deposit, repositoryConfig));
 
-        verify(resolver).resolve(refUri, authRealm);
+        verify(resolver).resolve(refUri, repositoryConfig);
         verify(mapping).getStatusMap();
     }
 
@@ -94,7 +104,7 @@ public class DefaultDepositStatusProcessorTest {
         expectedException.expectMessage(badDepositStatusUri);
 
         URI refUri = URI.create(depositStatusRef);
-        when(resolver.resolve(refUri, authRealm)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
+        when(resolver.resolve(refUri, repositoryConfig)).thenReturn(SWORD_STATE_ARCHIVED.asUri());
         when(mapping.getStatusMap()).thenReturn(new HashMap<String, String>() {
             {
 
@@ -102,55 +112,55 @@ public class DefaultDepositStatusProcessorTest {
             }
         });
 
-        underTest.process(deposit, Collections.singletonList(authRealm), mapping);
-        verify(resolver).resolve(refUri, authRealm);
+        underTest.process(deposit, repositoryConfig);
+        verify(resolver).resolve(refUri, repositoryConfig);
         verify(mapping);
     }
 
     @Test
     public void parsingReturnsNullSwordStatus() throws Exception {
-        when(resolver.resolve(any(), any())).thenReturn(null);
+        when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(null);
 
-        assertNull(underTest.process(deposit, null, mapping));
+        assertNull(underTest.process(deposit, repositoryConfig));
 
-        verify(resolver).resolve(any(), any());
+        verify(resolver).resolve(any(), eq(repositoryConfig));
         verifyZeroInteractions(mapping);
     }
 
     @Test
     public void mappingReturnsNullDepositStatus() throws Exception {
-        when(resolver.resolve(any(), any())).thenReturn(SWORD_STATE_INPROGRESS.asUri());
+        when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(SWORD_STATE_INPROGRESS.asUri());
         when(mapping.getStatusMap()).thenReturn(Collections.emptyMap());
         when(mapping.getDefaultMapping()).thenReturn(null);
 
-        assertNull(underTest.process(deposit, null, mapping));
+        assertNull(underTest.process(deposit, repositoryConfig));
 
-        verify(resolver).resolve(any(), any());
+        verify(resolver).resolve(any(), eq(repositoryConfig));
         verify(mapping).getStatusMap();
         verify(mapping).getDefaultMapping();
     }
 
     @Test
     public void parsingThrowsRuntimeException() throws Exception {
-        when(resolver.resolve(any(), any())).thenThrow(new RuntimeException("Expected"));
+        when(resolver.resolve(any(), eq(repositoryConfig))).thenThrow(new RuntimeException("Expected"));
         expectedException.expectMessage("Expected");
         expectedException.expect(RuntimeException.class);
 
-        underTest.process(deposit, null, mapping);
+        underTest.process(deposit, repositoryConfig);
 
-        verify(resolver).resolve(any(), any());
+        verify(resolver).resolve(any(), repositoryConfig);
         verifyZeroInteractions(mapping);
     }
 
     @Test
     public void mappingThrowsRuntimeException() throws Exception {
-        when(resolver.resolve(any(), any())).thenReturn(SWORD_STATE_INPROGRESS.asUri());
+        when(resolver.resolve(any(), eq(repositoryConfig))).thenReturn(SWORD_STATE_INPROGRESS.asUri());
         when(mapping.getStatusMap()).thenThrow(new RuntimeException("Expected"));
         expectedException.expectMessage("Expected");
         expectedException.expect(RuntimeException.class);
 
-        assertNull(underTest.process(deposit, null, mapping));
+        assertNull(underTest.process(deposit, repositoryConfig));
 
-        verify(resolver).resolve(any(), any());
+        verify(resolver).resolve(any(), repositoryConfig);
     }
 }

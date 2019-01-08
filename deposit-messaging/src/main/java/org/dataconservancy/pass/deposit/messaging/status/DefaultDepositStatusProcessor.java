@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.messaging.status;
 
 import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -47,20 +49,18 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
      * Parses the SWORD statement at {@code depositStatusRef}, and returns a corresponding {@link Deposit.DepositStatus}
      *
      * @param deposit the Deposit
-     * @param authRealms the auth realms used to authenticate access to any web resources
-     * @param statusMapping the status mapping
+     * @param repositoryConfig the configuration for the repository containing the Deposit
      * @return the deposit status, may be {@code null}
      */
     @Override
-    public Deposit.DepositStatus process(Deposit deposit, Collection<AuthRealm> authRealms, StatusMapping statusMapping) {
+    public Deposit.DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig) {
         if (deposit.getDepositStatusRef() == null || deposit.getDepositStatusRef().trim().length() == 0) {
             LOG.warn("Deposit {} is missing a depositStatusRef; the deposit status will not be processed.",
                     deposit.getId());
             return null;
         }
 
-        URI swordState = statusResolver.resolve(URI.create(deposit.getDepositStatusRef()),
-                matchRealm(deposit.getDepositStatusRef(), authRealms).orElse(null));
+        URI swordState = statusResolver.resolve(URI.create(deposit.getDepositStatusRef()), repositoryConfig);
 
         if (swordState == null) {
             LOG.warn("No SWORD deposit status was found in {} by {}.",
@@ -70,8 +70,9 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
 
         String status = null;
         try {
-            status = statusMapping.getStatusMap()
-                    .getOrDefault(swordState.toString(), statusMapping.getDefaultMapping());
+            StatusMapping statusMapping = repositoryConfig.getRepositoryDepositConfig().getStatusMapping();
+            Map<String, String> statusMap = statusMapping.getStatusMap();
+            status = statusMap.getOrDefault(swordState.toString(), statusMapping.getDefaultMapping());
         } catch (RuntimeException e) {
             LOG.error("Error mapping the SWORD state {} to a PASS Deposit.DepositStatus: {}",
                     swordState, e.getMessage());

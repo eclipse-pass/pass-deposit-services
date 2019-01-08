@@ -19,6 +19,7 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.apache.http.ParseException;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,11 +57,14 @@ public class AtomFeedStatusParserTest {
 
     private Parser abderaParser;
 
+    private RepositoryConfig repositoryConfig;
+
     private AtomFeedStatusResolver underTest;
 
     @Before
     public void setUp() throws Exception {
         abderaParser = mock(Parser.class);
+        repositoryConfig = mock(RepositoryConfig.class);
         underTest = new AtomFeedStatusResolver(abderaParser);
     }
 
@@ -129,7 +133,7 @@ public class AtomFeedStatusParserTest {
         expectedException.expectMessage("AtomStatusParser-archived.xml");
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expected);
 
-        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), null);
+        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), repositoryConfig);
     }
 
     @Test
@@ -142,6 +146,6 @@ public class AtomFeedStatusParserTest {
 
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expectedCause);
 
-        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), null);
+        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), repositoryConfig);
     }
 }

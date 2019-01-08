@@ -30,6 +30,7 @@ import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.PassAbderaClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
@@ -54,6 +55,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -231,16 +233,23 @@ public class DepositConfig {
     @Bean
     public Map<String, Packager> packagers(@Value("#{assemblers}") Map<String, Assembler> assemblers,
                                            @Value("#{transports}") Map<String, Transport> transports,
-                                           Repositories repositories) {
+                                           Repositories repositories,
+                                           ApplicationContext appCtx) {
 
         Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
                 .map(repoConfig -> {
+                    String dspBeanName = repoConfig.getRepositoryDepositConfig().getDepositProcessing().getBeanName();
+                    DepositStatusProcessor dsp = null;
+                    if (dspBeanName != null) {
+                        dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
+                        repoConfig.getRepositoryDepositConfig().getDepositProcessing().setProcessor(dsp);
+                    }
+
                     return new Packager(
                             repoConfig.getRepositoryKey(),
                             assemblers.get(repoConfig.getAssemblerConfig().getSpec()),
                             transports.get(repoConfig.getTransportConfig().getProtocolBinding().getProtocol()),
-                            repoConfig,
-                            repoConfig.getRepositoryDepositConfig().getDepositProcessing().getProcessor());
+                            repoConfig, dsp);
                 })
                 .collect(Collectors.toMap(Packager::getName, Function.identity()));
 
