@@ -30,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -146,7 +145,7 @@ public class SubmissionEngine {
             PackageStream stream = assembler.assemble(submission, new HashMap<String, Object>()
             {
                 {
-                    put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
+                    put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
                 }
             });
             resourceName = stream.metadata().name();

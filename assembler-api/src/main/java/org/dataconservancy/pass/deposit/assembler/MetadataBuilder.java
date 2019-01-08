@@ -78,7 +78,7 @@ public interface MetadataBuilder {
      * @return this builder
      * @see PackageStream.Metadata#compression()
      */
-    MetadataBuilder compression(PackageOptions.COMPRESSION compression);
+    MetadataBuilder compression(PackageOptions.Compression.OPTS compression);
 
     /**
      * Sets the {@link PackageStream.Metadata#archived()} flag of the {@code PackageStream}.
@@ -97,7 +97,7 @@ public interface MetadataBuilder {
      * @return this builder
      * @see PackageStream.Metadata#archive()
      */
-    MetadataBuilder archive(PackageOptions.ARCHIVE archive);
+    MetadataBuilder archive(PackageOptions.Archive.ARCHIVE archive);
 
     /**
      * Adds a {@link PackageStream.Metadata#checksum()} of the {@code PackageStream}.  The first

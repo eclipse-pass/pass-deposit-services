@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.SPEC;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.junit.Assert.assertTrue;
@@ -67,10 +65,10 @@ public class DspaceMetsPackageStreamTest {
         when(metsWriterFactory.newInstance()).thenReturn(metsWriter);
 
         mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageOptions.ARCHIVE.ZIP);
+        mb.archive(PackageOptions.Archive.ARCHIVE.ZIP);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageOptions.COMPRESSION.ZIP);
+        mb.compression(PackageOptions.Compression.OPTS.ZIP);
         mb.mimeType(APPLICATION_ZIP);
 
         String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
@@ -94,8 +92,8 @@ public class DspaceMetsPackageStreamTest {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
-                put(SPEC, SPEC_DSPACE_METS);
+                put(KEY, PackageOptions.Archive.ARCHIVE.ZIP);
+                put(PackageOptions.Spec.KEY, SPEC_DSPACE_METS);
             }
         };
     }

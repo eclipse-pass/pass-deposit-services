@@ -66,7 +66,7 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
-    public MetadataBuilder compression(PackageOptions.COMPRESSION compression) {
+    public MetadataBuilder compression(PackageOptions.Compression.OPTS compression) {
         checkState();
         metadata.setCompression(compression);
         return this;
@@ -80,7 +80,7 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
-    public MetadataBuilder archive(PackageOptions.ARCHIVE archive) {
+    public MetadataBuilder archive(PackageOptions.Archive.ARCHIVE archive) {
         checkState();
         metadata.setArchive(archive);
         return this;

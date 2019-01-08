@@ -94,9 +94,9 @@ public class NihmsPackageStreamTest {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(PackageOptions.SPEC, NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
-                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.TAR);
-                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.GZIP);
+                put(PackageOptions.Spec.KEY, NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
+                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.TAR);
+                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
             }
         };
     }

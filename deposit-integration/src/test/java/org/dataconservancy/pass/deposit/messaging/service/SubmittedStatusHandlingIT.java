@@ -44,7 +44,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
@@ -158,9 +157,9 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.SPEC, DspaceMetsAssembler.SPEC_DSPACE_METS);
-                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
-                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.ZIP);
+                put(PackageOptions.Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
+                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.ZIP);
             }
         };
     }

@@ -35,7 +35,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -170,7 +169,7 @@ public abstract class BaseAssemblerIT {
      * @param packageArchive the package archive file to open
      * @throws IOException if there is an error opening the package
      */
-    protected void extractPackage(File packageArchive, PackageOptions.ARCHIVE archive, PackageOptions.COMPRESSION compression) throws IOException {
+    protected void extractPackage(File packageArchive, PackageOptions.Archive.ARCHIVE archive, PackageOptions.Compression.OPTS compression) throws IOException {
         extractedPackageDir = openArchive(packageArchive, archive, compression);
 
         LOG.debug(">>>> Extracted package to '{}'", extractedPackageDir);

@@ -67,8 +67,8 @@ public class NihmsAssemblerTest {
 
     @Test
     public void packageNameForTarGz() throws Exception {
-        when(metadata.archive()).thenReturn(PackageOptions.ARCHIVE.TAR);
-        when(metadata.compression()).thenReturn(PackageOptions.COMPRESSION.GZIP);
+        when(metadata.archive()).thenReturn(PackageOptions.Archive.ARCHIVE.TAR);
+        when(metadata.compression()).thenReturn(PackageOptions.Compression.OPTS.GZIP);
 
         NihmsAssembler.namePackage(submission, mdBuilder);
 
@@ -79,8 +79,8 @@ public class NihmsAssemblerTest {
 
     @Test
     public void packageNameForZip() throws Exception {
-        when(metadata.archive()).thenReturn(PackageOptions.ARCHIVE.ZIP);
-        when(metadata.compression()).thenReturn(PackageOptions.COMPRESSION.ZIP);
+        when(metadata.archive()).thenReturn(PackageOptions.Archive.ARCHIVE.ZIP);
+        when(metadata.compression()).thenReturn(PackageOptions.Compression.OPTS.ZIP);
 
         NihmsAssembler.namePackage(submission, mdBuilder);
 

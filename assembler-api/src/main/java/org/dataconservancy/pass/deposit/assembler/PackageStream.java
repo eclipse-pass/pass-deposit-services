@@ -103,7 +103,7 @@ public interface PackageStream {
 
         /**
          * If the package stream returned by {@link #open()} is compressed.  If {@code false}, then {@link
-         * #compression()} should return {@link PackageOptions.COMPRESSION#NONE}.
+         * #compression()} should return {@link PackageOptions.Compression.OPTS#NONE}.
          *
          * @return true if the package stream returned by {@link #open()} is compressed
          */
@@ -114,11 +114,11 @@ public interface PackageStream {
          *
          * @return the compression used
          */
-        PackageOptions.COMPRESSION compression();
+        PackageOptions.Compression.OPTS compression();
 
         /**
          * If the package uses to an archive format, such as tar.  If {@code false}, then {@link #archive()} should
-         * return {@link PackageOptions.ARCHIVE#NONE}.
+         * return {@link PackageOptions.Archive.ARCHIVE#NONE}.
          */
         boolean archived();
 
@@ -127,7 +127,7 @@ public interface PackageStream {
          *
          * @return the archive form
          */
-        PackageOptions.ARCHIVE archive();
+        PackageOptions.Archive.ARCHIVE archive();
 
         /**
          * The primary or preferred checksum of the package serialization as returned by {@link #open()}
@@ -198,7 +198,7 @@ public interface PackageStream {
          *
          * @return the checksum algorithm
          */
-        PackageOptions.Algo algorithm();
+        PackageOptions.Checksum.CHECKSUM algorithm();
 
         /**
          * The value of the checksum, as a byte array

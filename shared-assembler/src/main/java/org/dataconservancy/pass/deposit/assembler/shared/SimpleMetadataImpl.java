@@ -43,11 +43,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     
     private boolean compressed = true;
 
-    private PackageOptions.COMPRESSION compression = PackageOptions.COMPRESSION.GZIP;
+    private PackageOptions.Compression.OPTS compression = PackageOptions.Compression.OPTS.GZIP;
 
     private boolean archived = true;
 
-    private PackageOptions.ARCHIVE archive = PackageOptions.ARCHIVE.TAR;
+    private PackageOptions.Archive.ARCHIVE archive = PackageOptions.Archive.ARCHIVE.TAR;
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
@@ -90,7 +90,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageOptions.COMPRESSION compression() {
+    public PackageOptions.Compression.OPTS compression() {
         return compression;
     }
 
@@ -100,7 +100,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageOptions.ARCHIVE archive() {
+    public PackageOptions.Archive.ARCHIVE archive() {
         return archive;
     }
 
@@ -158,11 +158,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.compressed = compressed;
     }
 
-    PackageOptions.COMPRESSION getCompression() {
+    PackageOptions.Compression.OPTS getCompression() {
         return compression;
     }
 
-    void setCompression(PackageOptions.COMPRESSION compression) {
+    void setCompression(PackageOptions.Compression.OPTS compression) {
         this.compression = compression;
     }
 
@@ -174,11 +174,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.archived = archived;
     }
 
-    PackageOptions.ARCHIVE getArchive() {
+    PackageOptions.Archive.ARCHIVE getArchive() {
         return archive;
     }
 
-    void setArchive(PackageOptions.ARCHIVE archive) {
+    void setArchive(PackageOptions.Archive.ARCHIVE archive) {
         this.archive = archive;
     }
 

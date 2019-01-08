@@ -25,8 +25,9 @@ import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Algo;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.ARCHIVE;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum.CHECKSUM;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -43,8 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ALGO_KEY;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
 import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
@@ -161,7 +160,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                         ContentLengthObserver clObs = new ContentLengthObserver(rb);
                         observableIn.add(clObs);
 
-                        ((List<Algo>) packageOptions.getOrDefault(ALGO_KEY, emptyList())).forEach(algo ->
+                        ((List<CHECKSUM>) packageOptions.getOrDefault(PackageOptions.Checksum.KEY, emptyList())).forEach(algo ->
                                 observableIn.add(new DigestObserver(rb, algo)));
 
                         rb.name(nameResource(resource));
@@ -242,7 +241,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {
-        switch ((ARCHIVE) packageOptions.getOrDefault(ARCHIVE_KEY, ARCHIVE.NONE)) {
+        switch ((ARCHIVE) packageOptions.getOrDefault(KEY, PackageOptions.Archive.ARCHIVE.NONE)) {
             case TAR: {
                 TarArchiveEntry entry = new TarArchiveEntry(name);
                 if (length >= 0) {

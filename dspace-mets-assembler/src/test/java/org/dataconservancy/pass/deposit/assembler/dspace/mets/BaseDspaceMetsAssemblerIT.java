@@ -62,10 +62,10 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.SPEC, DspaceMetsAssembler.SPEC_DSPACE_METS);
-                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
-                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.ZIP);
-                put(PackageOptions.ALGO_KEY, Arrays.asList(PackageOptions.Algo.SHA256, PackageOptions.Algo.MD5));
+                put(PackageOptions.Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
+                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.ZIP);
+                put(PackageOptions.Checksum.KEY, Arrays.asList(PackageOptions.Checksum.CHECKSUM.SHA256, PackageOptions.Checksum.CHECKSUM.MD5));
             }
         };
     }
@@ -78,8 +78,8 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageOptions.COMPRESSION.ZIP, metadata.compression());
-        assertEquals(PackageOptions.ARCHIVE.ZIP, metadata.archive());
+        assertEquals(PackageOptions.Compression.OPTS.ZIP, metadata.compression());
+        assertEquals(PackageOptions.Archive.ARCHIVE.ZIP, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_DSPACE_METS, metadata.spec());
         assertEquals(APPLICATION_ZIP, metadata.mimeType());

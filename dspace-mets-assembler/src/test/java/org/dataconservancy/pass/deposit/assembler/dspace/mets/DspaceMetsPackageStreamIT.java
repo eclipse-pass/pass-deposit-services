@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.ARCHIVE_KEY;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.SPEC;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -94,8 +92,8 @@ public class DspaceMetsPackageStreamIT {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(ARCHIVE_KEY, PackageOptions.ARCHIVE.ZIP);
-                put(SPEC, SPEC_DSPACE_METS);
+                put(KEY, PackageOptions.Archive.ARCHIVE.ZIP);
+                put(PackageOptions.Spec.KEY, SPEC_DSPACE_METS);
             }
         };
     }

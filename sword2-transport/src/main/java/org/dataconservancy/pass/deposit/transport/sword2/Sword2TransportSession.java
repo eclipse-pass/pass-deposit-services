@@ -127,7 +127,7 @@ public class Sword2TransportSession implements TransportSession {
         streamMetadata
                 .checksums()
                 .stream()
-                .filter(sum -> PackageOptions.Algo.MD5 == sum.algorithm())
+                .filter(sum -> PackageOptions.Checksum.CHECKSUM.MD5 == sum.algorithm())
                 .findFirst().ifPresent(md5 -> swordDeposit.setMd5(md5.asHex()));
 
         if (swordDeposit.getMd5() == null) {

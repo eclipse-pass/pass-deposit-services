@@ -33,11 +33,11 @@ import static org.apache.commons.codec.binary.Hex.encodeHexString;
  */
 public class DigestObserver extends ResourceBuilderObserver {
 
-    private PackageOptions.Algo algo;
+    private PackageOptions.Checksum.CHECKSUM algo;
 
     private MessageDigest digest;
 
-    public DigestObserver(ResourceBuilder builder, PackageOptions.Algo algorithm) {
+    public DigestObserver(ResourceBuilder builder, PackageOptions.Checksum.CHECKSUM algorithm) {
         super(builder);
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm must not be null.");

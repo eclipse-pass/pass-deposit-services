@@ -87,7 +87,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
                     String fileName = ((Element) fileElement.getFirstChild())
                             .getAttributeNS(XLINK_NS, XLINK_HREF).substring("data/".length());
                     PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-                    PackageOptions.Algo packageStreamAlgo = PackageOptions.Algo.valueOf(algo);
+                    PackageOptions.Checksum.CHECKSUM packageStreamAlgo = PackageOptions.Checksum.CHECKSUM.valueOf(algo);
                     when(checksum.algorithm()).thenReturn(packageStreamAlgo);
                     when(checksum.asHex()).thenReturn(checksumValue);
 

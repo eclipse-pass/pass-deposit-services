@@ -22,53 +22,68 @@ package org.dataconservancy.pass.deposit.assembler;
  */
 public interface PackageOptions {
 
-    /**
-     * Specification key
-     */
-    String SPEC = "SPEC";
+    interface Spec {
 
-    /**
-     * Supported compression
-     */
-    enum COMPRESSION {
-        NONE,
-        GZIP,
-        BZIP2,
-        ZIP
+        /**
+         * Specification key
+         */
+        String KEY = "SPEC";
+
     }
 
-    /**
-     * Compression key
-     */
-    String COMPRESSION_KEY = "COMPRESSION";
+    interface Compression {
 
-    /**
-     * Supported archive formats
-     */
-    enum ARCHIVE {
-        NONE,
-        TAR,
-        ZIP
+        /**
+         * Compression key
+         */
+        String KEY = "COMPRESSION";
+
+        /**
+         * Supported compression
+         */
+        enum OPTS {
+            NONE,
+            GZIP,
+            BZIP2,
+            ZIP
+        }
+
     }
 
-    /**
-     * Archive key
-     */
-    String ARCHIVE_KEY = "ARCHIVE";
+    interface Archive {
 
-    /**
-     * Supported checksum algorithms
-     */
-    enum Algo {
-        SHA512,
-        SHA256,
-        MD5
+        /**
+         * Archive key
+         */
+        String KEY = "ARCHIVE";
+
+        /**
+         * Supported archive formats
+         */
+        enum ARCHIVE {
+            NONE,
+            TAR,
+            ZIP
+        }
+
     }
 
-    /**
-     * Algorithm key
-     */
-    String ALGO_KEY = "ALGO";
+    interface Checksum {
 
+        /**
+         * Algorithm key
+         */
+        String KEY = "ALGO";
+
+        /**
+         * Supported checksum algorithms
+         */
+        enum CHECKSUM {
+            SHA512,
+            SHA256,
+            MD5
+        }
+
+    }
 
 }

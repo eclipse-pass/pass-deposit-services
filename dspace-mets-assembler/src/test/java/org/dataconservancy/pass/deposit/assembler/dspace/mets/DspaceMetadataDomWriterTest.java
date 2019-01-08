@@ -178,7 +178,7 @@ public class DspaceMetadataDomWriterTest {
         DspaceMetadataDomWriter underTest = new DspaceMetadataDomWriter(DocumentBuilderFactory.newInstance());
 
         PackageStream.Resource r = mock(PackageStream.Resource.class);
-        when(r.checksums()).thenReturn(Collections.singletonList(new ChecksumImpl(PackageOptions.Algo.MD5, new byte[128], "base64", "hex")));
+        when(r.checksums()).thenReturn(Collections.singletonList(new ChecksumImpl(PackageOptions.Checksum.CHECKSUM.MD5, new byte[128], "base64", "hex")));
         when(r.mimeType()).thenReturn("application/octet-stream");
         when(r.name()).thenReturn("sample-resource.bin");
         when(r.sizeBytes()).thenReturn(1234L);
@@ -290,12 +290,12 @@ public class DspaceMetadataDomWriterTest {
         long sizeBytes = 34;
         String type = "text/plain";
         String checksumMd5Val = "abcdef12345";
-        String checksumMd5 = PackageOptions.Algo.MD5.name();
+        String checksumMd5 = PackageOptions.Checksum.CHECKSUM.MD5.name();
         String checksumShaVal = "123456abcdef";
-        String checksumSha = PackageOptions.Algo.SHA256.name();
+        String checksumSha = PackageOptions.Checksum.CHECKSUM.SHA256.name();
 
         PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-        when(checksum.algorithm()).thenReturn(PackageOptions.Algo.MD5);
+        when(checksum.algorithm()).thenReturn(PackageOptions.Checksum.CHECKSUM.MD5);
         when(checksum.asHex()).thenReturn(checksumMd5Val);
         PackageStream.Resource resource = mock(PackageStream.Resource.class);
         when(resource.name()).thenReturn(name);
@@ -400,10 +400,10 @@ public class DspaceMetadataDomWriterTest {
         String checksumShaVal = "123456abcdef";
 
         PackageStream.Checksum md5 = mock(PackageStream.Checksum.class);
-        when(md5.algorithm()).thenReturn(PackageOptions.Algo.MD5);
+        when(md5.algorithm()).thenReturn(PackageOptions.Checksum.CHECKSUM.MD5);
         when(md5.asHex()).thenReturn(checksumMd5Val);
         PackageStream.Checksum sha = mock(PackageStream.Checksum.class);
-        when(sha.algorithm()).thenReturn(PackageOptions.Algo.SHA256);
+        when(sha.algorithm()).thenReturn(PackageOptions.Checksum.CHECKSUM.SHA256);
         when(sha.asHex()).thenReturn(checksumShaVal);
         PackageStream.Resource resource = mock(PackageStream.Resource.class);
         when(resource.name()).thenReturn(name);

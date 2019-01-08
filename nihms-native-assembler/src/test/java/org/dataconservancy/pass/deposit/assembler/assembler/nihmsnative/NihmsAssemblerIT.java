@@ -74,9 +74,9 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.SPEC, SPEC_NIHMS_NATIVE_2017_07);
-                put(PackageOptions.ARCHIVE_KEY, PackageOptions.ARCHIVE.TAR);
-                put(PackageOptions.COMPRESSION_KEY, PackageOptions.COMPRESSION.GZIP);
+                put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
+                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.TAR);
+                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
             }
         };
     }
@@ -94,8 +94,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageOptions.COMPRESSION.GZIP, metadata.compression());
-        assertEquals(PackageOptions.ARCHIVE.TAR, metadata.archive());
+        assertEquals(PackageOptions.Compression.OPTS.GZIP, metadata.compression());
+        assertEquals(PackageOptions.Archive.ARCHIVE.TAR, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());

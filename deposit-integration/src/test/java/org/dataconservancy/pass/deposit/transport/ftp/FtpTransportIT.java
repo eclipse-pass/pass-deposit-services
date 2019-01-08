@@ -382,8 +382,8 @@ public class FtpTransportIT extends FtpBaseIT {
         when(md.name()).thenReturn(name);
         when(md.sizeBytes()).thenReturn(length);
         when(md.mimeType()).thenReturn("application/octet-stream");
-        when(md.compression()).thenReturn(PackageOptions.COMPRESSION.NONE);
-        when(md.archive()).thenReturn(PackageOptions.ARCHIVE.NONE);
+        when(md.compression()).thenReturn(PackageOptions.Compression.OPTS.NONE);
+        when(md.archive()).thenReturn(PackageOptions.Archive.ARCHIVE.NONE);
 
         when(stream.metadata()).thenReturn(md);
         when(stream.open()).thenReturn(resource);
