@@ -19,7 +19,9 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -65,10 +67,10 @@ public class DspaceMetsPackageStreamTest {
         when(metsWriterFactory.newInstance()).thenReturn(metsWriter);
 
         mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageOptions.Archive.ARCHIVE.ZIP);
+        mb.archive(Archive.OPTS.ZIP);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageOptions.Compression.OPTS.ZIP);
+        mb.compression(Compression.OPTS.ZIP);
         mb.mimeType(APPLICATION_ZIP);
 
         String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
@@ -92,8 +94,9 @@ public class DspaceMetsPackageStreamTest {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(KEY, PackageOptions.Archive.ARCHIVE.ZIP);
-                put(PackageOptions.Spec.KEY, SPEC_DSPACE_METS);
+                // TODO: what about checksums, what happens when no checksums are specified?
+                put(Archive.KEY, Archive.OPTS.ZIP);
+                put(Spec.KEY, SPEC_DSPACE_METS);
             }
         };
     }

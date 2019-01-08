@@ -16,7 +16,8 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
@@ -169,7 +170,7 @@ public abstract class BaseAssemblerIT {
      * @param packageArchive the package archive file to open
      * @throws IOException if there is an error opening the package
      */
-    protected void extractPackage(File packageArchive, PackageOptions.Archive.ARCHIVE archive, PackageOptions.Compression.OPTS compression) throws IOException {
+    protected void extractPackage(File packageArchive, Archive.OPTS archive, Compression.OPTS compression) throws IOException {
         extractedPackageDir = openArchive(packageArchive, archive, compression);
 
         LOG.debug(">>>> Extracted package to '{}'", extractedPackageDir);

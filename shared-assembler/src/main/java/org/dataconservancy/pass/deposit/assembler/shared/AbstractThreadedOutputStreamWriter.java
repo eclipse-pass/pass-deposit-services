@@ -25,9 +25,9 @@ import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.ARCHIVE;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum.CHECKSUM;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum.OPTS;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -160,7 +160,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                         ContentLengthObserver clObs = new ContentLengthObserver(rb);
                         observableIn.add(clObs);
 
-                        ((List<CHECKSUM>) packageOptions.getOrDefault(PackageOptions.Checksum.KEY, emptyList())).forEach(algo ->
+                        ((List<Checksum.OPTS>) packageOptions.getOrDefault(Checksum.KEY, emptyList())).forEach(algo ->
                                 observableIn.add(new DigestObserver(rb, algo)));
 
                         rb.name(nameResource(resource));
@@ -241,7 +241,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {
-        switch ((ARCHIVE) packageOptions.getOrDefault(KEY, PackageOptions.Archive.ARCHIVE.NONE)) {
+        switch ((Archive.OPTS) packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE)) {
             case TAR: {
                 TarArchiveEntry entry = new TarArchiveEntry(name);
                 if (length >= 0) {

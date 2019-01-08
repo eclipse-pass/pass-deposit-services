@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
@@ -25,7 +25,7 @@ import org.dataconservancy.pass.deposit.assembler.PackageStream;
  */
 public class ChecksumImpl implements PackageStream.Checksum {
 
-    private PackageOptions.Checksum.CHECKSUM algorithm;
+    private Checksum.OPTS algorithm;
 
     private byte[] value;
 
@@ -33,7 +33,7 @@ public class ChecksumImpl implements PackageStream.Checksum {
 
     private String hex;
 
-    public ChecksumImpl(PackageOptions.Checksum.CHECKSUM algorithm, byte[] value, String base64, String hex) {
+    public ChecksumImpl(Checksum.OPTS algorithm, byte[] value, String base64, String hex) {
         this.algorithm = algorithm;
         this.value = value;
         this.base64 = base64;
@@ -41,7 +41,7 @@ public class ChecksumImpl implements PackageStream.Checksum {
     }
 
     @Override
-    public PackageOptions.Checksum.CHECKSUM algorithm() {
+    public Checksum.OPTS algorithm() {
         return algorithm;
     }
 

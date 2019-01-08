@@ -15,7 +15,7 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 
@@ -33,11 +33,11 @@ import static org.apache.commons.codec.binary.Hex.encodeHexString;
  */
 public class DigestObserver extends ResourceBuilderObserver {
 
-    private PackageOptions.Checksum.CHECKSUM algo;
+    private Checksum.OPTS algo;
 
     private MessageDigest digest;
 
-    public DigestObserver(ResourceBuilder builder, PackageOptions.Checksum.CHECKSUM algorithm) {
+    public DigestObserver(ResourceBuilder builder, Checksum.OPTS algorithm) {
         super(builder);
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm must not be null.");

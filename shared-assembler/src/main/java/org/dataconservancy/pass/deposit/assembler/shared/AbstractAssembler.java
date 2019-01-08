@@ -91,7 +91,7 @@ public abstract class AbstractAssembler implements Assembler {
      * actually creating a stream for the tar.gz archive.
      *
      * @param submission the custodial content being packaged
-     * @param options
+     * @param options the options used when creating the package
      * @return a PackageStream which actually creates the stream for the tar.gz archive
      */
     @Override

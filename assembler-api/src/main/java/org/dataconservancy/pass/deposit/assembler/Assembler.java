@@ -26,7 +26,6 @@ import java.util.Map;
  * the specific packaging requirements (e.g. comporting with BagIt, or profile of BagIt) of a submission destination ,
  * and are responsible for providing a compliant package.
  *
- * TODO: Consider a type parameter to represent the packaging specification
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface Assembler {
@@ -38,7 +37,7 @@ public interface Assembler {
      * the implementation.
      *
      * @param submission the custodial content being packaged
-     * @param options
+     * @param options the options used when creating the package
      * @return a streamable package containing the custodial content being packaged
      */
     PackageStream assemble(DepositSubmission submission, Map<String, Object> options);

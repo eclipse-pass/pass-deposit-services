@@ -15,7 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
@@ -157,9 +159,10 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
-                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
-                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.ZIP);
+                // TODO: checksums?  check this IT to see what happens
+                put(Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(Archive.KEY, Archive.OPTS.ZIP);
+                put(Compression.KEY, Compression.OPTS.ZIP);
             }
         };
     }

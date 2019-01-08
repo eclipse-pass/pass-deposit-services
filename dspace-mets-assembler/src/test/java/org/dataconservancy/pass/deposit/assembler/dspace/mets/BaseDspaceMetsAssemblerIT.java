@@ -15,7 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -62,10 +65,10 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
-                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
-                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.ZIP);
-                put(PackageOptions.Checksum.KEY, Arrays.asList(PackageOptions.Checksum.CHECKSUM.SHA256, PackageOptions.Checksum.CHECKSUM.MD5));
+                put(Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(Archive.KEY, Archive.OPTS.ZIP);
+                put(Compression.KEY, Compression.OPTS.ZIP);
+                put(Checksum.KEY, Arrays.asList(Checksum.OPTS.SHA256, Checksum.OPTS.MD5));
             }
         };
     }
@@ -78,8 +81,8 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageOptions.Compression.OPTS.ZIP, metadata.compression());
-        assertEquals(PackageOptions.Archive.ARCHIVE.ZIP, metadata.archive());
+        assertEquals(Compression.OPTS.ZIP, metadata.compression());
+        assertEquals(Archive.OPTS.ZIP, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_DSPACE_METS, metadata.spec());
         assertEquals(APPLICATION_ZIP, metadata.mimeType());

@@ -16,7 +16,7 @@
 package org.dataconservancy.nihms.submission;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -145,7 +145,7 @@ public class SubmissionEngine {
             PackageStream stream = assembler.assemble(submission, new HashMap<String, Object>()
             {
                 {
-                    put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.ZIP);
+                    put(Archive.KEY, Archive.OPTS.ZIP);
                 }
             });
             resourceName = stream.metadata().name();

@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+
 /**
  * Allows for various components to contribute to the state of {@link PackageStream.Metadata} without the requirement to
  * share knowledge of the underlying implementation.
@@ -78,7 +81,7 @@ public interface MetadataBuilder {
      * @return this builder
      * @see PackageStream.Metadata#compression()
      */
-    MetadataBuilder compression(PackageOptions.Compression.OPTS compression);
+    MetadataBuilder compression(Compression.OPTS compression);
 
     /**
      * Sets the {@link PackageStream.Metadata#archived()} flag of the {@code PackageStream}.
@@ -97,7 +100,7 @@ public interface MetadataBuilder {
      * @return this builder
      * @see PackageStream.Metadata#archive()
      */
-    MetadataBuilder archive(PackageOptions.Archive.ARCHIVE archive);
+    MetadataBuilder archive(Archive.OPTS archive);
 
     /**
      * Adds a {@link PackageStream.Metadata#checksum()} of the {@code PackageStream}.  The first

@@ -60,7 +60,7 @@ public interface PackageOptions {
         /**
          * Supported archive formats
          */
-        enum ARCHIVE {
+        enum OPTS {
             NONE,
             TAR,
             ZIP
@@ -78,7 +78,7 @@ public interface PackageOptions {
         /**
          * Supported checksum algorithms
          */
-        enum CHECKSUM {
+        enum OPTS {
             SHA512,
             SHA256,
             MD5

@@ -21,7 +21,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.ARCHIVE.TAR;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.ARCHIVE.ZIP;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.TAR;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.ZIP;
 
 public abstract class AbstractZippedPackageStream implements PackageStream {
 
@@ -102,9 +103,9 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
         // we support zip, tar and tar.gz so far
         ArchiveOutputStream archiveOut;
 
-        if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.NONE) == TAR) {
+        if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == TAR) {
             try {
-                if (packageOptions.getOrDefault(KEY, PackageOptions.Compression.OPTS.NONE) == PackageOptions.Compression.OPTS.GZIP) {
+                if (packageOptions.getOrDefault(Compression.KEY, Compression.OPTS.NONE) == Compression.OPTS.GZIP) {
                     archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
                 } else {
                     archiveOut = new TarArchiveOutputStream(pipedOut);
@@ -112,7 +113,7 @@ public abstract class AbstractZippedPackageStream implements PackageStream {
             } catch (Exception e) {
                 throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
             }
-        } else if (packageOptions.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.NONE) == ZIP) {
+        } else if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == ZIP) {
             try {
                 archiveOut = new ZipArchiveOutputStream(pipedOut);
             } catch (Exception e) {

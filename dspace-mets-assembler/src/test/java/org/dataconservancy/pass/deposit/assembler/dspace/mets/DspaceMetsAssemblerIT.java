@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.commons.io.output.NullOutputStream;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -87,7 +87,7 @@ public class DspaceMetsAssemblerIT extends BaseDspaceMetsAssemblerIT {
                     String fileName = ((Element) fileElement.getFirstChild())
                             .getAttributeNS(XLINK_NS, XLINK_HREF).substring("data/".length());
                     PackageStream.Checksum checksum = mock(PackageStream.Checksum.class);
-                    PackageOptions.Checksum.CHECKSUM packageStreamAlgo = PackageOptions.Checksum.CHECKSUM.valueOf(algo);
+                    Checksum.OPTS packageStreamAlgo = Checksum.OPTS.valueOf(algo);
                     when(checksum.algorithm()).thenReturn(packageStreamAlgo);
                     when(checksum.asHex()).thenReturn(checksumValue);
 

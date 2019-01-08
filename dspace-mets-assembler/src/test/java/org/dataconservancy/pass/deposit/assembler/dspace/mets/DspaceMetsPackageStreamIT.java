@@ -19,7 +19,8 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
@@ -92,8 +93,9 @@ public class DspaceMetsPackageStreamIT {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(KEY, PackageOptions.Archive.ARCHIVE.ZIP);
-                put(PackageOptions.Spec.KEY, SPEC_DSPACE_METS);
+                // TODO: what about checksums, what happens when no checksums are specified?
+                put(Archive.KEY, Archive.OPTS.ZIP);
+                put(Spec.KEY, SPEC_DSPACE_METS);
             }
         };
     }

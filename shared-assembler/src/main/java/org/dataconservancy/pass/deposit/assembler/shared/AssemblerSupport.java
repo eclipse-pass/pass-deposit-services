@@ -19,8 +19,10 @@ import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.ARCHIVE;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,23 +50,23 @@ public class AssemblerSupport {
      * <dl>
      *     <dt>{@link MetadataBuilder#spec(String)}</dt>
      *     <dd>{@code ""} (an empty, zero-length string)</dd>
-     *     <dt>{@link MetadataBuilder#archive(ARCHIVE)}</dt>
-     *     <dd>{@link ARCHIVE#NONE}</dd>
-     *     <dt>{@link MetadataBuilder#compression(PackageOptions.Compression.OPTS)}</dt>
-     *     <dd>{@link PackageOptions.Compression.OPTS#NONE}</dd>
+     *     <dt>{@link MetadataBuilder#archive(OPTS)}</dt>
+     *     <dd>{@link Archive.OPTS#NONE}</dd>
+     *     <dt>{@link MetadataBuilder#compression(Compression.OPTS)}</dt>
+     *     <dd>{@link Compression.OPTS#NONE}</dd>
      *     <dt>{@link MetadataBuilder#mimeType(String)}</dt>
-     *     <dd>A function of the {@link MetadataBuilder#archive(ARCHIVE) archive} and
-     *         {@link MetadataBuilder#compression(PackageOptions.Compression.OPTS) compression} used</dd>
+     *     <dd>A function of the {@link MetadataBuilder#archive(Archive.OPTS) archive} and
+     *         {@link MetadataBuilder#compression(Compression.OPTS) compression} used</dd>
      * </dl>
      * @param mdb MetadataBuilder to be populated
      * @param options the Assembler options to be copied to the MetadataBuilder
      */
     public static void buildMetadata(MetadataBuilder mdb, Map<String, Object> options) {
-        mdb.spec(options.getOrDefault(KEY, "").toString());
-        mdb.archive((ARCHIVE) options.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.NONE));
-        mdb.archived(options.getOrDefault(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.NONE) != PackageOptions.Archive.ARCHIVE.NONE);
-        mdb.compression((PackageOptions.Compression.OPTS) options.getOrDefault(KEY, PackageOptions.Compression.OPTS.NONE));
-        mdb.compressed(options.getOrDefault(KEY, PackageOptions.Compression.OPTS.NONE) != PackageOptions.Compression.OPTS.NONE);
+        mdb.spec(options.getOrDefault(Spec.KEY, "").toString());
+        mdb.archive((Archive.OPTS) options.getOrDefault(Archive.KEY, Archive.OPTS.NONE));
+        mdb.archived(options.getOrDefault(Archive.KEY, Archive.OPTS.NONE) != OPTS.NONE);
+        mdb.compression((Compression.OPTS) options.getOrDefault(Compression.KEY, Compression.OPTS.NONE));
+        mdb.compressed(options.getOrDefault(KEY, Compression.OPTS.NONE) != Compression.OPTS.NONE);
 
         PackageStream.Metadata md = mdb.build();
 

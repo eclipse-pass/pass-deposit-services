@@ -15,7 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,11 +63,11 @@ public class AssemblerOptions {
     public Map<String, Object> asOptionsMap() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.valueOf(compression.toUpperCase()));
-                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.valueOf(archive.toUpperCase()));
-                put(PackageOptions.Checksum.KEY,
+                put(Compression.KEY, Compression.OPTS.valueOf(compression.toUpperCase()));
+                put(Archive.KEY, Archive.OPTS.valueOf(archive.toUpperCase()));
+                put(Checksum.KEY,
                         algorithms.stream()
-                                .map(algo -> PackageOptions.Checksum.CHECKSUM.valueOf(algo.toUpperCase()))
+                                .map(algo -> Checksum.OPTS.valueOf(algo.toUpperCase()))
                                 .collect(Collectors.toList()));
             }
         };

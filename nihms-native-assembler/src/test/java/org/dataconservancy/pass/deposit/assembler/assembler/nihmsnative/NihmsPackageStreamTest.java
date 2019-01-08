@@ -18,7 +18,9 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
@@ -94,9 +96,9 @@ public class NihmsPackageStreamTest {
 
         packageOptions = new HashMap<String, Object>() {
             {
-                put(PackageOptions.Spec.KEY, NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
-                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.TAR);
-                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
+                put(Spec.KEY, NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
+                put(Archive.KEY, Archive.OPTS.TAR);
+                put(Compression.KEY, Compression.OPTS.GZIP);
             }
         };
     }

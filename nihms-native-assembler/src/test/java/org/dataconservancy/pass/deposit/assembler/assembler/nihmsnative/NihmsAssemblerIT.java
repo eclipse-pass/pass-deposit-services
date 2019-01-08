@@ -17,7 +17,9 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
@@ -74,9 +76,9 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
     protected Map<String, Object> getOptions() {
         return new HashMap<String, Object>() {
             {
-                put(PackageOptions.Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
-                put(PackageOptions.Archive.KEY, PackageOptions.Archive.ARCHIVE.TAR);
-                put(PackageOptions.Compression.KEY, PackageOptions.Compression.OPTS.GZIP);
+                put(Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
+                put(Archive.KEY, Archive.OPTS.TAR);
+                put(Compression.KEY, Compression.OPTS.GZIP);
             }
         };
     }
@@ -94,8 +96,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageOptions.Compression.OPTS.GZIP, metadata.compression());
-        assertEquals(PackageOptions.Archive.ARCHIVE.TAR, metadata.archive());
+        assertEquals(Compression.OPTS.GZIP, metadata.compression());
+        assertEquals(Archive.OPTS.TAR, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());

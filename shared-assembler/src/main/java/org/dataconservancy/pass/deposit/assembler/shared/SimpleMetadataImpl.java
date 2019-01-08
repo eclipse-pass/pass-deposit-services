@@ -16,7 +16,8 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.util.ArrayList;
@@ -43,11 +44,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     
     private boolean compressed = true;
 
-    private PackageOptions.Compression.OPTS compression = PackageOptions.Compression.OPTS.GZIP;
+    private Compression.OPTS compression = Compression.OPTS.GZIP;
 
     private boolean archived = true;
 
-    private PackageOptions.Archive.ARCHIVE archive = PackageOptions.Archive.ARCHIVE.TAR;
+    private Archive.OPTS archive = Archive.OPTS.TAR;
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
@@ -90,7 +91,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageOptions.Compression.OPTS compression() {
+    public Compression.OPTS compression() {
         return compression;
     }
 
@@ -100,7 +101,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageOptions.Archive.ARCHIVE archive() {
+    public Archive.OPTS archive() {
         return archive;
     }
 
@@ -158,11 +159,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.compressed = compressed;
     }
 
-    PackageOptions.Compression.OPTS getCompression() {
+    Compression.OPTS getCompression() {
         return compression;
     }
 
-    void setCompression(PackageOptions.Compression.OPTS compression) {
+    void setCompression(Compression.OPTS compression) {
         this.compression = compression;
     }
 
@@ -174,11 +175,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.archived = archived;
     }
 
-    PackageOptions.Archive.ARCHIVE getArchive() {
+    Archive.OPTS getArchive() {
         return archive;
     }
 
-    void setArchive(PackageOptions.Archive.ARCHIVE archive) {
+    void setArchive(Archive.OPTS archive) {
         this.archive = archive;
     }
 
