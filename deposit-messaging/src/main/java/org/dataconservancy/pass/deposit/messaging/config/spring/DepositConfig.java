@@ -21,8 +21,6 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
-import org.apache.abdera.protocol.client.AbderaClient;
-import org.apache.commons.httpclient.Credentials;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
@@ -32,7 +30,6 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories
 import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
-import org.dataconservancy.pass.deposit.messaging.support.swordv2.PassAbderaClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.client.PassClientDefault;
@@ -65,7 +62,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
@@ -317,38 +313,6 @@ public class DepositConfig {
         return executor;
     }
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Bean
-    public Map<String, PassAbderaClient> abderaClient(Repositories repositories) {
-        Map<String, PassAbderaClient> clients = repositories.keys().stream()
-                .map(repositories::getConfig)
-                .filter(repoConfig -> repoConfig.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding)
-                .map(repoConfig -> {
-                    PassAbderaClient ac = new PassAbderaClient();
-                    ac.setRepositoryKey(repoConfig.getRepositoryKey());
-                    SwordV2Binding swordBinding = (SwordV2Binding)repoConfig.getTransportConfig().getProtocolBinding();
-                    if (swordBinding.getUsername() != null && swordBinding.getUsername().trim().length() > 0) {
-                        Credentials creds = new org.apache.commons.httpclient.UsernamePasswordCredentials(
-                                swordBinding.getUsername(),
-                                swordBinding.getPassword()
-                        );
-
-                        try {
-                            ac.addCredentials(null, null, null, creds);
-                        } catch (URISyntaxException e) {
-                            throw new RuntimeException(e.getMessage(), e);
-                        }
-                    }
-
-                    return ac;
-                })
-                .collect(Collectors.toMap(PassAbderaClient::getRepositoryKey, Function.identity()));
-
-        return clients;
-    }
-
-    // TODO: each SWORDv2 binding will need an AtomFeedStatusResolver
-    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
     public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser) {
         return new AtomFeedStatusResolver(abderaParser);
