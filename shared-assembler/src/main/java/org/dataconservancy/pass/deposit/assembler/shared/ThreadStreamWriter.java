@@ -27,7 +27,6 @@ import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum.OPTS;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -62,11 +61,11 @@ import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class AbstractThreadedOutputStreamWriter extends Thread {
+public abstract class ThreadStreamWriter extends Thread {
 
     private List<DepositFileResource> packageFiles;
 
-    private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback closeStreamHandler;
+    private ThreadStreamWriter.CloseOutputstreamCallback closeStreamHandler;
 
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
@@ -76,7 +75,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private DepositSubmission submission;
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractThreadedOutputStreamWriter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ThreadStreamWriter.class);
 
     protected static final int THIRTY_TWO_KIB = 32 * 2 ^ 10;
 
@@ -95,13 +94,13 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param rbf factory for building {@link PackageStream.Resource package resources}
      * @param packageOptions options used for building the package
      */
-    public AbstractThreadedOutputStreamWriter(String threadName,
-                                              ArchiveOutputStream archiveOut,
-                                              DepositSubmission submission,
-                                              List<DepositFileResource> packageFiles,
-                                              ResourceBuilderFactory rbf,
-                                              MetadataBuilder metadataBuilder,
-                                              Map<String, Object> packageOptions) {
+    public ThreadStreamWriter(String threadName,
+                              ArchiveOutputStream archiveOut,
+                              DepositSubmission submission,
+                              List<DepositFileResource> packageFiles,
+                              ResourceBuilderFactory rbf,
+                              MetadataBuilder metadataBuilder,
+                              Map<String, Object> packageOptions) {
         super(threadName);
         this.archiveOut = archiveOut;
         this.packageFiles = packageFiles;
@@ -174,7 +173,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                     assembledResources.add(rb.build());
                     rb.reset();
                 } catch (IOException e) {
-                    throw new RuntimeException(String.format(AbstractZippedPackageStream.ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
+                    throw new RuntimeException(String.format(ArchivingPackageStream.ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
                 }
             });
 
@@ -284,7 +283,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the handler invoked to close output streams when an exception is encountered writing to the piped output
      * stream
      */
-    public AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback getCloseStreamHandler() {
+    public ThreadStreamWriter.CloseOutputstreamCallback getCloseStreamHandler() {
         return closeStreamHandler;
     }
 
@@ -295,7 +294,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param callback the handler invoked to close output streams when an exception is encountered writing to the piped
      * output stream
      */
-    public void setCloseStreamHandler(AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback callback) {
+    public void setCloseStreamHandler(ThreadStreamWriter.CloseOutputstreamCallback callback) {
         this.closeStreamHandler = callback;
     }
 

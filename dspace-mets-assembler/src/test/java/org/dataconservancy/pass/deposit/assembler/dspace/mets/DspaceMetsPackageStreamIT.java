@@ -114,8 +114,8 @@ public class DspaceMetsPackageStreamIT {
         submission.setName(this.getClass().getName() + "_testStream");
 
         // Construct a package stream using mocks and two example files
-        DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(submission, custodialContent, mb, rbf, metsWriter, packageOptions);
+        DspacePackageStream underTest =
+                new DspacePackageStream(submission, custodialContent, mb, rbf, metsWriter, packageOptions);
 
         File outFile = new File(tempDir, "testStream.tar.gz");
         FileOutputStream out = new FileOutputStream(outFile);

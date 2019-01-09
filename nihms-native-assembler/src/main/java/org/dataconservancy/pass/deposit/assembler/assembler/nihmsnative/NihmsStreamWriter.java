@@ -21,7 +21,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.slf4j.Logger;
@@ -31,9 +31,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
+class NihmsStreamWriter extends ThreadStreamWriter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ThreadedOutputStreamWriter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NihmsStreamWriter.class);
 
     private StreamingSerializer manifestSerializer;
 
@@ -44,10 +44,10 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
     private Map<String, Object> packageOptions;
 
 
-    public ThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                      List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf,
-                                      MetadataBuilder metadataBuilder, StreamingSerializer manifestSerializer,
-                                      StreamingSerializer metadataSerializer, Map<String, Object> packageOptions) {
+    public NihmsStreamWriter(String threadName, ArchiveOutputStream archiveOut, DepositSubmission submission,
+                             List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf,
+                             MetadataBuilder metadataBuilder, StreamingSerializer manifestSerializer,
+                             StreamingSerializer metadataSerializer, Map<String, Object> packageOptions) {
         super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder, packageOptions);
         this.manifestSerializer = manifestSerializer;
         this.metadataSerializer = metadataSerializer;
@@ -58,8 +58,8 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
     @Override
     public void assembleResources(DepositSubmission submission, List<PackageStream.Resource> resources)
             throws IOException {
-        ArchiveEntry manifestEntry = createEntry(NihmsZippedPackageStream.MANIFEST_ENTRY_NAME, -1);
-        ArchiveEntry metadataEntry = createEntry(NihmsZippedPackageStream.METADATA_ENTRY_NAME, -1);
+        ArchiveEntry manifestEntry = createEntry(NihmsPackageStream.MANIFEST_ENTRY_NAME, -1);
+        ArchiveEntry metadataEntry = createEntry(NihmsPackageStream.METADATA_ENTRY_NAME, -1);
         putResource(archiveOut, manifestEntry, updateLength(manifestEntry, manifestSerializer.serialize()));
         putResource(archiveOut, metadataEntry, updateLength(metadataEntry, metadataSerializer.serialize()));
         debugResources(resources);
@@ -83,7 +83,7 @@ class ThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
      */
     @Override
     protected String nameResource(DepositFileResource resource) {
-        return NihmsZippedPackageStream.getNonCollidingFilename(super.nameResource(resource),
+        return NihmsPackageStream.getNonCollidingFilename(super.nameResource(resource),
                 resource.getDepositFile().getType());
     }
 

@@ -20,8 +20,8 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractZippedPackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
+public class NihmsPackageStream extends ArchivingPackageStream {
 
     static final String REMEDIATED_FILE_PREFIX = "SUBMISSION-";
 
@@ -38,7 +38,7 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     static final String METADATA_ENTRY_NAME = "bulk_meta.xml";
 
-    private static final Logger LOG = LoggerFactory.getLogger(NihmsZippedPackageStream.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageStream.class);
 
     private StreamingSerializer manifestSerializer;
 
@@ -48,20 +48,20 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
 
     private MetadataBuilder metadata;
 
-    public NihmsZippedPackageStream(DepositSubmission submission,
-                                    List<DepositFileResource> custodialResources,
-                                    MetadataBuilder metadata,
-                                    ResourceBuilderFactory rbf,
-                                    Map<String, Object> packageOptions) {
+    public NihmsPackageStream(DepositSubmission submission,
+                              List<DepositFileResource> custodialResources,
+                              MetadataBuilder metadata,
+                              ResourceBuilderFactory rbf,
+                              Map<String, Object> packageOptions) {
         super(custodialResources, metadata, rbf, packageOptions);
         this.submission = submission;
         this.metadata = metadata;
     }
 
     @Override
-    public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
-                                                              ResourceBuilderFactory rbf) {
-        ThreadedOutputStreamWriter threadedWriter = new ThreadedOutputStreamWriter("Archive Piped Writer",
+    public ThreadStreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
+                                              ResourceBuilderFactory rbf) {
+        NihmsStreamWriter threadedWriter = new NihmsStreamWriter("Archive Piped Writer",
                 archiveOut, submission, custodialContent, rbf, metadata, manifestSerializer, metadataSerializer,
                 packageOptions);
 
@@ -96,9 +96,9 @@ public class NihmsZippedPackageStream extends AbstractZippedPackageStream {
      * @return the existing file name, or a modified version if the existing name collides with a reserved name.
      */
     public static String getNonCollidingFilename(String fileName, DepositFileType fileType) {
-        if ((fileName.contentEquals(NihmsZippedPackageStream.METADATA_ENTRY_NAME) &&
+        if ((fileName.contentEquals(NihmsPackageStream.METADATA_ENTRY_NAME) &&
             fileType != DepositFileType.bulksub_meta_xml) ||
-            fileName.contentEquals(NihmsZippedPackageStream.MANIFEST_ENTRY_NAME)) {
+            fileName.contentEquals(NihmsPackageStream.MANIFEST_ENTRY_NAME)) {
             fileName = REMEDIATED_FILE_PREFIX + fileName;
         }
         return fileName;

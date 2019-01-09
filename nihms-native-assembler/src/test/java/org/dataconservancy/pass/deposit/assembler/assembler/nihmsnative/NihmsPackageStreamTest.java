@@ -129,7 +129,7 @@ public class NihmsPackageStreamTest {
 
     @Test
     public void assembleSimplePackage() throws Exception {
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class),
+        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
                 custodialContent, mb, rbf, packageOptions);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
@@ -156,7 +156,7 @@ public class NihmsPackageStreamTest {
 
         when(rb.build()).thenReturn(pr);
 
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, packageOptions);
+        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, packageOptions);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
 
@@ -176,19 +176,19 @@ public class NihmsPackageStreamTest {
         String nameIn, nameOut;
 
         nameIn = "test.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "manifest.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
         assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
     }
 }

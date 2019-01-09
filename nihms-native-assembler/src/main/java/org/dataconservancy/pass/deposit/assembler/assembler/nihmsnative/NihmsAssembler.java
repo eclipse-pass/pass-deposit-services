@@ -18,7 +18,6 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
@@ -66,8 +65,8 @@ public class NihmsAssembler extends AbstractAssembler {
         buildMetadata(mb, options);
         namePackage(submission, mb);
 
-        NihmsZippedPackageStream stream =
-                new NihmsZippedPackageStream(submission, custodialResources, mb, rbf, options);
+        NihmsPackageStream stream =
+                new NihmsPackageStream(submission, custodialResources, mb, rbf, options);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;

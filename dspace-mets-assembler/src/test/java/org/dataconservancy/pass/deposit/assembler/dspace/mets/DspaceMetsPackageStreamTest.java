@@ -104,8 +104,8 @@ public class DspaceMetsPackageStreamTest {
     @Test
     public void testStream() throws Exception {
         // Construct a package stream using mocks and two example files
-        DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(
+        DspacePackageStream underTest =
+                new DspacePackageStream(
                         mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions);
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written

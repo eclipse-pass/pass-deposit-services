@@ -66,7 +66,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
                 writer.write(label);
             }
             writer.append("\t");
-            String name = NihmsZippedPackageStream.getNonCollidingFilename(file.getName(), file.getType());
+            String name = NihmsPackageStream.getNonCollidingFilename(file.getName(), file.getType());
             writer.write(name);
             writer.append("\n");
         }
@@ -93,7 +93,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         writer.append("\t");
         writer.write(labelMaker.getTypeUniqueLabel(DepositFileType.bulksub_meta_xml, "Submission Metadata"));
         writer.append("\t");
-        writer.write(NihmsZippedPackageStream.METADATA_ENTRY_NAME);
+        writer.write(NihmsPackageStream.METADATA_ENTRY_NAME);
     }
 
     /**

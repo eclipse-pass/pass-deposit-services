@@ -68,7 +68,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf,
                                                 Map<String, Object> options) {
         buildMetadata(mb, options);
-        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
+        return new DspacePackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
     }
 
 }

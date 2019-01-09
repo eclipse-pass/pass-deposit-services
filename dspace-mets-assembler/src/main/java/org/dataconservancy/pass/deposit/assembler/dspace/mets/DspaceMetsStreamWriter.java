@@ -21,7 +21,7 @@ import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
@@ -34,19 +34,19 @@ import java.util.Map;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DspaceMetsThreadedOutputStreamWriter extends AbstractThreadedOutputStreamWriter {
+public class DspaceMetsStreamWriter extends ThreadStreamWriter {
 
     private static final String METS_XML = "mets.xml";
 
     private DspaceMetadataDomWriter metsWriter;
 
-    public DspaceMetsThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
-                                                DepositSubmission submission,
-                                                List<DepositFileResource> packageFiles,
-                                                ResourceBuilderFactory rbf,
-                                                MetadataBuilder metadataBuilder,
-                                                DspaceMetadataDomWriter metsWriter,
-                                                Map<String, Object> packageOptions) {
+    public DspaceMetsStreamWriter(String threadName, ArchiveOutputStream archiveOut,
+                                  DepositSubmission submission,
+                                  List<DepositFileResource> packageFiles,
+                                  ResourceBuilderFactory rbf,
+                                  MetadataBuilder metadataBuilder,
+                                  DspaceMetadataDomWriter metsWriter,
+                                  Map<String, Object> packageOptions) {
         super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder, packageOptions);
 
         if (metsWriter == null) {
