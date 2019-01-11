@@ -15,14 +15,12 @@
  */
 
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
     }
 
 
-    public InputStream serialize(){
+    public SizedStream serialize(){
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(os);
 
@@ -78,14 +76,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
 
         writer.close();
 
-        byte[] bytes = os.toByteArray();
-
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            os.close();
-            return is;
-        } catch (IOException ioe) {
-            throw new RuntimeException("Could not create Input Stream, or close Output Stream", ioe);
-        }
+        return NihmsAssemblerUtil.asSizedStream(os);
     }
 
     protected static void includeBulkMetadataInManifest(PrintWriter writer, DepositFileLabelMaker labelMaker) {

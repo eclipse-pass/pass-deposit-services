@@ -18,9 +18,10 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.dataconservancy.pass.deposit.assembler.shared.StreamWriter;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
@@ -39,9 +40,10 @@ public class DspacePackageStream extends ArchivingPackageStream {
                                List<DepositFileResource> custodialResources,
                                MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
                                DspaceMetadataDomWriterFactory metsWriterFactory,
-                               Map<String, Object> packageOptions) {
+                               Map<String, Object> packageOptions,
+                               ExceptionHandlingThreadPoolExecutor executorService) {
 
-        super(custodialResources, metadataBuilder, rbf, packageOptions);
+        super(custodialResources, metadataBuilder, rbf, packageOptions, executorService);
 
         if (metsWriterFactory == null) {
             throw new IllegalArgumentException("METS writer must not be null.");
@@ -58,9 +60,9 @@ public class DspacePackageStream extends ArchivingPackageStream {
     }
 
     @Override
-    public ThreadStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
-                                              ResourceBuilderFactory rbf) {
-        return new DspaceMetsStreamWriter("DSpace Archive Writer", archiveOutputStream,
-                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance(), packageOptions);
+    public StreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
+                                        ResourceBuilderFactory rbf) {
+        return new DspaceMetsStreamWriter(archiveOutputStream,
+                submission, custodialContent, rbf, metsWriterFactory.newInstance(), packageOptions);
     }
 }

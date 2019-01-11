@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.assembler.shared.DefaultResourceBuilderFactory;
@@ -41,6 +42,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
@@ -115,7 +118,8 @@ public class DspaceMetsPackageStreamIT {
 
         // Construct a package stream using mocks and two example files
         DspacePackageStream underTest =
-                new DspacePackageStream(submission, custodialContent, mb, rbf, metsWriter, packageOptions);
+                new DspacePackageStream(submission, custodialContent, mb, rbf, metsWriter, packageOptions,
+                        new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10)));
 
         File outFile = new File(tempDir, "testStream.tar.gz");
         FileOutputStream out = new FileOutputStream(outFile);

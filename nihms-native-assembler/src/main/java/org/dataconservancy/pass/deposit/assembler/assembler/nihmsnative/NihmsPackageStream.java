@@ -18,10 +18,11 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.dataconservancy.pass.deposit.assembler.shared.StreamWriter;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.slf4j.Logger;
@@ -52,17 +53,18 @@ public class NihmsPackageStream extends ArchivingPackageStream {
                               List<DepositFileResource> custodialResources,
                               MetadataBuilder metadata,
                               ResourceBuilderFactory rbf,
-                              Map<String, Object> packageOptions) {
-        super(custodialResources, metadata, rbf, packageOptions);
+                              Map<String, Object> packageOptions,
+                              ExceptionHandlingThreadPoolExecutor executorService) {
+        super(custodialResources, metadata, rbf, packageOptions, executorService);
         this.submission = submission;
         this.metadata = metadata;
     }
 
     @Override
-    public ThreadStreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
-                                              ResourceBuilderFactory rbf) {
-        NihmsStreamWriter threadedWriter = new NihmsStreamWriter("Archive Piped Writer",
-                archiveOut, submission, custodialContent, rbf, metadata, manifestSerializer, metadataSerializer,
+    public StreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
+                                        ResourceBuilderFactory rbf) {
+        NihmsStreamWriter threadedWriter = new NihmsStreamWriter(
+                archiveOut, submission, custodialContent, rbf, manifestSerializer, metadataSerializer,
                 packageOptions);
 
         return threadedWriter;

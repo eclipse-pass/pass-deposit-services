@@ -21,6 +21,7 @@ import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
@@ -41,6 +42,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -91,7 +94,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected AbstractAssembler assemblerUnderTest() {
-        return new NihmsAssembler(mbf, rbf);
+        return new NihmsAssembler(mbf, rbf, new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10)));
     }
 
     @Override

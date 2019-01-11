@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 
 import org.apache.commons.io.IOUtils;
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
@@ -25,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +68,7 @@ public class NihmsManifestSerializerTest {
 
         NihmsManifestSerializer underTest = new NihmsManifestSerializer(manifest);
 
-        InputStream is = underTest.serialize();
+        SizedStream sizedStream = underTest.serialize();
 
         String expected = "figure" + "\t" + "File One Label" + "\t" +"File One name" + "\n" +
                 "bulksub_meta_xml"+ "\t" + "File Two Label" + "\t" +"File Two name" + "\n" +
@@ -78,7 +78,7 @@ public class NihmsManifestSerializerTest {
         String actual = "";
 
         try {
-          actual = IOUtils.toString(is, "UTF-8");
+          actual = IOUtils.toString(sizedStream.getInputStream(), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
         }

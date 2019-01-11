@@ -22,6 +22,7 @@ import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -37,6 +38,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
@@ -106,7 +109,8 @@ public class DspaceMetsPackageStreamTest {
         // Construct a package stream using mocks and two example files
         DspacePackageStream underTest =
                 new DspacePackageStream(
-                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions);
+                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions,
+                        new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10)));
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written
         assertTrue("Expected bytes written to be greater than 0!",

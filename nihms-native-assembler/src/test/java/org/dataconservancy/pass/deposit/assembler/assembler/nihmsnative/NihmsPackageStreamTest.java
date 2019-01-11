@@ -24,7 +24,9 @@ import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -43,6 +45,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.dataconservancy.deposit.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
@@ -60,17 +64,26 @@ public class NihmsPackageStreamTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageStreamTest.class);
 
+    private static final String MANIFEST = "This is the manifest.";
+
+    private static final String METADATA = "This is the metadata";
+
     private static List<DepositFileResource> custodialContent;
 
     private static Map<String, Object> packageOptions;
 
-    private StreamingSerializer manifestSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the manifest.", "UTF-8"));
+    private static ExceptionHandlingThreadPoolExecutor executorService;
 
-    private StreamingSerializer metadataSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the metadata", "UTF-8"));
+    private StreamingSerializer manifestSerializer = streamingSerializer(MANIFEST);
+
+    private StreamingSerializer metadataSerializer = streamingSerializer(METADATA);
 
     private MetadataBuilder mb;
+
     private PackageStream.Metadata metadata;
+
     private ResourceBuilderFactory rbf;
+
     private ResourceBuilder rb;
 
     @BeforeClass
@@ -101,6 +114,10 @@ public class NihmsPackageStreamTest {
                 put(Compression.KEY, Compression.OPTS.GZIP);
             }
         };
+
+        executorService = new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES,
+                new ArrayBlockingQueue<>(10));
+
     }
 
     @Before
@@ -130,7 +147,7 @@ public class NihmsPackageStreamTest {
     @Test
     public void assembleSimplePackage() throws Exception {
         NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
-                custodialContent, mb, rbf, packageOptions);
+                custodialContent, mb, rbf, packageOptions, executorService);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
         when(mb.name(anyString())).thenReturn(mb);
@@ -156,7 +173,8 @@ public class NihmsPackageStreamTest {
 
         when(rb.build()).thenReturn(pr);
 
-        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, packageOptions);
+        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
+                custodialContent, mb, rbf, packageOptions, executorService);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
 
@@ -190,5 +208,23 @@ public class NihmsPackageStreamTest {
         nameIn = "bulk_meta.xml";
         nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
         assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
+    }
+
+    private static StreamingSerializer streamingSerializer(String metadata) {
+        return () -> new SizedStream() {
+            @Override
+            public long getLength() {
+                return metadata.length();
+            }
+
+            @Override
+            public InputStream getInputStream() {
+                try {
+                    return IOUtils.toInputStream(metadata, "UTF-8");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 }

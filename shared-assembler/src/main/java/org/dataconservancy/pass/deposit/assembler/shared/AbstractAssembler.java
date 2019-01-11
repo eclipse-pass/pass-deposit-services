@@ -34,14 +34,14 @@ import org.springframework.web.util.UriUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(DepositSubmission, Map)} and
- * {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
+ * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(
+ * DepositSubmission, Map)} and {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link
+ * #createPackageStream( DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
  */
 public abstract class AbstractAssembler implements Assembler {
 
@@ -76,8 +76,7 @@ public abstract class AbstractAssembler implements Assembler {
     /**
      * Constructs a new assembler that provides {@link MetadataBuilderFactory} and {@link ResourceBuilderFactory} for
      * implementations to create and amend the state of package metadata and resources.
-     *
-     * @param mbf used by implementations to create package metadata
+     *  @param mbf used by implementations to create package metadata
      * @param rbf used by implementations to create package resource metadata
      */
     public AbstractAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
@@ -303,41 +302,4 @@ public abstract class AbstractAssembler implements Assembler {
         this.fedoraPassword = fedoraPassword;
     }
 
-    /**
-     * Returns {@code true} if the supplied character is acceptable for use in a posix file name
-     *
-     * @param ch a character that may be used in file name
-     * @return true if the character is acceptable, false otherwise
-     */
-    private static boolean isValidChar(int ch) {
-        int i = ch & 0x0000FFFF;
-
-        // outside of the latin-1 code block
-        if (i >= 0x007f) {
-            return false;
-        }
-
-        // a - z 0x61 - 0x7a
-        if (i >= 0x0061 && i <= 0x007a) {
-            return true;
-        }
-
-        // A - Z 0x41 - 0x5a
-        if (i >= 0x0041 && i <= 0x005a) {
-            return true;
-        }
-
-        // 0 - 9 0x30 - 0x39
-        if (i >= 0x0030 && i <= 0x0039) {
-            return true;
-        }
-
-        // Allow period (0x2e), dash (0x2d), underscore (0x5f)
-        if (i == 0x002e || i == 0x002d || i == 0x005f) {
-            return true;
-        }
-
-        // otherwise it's an illegal character inside of the latin-1 code block
-        return false;
-    }
 }

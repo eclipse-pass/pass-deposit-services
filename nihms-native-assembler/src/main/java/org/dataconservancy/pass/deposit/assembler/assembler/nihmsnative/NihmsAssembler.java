@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
@@ -52,9 +53,13 @@ public class NihmsAssembler extends AbstractAssembler {
 
     private static final String PACKAGE_FILE_NAME = "%s_%s_%s";
 
+    private ExceptionHandlingThreadPoolExecutor executorService;
+
     @Autowired
-    public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
+    public NihmsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf,
+                          ExceptionHandlingThreadPoolExecutor executorService) {
         super(mbf, rbf);
+        this.executorService = executorService;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class NihmsAssembler extends AbstractAssembler {
         namePackage(submission, mb);
 
         NihmsPackageStream stream =
-                new NihmsPackageStream(submission, custodialResources, mb, rbf, options);
+                new NihmsPackageStream(submission, custodialResources, mb, rbf, options, executorService);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;

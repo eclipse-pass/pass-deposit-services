@@ -24,12 +24,10 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -45,22 +43,14 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
         this.metadata = metadata;
     }
 
-    public InputStream serialize() {
+    public SizedStream serialize() {
         XStream xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("_-", "_")));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         xstream.registerConverter(new MetadataConverter());
         xstream.alias("nihms-submit", DepositMetadata.class);
         xstream.toXML(metadata, os);
 
-        byte[] bytes = os.toByteArray();
-
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            os.close();
-            return is;
-        } catch (IOException ioe) {
-            throw new RuntimeException("Could not create Input Stream, or close Output Stream", ioe);
-        }
-
+        return NihmsAssemblerUtil.asSizedStream(os);
     }
 
     private class MetadataConverter implements Converter {

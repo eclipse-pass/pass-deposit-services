@@ -17,11 +17,10 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.AbstractStreamWriter;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
-import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
@@ -34,20 +33,19 @@ import java.util.Map;
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class DspaceMetsStreamWriter extends ThreadStreamWriter {
+public class DspaceMetsStreamWriter extends AbstractStreamWriter {
 
     private static final String METS_XML = "mets.xml";
 
     private DspaceMetadataDomWriter metsWriter;
 
-    public DspaceMetsStreamWriter(String threadName, ArchiveOutputStream archiveOut,
+    public DspaceMetsStreamWriter(ArchiveOutputStream archiveOut,
                                   DepositSubmission submission,
                                   List<DepositFileResource> packageFiles,
                                   ResourceBuilderFactory rbf,
-                                  MetadataBuilder metadataBuilder,
                                   DspaceMetadataDomWriter metsWriter,
                                   Map<String, Object> packageOptions) {
-        super(threadName, archiveOut, submission, packageFiles, rbf, metadataBuilder, packageOptions);
+        super(archiveOut, submission, packageFiles, rbf, packageOptions);
 
         if (metsWriter == null) {
             throw new IllegalArgumentException("DspaceMetadataDomWriter must not be null.");
@@ -70,7 +68,7 @@ public class DspaceMetsStreamWriter extends ThreadStreamWriter {
 
         ArchiveEntry metsEntry = createEntry(METS_XML, metsOut.size());
 
-        putResource(archiveOut, metsEntry, metsIn);
+        writeResource(archiveOut, metsEntry, metsIn);
     }
 
     /**

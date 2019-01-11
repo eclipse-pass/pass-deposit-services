@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
@@ -54,12 +55,14 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
     private DspaceMetadataDomWriterFactory metsWriterFactory;
 
+    private ExceptionHandlingThreadPoolExecutor executorService;
+
     @Autowired
-    public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriterFactory
-            metsWriterFactory) {
+    public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriterFactory metsWriterFactory, ExceptionHandlingThreadPoolExecutor executorService) {
         super(mbf, rbf);
         // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
         this.metsWriterFactory = metsWriterFactory;
+        this.executorService = executorService;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class DspaceMetsAssembler extends AbstractAssembler {
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf,
                                                 Map<String, Object> options) {
         buildMetadata(mb, options);
-        return new DspacePackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
+        return new DspacePackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options, executorService);
     }
 
 }
