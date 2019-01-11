@@ -140,4 +140,11 @@ public class FtpBinding extends ProtocolBinding {
         return Objects.hash(super.hashCode(), username, password, dataType, transferMode, usePasv, defaultDirectory);
     }
 
+    @Override
+    public String toString() {
+        return "FtpBinding{" + "username='" + username + '\'' + ", password='" +
+                ((password != null) ? "xxxx" : "<null>" ) + '\'' + ", dataType='" + dataType + '\'' +
+                ", transferMode='" + transferMode + '\'' + ", usePasv=" + usePasv +
+                ", defaultDirectory='" + defaultDirectory + '\'' + "} " + super.toString();
+    }
 }

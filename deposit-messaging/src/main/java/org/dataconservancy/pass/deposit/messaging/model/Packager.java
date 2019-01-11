@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static java.util.stream.Collectors.toMap;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
 
 /**
  * Provides a package {@link Assembler} and repository {@link Transport}, along with {@code Map} carrying configuration
@@ -76,11 +77,9 @@ public class Packager {
     }
 
     public Map<String, Object> getAssemblerOptions() {
-        LOG.info(">>>> AssemberOptions: ");
-        LOG.info((repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
-        LOG.info((repositoryConfig.getAssemblerConfig() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig() : ">>>> null");
-        LOG.info((repositoryConfig.getAssemblerConfig().getOptions() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig().getOptions() : ">>>> null");
-        LOG.info((repositoryConfig.getAssemblerConfig().getOptions().asOptionsMap() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig().getOptions().asOptionsMap() : ">>>> null");
+        LOG.debug(">>>> Packager {}@{} RepositoryConfig: {}", this.getClass().getSimpleName(),
+                toHexString(identityHashCode(this)),
+                (repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
 
         return repositoryConfig.getAssemblerConfig()
                 .getOptions()

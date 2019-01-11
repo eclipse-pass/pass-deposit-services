@@ -52,4 +52,10 @@ public abstract class AuthRealm {
     public int hashCode() {
         return Objects.hash(mech);
     }
+
+    @Override
+    public String toString() {
+        return "AuthRealm{" + "mech='" + mech + '\'' + '}';
+    }
+
 }

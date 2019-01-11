@@ -65,4 +65,10 @@ public class RepositoryDepositConfig {
         result = 31 * result + (statusMapping != null ? statusMapping.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "RepositoryDepositConfig{" + "depositProcessing=" + depositProcessing +
+                ", statusMapping=" + statusMapping + '}';
+    }
 }

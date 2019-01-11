@@ -87,4 +87,11 @@ public class AssemblerOptions {
     public int hashCode() {
         return Objects.hash(compression, archive, algorithms);
     }
+
+    @Override
+    public String toString() {
+        return "AssemblerOptions{" + "compression='" + compression + '\'' + ", archive='" + archive + '\'' + ", " +
+                "algorithms=" + algorithms + '}';
+    }
+
 }

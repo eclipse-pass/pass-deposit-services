@@ -105,4 +105,11 @@ public class BasicAuthRealm extends AuthRealm {
     public int hashCode() {
         return Objects.hash(super.hashCode(), baseUrl, username, password, realmName);
     }
+
+    @Override
+    public String toString() {
+        return "BasicAuthRealm{" + "baseUrl=" + baseUrl + ", username='" + username + '\'' +
+                ", password='" + ((password != null) ? "xxxxx" : "<null>") + '\'' +
+                ", realmName='" + realmName + '\'' + "} " + super.toString();
+    }
 }

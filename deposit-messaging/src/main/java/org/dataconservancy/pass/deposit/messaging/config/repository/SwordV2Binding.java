@@ -153,4 +153,11 @@ public class SwordV2Binding extends ProtocolBinding {
         return Objects.hash(super.hashCode(), username, password, serviceDocUrl, defaultCollectionUrl, onBehalfOf, depositReceipt, userAgent);
     }
 
+    @Override
+    public String toString() {
+        return "SwordV2Binding{" + "username='" + username + '\'' + ", password='" +
+                ((password != null) ? "xxxx" : "<null>" )+ '\'' + ", serviceDocUrl='" + serviceDocUrl + '\'' +
+                ", defaultCollectionUrl='" + defaultCollectionUrl + '\'' + ", onBehalfOf='" + onBehalfOf + '\'' +
+                ", depositReceipt=" + depositReceipt + ", userAgent='" + userAgent + '\'' + "} " + super.toString();
+    }
 }
