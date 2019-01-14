@@ -17,6 +17,9 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
@@ -69,6 +72,18 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         metadata = new File(extractedPackageDir, "bulk_meta.xml");
     }
 
+    @Override
+    protected Map<String, Object> getOptions() {
+        return new HashMap<String, Object>() {
+            {
+                put(Spec.KEY, SPEC_NIHMS_NATIVE_2017_07);
+                put(Archive.KEY, Archive.OPTS.TAR);
+                put(Compression.KEY, Compression.OPTS.GZIP);
+            }
+        };
+    }
+
+
     @Test
     public void testSimple() throws Exception {
         assertTrue(extractedPackageDir.exists());
@@ -81,8 +96,8 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected void verifyStreamMetadata(PackageStream.Metadata metadata) {
-        assertEquals(PackageStream.COMPRESSION.GZIP, metadata.compression());
-        assertEquals(PackageStream.ARCHIVE.TAR, metadata.archive());
+        assertEquals(Compression.OPTS.GZIP, metadata.compression());
+        assertEquals(Archive.OPTS.TAR, metadata.archive());
         assertTrue(metadata.archived());
         assertEquals(SPEC_NIHMS_NATIVE_2017_07, metadata.spec());
         assertEquals(APPLICATION_GZIP, metadata.mimeType());
@@ -109,7 +124,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         // Each custodial resource is present in the package.  The tested filenames need to be remediated, in case
         // a custodial resource uses a reserved file name.
         custodialResources.forEach(custodialResource -> {
-            String filename = NihmsZippedPackageStream.getNonCollidingFilename(custodialResource.getName(),
+            String filename = NihmsPackageStream.getNonCollidingFilename(custodialResource.getName(),
                     custodialResource.getType());
             assertTrue(extractedPackageDir.toPath().resolve(filename).toFile().exists());
         });
@@ -122,16 +137,16 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         packageFiles.keySet().stream()
                 .filter(fileName -> !fileName.equals(manifest.getName()) && !fileName.equals(metadata.getName()))
                 .forEach(fileName -> {
-                    String remediatedFilename = NihmsZippedPackageStream.getNonCollidingFilename(fileName,
+                    String remediatedFilename = NihmsPackageStream.getNonCollidingFilename(fileName,
                             custodialResourcesTypeMap.get(fileName));
 
-                    if (!remediatedFilename.startsWith(NihmsZippedPackageStream.REMEDIATED_FILE_PREFIX)) {
+                    if (!remediatedFilename.startsWith(NihmsPackageStream.REMEDIATED_FILE_PREFIX)) {
                         assertTrue("Missing file from custodial resources: '" + remediatedFilename + "'",
                                 custodialResourcesMap.containsKey(remediatedFilename));
                     } else {
                         assertTrue("Missing remediated file from custodial resources: '" + remediatedFilename + "'",
                                 custodialResourcesMap.containsKey(
-                                        remediatedFilename.substring(NihmsZippedPackageStream.REMEDIATED_FILE_PREFIX.length())));
+                                        remediatedFilename.substring(NihmsPackageStream.REMEDIATED_FILE_PREFIX.length())));
                     }
                 });
 
@@ -291,9 +306,9 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
         void assertNameIsValid() {
             assertFalse(String.format("File %s, line %s: Name cannot be same as metadata file.", manifestFile, lineNo),
-                    manifestFile.getName() == NihmsZippedPackageStream.METADATA_ENTRY_NAME);
+                    manifestFile.getName() == NihmsPackageStream.METADATA_ENTRY_NAME);
             assertFalse(String.format("File %s, line %s: Name cannot be same as manifest file.", manifestFile, lineNo),
-                    manifestFile.getName() == NihmsZippedPackageStream.MANIFEST_ENTRY_NAME);
+                    manifestFile.getName() == NihmsPackageStream.MANIFEST_ENTRY_NAME);
         }
     }
 

@@ -31,7 +31,10 @@ import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
 
 @Component
 public class NihmsAssembler extends AbstractAssembler {
@@ -56,18 +59,14 @@ public class NihmsAssembler extends AbstractAssembler {
 
     @Override
     protected PackageStream createPackageStream(DepositSubmission submission,
-                                                List<DepositFileResource> custodialResources, MetadataBuilder mb,
-                                                ResourceBuilderFactory rbf) {
-        mb.spec(SPEC_NIHMS_NATIVE_2017_07);
-        mb.archive(PackageStream.ARCHIVE.TAR);
-        mb.archived(true);
-        mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.GZIP);
-        mb.mimeType(APPLICATION_GZIP);
-
+                                                List<DepositFileResource> custodialResources,
+                                                MetadataBuilder mb, ResourceBuilderFactory rbf,
+                                                Map<String, Object> options) {
+        buildMetadata(mb, options);
         namePackage(submission, mb);
 
-        NihmsZippedPackageStream stream = new NihmsZippedPackageStream(submission, custodialResources, mb, rbf);
+        NihmsPackageStream stream =
+                new NihmsPackageStream(submission, custodialResources, mb, rbf, options);
         stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
         stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;

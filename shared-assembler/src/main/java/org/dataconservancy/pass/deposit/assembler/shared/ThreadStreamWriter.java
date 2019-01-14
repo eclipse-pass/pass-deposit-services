@@ -24,9 +24,9 @@ import org.apache.commons.io.input.ContentLengthObserver;
 import org.apache.commons.io.input.DigestObserver;
 import org.apache.commons.io.input.ObservableInputStream;
 import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -40,6 +40,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.emptyList;
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
  * A {@link Thread} responsible for assembling the custodial content and metadata of a package, and writing each
@@ -57,11 +61,11 @@ import java.util.List;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class AbstractThreadedOutputStreamWriter extends Thread {
+public abstract class ThreadStreamWriter extends Thread {
 
     private List<DepositFileResource> packageFiles;
 
-    private AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback closeStreamHandler;
+    private ThreadStreamWriter.CloseOutputstreamCallback closeStreamHandler;
 
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
@@ -71,11 +75,13 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
 
     private DepositSubmission submission;
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractThreadedOutputStreamWriter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ThreadStreamWriter.class);
 
     protected static final int THIRTY_TWO_KIB = 32 * 2 ^ 10;
 
     protected ArchiveOutputStream archiveOut;
+
+    protected Map<String, Object> packageOptions;
 
     /**
      * Constructs an {@code ArchiveOutputStream} that is supplied with the output stream being written to, the custodial
@@ -85,19 +91,23 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param archiveOut the output stream being written to by this writer
      * @param submission the submission
      * @param packageFiles the custodial content of the package
-     * @param rbf factory for building {@link PackageStream.Resource
-     *            package resources}
-     * @param metadataBuilder interface for adding metadata describing this stream
+     * @param rbf factory for building {@link PackageStream.Resource package resources}
+     * @param packageOptions options used for building the package
      */
-    public AbstractThreadedOutputStreamWriter(String threadName, ArchiveOutputStream archiveOut,
-                                              DepositSubmission submission, List<DepositFileResource> packageFiles,
-                                              ResourceBuilderFactory rbf, MetadataBuilder metadataBuilder) {
+    public ThreadStreamWriter(String threadName,
+                              ArchiveOutputStream archiveOut,
+                              DepositSubmission submission,
+                              List<DepositFileResource> packageFiles,
+                              ResourceBuilderFactory rbf,
+                              MetadataBuilder metadataBuilder,
+                              Map<String, Object> packageOptions) {
         super(threadName);
         this.archiveOut = archiveOut;
         this.packageFiles = packageFiles;
         this.rbf = rbf;
         this.submission = submission;
         this.metadataBuilder = metadataBuilder;
+        this.packageOptions = packageOptions;
     }
 
     /**
@@ -113,6 +123,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      *         specific metadata to the output stream</li>
      * </ol>
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         List<PackageStream.Resource> assembledResources = new ArrayList<>();
@@ -142,20 +153,14 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                         in = resourceIn;
                     }
 
-                    DefaultDetector detector = new DefaultDetector();
-                    MediaType mimeType = detector.detect(in, new Metadata());
-                    in.reset();
-                    rb.mimeType(mimeType.toString());
+                    rb.mimeType(detectMediaType(in, new DefaultDetector()).toString());
 
-
-
-                    ContentLengthObserver clObs = new ContentLengthObserver(rb);
-                    DigestObserver md5Obs = new DigestObserver(rb, PackageStream.Algo.MD5);
-                    DigestObserver sha256Obs = new DigestObserver(rb, PackageStream.Algo.SHA_256);
                     try (ObservableInputStream observableIn = new ObservableInputStream(in)) {
+                        ContentLengthObserver clObs = new ContentLengthObserver(rb);
                         observableIn.add(clObs);
-                        observableIn.add(md5Obs);
-                        observableIn.add(sha256Obs);
+
+                        ((List<Checksum.OPTS>) packageOptions.getOrDefault(Checksum.KEY, emptyList())).forEach(algo ->
+                                observableIn.add(new DigestObserver(rb, algo)));
 
                         rb.name(nameResource(resource));
                         PackageStream.Resource packageResource = rb.build();
@@ -168,7 +173,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
                     assembledResources.add(rb.build());
                     rb.reset();
                 } catch (IOException e) {
-                    throw new RuntimeException(String.format(AbstractZippedPackageStream.ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
+                    throw new RuntimeException(String.format(ArchivingPackageStream.ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
                 }
             });
 
@@ -235,20 +240,25 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {
-        PackageStream.Metadata metadata = metadata();
-        if(metadata.archive().equals(PackageStream.ARCHIVE.TAR)) {
-            TarArchiveEntry entry = new TarArchiveEntry(name);
-            if (length >= 0) {
-                entry.setSize(length);
+        switch ((Archive.OPTS) packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE)) {
+            case TAR: {
+                TarArchiveEntry entry = new TarArchiveEntry(name);
+                if (length >= 0) {
+                    entry.setSize(length);
+                }
+                return entry;
             }
-            return entry;
-        } else if (metadata.archive().equals(PackageStream.ARCHIVE.ZIP)) {
-            ZipArchiveEntry entry = new ZipArchiveEntry(name);
-            if (length >= 0) {
-                entry.setSize(length);
+
+            case ZIP: {
+                ZipArchiveEntry entry = new ZipArchiveEntry(name);
+                if (length >= 0) {
+                    entry.setSize(length);
+                }
+                return entry;
             }
-            return entry;
-        } else return null;
+
+            default: return null;
+        }
     }
 
     /**
@@ -273,7 +283,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @return the handler invoked to close output streams when an exception is encountered writing to the piped output
      * stream
      */
-    public AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback getCloseStreamHandler() {
+    public ThreadStreamWriter.CloseOutputstreamCallback getCloseStreamHandler() {
         return closeStreamHandler;
     }
 
@@ -284,7 +294,7 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
      * @param callback the handler invoked to close output streams when an exception is encountered writing to the piped
      * output stream
      */
-    public void setCloseStreamHandler(AbstractThreadedOutputStreamWriter.CloseOutputstreamCallback callback) {
+    public void setCloseStreamHandler(ThreadStreamWriter.CloseOutputstreamCallback callback) {
         this.closeStreamHandler = callback;
     }
 
@@ -340,7 +350,4 @@ public abstract class AbstractThreadedOutputStreamWriter extends Thread {
         void closeAll();
     }
 
-    protected PackageStream.Metadata metadata() {
-        return metadataBuilder.build();
-    }
 }

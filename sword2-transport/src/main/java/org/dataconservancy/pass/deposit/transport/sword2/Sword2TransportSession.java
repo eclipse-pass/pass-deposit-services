@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
@@ -126,7 +127,7 @@ public class Sword2TransportSession implements TransportSession {
         streamMetadata
                 .checksums()
                 .stream()
-                .filter(sum -> PackageStream.Algo.MD5 == sum.algorithm())
+                .filter(sum -> Checksum.OPTS.MD5 == sum.algorithm())
                 .findFirst().ifPresent(md5 -> swordDeposit.setMd5(md5.asHex()));
 
         if (swordDeposit.getMd5() == null) {

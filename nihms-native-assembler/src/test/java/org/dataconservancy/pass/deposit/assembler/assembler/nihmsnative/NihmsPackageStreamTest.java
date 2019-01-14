@@ -16,16 +16,20 @@
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
+import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
-import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
-import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +40,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.dataconservancy.deposit.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
@@ -54,32 +60,23 @@ public class NihmsPackageStreamTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageStreamTest.class);
 
+    private static List<DepositFileResource> custodialContent;
+
+    private static Map<String, Object> packageOptions;
+
     private StreamingSerializer manifestSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the manifest.", "UTF-8"));
 
     private StreamingSerializer metadataSerializer = () -> performSilently(() -> IOUtils.toInputStream("This is the metadata", "UTF-8"));
 
-    private List<DepositFileResource> custodialContent;
+    private MetadataBuilder mb;
+    private PackageStream.Metadata metadata;
+    private ResourceBuilderFactory rbf;
+    private ResourceBuilder rb;
 
-    private MetadataBuilder mb = mock(MetadataBuilder.class);
-    private ResourceBuilderFactory rbf = mock(ResourceBuilderFactory.class);
-    private ResourceBuilder rb = mock(ResourceBuilder.class);
-
-    private MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
-
-    @Before
-    public void setUp() throws Exception {
-        when(rbf.newInstance()).thenReturn(rb);
-
-        MetadataBuilder metadataBuilder = new MetadataBuilderImpl();
-        metadataBuilder.spec(NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
-        metadataBuilder.archive(PackageStream.ARCHIVE.TAR);
-        metadataBuilder.archived(true);
-        metadataBuilder.compressed(true);
-        metadataBuilder.compression(PackageStream.COMPRESSION.GZIP);
-        metadataBuilder.mimeType(NihmsAssembler.APPLICATION_GZIP);
-
-        String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
-        String figureLocation = this.getClass().getPackage().getName().replace(".", "/") + "/figure.jpg";
+    @BeforeClass
+    public static void setUpCustodialContentAndPackageOptions() throws Exception {
+        String manuscriptLocation = NihmsPackageStreamTest.class.getPackage().getName().replace(".", "/") + "/manuscript.txt";
+        String figureLocation = NihmsPackageStreamTest.class.getPackage().getName().replace(".", "/") + "/figure.jpg";
 
         DepositFile manuscript = new DepositFile();
         manuscript.setName("manuscript.txt");
@@ -96,6 +93,24 @@ public class NihmsPackageStreamTest {
         custodialContent = Arrays.asList(
                 new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
                 new DepositFileResource(figure, new ClassPathResource(figureLocation)));
+
+        packageOptions = new HashMap<String, Object>() {
+            {
+                put(Spec.KEY, NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07);
+                put(Archive.KEY, Archive.OPTS.TAR);
+                put(Compression.KEY, Compression.OPTS.GZIP);
+            }
+        };
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        mb = mock(MetadataBuilder.class);
+        metadata = mock(PackageStream.Metadata.class);
+        rbf = mock(ResourceBuilderFactory.class);
+        rb = mock(ResourceBuilder.class);
+        when(rbf.newInstance()).thenReturn(rb);
+        when(mb.build()).thenReturn(metadata);
     }
 
     /**
@@ -114,13 +129,19 @@ public class NihmsPackageStreamTest {
 
     @Test
     public void assembleSimplePackage() throws Exception {
-
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, metadataBuilder, rbf);
+        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
+                custodialContent, mb, rbf, packageOptions);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
+        when(mb.name(anyString())).thenReturn(mb);
+        PackageStream.Resource pr = mock(PackageStream.Resource.class);
+        when(pr.name()).thenReturn(custodialContent.get(0).getFilename());
+        when(pr.name()).thenReturn(custodialContent.get(1).getFilename());
+        when(rb.build()).thenReturn(pr);
 
         final InputStream packageStream = underTest.open();
         assertNotNull(packageStream);
+        IOUtils.copy(packageStream, new NullOutputStream());
         packageStream.close();
     }
 
@@ -131,18 +152,20 @@ public class NihmsPackageStreamTest {
         when(mb.name(anyString())).thenReturn(mb);
         PackageStream.Resource pr = mock(PackageStream.Resource.class);
         when(pr.name()).thenReturn(custodialContent.get(0).getFilename());
+        when(pr.name()).thenReturn(custodialContent.get(1).getFilename());
 
         when(rb.build()).thenReturn(pr);
 
-        NihmsZippedPackageStream underTest = new NihmsZippedPackageStream(mock(DepositSubmission.class), custodialContent, metadataBuilder, rbf);
+        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class), custodialContent, mb, rbf, packageOptions);
         underTest.setManifestSerializer(manifestSerializer);
         underTest.setMetadataSerializer(metadataSerializer);
 
         File tmpFile = new File(System.getProperty("java.io.tmpdir"), expectedFilename);
         LOG.debug("Writing package file {}", tmpFile);
 
-        try (FileOutputStream output = new FileOutputStream(tmpFile)) {
-            IOUtils.copy(underTest.open(), output);
+        try (InputStream input = underTest.open();
+             FileOutputStream output = new FileOutputStream(tmpFile)) {
+            IOUtils.copy(input, output);
         }
 
         assertTrue(tmpFile.length() > 0);
@@ -153,19 +176,19 @@ public class NihmsPackageStreamTest {
         String nameIn, nameOut;
 
         nameIn = "test.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "manifest.txt";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsZippedPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
+        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
         assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
     }
 }

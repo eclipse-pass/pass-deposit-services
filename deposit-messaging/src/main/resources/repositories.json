@@ -16,7 +16,15 @@
     },
 
     "assembler": {
-      "specification": "http://purl.org/net/sword/package/METSDSpaceSIP"
+      "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
     },
 
     "transport-config": {
@@ -74,7 +82,15 @@
     },
 
     "assembler": {
-      "specification": "nihms-native-2017-07"
+      "specification": "nihms-native-2017-07",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
     },
 
     "transport-config": {

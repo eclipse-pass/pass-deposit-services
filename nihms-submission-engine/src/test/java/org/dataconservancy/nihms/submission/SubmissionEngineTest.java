@@ -30,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -83,7 +84,7 @@ public class SubmissionEngineTest {
 
         when(builder.build(anyString())).thenReturn(submission);
         when(transport.open(anyMap())).thenReturn(session);
-        when(assembler.assemble(any(DepositSubmission.class))).thenReturn(packageStream);
+        when(assembler.assemble(any(DepositSubmission.class), eq(Collections.emptyMap()))).thenReturn(packageStream);
         when(packageStream.metadata()).thenReturn(md);
         when(md.name()).thenReturn(expectedPackageName);
         when(packageStream.open()).thenReturn(contentStream);
@@ -140,14 +141,14 @@ public class SubmissionEngineTest {
         TransportSession session = mock(TransportSession.class);
         when(builder.build(anyString())).thenReturn(mock(DepositSubmission.class));
         when(transport.open(anyMap())).thenReturn(session);
-        when(assembler.assemble(any(DepositSubmission.class))).thenThrow(expectedException);
+        when(assembler.assemble(any(DepositSubmission.class), eq(Collections.emptyMap()))).thenThrow(expectedException);
 
         submitAndVerifyExceptionChain(expectedCause, expectedException);
 
         verify(session).close();
         verify(builder).build(anyString());
         verify(transport).open(anyMap());
-        verify(assembler).assemble(any(DepositSubmission.class));
+        verify(assembler).assemble(any(DepositSubmission.class), eq(Collections.emptyMap()));
     }
 
     private void submitAndVerifyExceptionChain(Exception expectedCause, Exception expectedException) {

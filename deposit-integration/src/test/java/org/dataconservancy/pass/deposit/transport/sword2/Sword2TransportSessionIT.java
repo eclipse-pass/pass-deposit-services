@@ -25,6 +25,9 @@ import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Link;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BrokenInputStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
@@ -341,8 +344,8 @@ public class Sword2TransportSessionIT extends BaseIT {
         PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
         PackageStream.Checksum invalidChecksum = new PackageStream.Checksum() {
             @Override
-            public PackageStream.Algo algorithm() {
-                return PackageStream.Algo.MD5;
+            public Checksum.OPTS algorithm() {
+                return Checksum.OPTS.MD5;
             }
 
             @Override
@@ -515,16 +518,16 @@ public class Sword2TransportSessionIT extends BaseIT {
         PackageStream.Metadata md = mock(PackageStream.Metadata.class);
         when(md.name()).thenReturn(packageFile.getName());
         when(md.spec()).thenReturn(packageSpec);
-        when(md.archive()).thenReturn(PackageStream.ARCHIVE.ZIP);
+        when(md.archive()).thenReturn(Archive.OPTS.ZIP);
         when(md.archived()).thenReturn(true);
-        when(md.compression()).thenReturn(PackageStream.COMPRESSION.ZIP);
+        when(md.compression()).thenReturn(Compression.OPTS.ZIP);
         when(md.compressed()).thenReturn(true);
         when(md.sizeBytes()).thenReturn(packageFile.length());
         when(md.mimeType()).thenReturn(packageMimeType);
         final PackageStream.Checksum md5 = new PackageStream.Checksum() {
             @Override
-            public PackageStream.Algo algorithm() {
-                return PackageStream.Algo.MD5;
+            public Checksum.OPTS algorithm() {
+                return Checksum.OPTS.MD5;
             }
 
             @Override

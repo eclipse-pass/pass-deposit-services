@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 import java.io.InputStream;
@@ -27,19 +29,6 @@ import java.util.Iterator;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface PackageStream {
-
-    enum COMPRESSION {
-        NONE,
-        GZIP,
-        BZIP2,
-        ZIP
-    }
-
-    enum ARCHIVE {
-        NONE,
-        TAR,
-        ZIP
-    }
 
     /**
      * Opens the package in its entirety, and streams back the bytes as specified by the archive and compression
@@ -80,7 +69,7 @@ public interface PackageStream {
 
         /**
          * A suggested name for this package.  The {@link #spec() specification} used for
-         * {@link Assembler#assemble(DepositSubmission) assembling} a package may place requirements on the name of the
+         * {@link Assembler#assemble(DepositSubmission, java.util.Map) assembling} a package may place requirements on the name of the
          * package file in the target system.  For example, BagIt recommends that the name of the package file be based
          * on the name of the base directory of the bag.  Submission components responsible for streaming {@link
          * PackageStream this package} to target systems can use the name returned by this method as the name of the
@@ -116,7 +105,7 @@ public interface PackageStream {
 
         /**
          * If the package stream returned by {@link #open()} is compressed.  If {@code false}, then {@link
-         * #compression()} should return {@link PackageStream.COMPRESSION#NONE}.
+         * #compression()} should return {@link Compression.OPTS#NONE}.
          *
          * @return true if the package stream returned by {@link #open()} is compressed
          */
@@ -127,11 +116,11 @@ public interface PackageStream {
          *
          * @return the compression used
          */
-        COMPRESSION compression();
+        Compression.OPTS compression();
 
         /**
          * If the package uses to an archive format, such as tar.  If {@code false}, then {@link #archive()} should
-         * return {@link PackageStream.ARCHIVE#NONE}.
+         * return {@link Archive.OPTS#NONE}.
          */
         boolean archived();
 
@@ -140,7 +129,7 @@ public interface PackageStream {
          *
          * @return the archive form
          */
-        ARCHIVE archive();
+        Archive.OPTS archive();
 
         /**
          * The primary or preferred checksum of the package serialization as returned by {@link #open()}
@@ -211,7 +200,7 @@ public interface PackageStream {
          *
          * @return the checksum algorithm
          */
-        Algo algorithm();
+        PackageOptions.Checksum.OPTS algorithm();
 
         /**
          * The value of the checksum, as a byte array
@@ -234,12 +223,4 @@ public interface PackageStream {
 
     }
 
-    /**
-     * Checksum algorithms
-     */
-    enum Algo {
-        SHA_512,
-        SHA_256,
-        MD5
-    }
 }

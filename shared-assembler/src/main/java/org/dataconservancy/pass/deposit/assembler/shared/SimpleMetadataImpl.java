@@ -16,6 +16,8 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.util.ArrayList;
@@ -42,11 +44,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     
     private boolean compressed = true;
 
-    private PackageStream.COMPRESSION compression = PackageStream.COMPRESSION.GZIP;
+    private Compression.OPTS compression = Compression.OPTS.GZIP;
 
     private boolean archived = true;
 
-    private PackageStream.ARCHIVE archive = PackageStream.ARCHIVE.TAR;
+    private Archive.OPTS archive = Archive.OPTS.TAR;
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
@@ -89,7 +91,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageStream.COMPRESSION compression() {
+    public Compression.OPTS compression() {
         return compression;
     }
 
@@ -99,7 +101,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public PackageStream.ARCHIVE archive() {
+    public Archive.OPTS archive() {
         return archive;
     }
 
@@ -157,11 +159,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.compressed = compressed;
     }
 
-    PackageStream.COMPRESSION getCompression() {
+    Compression.OPTS getCompression() {
         return compression;
     }
 
-    void setCompression(PackageStream.COMPRESSION compression) {
+    void setCompression(Compression.OPTS compression) {
         this.compression = compression;
     }
 
@@ -173,11 +175,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         this.archived = archived;
     }
 
-    PackageStream.ARCHIVE getArchive() {
+    Archive.OPTS getArchive() {
         return archive;
     }
 
-    void setArchive(PackageStream.ARCHIVE archive) {
+    void setArchive(Archive.OPTS archive) {
         this.archive = archive;
     }
 

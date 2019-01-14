@@ -17,6 +17,8 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
@@ -65,7 +67,7 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
-    public MetadataBuilder compression(PackageStream.COMPRESSION compression) {
+    public MetadataBuilder compression(Compression.OPTS compression) {
         checkState();
         metadata.setCompression(compression);
         return this;
@@ -79,7 +81,7 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
-    public MetadataBuilder archive(PackageStream.ARCHIVE archive) {
+    public MetadataBuilder archive(Archive.OPTS archive) {
         checkState();
         metadata.setArchive(archive);
         return this;

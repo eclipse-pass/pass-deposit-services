@@ -15,7 +15,7 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 
@@ -33,11 +33,11 @@ import static org.apache.commons.codec.binary.Hex.encodeHexString;
  */
 public class DigestObserver extends ResourceBuilderObserver {
 
-    private PackageStream.Algo algo;
+    private Checksum.OPTS algo;
 
     private MessageDigest digest;
 
-    public DigestObserver(ResourceBuilder builder, PackageStream.Algo algorithm) {
+    public DigestObserver(ResourceBuilder builder, Checksum.OPTS algorithm) {
         super(builder);
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm must not be null.");
@@ -50,10 +50,10 @@ public class DigestObserver extends ResourceBuilderObserver {
                 case MD5:
                     this.digest = MessageDigest.getInstance("MD5");
                     break;
-                case SHA_256:
+                case SHA256:
                     this.digest = MessageDigest.getInstance("SHA-256");
                     break;
-                case SHA_512:
+                case SHA512:
                     this.digest = MessageDigest.getInstance("SHA-512");
                     break;
                 default:

@@ -16,6 +16,7 @@
 package org.dataconservancy.nihms.submission;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -99,7 +100,7 @@ public class SubmissionEngine {
      * Instantiate a {@code SubmissionEngine} that is associated with a specific model, packaging format, and transport.
      * <p>
      * This instance will be able to {@link SubmissionBuilder#build(String) build} a {@link DepositSubmission submission
-     * model}, {@link Assembler#assemble(DepositSubmission) generate} a {@link PackageStream package}, and
+     * model}, {@link Assembler#assemble(DepositSubmission, Map) generate} a {@link PackageStream package}, and
      * {@link TransportSession#send(PackageStream, Map) deposit} the package in a target repository.
      * </p>
      *
@@ -141,7 +142,12 @@ public class SubmissionEngine {
         // Assemble the package
         // Stream it to the target system
         try (TransportSession session = transport.open(getTransportHints(transportHints))) {
-            PackageStream stream = assembler.assemble(submission);
+            PackageStream stream = assembler.assemble(submission, new HashMap<String, Object>()
+            {
+                {
+                    put(Archive.KEY, Archive.OPTS.ZIP);
+                }
+            });
             resourceName = stream.metadata().name();
             response = session.send(stream, getTransportHints(transportHints));
         } catch (Exception e) {

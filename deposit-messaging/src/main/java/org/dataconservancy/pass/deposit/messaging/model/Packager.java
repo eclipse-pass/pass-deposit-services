@@ -75,6 +75,18 @@ public class Packager {
         return assembler;
     }
 
+    public Map<String, Object> getAssemblerOptions() {
+        LOG.info(">>>> AssemberOptions: ");
+        LOG.info((repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
+        LOG.info((repositoryConfig.getAssemblerConfig() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig() : ">>>> null");
+        LOG.info((repositoryConfig.getAssemblerConfig().getOptions() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig().getOptions() : ">>>> null");
+        LOG.info((repositoryConfig.getAssemblerConfig().getOptions().asOptionsMap() != null) ? ">>>> " + repositoryConfig.getAssemblerConfig().getOptions().asOptionsMap() : ">>>> null");
+
+        return repositoryConfig.getAssemblerConfig()
+                .getOptions()
+                .asOptionsMap();
+    }
+
     public Transport getTransport() {
         return transport;
     }

@@ -19,7 +19,9 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderImpl;
 import org.dataconservancy.pass.deposit.model.DepositFile;
@@ -32,7 +34,9 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.APPLICATION_ZIP;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler.SPEC_DSPACE_METS;
@@ -55,16 +59,18 @@ public class DspaceMetsPackageStreamTest {
 
     private List<DepositFileResource> custodialContent;
 
+    private Map<String, Object> packageOptions;
+
     @Before
     public void setUp() throws Exception {
         when(rbf.newInstance()).thenReturn(new ResourceBuilderImpl());
         when(metsWriterFactory.newInstance()).thenReturn(metsWriter);
 
         mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageStream.ARCHIVE.ZIP);
+        mb.archive(Archive.OPTS.ZIP);
         mb.archived(true);
         mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.ZIP);
+        mb.compression(Compression.OPTS.ZIP);
         mb.mimeType(APPLICATION_ZIP);
 
         String manuscriptLocation = this.getClass().getPackage().getName().replace(".", "/") + "/manuscript.txt";
@@ -85,14 +91,22 @@ public class DspaceMetsPackageStreamTest {
         custodialContent = Arrays.asList(
                 new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
                 new DepositFileResource(figure, new ClassPathResource(figureLocation)));
+
+        packageOptions = new HashMap<String, Object>() {
+            {
+                // TODO: what about checksums, what happens when no checksums are specified?
+                put(Archive.KEY, Archive.OPTS.ZIP);
+                put(Spec.KEY, SPEC_DSPACE_METS);
+            }
+        };
     }
 
     @Test
     public void testStream() throws Exception {
         // Construct a package stream using mocks and two example files
-        DspaceMetsZippedPackageStream underTest =
-                new DspaceMetsZippedPackageStream(
-                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory);
+        DspacePackageStream underTest =
+                new DspacePackageStream(
+                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions);
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written
         assertTrue("Expected bytes written to be greater than 0!",

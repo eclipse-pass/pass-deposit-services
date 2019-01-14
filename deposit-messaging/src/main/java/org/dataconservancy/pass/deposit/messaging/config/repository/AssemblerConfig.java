@@ -17,6 +17,8 @@ package org.dataconservancy.pass.deposit.messaging.config.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -24,6 +26,8 @@ public class AssemblerConfig {
 
     @JsonProperty("specification")
     private String spec;
+
+    private AssemblerOptions options;
 
     public String getSpec() {
         return spec;
@@ -33,20 +37,26 @@ public class AssemblerConfig {
         this.spec = spec;
     }
 
+    public AssemblerOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(AssemblerOptions options) {
+        this.options = options;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-
         AssemblerConfig that = (AssemblerConfig) o;
-
-        return spec != null ? spec.equals(that.spec) : that.spec == null;
+        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options);
     }
 
     @Override
     public int hashCode() {
-        return spec != null ? spec.hashCode() : 0;
+        return Objects.hash(spec, options);
     }
 }

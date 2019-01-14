@@ -27,6 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
 
 @Component
 public class DspaceMetsAssembler extends AbstractAssembler {
@@ -48,26 +51,24 @@ public class DspaceMetsAssembler extends AbstractAssembler {
      */
     public static final String APPLICATION_ZIP = "application/zip";
 
-
+    // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
     private DspaceMetadataDomWriterFactory metsWriterFactory;
 
     @Autowired
     public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriterFactory
             metsWriterFactory) {
         super(mbf, rbf);
+        // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
         this.metsWriterFactory = metsWriterFactory;
     }
 
     @Override
-    protected PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
-                                                MetadataBuilder mb, ResourceBuilderFactory rbf) {
-        mb.spec(SPEC_DSPACE_METS);
-        mb.archive(PackageStream.ARCHIVE.ZIP);
-        mb.archived(true);
-        mb.compressed(true);
-        mb.compression(PackageStream.COMPRESSION.ZIP);
-        mb.mimeType(APPLICATION_ZIP);
-        return new DspaceMetsZippedPackageStream(submission, custodialResources, mb, rbf, metsWriterFactory);
+    protected PackageStream createPackageStream(DepositSubmission submission,
+                                                List<DepositFileResource> custodialResources,
+                                                MetadataBuilder mb, ResourceBuilderFactory rbf,
+                                                Map<String, Object> options) {
+        buildMetadata(mb, options);
+        return new DspacePackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
     }
 
 }

@@ -34,12 +34,14 @@ import org.springframework.web.util.UriUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Abstract assembler implementation, which provides an implementation of {@link #assemble(DepositSubmission)} and
- * {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory)}.
+ * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(DepositSubmission, Map)} and
+ * {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
  */
 public abstract class AbstractAssembler implements Assembler {
 
@@ -89,16 +91,17 @@ public abstract class AbstractAssembler implements Assembler {
      * actually creating a stream for the tar.gz archive.
      *
      * @param submission the custodial content being packaged
+     * @param options the options used when creating the package
      * @return a PackageStream which actually creates the stream for the tar.gz archive
      */
     @Override
-    public PackageStream assemble(DepositSubmission submission) {
+    public PackageStream assemble(DepositSubmission submission, Map<String, Object> options) {
         MetadataBuilder metadataBuilder = mbf.newInstance();
         metadataBuilder.name(sanitizeFilename(submission.getName()));
 
         List<DepositFileResource> custodialResources = resolveCustodialResources(submission.getFiles());
 
-        return createPackageStream(submission, custodialResources, metadataBuilder, rbf);
+        return createPackageStream(submission, custodialResources, metadataBuilder, rbf, options);
     }
 
     /**
@@ -120,10 +123,13 @@ public abstract class AbstractAssembler implements Assembler {
      * @param custodialResources the custodial content to be streamed
      * @param mdb the interface for adding metadata describing package stream
      * @param rbf the interface for adding metadata for individual resources in the package stream
+     * @param options the options used to create the package
      * @return the package stream
      */
-    protected abstract PackageStream createPackageStream(DepositSubmission submission, List<DepositFileResource> custodialResources,
-                                                         MetadataBuilder mdb, ResourceBuilderFactory rbf);
+    protected abstract PackageStream createPackageStream(DepositSubmission submission,
+                                                         List<DepositFileResource> custodialResources,
+                                                         MetadataBuilder mdb, ResourceBuilderFactory rbf,
+                                                         Map<String, Object> options);
 
     /**
      * Implementations are provided a "manifest" of custodial resources (in the form of {@code List<DepositFile>})

@@ -19,14 +19,15 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractZippedPackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.AbstractThreadedOutputStreamWriter;
+import org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ThreadStreamWriter;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 
 import java.util.List;
+import java.util.Map;
 
-public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
+public class DspacePackageStream extends ArchivingPackageStream {
 
     private DspaceMetadataDomWriterFactory metsWriterFactory;
 
@@ -34,12 +35,13 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
 
     private MetadataBuilder metadataBuilder;
 
-    public DspaceMetsZippedPackageStream(DepositSubmission submission,
-                                         List<DepositFileResource> custodialResources,
-                                         MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
-                                         DspaceMetadataDomWriterFactory metsWriterFactory) {
+    public DspacePackageStream(DepositSubmission submission,
+                               List<DepositFileResource> custodialResources,
+                               MetadataBuilder metadataBuilder, ResourceBuilderFactory rbf,
+                               DspaceMetadataDomWriterFactory metsWriterFactory,
+                               Map<String, Object> packageOptions) {
 
-        super(custodialResources, metadataBuilder, rbf);
+        super(custodialResources, metadataBuilder, rbf, packageOptions);
 
         if (metsWriterFactory == null) {
             throw new IllegalArgumentException("METS writer must not be null.");
@@ -49,15 +51,16 @@ public class DspaceMetsZippedPackageStream extends AbstractZippedPackageStream {
             throw new IllegalArgumentException("Submission must not be null.");
         }
 
+        // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
         this.metsWriterFactory = metsWriterFactory;
         this.submission = submission;
         this.metadataBuilder = metadataBuilder;
     }
 
     @Override
-    public AbstractThreadedOutputStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
-                                                              ResourceBuilderFactory rbf) {
-        return new DspaceMetsThreadedOutputStreamWriter("DSpace Archive Writer", archiveOutputStream,
-                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance());
+    public ThreadStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
+                                              ResourceBuilderFactory rbf) {
+        return new DspaceMetsStreamWriter("DSpace Archive Writer", archiveOutputStream,
+                submission, custodialContent, rbf, metadataBuilder, metsWriterFactory.newInstance(), packageOptions);
     }
 }

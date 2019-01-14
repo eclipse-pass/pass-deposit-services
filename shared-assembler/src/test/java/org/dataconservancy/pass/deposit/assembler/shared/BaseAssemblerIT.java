@@ -16,6 +16,8 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
@@ -39,7 +41,6 @@ import java.util.Map;
 
 import static java.util.function.Function.*;
 import static java.util.stream.Collectors.toMap;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.composeSubmission;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.tmpFile;
 import static org.junit.Assert.assertTrue;
@@ -127,7 +128,7 @@ public abstract class BaseAssemblerIT {
 
         prepareCustodialResources();
 
-        PackageStream stream = underTest.assemble(submission);
+        PackageStream stream = underTest.assemble(submission, getOptions());
 
         File packageArchive = savePackage(stream);
 
@@ -135,6 +136,8 @@ public abstract class BaseAssemblerIT {
 
         extractPackage(packageArchive, stream.metadata().archive(), stream.metadata().compression());
     }
+
+    protected abstract Map<String, Object> getOptions();
 
     protected void prepareSubmission() throws InvalidModel {
         prepareSubmission(URI.create("fake:submission1"));
@@ -167,7 +170,7 @@ public abstract class BaseAssemblerIT {
      * @param packageArchive the package archive file to open
      * @throws IOException if there is an error opening the package
      */
-    protected void extractPackage(File packageArchive, PackageStream.ARCHIVE archive, PackageStream.COMPRESSION compression) throws IOException {
+    protected void extractPackage(File packageArchive, Archive.OPTS archive, Compression.OPTS compression) throws IOException {
         extractedPackageDir = openArchive(packageArchive, archive, compression);
 
         LOG.debug(">>>> Extracted package to '{}'", extractedPackageDir);
