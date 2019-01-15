@@ -24,7 +24,11 @@ import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
+import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageProvider;
+import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetadataDomWriterFactory;
+import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsPackageProvider;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.dataconservancy.pass.deposit.assembler.shared.PackageProvider;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
@@ -347,4 +351,14 @@ public class DepositConfig {
         return new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
     }
 
+    @Bean
+    DspaceMetsPackageProvider dspaceMetsPackageProvider(DspaceMetadataDomWriterFactory domWriterFactory) {
+        return new DspaceMetsPackageProvider(domWriterFactory);
+    }
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    NihmsPackageProvider nihmsPackageProvider() {
+        return new NihmsPackageProvider();
+    }
 }

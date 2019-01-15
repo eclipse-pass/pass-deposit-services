@@ -17,12 +17,8 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.slf4j.Logger;
@@ -40,9 +36,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.TAR;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.ZIP;
-
 /**
  * Creates {@link PackageStream}s in a supported {@link Archive archival format}.  Package options, including the
  * archival format, are supplied upon construction.
@@ -59,17 +52,13 @@ import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.
  * ({@code ResourceBuilder} instances are obtained from the {@code ResourceBuilderFactory} supplied on construction).
  * </p>
  */
-public abstract class ArchivingPackageStream implements PackageStream {
+public class ArchivingPackageStream implements PackageStream {
 
     static final String ERR_PUT_RESOURCE = "Error putting resource '%s' into archive output stream: %s";
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchivingPackageStream.class);
 
     private static final int ONE_MIB = 2 ^ 20;
-
-    protected static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
-
-    protected static final String ERR_NO_ARCHIVE_FORMAT = "No supported archive format was specified in the metadata builder";
 
     /**
      * The custodial content to be packaged and streamed.
@@ -87,36 +76,43 @@ public abstract class ArchivingPackageStream implements PackageStream {
 
     private ExceptionHandlingThreadPoolExecutor executorService;
 
+    private StreamWriter streamWriter;
+
+    private ArchiveOutputStreamFactory archiveOutputStreamFactory;
+
     /**
      * Creates a package stream that uses the archive format specified in the {@code packageOptions}.  The supplied
      * {@code custodialContent} will be present in the stream.  Metadata supplied to the {@code MetadataBuilder} and
      * {@code ResourceBuilder} (created from the {@code rbf}) may be included in the stream.
-     *  @param custodialContent the custodial content of the package
+     *
+     * @param custodialContent the custodial content of the package
      * @param metadataBuilder interface used to add metadata describing the package
      * @param rbf interface used to instantiate {@code ResourceBuilder} instances, used to add metadata describing
- *            individual resources in the package
+     *            individual resources in the package
      * @param packageOptions the options used when building the package
      * @param executorService
+     * @param streamWriter
      */
     public ArchivingPackageStream(List<DepositFileResource> custodialContent,
                                   MetadataBuilder metadataBuilder,
                                   ResourceBuilderFactory rbf,
                                   Map<String, Object> packageOptions,
-                                  ExceptionHandlingThreadPoolExecutor executorService) {
+                                  ExceptionHandlingThreadPoolExecutor executorService,
+                                  StreamWriter streamWriter) {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;
         this.rbf = rbf;
         this.packageOptions = packageOptions;
         this.executorService = executorService;
+        this.streamWriter = streamWriter;
+        this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation returns an {@code PipedInputStream} whose bytes are supplied by the {@code Thread} returned
-     * {@link #getStreamWriter(ArchiveOutputStream, ResourceBuilderFactory)}.  Subclasses supply the {@code Thread} by
-     * implementing {@link #getStreamWriter(ArchiveOutputStream, ResourceBuilderFactory) getStreamWriter(...)}, and this
-     * method invokes {@link Thread#run() run()} prior to returning.
+     * This implementation returns an {@code PipedInputStream} whose bytes are supplied by an internal {@link
+     * StreamWriter}.
      * </p>
      * <p>
      * De-coupling the reading and writing of the stream allows the caller to open and begin reading the stream, even as
@@ -142,27 +138,7 @@ public abstract class ArchivingPackageStream implements PackageStream {
 
         // Wrap the output stream in an ArchiveOutputStream
         // we support zip, tar and tar.gz so far
-        ArchiveOutputStream archiveOut;
-
-        if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == TAR) {
-            try {
-                if (packageOptions.getOrDefault(Compression.KEY, Compression.OPTS.NONE) == Compression.OPTS.GZIP) {
-                    archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
-                } else {
-                    archiveOut = new TarArchiveOutputStream(pipedOut);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
-            }
-        } else if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == ZIP) {
-            try {
-                archiveOut = new ZipArchiveOutputStream(pipedOut);
-            } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, ZIP, e.getMessage()), e);
-            }
-        } else {
-            throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);
-        }
+        ArchiveOutputStream archiveOut = archiveOutputStreamFactory.newInstance(packageOptions, pipedOut);
 
         // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
         // stack trace of the exception will be reported when it is encountered by the reader
@@ -219,26 +195,12 @@ public abstract class ArchivingPackageStream implements PackageStream {
 
         executorService.setExceptionHandler(exceptionHandler);
 
-        StreamWriter streamWriter = getStreamWriter(archiveOut, rbf);
-
         // invoke call() from another thread
-        CallableStreamWriter<?> callableSw = new CallableStreamWriter<>(streamWriter, custodialContent);
+        CallableStreamWriter<?> callableSw = new CallableStreamWriter<>(streamWriter, archiveOut, custodialContent);
         executorService.submit(callableSw);
 
         return pipedIn;
     }
-
-    /**
-     * Implementations must provide an {@link StreamWriter} that encapsulates the logic for
-     * writing the package to the supplied {@code archiveOutputStream} and composing
-     * {@link PackageStream.Resource package resources}.  Implementations must extend and return a subclass of
-     * {@link StreamWriter}.
-     *
-     * @param archiveOutputStream the output stream that the package contents will be written to
-     * @param rbf the builder factory used to create package resources
-     * @return a {@link Thread} capable of writing a package to {@code archiveOutputStream} in its {@code run()} method
-     */
-    public abstract StreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream, ResourceBuilderFactory rbf);
 
     @Override
     public PackageStream.Metadata metadata() {

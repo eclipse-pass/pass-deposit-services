@@ -67,16 +67,16 @@ public class DefaultStreamWriterImpl implements StreamWriter {
      * Constructs an {@code StreamWriter} that is supplied with the output stream being written to, the custodial
      * content being packaged, the submission, and other supporting classes.
      *
-     * @param archiveOut the output stream being written to by this writer
      * @param submission the submission
      * @param packageFiles the custodial content of the package
      * @param rbf factory for building {@link PackageStream.Resource package resources}
      * @param packageOptions options used for building the package
      */
-    public DefaultStreamWriterImpl(ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                   List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf, Map<String,
-            Object> packageOptions, PackageProvider packageProvider) {
-        this.archiveOut = archiveOut;
+    public DefaultStreamWriterImpl(DepositSubmission submission,
+                                   List<DepositFileResource> packageFiles,
+                                   ResourceBuilderFactory rbf,
+                                   Map<String, Object> packageOptions,
+                                   PackageProvider packageProvider) {
         this.packageFiles = packageFiles;
         this.rbf = rbf;
         this.submission = submission;
@@ -85,7 +85,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     }
 
     @Override
-    public void start(List<DepositFileResource> custodialFiles) throws IOException {
+    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException {
+        this.archiveOut = archiveOut;
         List<PackageStream.Resource> assembledResources = new ArrayList<>();
 
         try {
@@ -250,19 +251,5 @@ public class DefaultStreamWriterImpl implements StreamWriter {
         LOG.debug(">>>> Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
         archiveOut.closeArchiveEntry();
     }
-
-//    /**
-//     * A poorly-named method, provides implementations the hook to add package-specific metadata resources like BagIT
-//     * tag files or DSpace/METS METS.xml file.  Implementations are provided a list of resources in the package (i.e.
-//     * the custodial content), then they are able to compute, derive, or construct necessary metadata, and then add the
-//     * metadata to the package by calling {@link #writeResource(ArchiveOutputStream, ArchiveEntry, InputStream)}.
-//     * <p>TODO: Rename method to make intent clear</p>
-//     * <p>TODO: Evaluate the visibility of the method, its arguments, and return value</p>
-//     *
-//     * @param submission the submission that resulted in the supplied resources
-//     * @param resources the custodial content of the package
-//     * @throws IOException if there are any errors adding resources to the package
-//     */
-//    public abstract void assembleResources(DepositSubmission submission, List<PackageStream.Resource> resources) throws IOException;
 
 }

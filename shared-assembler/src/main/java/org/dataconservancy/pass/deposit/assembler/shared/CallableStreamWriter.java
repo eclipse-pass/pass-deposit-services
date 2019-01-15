@@ -40,6 +40,8 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
 
     private StreamWriter delegate;
 
+    private ArchiveOutputStream archiveOut;
+
     private List<DepositFileResource> custodialFiles;
 
     private AtomicBoolean alreadyStarted = new AtomicBoolean(false);
@@ -51,19 +53,22 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     /**
      * Constructs an {@code CallableStreamWriter} that is supplied with the output stream being written to, the
      * custodial content being packaged, the submission, and other supporting classes.
-     *
-     * @param delegate
+     *  @param delegate
+     * @param archiveOut
      * @param custodialFiles
      */
-    CallableStreamWriter(StreamWriter delegate, List<DepositFileResource> custodialFiles) {
+    CallableStreamWriter(StreamWriter delegate,
+                         ArchiveOutputStream archiveOut,
+                         List<DepositFileResource> custodialFiles) {
         this.delegate = delegate;
+        this.archiveOut = archiveOut;
         this.custodialFiles = custodialFiles;
     }
 
     @Override
     public V call() throws Exception {
         if (alreadyStarted.getAndSet(true) == Boolean.FALSE) {
-            delegate.start(custodialFiles);
+            delegate.start(custodialFiles, archiveOut);
         } else {
             throw stateException("started");
         }
@@ -71,9 +76,9 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     }
 
     @Override
-    public void start(List<DepositFileResource> custodialFiles) throws IOException {
+    public void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException {
         if (alreadyStarted.getAndSet(true) == Boolean.FALSE) {
-            delegate.start(custodialFiles);
+            delegate.start(custodialFiles, archiveOut);
         } else {
             throw stateException("started");
         }

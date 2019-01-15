@@ -33,14 +33,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageStream.MANIFEST_ENTRY_NAME;
-import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageStream.METADATA_ENTRY_NAME;
+import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsManifestSerializer.MANIFEST_ENTRY_NAME;
+import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsManifestSerializer.METADATA_ENTRY_NAME;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class NihmsPackageProvider implements PackageProvider {
 
+    static final String REMEDIATED_FILE_PREFIX = "SUBMISSION-";
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageProvider.class);
 
     private NihmsManifestSerializer manifestSerializer;
@@ -59,10 +60,10 @@ public class NihmsPackageProvider implements PackageProvider {
      * @return the existing file name, or a modified version if the existing name collides with a reserved name.
      */
     public static String getNonCollidingFilename(String fileName, DepositFileType fileType) {
-        if ((fileName.contentEquals(NihmsPackageStream.METADATA_ENTRY_NAME) &&
+        if ((fileName.contentEquals(NihmsManifestSerializer.METADATA_ENTRY_NAME) &&
             fileType != DepositFileType.bulksub_meta_xml) ||
-            fileName.contentEquals(NihmsPackageStream.MANIFEST_ENTRY_NAME)) {
-            fileName = NihmsPackageStream.REMEDIATED_FILE_PREFIX + fileName;
+            fileName.contentEquals(NihmsManifestSerializer.MANIFEST_ENTRY_NAME)) {
+            fileName = REMEDIATED_FILE_PREFIX + fileName;
         }
         return fileName;
     }

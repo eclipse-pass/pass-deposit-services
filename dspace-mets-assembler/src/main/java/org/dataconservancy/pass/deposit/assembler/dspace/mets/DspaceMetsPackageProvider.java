@@ -44,13 +44,15 @@ public class DspaceMetsPackageProvider implements PackageProvider {
 
     private DspaceMetadataDomWriter metsWriter;
 
-    public DspaceMetsPackageProvider(DspaceMetadataDomWriter metsWriter) {
-        this.metsWriter = metsWriter;
+    private DspaceMetadataDomWriterFactory metsWriterFactory;
+
+    public DspaceMetsPackageProvider(DspaceMetadataDomWriterFactory metsWriterFactory) {
+        this.metsWriterFactory = metsWriterFactory;
     }
 
     @Override
     public void start(DepositSubmission submission, List<DepositFileResource> custodialResources) {
-        // no-op
+        this.metsWriter = metsWriterFactory.newInstance();
     }
 
     @Override

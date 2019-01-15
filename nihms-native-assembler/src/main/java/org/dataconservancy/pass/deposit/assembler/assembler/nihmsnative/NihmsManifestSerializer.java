@@ -44,6 +44,8 @@ import java.util.Set;
 
 public class NihmsManifestSerializer implements StreamingSerializer{
 
+    static final String METADATA_ENTRY_NAME = "bulk_meta.xml";
+    static final String MANIFEST_ENTRY_NAME = "manifest.txt";
     private DepositManifest manifest;
 
     public NihmsManifestSerializer(DepositManifest manifest) {
@@ -84,7 +86,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         writer.append("\t");
         writer.write(labelMaker.getTypeUniqueLabel(DepositFileType.bulksub_meta_xml, "Submission Metadata"));
         writer.append("\t");
-        writer.write(NihmsPackageStream.METADATA_ENTRY_NAME);
+        writer.write(METADATA_ENTRY_NAME);
     }
 
     /**
