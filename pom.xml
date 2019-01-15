@@ -187,11 +187,10 @@
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
 
-            <!-- FIXME! DO NOT COMMIT -->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
 
         </plugins>
 
@@ -312,6 +311,15 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <links>
+                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>https://commons.apache.org/proper/commons-io/javadocs/api-${commons-io.version}/</link>
+                            <link>https://commons.apache.org/proper/commons-compress/javadocs/api-${commons-compress.version}/</link>
+                            <link>https://commons.apache.org/proper/commons-codec/javadocs/api-${commons-codec.version}/</link>
+                            <link>https://docs.spring.io/autorepo/docs/spring-framework/${spring-framework.version}/javadoc-api/</link>
+                        </links>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>

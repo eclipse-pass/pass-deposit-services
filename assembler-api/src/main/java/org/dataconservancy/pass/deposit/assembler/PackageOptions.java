@@ -22,6 +22,9 @@ package org.dataconservancy.pass.deposit.assembler;
  */
 public interface PackageOptions {
 
+    /**
+     * Packaging specification
+     */
     interface Spec {
 
         /**
@@ -31,6 +34,9 @@ public interface PackageOptions {
 
     }
 
+    /**
+     * Package compression
+     */
     interface Compression {
 
         /**
@@ -50,6 +56,9 @@ public interface PackageOptions {
 
     }
 
+    /**
+     * Archive formats
+     */
     interface Archive {
 
         /**
@@ -68,6 +77,9 @@ public interface PackageOptions {
 
     }
 
+    /**
+     * Checksum algorithms
+     */
     interface Checksum {
 
         /**

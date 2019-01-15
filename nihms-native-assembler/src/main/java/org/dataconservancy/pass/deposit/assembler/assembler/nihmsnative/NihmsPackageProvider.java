@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsManifestSerializer.MANIFEST_ENTRY_NAME;
 import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsManifestSerializer.METADATA_ENTRY_NAME;
@@ -69,13 +70,14 @@ public class NihmsPackageProvider implements PackageProvider {
     }
 
     @Override
-    public void start(DepositSubmission submission, List<DepositFileResource> custodialResources) {
+    public void start(DepositSubmission submission, List<DepositFileResource> custodialResources,
+                      Map<String, Object> packageOptions) {
         manifestSerializer = new NihmsManifestSerializer(submission.getManifest());
         metadataSerializer = new NihmsMetadataSerializer(submission.getMetadata());
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      * <p>
      * Returns the file name for the resource, or a modified version thereof if the name matches that of one of the
      * default files that are included in a NIHMS deposit.  The file type is not known at this point in the code, but we

@@ -16,15 +16,28 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.io.OutputStream;
 import java.util.Map;
 
 /**
+ * Responsible for creating the {@link ArchiveOutputStream} used to write the {@link PackageStream}.  Implementations
+ * are expected to wrap the supplied {@code OutputStream} with an {@code ArchiveOutputStream} configured per the
+ * the package options.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface ArchiveOutputStreamFactory {
 
+    /**
+     * Returns an {@code ArchiveOutputStream}, wrapping the supplied {@code OutputStream} according to the package
+     * options.
+     *
+     * @param packageOptions the package options, including compression and archive formats
+     * @param toWrap the output stream to be wrapped by the returned {@code ArchiveOutputStream}
+     * @return the configured {@code ArchiveOutputStream} ready for writing
+     */
     ArchiveOutputStream newInstance(Map<String, Object> packageOptions, OutputStream toWrap);
 
 }

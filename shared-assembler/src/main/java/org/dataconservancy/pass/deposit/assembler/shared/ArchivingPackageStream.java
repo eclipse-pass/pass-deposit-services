@@ -90,8 +90,8 @@ public class ArchivingPackageStream implements PackageStream {
      * @param rbf interface used to instantiate {@code ResourceBuilder} instances, used to add metadata describing
      *            individual resources in the package
      * @param packageOptions the options used when building the package
-     * @param executorService
-     * @param streamWriter
+     * @param executorService used to launch a thread which <em>writes</em> content to the package stream
+     * @param streamWriter used to write content to the package stream
      */
     public ArchivingPackageStream(List<DepositFileResource> custodialContent,
                                   MetadataBuilder metadataBuilder,

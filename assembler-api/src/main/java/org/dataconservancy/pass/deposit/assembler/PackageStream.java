@@ -121,6 +121,8 @@ public interface PackageStream {
         /**
          * If the package uses to an archive format, such as tar.  If {@code false}, then {@link #archive()} should
          * return {@link Archive.OPTS#NONE}.
+         *
+         * @return true if the package stream returned by {@link #open()} is using a supported archival format
          */
         boolean archived();
 
@@ -218,6 +220,8 @@ public interface PackageStream {
 
         /**
          * The value of the checksum, encoded as hexadecimal
+         *
+         * @return the checksum value, according to the {@link #algorithm()}, encoded as hexadecimal
          */
         String asHex();
 

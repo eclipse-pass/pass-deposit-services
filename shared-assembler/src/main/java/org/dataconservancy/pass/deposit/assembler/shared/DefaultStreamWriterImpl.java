@@ -71,6 +71,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
      * @param packageFiles the custodial content of the package
      * @param rbf factory for building {@link PackageStream.Resource package resources}
      * @param packageOptions options used for building the package
+     * @param packageProvider used to resources within a package, and generate non-custodial package resources
      */
     public DefaultStreamWriterImpl(DepositSubmission submission,
                                    List<DepositFileResource> packageFiles,
@@ -100,7 +101,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
                         this.getClass().getName());
             }
 
-            packageProvider.start(submission, custodialFiles);
+            packageProvider.start(submission, custodialFiles, packageOptions);
 
             packageFiles.forEach(custodialFile -> {
                 ResourceBuilder rb;

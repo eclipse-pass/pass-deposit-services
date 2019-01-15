@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -51,7 +52,8 @@ public class DspaceMetsPackageProvider implements PackageProvider {
     }
 
     @Override
-    public void start(DepositSubmission submission, List<DepositFileResource> custodialResources) {
+    public void start(DepositSubmission submission, List<DepositFileResource> custodialResources,
+                      Map<String, Object> packageOptions) {
         this.metsWriter = metsWriterFactory.newInstance();
     }
 

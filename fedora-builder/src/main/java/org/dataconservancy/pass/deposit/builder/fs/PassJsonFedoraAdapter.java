@@ -484,7 +484,7 @@ public class PassJsonFedoraAdapter {
     /***
      * Remove the provided set of PassEntity resources from the Fedora server.
      *
-     * @param entities
+     * @param entities the PASS entities to be deleted
      */
     public void deleteFromFcrepo(HashMap<URI, PassEntity> entities) {
         PassClient client = PassClientFactory.getPassClient();

@@ -30,7 +30,6 @@ import java.util.List;
  * Provides methods for writing a stream of bytes representing a package.  The caller has collected the content to be
  * included in the package as a {@code List} of {@link DepositFileResource}s.  Implementations of this interface are
  * responsible for mapping each {@code DepositFileResource} as a {@link PackageStream.Resource}
- * <p/>
  * <p>
  * Callers will invoke {@link #start(List, ArchiveOutputStream) start(...)} to initialize any state
  * </p>

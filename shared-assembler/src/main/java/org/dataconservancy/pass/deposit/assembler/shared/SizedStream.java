@@ -18,12 +18,24 @@ package org.dataconservancy.pass.deposit.assembler.shared;
 import java.io.InputStream;
 
 /**
+ * Supplies an {@code InputStream} and its length.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface SizedStream {
 
+    /**
+     * The number of bytes to be supplied by the {@link #getInputStream() InputStream}
+     *
+     * @return the size of the {@code InputStream}, always an integer 0 or greater
+     */
     long getLength();
 
+    /**
+     * An {@code InputStream} with size {@link #getLength()}
+     *
+     * @return the {@code InputStream}
+     */
     InputStream getInputStream();
 
 }
