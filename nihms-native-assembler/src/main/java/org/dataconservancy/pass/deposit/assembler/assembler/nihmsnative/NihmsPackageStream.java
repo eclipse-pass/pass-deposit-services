@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.DefaultStreamWriterImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.assembler.shared.StreamWriter;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
@@ -63,46 +64,7 @@ public class NihmsPackageStream extends ArchivingPackageStream {
     @Override
     public StreamWriter getStreamWriter(ArchiveOutputStream archiveOut,
                                         ResourceBuilderFactory rbf) {
-        NihmsStreamWriter threadedWriter = new NihmsStreamWriter(
-                archiveOut, submission, custodialContent, rbf, manifestSerializer, metadataSerializer,
-                packageOptions);
-
-        return threadedWriter;
+        return new DefaultStreamWriterImpl(archiveOut, submission, custodialContent, rbf, packageOptions, new NihmsPackageProvider());
     }
 
-    public StreamingSerializer getManifestSerializer() {
-        return manifestSerializer;
-    }
-
-    public void setManifestSerializer(StreamingSerializer manifestSerializer) {
-        this.manifestSerializer = manifestSerializer;
-    }
-
-    public StreamingSerializer getMetadataSerializer() {
-        return metadataSerializer;
-    }
-
-    public void setMetadataSerializer(StreamingSerializer metadataSerializer) {
-        this.metadataSerializer = metadataSerializer;
-    }
-
-    /**
-     * Given a file name and type, returns a file name that can safely be used in a NIHMS deposit
-     * without causing a collision with the names of files that are automatically included in the deposit package.
-     * If a collision is detected, the returned name is a modification of the supplied name.
-     * Since multiple files in a submission may already have the same name, no effort is made to ensure that
-     * the collision-free name is unique.
-     *
-     * @param fileName the name of a file to be included in the deposit, which may conflict with a reserved name.
-     * @param fileType the type of the file whose name is being validated.
-     * @return the existing file name, or a modified version if the existing name collides with a reserved name.
-     */
-    public static String getNonCollidingFilename(String fileName, DepositFileType fileType) {
-        if ((fileName.contentEquals(NihmsPackageStream.METADATA_ENTRY_NAME) &&
-            fileType != DepositFileType.bulksub_meta_xml) ||
-            fileName.contentEquals(NihmsPackageStream.MANIFEST_ENTRY_NAME)) {
-            fileName = REMEDIATED_FILE_PREFIX + fileName;
-        }
-        return fileName;
-    }
 }

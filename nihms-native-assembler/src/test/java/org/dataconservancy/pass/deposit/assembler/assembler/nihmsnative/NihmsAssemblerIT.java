@@ -127,7 +127,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         // Each custodial resource is present in the package.  The tested filenames need to be remediated, in case
         // a custodial resource uses a reserved file name.
         custodialResources.forEach(custodialResource -> {
-            String filename = NihmsPackageStream.getNonCollidingFilename(custodialResource.getName(),
+            String filename = NihmsPackageProvider.getNonCollidingFilename(custodialResource.getName(),
                     custodialResource.getType());
             assertTrue(extractedPackageDir.toPath().resolve(filename).toFile().exists());
         });
@@ -140,7 +140,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         packageFiles.keySet().stream()
                 .filter(fileName -> !fileName.equals(manifest.getName()) && !fileName.equals(metadata.getName()))
                 .forEach(fileName -> {
-                    String remediatedFilename = NihmsPackageStream.getNonCollidingFilename(fileName,
+                    String remediatedFilename = NihmsPackageProvider.getNonCollidingFilename(fileName,
                             custodialResourcesTypeMap.get(fileName));
 
                     if (!remediatedFilename.startsWith(NihmsPackageStream.REMEDIATED_FILE_PREFIX)) {

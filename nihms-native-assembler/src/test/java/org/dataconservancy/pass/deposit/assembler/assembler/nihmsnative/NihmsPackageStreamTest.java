@@ -29,6 +29,8 @@ import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
+import org.dataconservancy.pass.deposit.model.DepositManifest;
+import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -48,13 +50,14 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.dataconservancy.deposit.util.function.FunctionUtil.performSilently;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -69,6 +72,8 @@ public class NihmsPackageStreamTest {
     private static final String METADATA = "This is the metadata";
 
     private static List<DepositFileResource> custodialContent;
+
+    private static List<DepositFile> depositFiles;
 
     private static Map<String, Object> packageOptions;
 
@@ -106,6 +111,8 @@ public class NihmsPackageStreamTest {
         custodialContent = Arrays.asList(
                 new DepositFileResource(manuscript, new ClassPathResource(manuscriptLocation)),
                 new DepositFileResource(figure, new ClassPathResource(figureLocation)));
+
+        depositFiles = Arrays.asList(manuscript, figure);
 
         packageOptions = new HashMap<String, Object>() {
             {
@@ -146,37 +153,58 @@ public class NihmsPackageStreamTest {
 
     @Test
     public void assembleSimplePackage() throws Exception {
-        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
-                custodialContent, mb, rbf, packageOptions, executorService);
-        underTest.setManifestSerializer(manifestSerializer);
-        underTest.setMetadataSerializer(metadataSerializer);
+        DepositSubmission submission = mock(DepositSubmission.class);
+
+        DepositMetadata depositMetadata = mock(DepositMetadata.class);
+        DepositManifest manifest = mock(DepositManifest.class);
+        when(submission.getMetadata()).thenReturn(depositMetadata);
+        when(submission.getManifest()).thenReturn(manifest);
+        when(manifest.getFiles()).thenReturn(depositFiles);
+
+        NihmsPackageStream underTest = new NihmsPackageStream(submission, custodialContent, mb, rbf, packageOptions,
+                executorService);
         when(mb.name(anyString())).thenReturn(mb);
         PackageStream.Resource pr = mock(PackageStream.Resource.class);
-        when(pr.name()).thenReturn(custodialContent.get(0).getFilename());
-        when(pr.name()).thenReturn(custodialContent.get(1).getFilename());
         when(rb.build()).thenReturn(pr);
+        when(pr.name()).thenReturn(custodialContent.get(0).getFilename())
+                .thenReturn(custodialContent.get(1).getFilename())
+                .thenReturn("manifest")
+                .thenReturn("metadata");
 
         final InputStream packageStream = underTest.open();
         assertNotNull(packageStream);
         IOUtils.copy(packageStream, new NullOutputStream());
         packageStream.close();
+
+        verify(manifest, atLeastOnce()).getFiles();
+        // TODO verify behavior of DepositMetadata, currently foiled by class check in the XStream converter
+        //  of NihmsMetadataSerializer
     }
 
     @Test
     public void writeSimplePackage() throws Exception {
         final String expectedFilename = "testpackage.tar.gz";
 
+        DepositSubmission submission = mock(DepositSubmission.class);
+
+        DepositMetadata depositMetadata = mock(DepositMetadata.class);
+        DepositManifest manifest = new DepositManifest();
+        manifest.setFiles(depositFiles);
+
+        when(submission.getMetadata()).thenReturn(depositMetadata);
+        when(submission.getManifest()).thenReturn(manifest);
+
         when(mb.name(anyString())).thenReturn(mb);
         PackageStream.Resource pr = mock(PackageStream.Resource.class);
-        when(pr.name()).thenReturn(custodialContent.get(0).getFilename());
-        when(pr.name()).thenReturn(custodialContent.get(1).getFilename());
+        when(pr.name()).thenReturn(custodialContent.get(0).getFilename())
+                .thenReturn(custodialContent.get(1).getFilename())
+                .thenReturn("manifest")
+                .thenReturn("metadata");
 
         when(rb.build()).thenReturn(pr);
 
-        NihmsPackageStream underTest = new NihmsPackageStream(mock(DepositSubmission.class),
+        NihmsPackageStream underTest = new NihmsPackageStream(submission,
                 custodialContent, mb, rbf, packageOptions, executorService);
-        underTest.setManifestSerializer(manifestSerializer);
-        underTest.setMetadataSerializer(metadataSerializer);
 
         File tmpFile = new File(System.getProperty("java.io.tmpdir"), expectedFilename);
         LOG.debug("Writing package file {}", tmpFile);
@@ -194,19 +222,19 @@ public class NihmsPackageStreamTest {
         String nameIn, nameOut;
 
         nameIn = "test.txt";
-        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageProvider.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertTrue("Non-colliding name was changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "manifest.txt";
-        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageProvider.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding manifest name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.supplement);
+        nameOut = NihmsPackageProvider.getNonCollidingFilename(nameIn, DepositFileType.supplement);
         assertFalse("Colliding metadata name was not changed.", nameIn.contentEquals(nameOut));
 
         nameIn = "bulk_meta.xml";
-        nameOut = NihmsPackageStream.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
+        nameOut = NihmsPackageProvider.getNonCollidingFilename(nameIn, DepositFileType.bulksub_meta_xml);
         assertTrue("Actual metadata name was changed.", nameIn.contentEquals(nameOut));
     }
 

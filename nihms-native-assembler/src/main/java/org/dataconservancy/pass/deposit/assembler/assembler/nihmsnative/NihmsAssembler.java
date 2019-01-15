@@ -72,8 +72,6 @@ public class NihmsAssembler extends AbstractAssembler {
 
         NihmsPackageStream stream =
                 new NihmsPackageStream(submission, custodialResources, mb, rbf, options, executorService);
-        stream.setManifestSerializer(new NihmsManifestSerializer(submission.getManifest()));
-        stream.setMetadataSerializer(new NihmsMetadataSerializer(submission.getMetadata()));
         return stream;
     }
 

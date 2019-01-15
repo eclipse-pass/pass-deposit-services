@@ -39,13 +39,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.ERR_PUT_RESOURCE;
 import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public abstract class AbstractStreamWriter implements StreamWriter {
+public class DefaultStreamWriterImpl implements StreamWriter {
 
     private List<DepositFileResource> packageFiles;
 
@@ -53,11 +55,13 @@ public abstract class AbstractStreamWriter implements StreamWriter {
 
     private DepositSubmission submission;
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractStreamWriter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultStreamWriterImpl.class);
 
     protected ArchiveOutputStream archiveOut;
 
     protected Map<String, Object> packageOptions;
+
+    protected PackageProvider packageProvider;
 
     /**
      * Constructs an {@code StreamWriter} that is supplied with the output stream being written to, the custodial
@@ -69,14 +73,15 @@ public abstract class AbstractStreamWriter implements StreamWriter {
      * @param rbf factory for building {@link PackageStream.Resource package resources}
      * @param packageOptions options used for building the package
      */
-    public AbstractStreamWriter(ArchiveOutputStream archiveOut, DepositSubmission submission,
-                                List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf, Map<String,
-            Object> packageOptions) {
+    public DefaultStreamWriterImpl(ArchiveOutputStream archiveOut, DepositSubmission submission,
+                                   List<DepositFileResource> packageFiles, ResourceBuilderFactory rbf, Map<String,
+            Object> packageOptions, PackageProvider packageProvider) {
         this.archiveOut = archiveOut;
         this.packageFiles = packageFiles;
         this.rbf = rbf;
         this.submission = submission;
         this.packageOptions = packageOptions;
+        this.packageProvider = packageProvider;
     }
 
     @Override
@@ -90,20 +95,34 @@ public abstract class AbstractStreamWriter implements StreamWriter {
             // (2) the size of each file going into the tar?
 
             if (packageFiles.size() < 1) {
-                throw new RuntimeException("Refusing to create an empty package: no Resources were supplied " + "to " + "this " + this.getClass().getName());
+                throw new RuntimeException("Refusing to create an empty package: no Resources were supplied to this " +
+                        this.getClass().getName());
             }
 
+            packageProvider.start(submission, custodialFiles);
+
             packageFiles.forEach(custodialFile -> {
-                ResourceBuilder rb = rbf.newInstance();
-                PackageStream.Resource packageResource = null;
+                ResourceBuilder rb;
                 try {
-                    packageResource = buildResource(rb, custodialFile);
+                    rb = rbf.newInstance();
+                    assembledResources.add(buildResource(rb, custodialFile));
                 } catch (IOException e) {
-                    throw new RuntimeException(String.format(ArchivingPackageStream.ERR_PUT_RESOURCE,
+                    throw new RuntimeException(format(ERR_PUT_RESOURCE,
                             custodialFile.getFilename(), e.getMessage()), e);
                 }
-                assembledResources.add(packageResource);
-                rb.reset();
+            });
+
+            List<PackageProvider.SupplementalResource> supplementalResources =
+                    packageProvider.finish(submission, assembledResources);
+
+            supplementalResources.forEach(supplementalResource -> {
+                ResourceBuilder rb;
+                try {
+                    rb = rbf.newInstance();
+                    assembledResources.add(buildResource(rb, supplementalResource));
+                } catch (IOException e) {
+                    throw new RuntimeException(format(ERR_PUT_RESOURCE, supplementalResource.getFilename(), e.getMessage()), e);
+                }
             });
 
             finish(submission, assembledResources);
@@ -129,16 +148,14 @@ public abstract class AbstractStreamWriter implements StreamWriter {
 
     @Override
     public void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources) throws IOException {
-        assembleResources(submission, custodialResources);
-
         // TODO: archiveOut should be closed and finished by the parent thread?
         archiveOut.finish();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public PackageStream.Resource buildResource(ResourceBuilder resourceBuilder, DepositFileResource custodialFile) throws IOException {
-        try (InputStream resourceIn = custodialFile.getInputStream(); BufferedInputStream buffIn =
+    public PackageStream.Resource buildResource(ResourceBuilder resourceBuilder, Resource resource) throws IOException {
+        try (InputStream resourceIn = resource.getInputStream(); BufferedInputStream buffIn =
                 resourceIn.markSupported() ? null : new BufferedInputStream(resourceIn)) {
 
             InputStream in;
@@ -159,9 +176,16 @@ public abstract class AbstractStreamWriter implements StreamWriter {
                         PackageOptions.Checksum.KEY, emptyList()))
                         .forEach(algo -> observableIn.add(new DigestObserver(resourceBuilder, algo)));
 
-                resourceBuilder.name(nameResource(custodialFile));
+                if (resource instanceof DepositFileResource) {
+                    resourceBuilder.name(packageProvider.packagePath((DepositFileResource)resource));
+                }
+
+                if (resource instanceof PackageProvider.SupplementalResource) {
+                    resourceBuilder.name(((PackageProvider.SupplementalResource) resource).getPackagePath());
+                }
+
                 PackageStream.Resource packageResource = resourceBuilder.build();
-                long length = custodialFile.contentLength();
+                long length = resource.contentLength();
                 ArchiveEntry archiveEntry = createEntry(packageResource.name(), length);
                 writeResource(archiveOut, archiveEntry, observableIn);
             }
@@ -227,18 +251,18 @@ public abstract class AbstractStreamWriter implements StreamWriter {
         archiveOut.closeArchiveEntry();
     }
 
-    /**
-     * A poorly-named method, provides implementations the hook to add package-specific metadata resources like BagIT
-     * tag files or DSpace/METS METS.xml file.  Implementations are provided a list of resources in the package (i.e.
-     * the custodial content), then they are able to compute, derive, or construct necessary metadata, and then add the
-     * metadata to the package by calling {@link #writeResource(ArchiveOutputStream, ArchiveEntry, InputStream)}.
-     * <p>TODO: Rename method to make intent clear</p>
-     * <p>TODO: Evaluate the visibility of the method, its arguments, and return value</p>
-     *
-     * @param submission the submission that resulted in the supplied resources
-     * @param resources the custodial content of the package
-     * @throws IOException if there are any errors adding resources to the package
-     */
-    public abstract void assembleResources(DepositSubmission submission, List<PackageStream.Resource> resources) throws IOException;
+//    /**
+//     * A poorly-named method, provides implementations the hook to add package-specific metadata resources like BagIT
+//     * tag files or DSpace/METS METS.xml file.  Implementations are provided a list of resources in the package (i.e.
+//     * the custodial content), then they are able to compute, derive, or construct necessary metadata, and then add the
+//     * metadata to the package by calling {@link #writeResource(ArchiveOutputStream, ArchiveEntry, InputStream)}.
+//     * <p>TODO: Rename method to make intent clear</p>
+//     * <p>TODO: Evaluate the visibility of the method, its arguments, and return value</p>
+//     *
+//     * @param submission the submission that resulted in the supplied resources
+//     * @param resources the custodial content of the package
+//     * @throws IOException if there are any errors adding resources to the package
+//     */
+//    public abstract void assembleResources(DepositSubmission submission, List<PackageStream.Resource> resources) throws IOException;
 
 }

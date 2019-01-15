@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.DefaultStreamWriterImpl;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.assembler.shared.StreamWriter;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -62,7 +63,7 @@ public class DspacePackageStream extends ArchivingPackageStream {
     @Override
     public StreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
                                         ResourceBuilderFactory rbf) {
-        return new DspaceMetsStreamWriter(archiveOutputStream,
-                submission, custodialContent, rbf, metsWriterFactory.newInstance(), packageOptions);
+        return new DefaultStreamWriterImpl(archiveOutputStream,
+                submission, custodialContent, rbf, packageOptions, new DspaceMetsPackageProvider(metsWriterFactory.newInstance()));
     }
 }

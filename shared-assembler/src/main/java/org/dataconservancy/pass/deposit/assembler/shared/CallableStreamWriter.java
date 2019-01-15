@@ -20,6 +20,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +80,7 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     }
 
     @Override
-    public PackageStream.Resource buildResource(ResourceBuilder builder, DepositFileResource custodialFile)
+    public PackageStream.Resource buildResource(ResourceBuilder builder, Resource custodialFile)
             throws IOException {
         return delegate.buildResource(builder, custodialFile);
     }

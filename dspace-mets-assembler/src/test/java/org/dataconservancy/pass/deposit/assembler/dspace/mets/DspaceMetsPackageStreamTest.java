@@ -107,17 +107,19 @@ public class DspaceMetsPackageStreamTest {
     @Test
     public void testStream() throws Exception {
         // Construct a package stream using mocks and two example files
+        DepositSubmission submission = mock(DepositSubmission.class);
+
         DspacePackageStream underTest =
-                new DspacePackageStream(
-                        mock(DepositSubmission.class), custodialContent, mb, rbf, metsWriterFactory, packageOptions,
+                new DspacePackageStream(submission, custodialContent, mb, rbf, metsWriterFactory, packageOptions,
                         new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10)));
 
         // Open and write the package stream to /dev/null, asserting that some bytes were written
         assertTrue("Expected bytes written to be greater than 0!",
                 IOUtils.copy(underTest.open(), new NullOutputStream()) > 0);
 
-        // One PackageStream.Resource should be created for each file of custodial content
-        verify(rbf, times(custodialContent.size())).newInstance();
+        // One PackageStream.Resource should be created for each file of custodial content, plus the METS.xml
+        // supplemental resource
+        verify(rbf, times(custodialContent.size() + 1)).newInstance();
 
         // Each PackageStream.Resource should be added to the METS writer
         verify(metsWriter, times(custodialContent.size())).addResource(any());

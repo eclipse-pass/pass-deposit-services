@@ -20,19 +20,28 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 /**
+ * Provides methods for writing a stream of bytes representing a package.  The caller has collected the content to be
+ * included in the package as a {@code List} of {@link DepositFileResource}s.  Implementations of this interface are
+ * responsible for mapping each {@code DepositFileResource} as a {@link PackageStream.Resource}
+ * <p/>
+ * <p>
+ * Callers will invoke {@link #start(List) start(...)} to initialize any state
+ * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface StreamWriter extends AutoCloseable {
 
     void start(List<DepositFileResource> custodialFiles) throws IOException;
 
-    PackageStream.Resource buildResource(ResourceBuilder builder, DepositFileResource custodialFile) throws IOException;
+    PackageStream.Resource buildResource(ResourceBuilder builder, Resource custodialFile) throws IOException;
 
     void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn) throws IOException;
 

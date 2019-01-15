@@ -65,60 +65,64 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
             //process manuscript element (except, strangely, for title, which we do after journal)
             DepositMetadata.Manuscript manuscript = metadata.getManuscriptMetadata();
             DepositMetadata.Article article = metadata.getArticleMetadata();
-            writer.startNode("manuscript");
-            if(manuscript.getNihmsId() != null) {
-                writer.addAttribute("id", manuscript.getNihmsId());
-            }
-
-            //primitive types
-            writer.addAttribute("publisher_pdf", booleanConvert(manuscript.isPublisherPdf()));
-            writer.addAttribute("show_publisher_pdf", booleanConvert(manuscript.isShowPublisherPdf()));
-            if (metadata.getArticleMetadata() != null && metadata.getArticleMetadata().getEmbargoLiftDate() != null) {
-                // TODO: resolve the calculation of the embargo offset
-            }
-
-            if (manuscript.getManuscriptUrl() != null) {
-                writer.addAttribute("href", manuscript.getManuscriptUrl().toString());
-            }
-            if (article.getDoi() != null) {
-                // DOI may not include UTI's scheme or host, only path
-                String path = article.getDoi().getPath();
-                if (path.startsWith("/")) {
-                    path = path.substring(1);
+            if (manuscript != null) {
+                writer.startNode("manuscript");
+                if(manuscript.getNihmsId() != null) {
+                    writer.addAttribute("id", manuscript.getNihmsId());
                 }
-                writer.addAttribute("doi", path);
-            }
 
-            writer.endNode(); //end manuscript
+                //primitive types
+                writer.addAttribute("publisher_pdf", booleanConvert(manuscript.isPublisherPdf()));
+                writer.addAttribute("show_publisher_pdf", booleanConvert(manuscript.isShowPublisherPdf()));
+                if (metadata.getArticleMetadata() != null && metadata.getArticleMetadata().getEmbargoLiftDate() != null) {
+                    // TODO: resolve the calculation of the embargo offset
+                }
+
+                if (manuscript.getManuscriptUrl() != null) {
+                    writer.addAttribute("href", manuscript.getManuscriptUrl().toString());
+                }
+                if (article != null && article.getDoi() != null) {
+                    // DOI may not include UTI's scheme or host, only path
+                    String path = article.getDoi().getPath();
+                    if (path.startsWith("/")) {
+                        path = path.substring(1);
+                    }
+                    writer.addAttribute("doi", path);
+                }
+
+                writer.endNode(); //end manuscript
+            }
 
             //process journal
             DepositMetadata.Journal journal = metadata.getJournalMetadata();
-            writer.startNode("journal-meta");
-            if (journal.getJournalId() != null) {
-                writer.startNode("journal-id");
-                if (journal.getJournalType() != null) {
-                    writer.addAttribute("journal-id-type", journal.getJournalType());
+            if (journal != null) {
+                writer.startNode("journal-meta");
+                if (journal.getJournalId() != null) {
+                    writer.startNode("journal-id");
+                    if (journal.getJournalType() != null) {
+                        writer.addAttribute("journal-id-type", journal.getJournalType());
+                    }
+                    writer.setValue(journal.getJournalId());
+                    writer.endNode();
                 }
-                writer.setValue(journal.getJournalId());
-                writer.endNode();
-            }
 
-            journal.getIssnPubTypes().values().forEach(issnPubType -> {
-                writer.startNode("issn");
-                writer.addAttribute("pub-type", issnPubType.pubType.name().toLowerCase());
-                writer.setValue(issnPubType.issn);
-                writer.endNode();
-            });
+                journal.getIssnPubTypes().values().forEach(issnPubType -> {
+                    writer.startNode("issn");
+                    writer.addAttribute("pub-type", issnPubType.pubType.name().toLowerCase());
+                    writer.setValue(issnPubType.issn);
+                    writer.endNode();
+                });
 
-            if (journal.getJournalTitle() != null) {
-                writer.startNode("journal-title");
-                writer.setValue(journal.getJournalTitle());
-                writer.endNode();
+                if (journal.getJournalTitle() != null) {
+                    writer.startNode("journal-title");
+                    writer.setValue(journal.getJournalTitle());
+                    writer.endNode();
+                }
+                writer.endNode(); //end journal-meta
             }
-            writer.endNode(); //end journal-meta
 
             //now process full manuscript title
-            if (manuscript.getTitle() != null) {
+            if (manuscript != null && manuscript.getTitle() != null) {
                 writer.startNode("title");
                 writer.setValue(manuscript.getTitle());
                 writer.endNode();
@@ -126,7 +130,7 @@ public class NihmsMetadataSerializer implements StreamingSerializer{
 
             //process contacts
             List<DepositMetadata.Person> persons = metadata.getPersons();
-            if (persons.size()>0) {
+            if (persons != null && persons.size() > 0) {
                 writer.startNode("contacts");
                 for (DepositMetadata.Person person : persons){
                     // There should be exactly one corresponding PI per deposit.
