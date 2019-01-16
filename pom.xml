@@ -54,7 +54,6 @@
         <module>transport-api</module>
         <module>ftp-transport</module>
         <!-- nihms-http-transport -->
-        <module>nihms-submission-engine</module>
         <module>deposit-integration</module>
         <module>deposit-util</module>
         <module>sword2-transport</module>
