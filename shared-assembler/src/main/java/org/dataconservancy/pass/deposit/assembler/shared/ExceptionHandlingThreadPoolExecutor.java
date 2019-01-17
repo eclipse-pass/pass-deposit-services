@@ -63,7 +63,9 @@ public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
-        if (exceptionHandler != null) {
+        // Only invoke the exception handler if the Throwable is present, otherwise the stream closing logic supplied
+        // by ArchivingPackageStream is executed erroneously.
+        if (exceptionHandler != null && t != null) {
             exceptionHandler.accept(r, t);
         }
     }
