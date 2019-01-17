@@ -24,6 +24,7 @@ import java.io.PipedOutputStream;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
 
 /**
  * Re-throws the {@code Throwable} set by {@link #setWriterEx(Throwable)} when any {@code public} or {@code protected}
@@ -87,7 +88,7 @@ public class ExHandingPipedInputStream extends PipedInputStream {
     @Override
     public void close() throws IOException {
         // Close the stream, regardless of whether or not there is an exception waiting for us
-        LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), new Exception("close() invoked"));
         try {
             super.close();

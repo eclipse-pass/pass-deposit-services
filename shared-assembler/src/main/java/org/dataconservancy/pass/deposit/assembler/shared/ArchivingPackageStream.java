@@ -54,6 +54,8 @@ import java.util.function.BiConsumer;
  */
 public class ArchivingPackageStream implements PackageStream {
 
+    static final Logger STREAMING_IO_LOG = LoggerFactory.getLogger("STREAMING_IO_LOG");
+
     static final String ERR_PUT_RESOURCE = "Error putting resource '%s' into archive output stream: %s";
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchivingPackageStream.class);
@@ -105,7 +107,11 @@ public class ArchivingPackageStream implements PackageStream {
         this.packageOptions = packageOptions;
         this.executorService = executorService;
         this.streamWriter = streamWriter;
-        this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
+        if (STREAMING_IO_LOG.isDebugEnabled()) {
+            this.archiveOutputStreamFactory = new DebuggingArchiveOutputStreamFactory(packageOptions);
+        } else {
+            this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
+        }
     }
 
     /**
@@ -167,12 +173,12 @@ public class ArchivingPackageStream implements PackageStream {
                 LOG.error("Error encountered when writing the package stream.", throwable);
             }
 
-            LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
+            STREAMING_IO_LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
             try {
 
                 pipedOut.close();
             } catch (IOException e) {
-                LOG.trace("Error closing piped output stream: {}", e.getMessage(), e);
+                STREAMING_IO_LOG.trace("Error closing piped output stream: {}", e.getMessage(), e);
             }
 
             try {
@@ -181,14 +187,14 @@ public class ArchivingPackageStream implements PackageStream {
                 try {
                     archiveOut.closeArchiveEntry();
                 } catch (IOException e1) {
-                    LOG.trace("Error closing archive entry: {}", e1.getMessage(), e1);
+                    STREAMING_IO_LOG.trace("Error closing archive entry: {}", e1.getMessage(), e1);
                 }
 
                 try {
                     archiveOut.close();
                 } catch (IOException e1) {
                     // too bad
-                    LOG.trace("Error closing the archive output stream: {}", e1.getMessage(), e1);
+                    STREAMING_IO_LOG.trace("Error closing the archive output stream: {}", e1.getMessage(), e1);
                 }
             }
         };

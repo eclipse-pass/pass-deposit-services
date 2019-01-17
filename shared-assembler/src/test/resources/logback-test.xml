@@ -22,6 +22,10 @@
     <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
         <appender-ref ref="STDERR"/>
     </logger>
+    <logger name="STREAMING_IO_LOG" additivity="false"
+            level="${org.dataconservancy.pass.deposit.streaming.io.level:-INFO}">
+        <appender-ref ref="STDERR"/>
+    </logger>
     <!-- the rest client is noisy, and detracts from looking at test logging output -->
     <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
         <appender-ref ref="STDERR"/>

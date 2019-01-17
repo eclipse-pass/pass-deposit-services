@@ -17,21 +17,18 @@ package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DebuggingArchiveOutputStream.class);
 
     private ArchiveOutputStream delegate;
 
@@ -41,20 +38,22 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
 
     @Override
     public void putArchiveEntry(ArchiveEntry entry) throws IOException {
-        LOG.debug(">>>> {}@{} putting entry: '{}', {} bytes (directory: {})", this.getClass().getSimpleName(),
-                toHexString(identityHashCode(this)), entry.getName(), entry.getSize(), entry.isDirectory());
+        STREAMING_IO_LOG.debug(">>>> {}@{} putting entry: '{}', {} bytes (directory: {})",
+                this.getClass().getSimpleName(), toHexString(identityHashCode(this)),
+                entry.getName(), entry.getSize(), entry.isDirectory());
         delegate.putArchiveEntry(entry);
     }
 
     @Override
     public void closeArchiveEntry() throws IOException {
-        LOG.debug(">>>> {}@{} closing entry", this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+        STREAMING_IO_LOG.debug(">>>> {}@{} closing entry", this.getClass().getSimpleName(),
+                toHexString(identityHashCode(this)));
         delegate.closeArchiveEntry();
     }
 
     @Override
     public void finish() throws IOException {
-        LOG.debug(">>>> {}@{} finish() invoked: ",
+        STREAMING_IO_LOG.debug(">>>> {}@{} finish() invoked: ",
                 this.getClass().getSimpleName(), toHexString(identityHashCode(this)),
                 new Exception("finish() invoked"));
         delegate.finish();
@@ -62,14 +61,14 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
 
     @Override
     public ArchiveEntry createArchiveEntry(File inputFile, String entryName) throws IOException {
-        LOG.debug(">>>> {}@{} creating entry: '{}' from '{}'", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug(">>>> {}@{} creating entry: '{}' from '{}'", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), entryName, inputFile);
         return delegate.createArchiveEntry(inputFile, entryName);
     }
 
     @Override
     public void close() throws IOException {
-        LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), new Exception("close() invoked"));
         delegate.close();
     }

@@ -42,6 +42,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.ERR_PUT_RESOURCE;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
 import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
@@ -249,7 +250,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     public void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn) throws IOException {
         archiveOut.putArchiveEntry(archiveEntry);
         int bytesWritten = IOUtils.copy(archiveEntryIn, archiveOut);
-        LOG.debug(">>>> Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
+        STREAMING_IO_LOG.debug(">>>> Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
         archiveOut.closeArchiveEntry();
     }
 
