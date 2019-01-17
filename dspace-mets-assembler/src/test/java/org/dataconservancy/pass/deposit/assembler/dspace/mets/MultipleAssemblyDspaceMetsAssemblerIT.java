@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
+import org.dataconservancy.pass.deposit.DepositTestUtil;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
@@ -29,6 +30,7 @@ import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceDepositTestUtil.getMetsXml;
 
 /**
@@ -80,7 +82,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
         // field is static
         PackageStream stream = underTest.assemble(submission, getOptions());
 
-        File packageArchive = savePackage(stream);
+        File packageArchive = DepositTestUtil.savePackage(packageFile(this.getClass(), testName, stream.metadata()), stream);
 
         verifyStreamMetadata(stream.metadata());
 

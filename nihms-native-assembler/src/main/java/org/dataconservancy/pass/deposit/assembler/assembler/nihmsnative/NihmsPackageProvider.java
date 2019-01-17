@@ -43,6 +43,7 @@ import static org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.N
 public class NihmsPackageProvider implements PackageProvider {
 
     static final String REMEDIATED_FILE_PREFIX = "SUBMISSION-";
+
     private static final Logger LOG = LoggerFactory.getLogger(NihmsPackageProvider.class);
 
     private NihmsManifestSerializer manifestSerializer;

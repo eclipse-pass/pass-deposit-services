@@ -143,5 +143,25 @@
     "submission" : "fake:submission3",
     "@id" : "fake:file2",
     "@type" : "File"
+  },
+  {
+    "name": "table.ods",
+    "uri": "classpath:/submissions/sample3/table.ods",
+    "description": "ODS spreadsheet",
+    "fileRole": "supplemental",
+    "mimeType": "application/vnd.oasis.opendocument.spreadsheet",
+    "submission": "fake:submission3",
+    "@id": "fake:file3",
+    "@type": "File"
+  },
+  {
+    "name": "somefile.txt",
+    "uri": "classpath:/submissions/sample3/somefile.txt",
+    "description": "Supplemental test",
+    "fileRole": "supplemental",
+    "mimeType": "text/plain",
+    "submission": "fake:submission3",
+    "@id": "fake:file4",
+    "@type": "File"
   }
 ]

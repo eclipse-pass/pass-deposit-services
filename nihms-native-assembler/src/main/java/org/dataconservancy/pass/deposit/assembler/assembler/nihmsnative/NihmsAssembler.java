@@ -55,6 +55,10 @@ public class NihmsAssembler extends AbstractAssembler {
      */
     public static final String APPLICATION_GZIP = "application/gzip";
 
+    public static final String BULK_META_FILENAME = NihmsManifestSerializer.METADATA_ENTRY_NAME;
+
+    public static final String MANIFEST_FILENAME = NihmsManifestSerializer.MANIFEST_ENTRY_NAME;
+
     private static final String PACKAGE_FILE_NAME = "%s_%s_%s";
 
     private ExceptionHandlingThreadPoolExecutor executorService;

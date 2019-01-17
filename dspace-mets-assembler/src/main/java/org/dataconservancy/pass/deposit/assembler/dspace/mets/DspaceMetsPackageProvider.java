@@ -39,9 +39,9 @@ import java.util.Map;
  */
 public class DspaceMetsPackageProvider implements PackageProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DspaceMetsPackageProvider.class);
+    static final String METS_XML = "mets.xml";
 
-    private static final String METS_XML = "mets.xml";
+    private static final Logger LOG = LoggerFactory.getLogger(DspaceMetsPackageProvider.class);
 
     private DspaceMetadataDomWriter metsWriter;
 
