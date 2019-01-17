@@ -49,10 +49,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static java.lang.Math.floorDiv;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.savePackage;
@@ -74,6 +77,10 @@ public abstract class ThreadedAssemblyIT {
 
     private static int noThreads = 10;
 
+    private static AtomicInteger itThread = new AtomicInteger(0);
+
+    private static AtomicInteger packageWriterThread = new AtomicInteger(0);
+
     protected static Logger LOG = LoggerFactory.getLogger(ThreadedAssemblyIT.class);
 
     protected static ExceptionHandlingThreadPoolExecutor packageWritingExecutorService;
@@ -88,8 +95,12 @@ public abstract class ThreadedAssemblyIT {
 
     @BeforeClass
     public static void setUpExecutorService() throws Exception {
-        itExecutorService = new ThreadPoolExecutor(10, 20, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(20));
-        packageWritingExecutorService = new ExceptionHandlingThreadPoolExecutor(10, 20, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(20));
+        ThreadFactory itTf = r -> new Thread(r, "ThreadedAssemblyITPool-" + itThread.getAndIncrement());
+        ThreadFactory pwTf = r -> new Thread(r, "PackageWriterPool-" + packageWriterThread.getAndIncrement());
+
+
+        itExecutorService = new ThreadPoolExecutor(floorDiv(noThreads, 2), noThreads, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(noThreads, 2)), itTf);
+        packageWritingExecutorService = new ExceptionHandlingThreadPoolExecutor(floorDiv(noThreads, 2), noThreads, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(noThreads, 2)), pwTf);
         packageWritingExecutorService.setExceptionHandler((r, t) -> {
             throw new RuntimeException(t);
         });

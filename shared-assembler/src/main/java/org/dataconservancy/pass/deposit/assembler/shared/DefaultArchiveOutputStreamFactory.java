@@ -72,7 +72,7 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
             throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);
         }
 
-        return archiveOut;
+        return new DebuggingArchiveOutputStream(archiveOut);
     }
 
 }
