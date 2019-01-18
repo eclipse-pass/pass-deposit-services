@@ -15,9 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
+import org.dataconservancy.pass.deposit.DepositTestUtil;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.BeforeClass;
@@ -26,9 +27,10 @@ import org.junit.Test;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
 import static org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceDepositTestUtil.getMetsXml;
 
 /**
@@ -54,8 +56,12 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
      */
     @BeforeClass
     public static void initAssembler() {
-        underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(),
+        ExceptionHandlingThreadPoolExecutor executorService =
+                new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
+        DspaceMetsPackageProvider packageProvider = new DspaceMetsPackageProvider(
                 new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance()));
+        underTest = new DspaceMetsAssembler(metadataBuilderFactory(), resourceBuilderFactory(),
+                executorService, packageProvider);
     }
 
     /**
@@ -76,7 +82,7 @@ public class MultipleAssemblyDspaceMetsAssemblerIT extends BaseDspaceMetsAssembl
         // field is static
         PackageStream stream = underTest.assemble(submission, getOptions());
 
-        File packageArchive = savePackage(stream);
+        File packageArchive = DepositTestUtil.savePackage(packageFile(this.getClass(), testName, stream.metadata()), stream);
 
         verifyStreamMetadata(stream.metadata());
 

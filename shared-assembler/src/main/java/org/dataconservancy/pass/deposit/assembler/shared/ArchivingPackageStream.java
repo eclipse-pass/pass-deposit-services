@@ -17,12 +17,8 @@
 package org.dataconservancy.pass.deposit.assembler.shared;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 import org.slf4j.Logger;
@@ -35,9 +31,10 @@ import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.TAR;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.ZIP;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
 
 /**
  * Creates {@link PackageStream}s in a supported {@link Archive archival format}.  Package options, including the
@@ -55,17 +52,15 @@ import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.
  * ({@code ResourceBuilder} instances are obtained from the {@code ResourceBuilderFactory} supplied on construction).
  * </p>
  */
-public abstract class ArchivingPackageStream implements PackageStream {
+public class ArchivingPackageStream implements PackageStream {
+
+    static final Logger STREAMING_IO_LOG = LoggerFactory.getLogger("STREAMING_IO_LOG");
 
     static final String ERR_PUT_RESOURCE = "Error putting resource '%s' into archive output stream: %s";
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchivingPackageStream.class);
 
     private static final int ONE_MIB = 2 ^ 20;
-
-    protected static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
-
-    protected static final String ERR_NO_ARCHIVE_FORMAT = "No supported archive format was specified in the metadata builder";
 
     /**
      * The custodial content to be packaged and streamed.
@@ -81,6 +76,12 @@ public abstract class ArchivingPackageStream implements PackageStream {
 
     private ResourceBuilderFactory rbf;
 
+    private ExceptionHandlingThreadPoolExecutor executorService;
+
+    private StreamWriter streamWriter;
+
+    private ArchiveOutputStreamFactory archiveOutputStreamFactory;
+
     /**
      * Creates a package stream that uses the archive format specified in the {@code packageOptions}.  The supplied
      * {@code custodialContent} will be present in the stream.  Metadata supplied to the {@code MetadataBuilder} and
@@ -91,24 +92,33 @@ public abstract class ArchivingPackageStream implements PackageStream {
      * @param rbf interface used to instantiate {@code ResourceBuilder} instances, used to add metadata describing
      *            individual resources in the package
      * @param packageOptions the options used when building the package
+     * @param executorService used to launch a thread which <em>writes</em> content to the package stream
+     * @param streamWriter used to write content to the package stream
      */
     public ArchivingPackageStream(List<DepositFileResource> custodialContent,
                                   MetadataBuilder metadataBuilder,
                                   ResourceBuilderFactory rbf,
-                                  Map<String, Object> packageOptions) {
+                                  Map<String, Object> packageOptions,
+                                  ExceptionHandlingThreadPoolExecutor executorService,
+                                  StreamWriter streamWriter) {
         this.custodialContent = custodialContent;
         this.metadataBuilder = metadataBuilder;
         this.rbf = rbf;
         this.packageOptions = packageOptions;
+        this.executorService = executorService;
+        this.streamWriter = streamWriter;
+        if (STREAMING_IO_LOG.isDebugEnabled()) {
+            this.archiveOutputStreamFactory = new DebuggingArchiveOutputStreamFactory(packageOptions);
+        } else {
+            this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
+        }
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation returns an {@code PipedInputStream} whose bytes are supplied by the {@code Thread} returned
-     * {@link #getStreamWriter(ArchiveOutputStream, ResourceBuilderFactory)}.  Subclasses supply the {@code Thread} by
-     * implementing {@link #getStreamWriter(ArchiveOutputStream, ResourceBuilderFactory) getStreamWriter(...)}, and this
-     * method invokes {@link Thread#run() run()} prior to returning.
+     * This implementation returns an {@code PipedInputStream} whose bytes are supplied by an internal {@link
+     * StreamWriter}.
      * </p>
      * <p>
      * De-coupling the reading and writing of the stream allows the caller to open and begin reading the stream, even as
@@ -125,15 +135,6 @@ public abstract class ArchivingPackageStream implements PackageStream {
         // PipedOutputStream.
         ExHandingPipedInputStream pipedIn = new ExHandingPipedInputStream(ONE_MIB);
 
-        // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
-        // stack trace of the exception will be reported when it is encountered by the reader
-        Thread.UncaughtExceptionHandler exceptionHandler = (t, e) -> {
-            // Make the exception caught by the writer available to the reader; set it on the PipedInputStream
-            // The reader will use this to close any resources it has open when an exception occurs, and allow the
-            // thread to be cleaned up.
-            pipedIn.setWriterEx(e);
-        };
-
         PipedOutputStream pipedOut;
         try {
             pipedOut = new PipedOutputStream(pipedIn);
@@ -143,68 +144,41 @@ public abstract class ArchivingPackageStream implements PackageStream {
 
         // Wrap the output stream in an ArchiveOutputStream
         // we support zip, tar and tar.gz so far
-        ArchiveOutputStream archiveOut;
+        ArchiveOutputStream archiveOut = archiveOutputStreamFactory.newInstance(packageOptions, pipedOut);
 
-        if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == TAR) {
-            try {
-                if (packageOptions.getOrDefault(Compression.KEY, Compression.OPTS.NONE) == Compression.OPTS.GZIP) {
-                    archiveOut = new TarArchiveOutputStream(new GzipCompressorOutputStream(pipedOut));
-                } else {
-                    archiveOut = new TarArchiveOutputStream(pipedOut);
+        // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
+        // stack trace of the exception will be reported when it is encountered by the reader
+        BiConsumer<Runnable, Throwable> exceptionHandler = (runnable, throwable) -> {
+            if (throwable == null && runnable instanceof Future<?>) {
+                try {
+                    Future<?> future = (Future<?>) runnable;
+                    if (future.isDone()) {
+                        future.get();
+                    }
+                } catch (CancellationException ce) {
+                    throwable = ce;
+                } catch (ExecutionException ee) {
+                    throwable = ee.getCause();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, TAR, e.getMessage()), e);
             }
-        } else if (packageOptions.getOrDefault(Archive.KEY, Archive.OPTS.NONE) == ZIP) {
-            try {
-                archiveOut = new ZipArchiveOutputStream(pipedOut);
-            } catch (Exception e) {
-                throw new RuntimeException(String.format(ERR_CREATING_ARCHIVE_STREAM, ZIP, e.getMessage()), e);
+
+            // Make the exception caught by the writer available to the reader; set it on the PipedInputStream
+            // The reader will use this to close any resources it has open when an exception occurs, and allow the
+            // thread to be cleaned up.
+            pipedIn.setWriterEx(throwable);
+
+            if (throwable != null) {
+                LOG.error("Error encountered when writing the package stream.", throwable);
             }
-        } else {
-            throw new RuntimeException(ERR_NO_ARCHIVE_FORMAT);
-        }
 
-
-        ThreadStreamWriter streamWriter = getStreamWriter(archiveOut, rbf);
-        streamWriter.setCloseStreamHandler(getCloseOutputstreamHandler(pipedOut, archiveOut));
-        streamWriter.setUncaughtExceptionHandler(exceptionHandler);
-        streamWriter.start();
-
-        return pipedIn;
-
-    }
-
-    /**
-     * Implementations must provide an {@link ThreadStreamWriter} that encapsulates the logic for
-     * writing the package to the supplied {@code archiveOutputStream} and composing
-     * {@link PackageStream.Resource package resources}.  Implementations must extend and return a subclass of
-     * {@link ThreadStreamWriter}.
-     *
-     * @param archiveOutputStream the output stream that the package contents will be written to
-     * @param rbf the builder factory used to create package resources
-     * @return a {@link Thread} capable of writing a package to {@code archiveOutputStream} in its {@code run()} method
-     */
-    public abstract ThreadStreamWriter getStreamWriter(ArchiveOutputStream archiveOutputStream,
-                                                       ResourceBuilderFactory rbf);
-
-    /**
-     * Provides a callback that implements closure of the {@code PipedOutputStream} followed by the {@code
-     * ArchiveOutputStream} and any currently open {@code ArchiveEntry}s.
-     *
-     * @param pipedOut the {@code PipedOutputStream} to be closed
-     * @param archiveOut the {@code ArchiveOutputStream} to be closed
-     * @return the callback providing an orderly closure of the output streams being written to
-     */
-    private ThreadStreamWriter.CloseOutputstreamCallback getCloseOutputstreamHandler(
-            PipedOutputStream pipedOut, ArchiveOutputStream archiveOut) {
-        return () -> {
-            LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
+            STREAMING_IO_LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
             try {
 
                 pipedOut.close();
             } catch (IOException e) {
-                LOG.trace("Error closing piped output stream: {}", e.getMessage(), e);
+                STREAMING_IO_LOG.trace("Error closing piped output stream: {}", e.getMessage(), e);
             }
 
             try {
@@ -213,17 +187,25 @@ public abstract class ArchivingPackageStream implements PackageStream {
                 try {
                     archiveOut.closeArchiveEntry();
                 } catch (IOException e1) {
-                    LOG.trace("Error closing archive entry: {}", e1.getMessage(), e1);
+                    STREAMING_IO_LOG.trace("Error closing archive entry: {}", e1.getMessage(), e1);
                 }
 
                 try {
                     archiveOut.close();
                 } catch (IOException e1) {
                     // too bad
-                    LOG.trace("Error closing the archive output stream: {}", e1.getMessage(), e1);
+                    STREAMING_IO_LOG.trace("Error closing the archive output stream: {}", e1.getMessage(), e1);
                 }
             }
         };
+
+        executorService.setExceptionHandler(exceptionHandler);
+
+        // invoke call() from another thread
+        CallableStreamWriter<?> callableSw = new CallableStreamWriter<>(streamWriter, archiveOut, custodialContent);
+        executorService.submit(callableSw);
+
+        return pipedIn;
     }
 
     @Override

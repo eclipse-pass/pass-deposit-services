@@ -62,4 +62,9 @@ public class StatusMapping {
     public int hashCode() {
         return Objects.hash(defaultMapping, statusMap);
     }
+
+    @Override
+    public String toString() {
+        return "StatusMapping{" + "defaultMapping='" + defaultMapping + '\'' + ", statusMap=" + statusMap + '}';
+    }
 }

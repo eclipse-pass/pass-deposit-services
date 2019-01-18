@@ -18,12 +18,17 @@ package org.dataconservancy.pass.deposit.assembler.dspace.mets;
 
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.DefaultStreamWriterImpl;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.dataconservancy.pass.deposit.assembler.shared.PackageProvider;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.DepositFileResource;
 import org.dataconservancy.pass.deposit.assembler.shared.MetadataBuilderFactory;
 import org.dataconservancy.pass.deposit.assembler.shared.ResourceBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -52,14 +57,24 @@ public class DspaceMetsAssembler extends AbstractAssembler {
     public static final String APPLICATION_ZIP = "application/zip";
 
     // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
-    private DspaceMetadataDomWriterFactory metsWriterFactory;
+    //  now abstracted to package provider
+//    private DspaceMetadataDomWriterFactory metsWriterFactory;
+
+    private ExceptionHandlingThreadPoolExecutor executorService;
+
+    private PackageProvider packageProvider;
 
     @Autowired
-    public DspaceMetsAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf, DspaceMetadataDomWriterFactory
-            metsWriterFactory) {
+    public DspaceMetsAssembler(MetadataBuilderFactory mbf,
+                               ResourceBuilderFactory rbf,
+                               ExceptionHandlingThreadPoolExecutor executorService,
+                               @Qualifier("dspaceMetsPackageProvider")
+                               PackageProvider packageProvider) {
         super(mbf, rbf);
         // TODO: this metadata writer used is - in part - a function of the package specification (DSpace METS)
-        this.metsWriterFactory = metsWriterFactory;
+//        this.metsWriterFactory = metsWriterFactory;
+        this.executorService = executorService;
+        this.packageProvider = packageProvider;
     }
 
     @Override
@@ -68,7 +83,9 @@ public class DspaceMetsAssembler extends AbstractAssembler {
                                                 MetadataBuilder mb, ResourceBuilderFactory rbf,
                                                 Map<String, Object> options) {
         buildMetadata(mb, options);
-        return new DspacePackageStream(submission, custodialResources, mb, rbf, metsWriterFactory, options);
+        DefaultStreamWriterImpl streamWriter = new DefaultStreamWriterImpl(submission, custodialResources, rbf,
+                options, this.packageProvider);
+        return new ArchivingPackageStream(custodialResources, mb, rbf, options, executorService, streamWriter);
     }
 
 }

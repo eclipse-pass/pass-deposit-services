@@ -16,11 +16,13 @@
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
@@ -34,6 +36,8 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -91,7 +97,10 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected AbstractAssembler assemblerUnderTest() {
-        return new NihmsAssembler(mbf, rbf);
+        ExceptionHandlingThreadPoolExecutor executorService = new ExceptionHandlingThreadPoolExecutor(1, 2, 1,
+                TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
+        NihmsPackageProvider packageProvider = new NihmsPackageProvider();
+        return new NihmsAssembler(mbf, rbf, executorService, packageProvider);
     }
 
     @Override
@@ -124,7 +133,7 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         // Each custodial resource is present in the package.  The tested filenames need to be remediated, in case
         // a custodial resource uses a reserved file name.
         custodialResources.forEach(custodialResource -> {
-            String filename = NihmsPackageStream.getNonCollidingFilename(custodialResource.getName(),
+            String filename = NihmsPackageProvider.getNonCollidingFilename(custodialResource.getName(),
                     custodialResource.getType());
             assertTrue(extractedPackageDir.toPath().resolve(filename).toFile().exists());
         });
@@ -137,16 +146,16 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         packageFiles.keySet().stream()
                 .filter(fileName -> !fileName.equals(manifest.getName()) && !fileName.equals(metadata.getName()))
                 .forEach(fileName -> {
-                    String remediatedFilename = NihmsPackageStream.getNonCollidingFilename(fileName,
+                    String remediatedFilename = NihmsPackageProvider.getNonCollidingFilename(fileName,
                             custodialResourcesTypeMap.get(fileName));
 
-                    if (!remediatedFilename.startsWith(NihmsPackageStream.REMEDIATED_FILE_PREFIX)) {
+                    if (!remediatedFilename.startsWith(NihmsPackageProvider.REMEDIATED_FILE_PREFIX)) {
                         assertTrue("Missing file from custodial resources: '" + remediatedFilename + "'",
                                 custodialResourcesMap.containsKey(remediatedFilename));
                     } else {
                         assertTrue("Missing remediated file from custodial resources: '" + remediatedFilename + "'",
                                 custodialResourcesMap.containsKey(
-                                        remediatedFilename.substring(NihmsPackageStream.REMEDIATED_FILE_PREFIX.length())));
+                                        remediatedFilename.substring(NihmsPackageProvider.REMEDIATED_FILE_PREFIX.length())));
                     }
                 });
 
@@ -244,6 +253,20 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
         });
     }
 
+    /**
+     * when commons-io creates an inputstream from a string, it cannot be re-read.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void rereadIOutilsStringInputStream() throws IOException {
+        final String expected = "This is the manifest.";
+        InputStream in = IOUtils.toInputStream(expected, "UTF-8");
+
+        assertEquals(expected, IOUtils.toString(in, "UTF-8"));
+        assertEquals("", IOUtils.toString(in, "UTF-8"));
+    }
+
     private static boolean isNullOrEmpty(String s) {
         if (s == null || s.trim().length() == 0) {
             return true;
@@ -306,9 +329,9 @@ public class NihmsAssemblerIT extends BaseAssemblerIT {
 
         void assertNameIsValid() {
             assertFalse(String.format("File %s, line %s: Name cannot be same as metadata file.", manifestFile, lineNo),
-                    manifestFile.getName() == NihmsPackageStream.METADATA_ENTRY_NAME);
+                    manifestFile.getName() == NihmsManifestSerializer.METADATA_ENTRY_NAME);
             assertFalse(String.format("File %s, line %s: Name cannot be same as manifest file.", manifestFile, lineNo),
-                    manifestFile.getName() == NihmsPackageStream.MANIFEST_ENTRY_NAME);
+                    manifestFile.getName() == NihmsManifestSerializer.MANIFEST_ENTRY_NAME);
         }
     }
 

@@ -20,6 +20,7 @@ import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
@@ -34,14 +35,14 @@ import org.springframework.web.util.UriUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(DepositSubmission, Map)} and
- * {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
+ * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(
+ * DepositSubmission, Map)} and {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link
+ * #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
  */
 public abstract class AbstractAssembler implements Assembler {
 
@@ -86,13 +87,18 @@ public abstract class AbstractAssembler implements Assembler {
     }
 
     /**
-     * Assembles Java {@code Object} references to <em>{@code InputStream}s</em> for each file in the package.  The
-     * references are supplied to the {@code NihmsPackageStream} implementation, which does the heavy lifting of
-     * actually creating a stream for the tar.gz archive.
+     * This abstract implementation will resolve the custodial content of the package as a {@code List} of
+     * {@link DepositFileResource}s, then invoke {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)
+     * createPackageStream(...)}, which accepts the {@code DepositFileResource}s for inclusion in the returned {@link
+     * PackageStream}.
+     * <p>
+     * Subclasses are expected to implement {@code createPackageStream(...)} and return a {@link PackageStream} that
+     * includes the {@code DepositFileResource}s (as {@link PackageStream.Resource}s) and any package-specific metadata.
+     * </p>
      *
-     * @param submission the custodial content being packaged
-     * @param options the options used when creating the package
-     * @return a PackageStream which actually creates the stream for the tar.gz archive
+     * @param submission the custodial content to be streamed by the returned {@code PackageStream}
+     * @param options the options used by subclasses when creating the package
+     * @return a PackageStream ready to be {@link PackageStream#open() opened}
      */
     @Override
     public PackageStream assemble(DepositSubmission submission, Map<String, Object> options) {
@@ -105,26 +111,28 @@ public abstract class AbstractAssembler implements Assembler {
     }
 
     /**
-     * Implementors are supplied with the {@code submission}, the custodial content of the package in the form of
-     * Spring {@link Resource}s, the package {@link MetadataBuilder}, and the package {@link ResourceBuilderFactory}.
-     * The returned {@link PackageStream} must satisfy the contract of {@link PackageStream#open()} and {@link
-     * PackageStream#metadata()}.  Other methods on {@code PackageStream} are optional.
+     * Implementors are supplied with the {@link DepositSubmission submission}, the custodial content of the submission
+     * in the form of {@link DepositFileResource}s, the package {@link MetadataBuilder}, and the package {@link
+     * ResourceBuilderFactory}.  The returned {@link PackageStream} must satisfy the contract of {@link
+     * PackageStream#open()} and {@link PackageStream#metadata()}.  Other methods on {@code PackageStream} are optional.
      * <p>
-     * The returned {@code PackageStream} will be serialized according to the underlying implementation.  For example,
-     * one implementation may serialize the package according to a BagIt profile, another implementation may be
-     * configured to provide a DSpace/METS package profile.  While implementations are supplied the custodial content
-     * of the package, they are required to generate the metadata content specific to the implementation.  For example,
-     * A DSpace/METS implementation will be responsible for generating a {@code METS.xml} file.  BagIt implementations
-     * will be responsible for generating the various BagIt tag files.  These package-specific metadata are <em>not</em>
-     * provided as {@code custodialResources}.
+     * The returned {@code PackageStream} will be serialized according to the underlying implementation returned by this
+     * method.For example, one implementation may serialize the package according to a BagIt profile, another
+     * implementation may be configured to provide a DSpace/METS package profile.  While implementations are supplied
+     * the custodial content of the package, they are required to generate the metadata content specific to the
+     * implementation.  For example, A DSpace/METS implementation will be responsible for generating a {@code METS.xml}
+     * file.  BagIt implementations will be responsible for generating the various BagIt tag files.  These
+     * package-specific metadata are <em>not</em> included as {@code custodialResources}.
      * </p>
      *
-     * @param submission the submission of content and metadata
-     * @param custodialResources the custodial content to be streamed
-     * @param mdb the interface for adding metadata describing package stream
+     * @param submission the submission of content and metadata, typically derived from the {@link SubmissionBuilder
+     *                   submission builder API}
+     * @param custodialResources the custodial content to be included in the returned {@code PackageStream}
+     * @param mdb the interface for adding metadata describing the {@code PackageStream}
      * @param rbf the interface for adding metadata for individual resources in the package stream
-     * @param options the options used to create the package
-     * @return the package stream
+     * @param options the options used by implementations when building the {@code PackageStream}
+     * @return the {@code PackageStream} including the custodial content and implementation-specific metadata, ready to
+     *         be {@link PackageStream#open() opened} by the caller
      */
     protected abstract PackageStream createPackageStream(DepositSubmission submission,
                                                          List<DepositFileResource> custodialResources,
@@ -132,9 +140,9 @@ public abstract class AbstractAssembler implements Assembler {
                                                          Map<String, Object> options);
 
     /**
-     * Implementations are provided a "manifest" of custodial resources (in the form of {@code List<DepositFile>})
-     * that are to be packaged.  The implementation is responsible for providing a Spring {@link Resource} for each
-     * {@link DepositFile} in the manifest.  The returned Spring {@code Resource}s are expected to resolve to bytestreams.
+     * Implementations are provided a manifest of custodial resources (in the form of {@code List<DepositFile>})
+     * to be packaged.  Implementations are responsible for resolving each {@code DepositFile} to a byte stream, and
+     * mapping the {@code DepositFile} to a {@link DepositFileResource}.
      * <p>
      * Custodial resources are the content to be preserved by, curated by, or deposited to a target system.  This
      * includes content uploaded by the end user to PASS, but <em>excludes</em> files related to packaging, such as
@@ -143,15 +151,16 @@ public abstract class AbstractAssembler implements Assembler {
      * </p>
      * <p>
      * The implementation provided by this method evaluates the URL returned by {@link DepositFile#getLocation()},
-     * creates an appropriate Spring {@link Resource} ({@link FileSystemResource}, {@link ClassPathResource},
-     * {@link UrlResource}), and places the Spring {@code Resource} in the returned {@code List}.  Ordering of the
-     * {@code manifest} is preserved in the returned {@code List}.  Callers of this method may expect that a
-     * bytestream be returned when calling {@link Resource#getInputStream()} on elements of the returned {@code List}.
+     * creates an appropriate Spring {@link Resource} (e.g. {@link FileSystemResource}, {@link ClassPathResource},
+     * {@link UrlResource}, {@link AuthenticatedResource}), and places the {@code DepositFileResource} in the returned
+     * {@code List}.  Ordering of the {@code manifest} is preserved in the returned {@code List}.  Callers expect that a
+     * bytestream be returned when calling {@link DepositFileResource#getInputStream()} on elements of the
+     * returned {@code List}.
      * </p>
      *
-     * @param manifest resources that represent the custodial content to be assembled
-     * @return a Spring {@code Resource} for each entry in the manifest; {@code Resource}s in the returned {@code List}
-     *         are expected to resolve to bytestreams
+     * @param manifest a {@code List} of the custodial content to be assembled into a package
+     * @return a Spring {@code DepositFileResource} for each entry in the manifest; entries in the returned {@code List}
+     *         are expected to {@link DepositFileResource#getInputStream() resolve} to byte streams
      */
     protected List<DepositFileResource> resolveCustodialResources(List<DepositFile> manifest) {
         // Locate byte streams containing uploaded manuscript and any supplement data
@@ -303,41 +312,4 @@ public abstract class AbstractAssembler implements Assembler {
         this.fedoraPassword = fedoraPassword;
     }
 
-    /**
-     * Returns {@code true} if the supplied character is acceptable for use in a posix file name
-     *
-     * @param ch a character that may be used in file name
-     * @return true if the character is acceptable, false otherwise
-     */
-    private static boolean isValidChar(int ch) {
-        int i = ch & 0x0000FFFF;
-
-        // outside of the latin-1 code block
-        if (i >= 0x007f) {
-            return false;
-        }
-
-        // a - z 0x61 - 0x7a
-        if (i >= 0x0061 && i <= 0x007a) {
-            return true;
-        }
-
-        // A - Z 0x41 - 0x5a
-        if (i >= 0x0041 && i <= 0x005a) {
-            return true;
-        }
-
-        // 0 - 9 0x30 - 0x39
-        if (i >= 0x0030 && i <= 0x0039) {
-            return true;
-        }
-
-        // Allow period (0x2e), dash (0x2d), underscore (0x5f)
-        if (i == 0x002e || i == 0x002d || i == 0x005f) {
-            return true;
-        }
-
-        // otherwise it's an illegal character inside of the latin-1 code block
-        return false;
-    }
 }

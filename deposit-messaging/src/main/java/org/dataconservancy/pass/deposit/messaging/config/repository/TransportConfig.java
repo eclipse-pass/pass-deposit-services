@@ -58,4 +58,10 @@ public class TransportConfig {
     public int hashCode() {
         return Objects.hash(authRealms, protocolBinding);
     }
+
+    @Override
+    public String toString() {
+        return "TransportConfig{" + "authRealms=" + authRealms + ", protocolBinding=" + protocolBinding + '}';
+    }
+
 }

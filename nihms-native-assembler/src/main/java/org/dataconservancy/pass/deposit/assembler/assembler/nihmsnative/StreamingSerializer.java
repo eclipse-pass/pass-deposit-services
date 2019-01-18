@@ -16,11 +16,12 @@
 
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
+
 import java.io.IOException;
-import java.io.InputStream;
 
 interface StreamingSerializer {
 
-    InputStream serialize() throws IOException;
+    SizedStream serialize() throws IOException;
 
 }

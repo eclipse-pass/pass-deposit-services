@@ -91,9 +91,9 @@ public class Sword2TransportSession implements TransportSession {
      * deposit.setSuggestedIdentifier("abcdefg"); // ??  Slug, same as deposit.setFilename?
      * </pre>
      *
-     * @param packageStream
-     * @param metadata
-     * @return
+     * @param packageStream {@inheritDoc}
+     * @param metadata {@inheritDoc}
+     * @return {@inheritDoc}
      * @throws IllegalStateException if this session has been {@link #close() closed}
      * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_creatingresource_binary">SWORD v2 Profile</a>
      */

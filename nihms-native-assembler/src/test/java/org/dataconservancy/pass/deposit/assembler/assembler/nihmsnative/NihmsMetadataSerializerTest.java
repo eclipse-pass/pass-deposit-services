@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
 
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.junit.BeforeClass;
@@ -126,10 +127,10 @@ public class NihmsMetadataSerializerTest {
 
     @Test
     public void testSerializedMetadataValidity() throws Exception {
-        InputStream is = underTest.serialize();
-        byte[] buffer = new byte[is.available()];
-        is.read(buffer);
-        is.close();
+        SizedStream sizedStream = underTest.serialize();
+        byte[] buffer = new byte[sizedStream.getInputStream().available()];
+        sizedStream.getInputStream().read(buffer);
+        sizedStream.getInputStream().close();
 
         File targetFile = new File("MetadataSerializerTest.xml");
 
@@ -155,19 +156,22 @@ public class NihmsMetadataSerializerTest {
     public void testSerializedMetadataDoi() throws Exception {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         String path = "10.1234/smh0000001";
+        SizedStream sizedStream;
         InputStream is;
         Node node;
         String doi;
 
         metadata.getArticleMetadata().setDoi(URI.create(path));
-        is = underTest.serialize();
+        sizedStream = underTest.serialize();
+        is = sizedStream.getInputStream();
         node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();
         assertTrue("Valid DOI was modified during export.", doi.contentEquals(path));
 
         metadata.getArticleMetadata().setDoi(URI.create("http://dx.doi.org/" + path));
-        is = underTest.serialize();
+        sizedStream = underTest.serialize();
+        is = sizedStream.getInputStream();
         node = builder.parse(is).getDocumentElement().getFirstChild().getNextSibling();
         doi = node.getAttributes().getNamedItem("doi").getTextContent();
         is.close();

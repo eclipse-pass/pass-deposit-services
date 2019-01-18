@@ -92,8 +92,8 @@ public class Sword2Transport implements Transport {
      * <ul>
      *     <li>on-behalf-of user</li>
      * </ul>
-     * @param hints
-     * @return
+     * @param hints transport hints used to configure the transport session
+     * @return a SWORDv2 transport session, ready to be used
      */
     @Override
     public Sword2TransportSession open(Map<String, String> hints) {

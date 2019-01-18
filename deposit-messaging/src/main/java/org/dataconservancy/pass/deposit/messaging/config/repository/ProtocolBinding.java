@@ -90,4 +90,10 @@ public abstract class ProtocolBinding {
         result = 31 * result + (serverPort != null ? serverPort.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "ProtocolBinding{" + "protocol='" + protocol + '\'' + ", serverFqdn='" + serverFqdn + '\'' + ", " +
+                "serverPort='" + serverPort + '\'' + '}';
+    }
 }

@@ -59,4 +59,10 @@ public class AssemblerConfig {
     public int hashCode() {
         return Objects.hash(spec, options);
     }
+
+    @Override
+    public String toString() {
+        return "AssemblerConfig{" + "spec='" + spec + '\'' + ", options=" + options + '}';
+    }
+
 }

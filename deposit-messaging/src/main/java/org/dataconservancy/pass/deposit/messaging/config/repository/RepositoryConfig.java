@@ -97,4 +97,12 @@ public class RepositoryConfig {
         result = 31 * result + (assemblerConfig != null ? assemblerConfig.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "RepositoryConfig{" + "repositoryKey='" + repositoryKey + '\'' + ", repositoryDepositConfig=" +
+                repositoryDepositConfig + ", transportConfig=" + transportConfig +
+                ", assemblerConfig=" + assemblerConfig + '}';
+    }
+
 }

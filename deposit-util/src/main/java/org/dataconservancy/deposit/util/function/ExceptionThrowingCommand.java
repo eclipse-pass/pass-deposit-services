@@ -28,7 +28,7 @@ public interface ExceptionThrowingCommand<T> {
      * Implementations perform some operation over internal state and return a result.
      *
      * @return the result of the operation
-     * @throws Exception
+     * @throws Exception if there is an error performing the command
      */
     T perform() throws Exception;
 

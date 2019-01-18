@@ -24,6 +24,11 @@ import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
+import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageProvider;
+import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetadataDomWriterFactory;
+import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsPackageProvider;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
+import org.dataconservancy.pass.deposit.assembler.shared.PackageProvider;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
@@ -64,7 +69,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -339,4 +346,19 @@ public class DepositConfig {
         return new DepositServiceErrorHandler(cri);
     }
 
+    @Bean
+    ExceptionHandlingThreadPoolExecutor executorService() {
+        return new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
+    }
+
+    @Bean
+    DspaceMetsPackageProvider dspaceMetsPackageProvider(DspaceMetadataDomWriterFactory domWriterFactory) {
+        return new DspaceMetsPackageProvider(domWriterFactory);
+    }
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    NihmsPackageProvider nihmsPackageProvider() {
+        return new NihmsPackageProvider();
+    }
 }

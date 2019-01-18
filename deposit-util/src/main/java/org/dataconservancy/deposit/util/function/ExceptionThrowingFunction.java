@@ -31,7 +31,7 @@ public interface ExceptionThrowingFunction<T, R> {
      *
      * @param t the input to the function
      * @return the output of the function
-     * @throws Exception
+     * @throws Exception if there is an error performing the function
      */
     R apply(T t) throws Exception;
 

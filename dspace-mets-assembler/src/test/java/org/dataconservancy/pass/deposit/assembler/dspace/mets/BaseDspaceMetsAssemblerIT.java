@@ -21,6 +21,7 @@ import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
+import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.junit.Before;
@@ -33,6 +34,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.dataconservancy.pass.deposit.DepositTestUtil.asList;
@@ -75,8 +78,12 @@ public class BaseDspaceMetsAssemblerIT extends BaseAssemblerIT {
 
     @Override
     protected DspaceMetsAssembler assemblerUnderTest() {
-        return new DspaceMetsAssembler(mbf, rbf,
-                new DspaceMetadataDomWriterFactory(DocumentBuilderFactory.newInstance()));
+        ExceptionHandlingThreadPoolExecutor executorService = new ExceptionHandlingThreadPoolExecutor(1, 2, 1,
+                TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
+        DspaceMetsPackageProvider packageProvider =
+                new DspaceMetsPackageProvider(new DspaceMetadataDomWriterFactory(
+                        DocumentBuilderFactory.newInstance()));
+        return new DspaceMetsAssembler(mbf, rbf, executorService, packageProvider);
     }
 
     @Override

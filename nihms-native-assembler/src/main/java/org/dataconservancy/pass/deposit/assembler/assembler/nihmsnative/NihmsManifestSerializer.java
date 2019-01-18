@@ -15,14 +15,12 @@
  */
 
 package org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative;
+import org.dataconservancy.pass.deposit.assembler.shared.SizedStream;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +44,8 @@ import java.util.Set;
 
 public class NihmsManifestSerializer implements StreamingSerializer{
 
+    static final String METADATA_ENTRY_NAME = "bulk_meta.xml";
+    static final String MANIFEST_ENTRY_NAME = "manifest.txt";
     private DepositManifest manifest;
 
     public NihmsManifestSerializer(DepositManifest manifest) {
@@ -53,7 +53,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
     }
 
 
-    public InputStream serialize(){
+    public SizedStream serialize(){
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(os);
 
@@ -66,7 +66,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
                 writer.write(label);
             }
             writer.append("\t");
-            String name = NihmsPackageStream.getNonCollidingFilename(file.getName(), file.getType());
+            String name = NihmsPackageProvider.getNonCollidingFilename(file.getName(), file.getType());
             writer.write(name);
             writer.append("\n");
         }
@@ -78,14 +78,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
 
         writer.close();
 
-        byte[] bytes = os.toByteArray();
-
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            os.close();
-            return is;
-        } catch (IOException ioe) {
-            throw new RuntimeException("Could not create Input Stream, or close Output Stream", ioe);
-        }
+        return NihmsAssemblerUtil.asSizedStream(os);
     }
 
     protected static void includeBulkMetadataInManifest(PrintWriter writer, DepositFileLabelMaker labelMaker) {
@@ -93,7 +86,7 @@ public class NihmsManifestSerializer implements StreamingSerializer{
         writer.append("\t");
         writer.write(labelMaker.getTypeUniqueLabel(DepositFileType.bulksub_meta_xml, "Submission Metadata"));
         writer.append("\t");
-        writer.write(NihmsPackageStream.METADATA_ENTRY_NAME);
+        writer.write(METADATA_ENTRY_NAME);
     }
 
     /**
