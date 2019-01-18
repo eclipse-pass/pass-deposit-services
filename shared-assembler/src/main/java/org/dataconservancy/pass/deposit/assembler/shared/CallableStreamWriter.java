@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
@@ -23,7 +22,6 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,15 +83,9 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     }
 
     @Override
-    public PackageStream.Resource buildResource(ResourceBuilder builder, Resource custodialFile)
+    public PackageStream.Resource writeResource(ResourceBuilder builder, Resource custodialFile)
             throws IOException {
-        return delegate.buildResource(builder, custodialFile);
-    }
-
-    @Override
-    public void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn)
-            throws IOException {
-        delegate.writeResource(archiveOut, archiveEntry, archiveEntryIn);
+        return delegate.writeResource(builder, custodialFile);
     }
 
     @Override

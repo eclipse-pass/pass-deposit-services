@@ -27,6 +27,7 @@ import org.apache.tika.detect.DefaultDetector;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.PackageProvider.SupplementalResource;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,31 +105,16 @@ public class DefaultStreamWriterImpl implements StreamWriter {
 
             packageProvider.start(submission, custodialFiles, packageOptions);
 
-            packageFiles.forEach(custodialFile -> {
-                ResourceBuilder rb;
-                try {
-                    rb = rbf.newInstance();
-                    assembledResources.add(buildResource(rb, custodialFile));
-                } catch (IOException e) {
-                    throw new RuntimeException(format(ERR_PUT_RESOURCE,
-                            custodialFile.getFilename(), e.getMessage()), e);
-                }
-            });
+            packageFiles.forEach(custodialFile -> assembledResources.add(assembleResource(custodialFile)));
 
-            List<PackageProvider.SupplementalResource> supplementalResources =
+            List<SupplementalResource> supplementalResources =
                     packageProvider.finish(submission, assembledResources);
 
-            supplementalResources.forEach(supplementalResource -> {
-                ResourceBuilder rb;
-                try {
-                    rb = rbf.newInstance();
-                    assembledResources.add(buildResource(rb, supplementalResource));
-                } catch (IOException e) {
-                    throw new RuntimeException(format(ERR_PUT_RESOURCE, supplementalResource.getFilename(), e.getMessage()), e);
-                }
-            });
+            supplementalResources.forEach(supplementalResource ->
+                    assembledResources.add(assembleResource(supplementalResource)));
 
             finish(submission, assembledResources);
+
             close();
         } catch (Exception e) {
             LOG.warn("Exception encountered streaming package, cleaning up by closing the archive output stream ({}) "
@@ -151,13 +137,12 @@ public class DefaultStreamWriterImpl implements StreamWriter {
 
     @Override
     public void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources) throws IOException {
-        // TODO: archiveOut should be closed and finished by the parent thread?
         archiveOut.finish();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public PackageStream.Resource buildResource(ResourceBuilder resourceBuilder, Resource resource) throws IOException {
+    public PackageStream.Resource writeResource(ResourceBuilder resourceBuilder, Resource resource) throws IOException {
         try (InputStream resourceIn = resource.getInputStream(); BufferedInputStream buffIn =
                 resourceIn.markSupported() ? null : new BufferedInputStream(resourceIn)) {
 
@@ -183,8 +168,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
                     resourceBuilder.name(packageProvider.packagePath((DepositFileResource)resource));
                 }
 
-                if (resource instanceof PackageProvider.SupplementalResource) {
-                    resourceBuilder.name(((PackageProvider.SupplementalResource) resource).getPackagePath());
+                if (resource instanceof SupplementalResource) {
+                    resourceBuilder.name(((SupplementalResource) resource).getPackagePath());
                 }
 
                 PackageStream.Resource packageResource = resourceBuilder.build();
@@ -196,22 +181,6 @@ public class DefaultStreamWriterImpl implements StreamWriter {
             LOG.debug(">>>> Adding resource: {}", resourceBuilder.build());
             return resourceBuilder.build();
         }
-    }
-
-    /**
-     * Provide the name to set on the {@code PackageStream.Resource} TODO: have some kind of adapter from a Spring
-     * Resource to a PackageStream.Resource Useful to override if sub-classes want to include a path in the name,
-     * otherwise this implementation defaults to {@link Resource#getFilename()}
-     *
-     * @param resource the resource
-     * @return the name of the resource
-     */
-    protected String nameResource(DepositFileResource resource) {
-        if (resource.getDepositFile() != null && resource.getDepositFile().getName() != null) {
-            return resource.getDepositFile().getName();
-        }
-
-        return resource.getFilename();
     }
 
     /**
@@ -246,12 +215,44 @@ public class DefaultStreamWriterImpl implements StreamWriter {
         }
     }
 
-    @Override
-    public void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn) throws IOException {
+    /**
+     * Write the bytes supplied by {@code archiveEntryIn} to the supplied {@code ArchiveOutputStream}.  The supplied
+     * {@code ArchiveEntry} is written to the stream first, followed by the bytes of {@code archiveEntryIn}.
+     * <p>
+     * Note this method closes the {@code ArchiveEntry} after the bytes of {@code archiveEntryIn} are written.
+     * </p>
+     *
+     *
+     * @param archiveOut the package output stream
+     * @param archiveEntry metadata describing {@code archiveEntryIn}, closed before this method returns
+     * @param archiveEntryIn the bytes to be written
+     * @throws IOException if there is an error encountered writing the bytes
+     */
+    private void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn)
+            throws IOException {
         archiveOut.putArchiveEntry(archiveEntry);
         int bytesWritten = IOUtils.copy(archiveEntryIn, archiveOut);
         STREAMING_IO_LOG.debug(">>>> Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
         archiveOut.closeArchiveEntry();
+    }
+
+    /**
+     * Accepts a Spring {@code Resource} (typically a {@link DepositFileResource} or {@link SupplementalResource}), and
+     * uses the {@link #rbf ResourceBuilderFactory} to build a {@link PackageStream.Resource} representation of the
+     * supplied resource.  The bytes of the supplied resource are written to the package stream.
+     *
+     * @param resource the Spring {@code Resource} representing custodial or supplemental content to be written to the
+     *                 package stream
+     * @return the metadata describing the {@code resource} written to the package stream
+     */
+    private PackageStream.Resource assembleResource(Resource resource) {
+        ResourceBuilder rb;
+        try {
+            rb = rbf.newInstance();
+            return writeResource(rb, resource);
+        } catch (IOException e) {
+            throw new RuntimeException(format(ERR_PUT_RESOURCE, resource.getFilename(), e.getMessage()), e);
+        }
     }
 
 }

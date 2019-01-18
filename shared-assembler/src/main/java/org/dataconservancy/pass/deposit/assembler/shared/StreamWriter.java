@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
@@ -23,7 +22,6 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -33,17 +31,45 @@ import java.util.List;
  * <p>
  * Callers will invoke {@link #start(List, ArchiveOutputStream) start(...)} to initialize any state
  * </p>
+ * <p>
+ * Note that this interface should be considered private, and is not very well thought out, especially its use by
+ * {@link ArchivingPackageStream}.
+ * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public interface StreamWriter extends AutoCloseable {
+interface StreamWriter extends AutoCloseable {
 
+    /**
+     * Lifecycle method which initializes any necessary state for writing to the supplied {@code ArchiveOutputStream}.
+     *
+     * @param custodialFiles the custodial content of the package to be written
+     * @param archiveOut the {@code OutputStream} to be written to
+     * @throws IOException if there are any errors encountered initializing state
+     */
     void start(List<DepositFileResource> custodialFiles, ArchiveOutputStream archiveOut) throws IOException;
 
-    PackageStream.Resource buildResource(ResourceBuilder builder, Resource custodialFile) throws IOException;
+    /**
+     * Writes the {@code Resource} and returns metadata describing the {@code custodialFile}.
+     * <p>
+     * Note that in a streaming implementation many attributes of {@link PackageStream.Resource} (e.g. checksum,
+     * mime type) may not be known <em>until the {@code custodialFile} is written</em>.
+     * </p>
+     *
+     * @param builder interface used by implementations to build the {@link PackageStream.Resource}
+     * @param custodialFile custodial content to be written to the stream
+     * @return metadata describing the {@code custodialFile}
+     * @throws IOException if there are any errors building or writing the {@code PackageStream.Resource}
+     */
+    PackageStream.Resource writeResource(ResourceBuilder builder, Resource custodialFile) throws IOException;
 
-    void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn) throws IOException;
-
+    /**
+     * Lifecycle method which releases or cleans up any resources after writing all resources.
+     *
+     * @param submission the original submission
+     * @param custodialResources the resources written to the stream
+     * @throws IOException if there are any errors cleaning up state
+     */
     void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources) throws IOException;
 
 }
