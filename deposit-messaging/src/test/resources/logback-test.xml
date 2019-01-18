@@ -25,16 +25,16 @@
   <root level="WARN">
     <appender-ref ref="STDERR"/>
   </root>
-  <logger name="org.springframework" additivity="false" level="INFO">
+  <logger name="org.springframework" additivity="false" level="WARN">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
+  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-TRACE}">
+  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-WARN}">
+  <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-ERROR}">
     <appender-ref ref="STDERR"/>
   </logger>
 </configuration>
