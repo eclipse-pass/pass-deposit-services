@@ -48,10 +48,11 @@ public class RepositoriesFactoryBeanConfig {
     }
 
     @Bean(name = "repositories")
-    public RepositoriesFactory repositoriesFactory(
-            @Value("${pass.deposit.repository.configuration}") String configResource, ObjectMapper repositoriesMapper) {
+    public RepositoriesFactory repositoriesFactory(@Value("${pass.deposit.repository.configuration}")
+                                                   Resource configResource,
+                                                   ObjectMapper repositoriesMapper) {
         LOG.trace(">>>> Resolving repository configuration resource from '{}'", configResource);
-        RepositoriesFactory factory = new RepositoriesFactory(repositoryConfigResource, repositoriesMapper);
+        RepositoriesFactory factory = new RepositoriesFactory(configResource, repositoriesMapper);
         return factory;
     }
 
