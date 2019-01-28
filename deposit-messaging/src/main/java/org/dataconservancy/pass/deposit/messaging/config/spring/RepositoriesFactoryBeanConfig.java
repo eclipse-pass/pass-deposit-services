@@ -23,7 +23,6 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.SpringEnviro
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -38,11 +37,11 @@ public class RepositoriesFactoryBeanConfig {
     private Resource repositoryConfigResource;
 
     @Bean
-    public ObjectMapper repositoriesMapper(Environment env, ApplicationContext appCtx) {
+    public ObjectMapper repositoriesMapper(Environment env) {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        SpringEnvironmentDeserializer envDeserialzier = new SpringEnvironmentDeserializer(env);
-        module.addDeserializer(String.class, envDeserialzier);
+        SpringEnvironmentDeserializer envDeserializer = new SpringEnvironmentDeserializer(env);
+        module.addDeserializer(String.class, envDeserializer);
         mapper.registerModule(module);
         return mapper;
     }
