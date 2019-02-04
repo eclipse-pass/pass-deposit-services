@@ -29,6 +29,8 @@ public class AssemblerConfig {
 
     private AssemblerOptions options;
 
+    private String beanName;
+
     public String getSpec() {
         return spec;
     }
@@ -45,6 +47,14 @@ public class AssemblerConfig {
         this.options = options;
     }
 
+    public String getBeanName() {
+        return beanName;
+    }
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -52,17 +62,19 @@ public class AssemblerConfig {
         if (o == null || getClass() != o.getClass())
             return false;
         AssemblerConfig that = (AssemblerConfig) o;
-        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options);
+        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options) && Objects.equals(beanName,
+                that.beanName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(spec, options);
+        return Objects.hash(spec, options, beanName);
     }
 
     @Override
     public String toString() {
-        return "AssemblerConfig{" + "spec='" + spec + '\'' + ", options=" + options + '}';
+        return "AssemblerConfig{" + "spec='" + spec + '\'' + ", options=" + options +
+                ", beanName='" + beanName + '\'' + '}';
     }
 
 }

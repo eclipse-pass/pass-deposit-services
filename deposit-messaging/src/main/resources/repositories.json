@@ -17,6 +17,7 @@
 
     "assembler": {
       "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
+      "beanName": "dspaceMetsAssembler",
       "options": {
         "archive": "ZIP",
         "compression": "NONE",
@@ -83,13 +84,15 @@
 
     "assembler": {
       "specification": "nihms-native-2017-07",
+      "beanName": "nihmsAssembler",
       "options": {
         "archive": "ZIP",
         "compression": "NONE",
         "algorithms": [
           "sha512",
           "md5"
-        ]
+        ],
+        "beanName": "nihmsAssembler"
       }
     },
 
