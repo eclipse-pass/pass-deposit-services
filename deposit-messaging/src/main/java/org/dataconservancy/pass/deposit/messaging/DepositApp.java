@@ -53,6 +53,8 @@ public class DepositApp {
 
     private static final String GIT_BUILD_VERSION_KEY = "git.build.version";
 
+    private static final String GIT_BUILD_TIME = "git.build.time";
+
     private static final String GIT_COMMIT_HASH_KEY = "git.commit.id.abbrev";
 
     private static final String GIT_COMMIT_TIME_KEY = "git.commit.time";
@@ -80,8 +82,12 @@ public class DepositApp {
                 gitProperties.load(gitPropertiesResource.openStream());
                 boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
 
-                LOG.info(">>>> Starting DepositServices (version: {} branch: {} commit: {} commit date: {})",
-                        gitProperties.get(GIT_BUILD_VERSION_KEY), gitProperties.get(GIT_BRANCH), gitProperties.get(GIT_COMMIT_HASH_KEY), gitProperties.getProperty(GIT_COMMIT_TIME_KEY));
+            LOG.info(">>>> Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
+                    gitProperties.get(GIT_BUILD_VERSION_KEY),
+                    gitProperties.get(GIT_BRANCH),
+                    gitProperties.get(GIT_COMMIT_HASH_KEY),
+                    gitProperties.get(GIT_COMMIT_TIME_KEY),
+                    gitProperties.get(GIT_BUILD_TIME));
 
                 if (isDirty) {
                     LOG.warn(">>>> ** Deposit Services was compiled from a Git repository with uncommitted changes! **");

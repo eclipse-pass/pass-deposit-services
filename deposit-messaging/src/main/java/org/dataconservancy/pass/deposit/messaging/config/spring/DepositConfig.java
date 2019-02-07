@@ -53,7 +53,6 @@ import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteract
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.context.ApplicationContext;
@@ -78,6 +77,7 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
+import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -158,7 +158,7 @@ public class DepositConfig {
     }
 
     @Bean
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    @Scope(SCOPE_PROTOTYPE)
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
@@ -240,11 +240,25 @@ public class DepositConfig {
 
         Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
                 .map(repoConfig -> {
-                    String dspBeanName = repoConfig.getRepositoryDepositConfig().getDepositProcessing().getBeanName();
+                    String dspBeanName = null;
                     DepositStatusProcessor dsp = null;
+                    if (repoConfig.getRepositoryDepositConfig() != null && repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
+                        dspBeanName = repoConfig.getRepositoryDepositConfig().getDepositProcessing().getBeanName();
+                        dsp = null;
+                        if (dspBeanName != null) {
+                            dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
+                            repoConfig.getRepositoryDepositConfig().getDepositProcessing().setProcessor(dsp);
+                        }
+                    }
+
+                    String repositoryKey = repoConfig.getRepositoryKey();
+                    String transportProtocol = repoConfig.getTransportConfig().getProtocolBinding().getProtocol();
+
+                    LOG.info("Configuring Packager for Repository configuration {}", repoConfig.getRepositoryKey());
+                    LOG.info("  Repository Key: {}", repositoryKey);
+                    LOG.info("  Transport Binding: {}", transportProtocol);
                     if (dspBeanName != null) {
-                        dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
-                        repoConfig.getRepositoryDepositConfig().getDepositProcessing().setProcessor(dsp);
+                        LOG.info("  Deposit Status Processor: {}", dspBeanName);
                     }
 
                     return new Packager(
@@ -359,7 +373,7 @@ public class DepositConfig {
     }
 
     @Bean
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    @Scope(SCOPE_PROTOTYPE)
     NihmsPackageProvider nihmsPackageProvider() {
         return new NihmsPackageProvider();
     }

@@ -107,13 +107,14 @@ public class JmsConfig {
         }
 
         // Parse the identity of the Submission from the message
-
+        URI submissionUri = null;
         try {
-            URI submissionUri = parseResourceUri(mc, jsonParser);
+            submissionUri = parseResourceUri(mc, jsonParser);
             submissionConsumer.accept(passClient.readResource(submissionUri, Submission.class));
         } catch (Exception e) {
-            LOG.error("Error parsing submission URI from JMS message: {}\nPayload (if available): '{}'",
-                    e.getMessage(), mc.message().getPayload(), e);
+            LOG.warn("Failed to process Submission ({}) from JMS message: {}\nPayload (if available): '{}'",
+                    (submissionUri == null ? "<failed to parse Submission URI from JMS message>" : submissionUri),
+                            e.getMessage(), mc.message().getPayload(), e);
         } finally {
             ackMessage(mc);
         }
