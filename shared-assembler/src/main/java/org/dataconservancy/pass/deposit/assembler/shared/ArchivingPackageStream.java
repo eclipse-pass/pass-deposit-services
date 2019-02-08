@@ -149,20 +149,6 @@ public class ArchivingPackageStream implements PackageStream {
         // Set on the writer, and used to report any exceptions caught by the writer to the reader.  That way a full
         // stack trace of the exception will be reported when it is encountered by the reader
         BiConsumer<Runnable, Throwable> exceptionHandler = (runnable, throwable) -> {
-            if (throwable == null && runnable instanceof Future<?>) {
-                try {
-                    Future<?> future = (Future<?>) runnable;
-                    if (future.isDone()) {
-                        future.get();
-                    }
-                } catch (CancellationException ce) {
-                    throwable = ce;
-                } catch (ExecutionException ee) {
-                    throwable = ee.getCause();
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-            }
 
             // Make the exception caught by the writer available to the reader; set it on the PipedInputStream
             // The reader will use this to close any resources it has open when an exception occurs, and allow the
