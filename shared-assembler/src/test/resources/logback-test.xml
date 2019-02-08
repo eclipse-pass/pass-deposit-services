@@ -22,7 +22,7 @@
     <logger name="org.dataconservancy.pass" additivity="false" level="${org.dataconservancy.pass.level:-WARN}">
         <appender-ref ref="STDERR"/>
     </logger>
-    <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
+    <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-INFO}">
         <appender-ref ref="STDERR"/>
     </logger>
     <logger name="STREAMING_IO_LOG" additivity="false"
