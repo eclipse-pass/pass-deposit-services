@@ -21,15 +21,15 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.Map;
-import java.util.Objects;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "protocol")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = FtpBinding.class, name = "ftp"),
-        @JsonSubTypes.Type(value = SwordV2Binding.class, name = "SWORDv2")
+        @JsonSubTypes.Type(value = FtpBinding.class, name = FtpBinding.PROTO),
+        @JsonSubTypes.Type(value = SwordV2Binding.class, name = SwordV2Binding.PROTO),
+        @JsonSubTypes.Type(value = FilesystemBinding.class, name = FilesystemBinding.PROTO)
 })
 public abstract class ProtocolBinding {
 

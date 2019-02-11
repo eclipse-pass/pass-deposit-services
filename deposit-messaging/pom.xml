@@ -224,6 +224,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>filesystem-transport</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
         </dependency>

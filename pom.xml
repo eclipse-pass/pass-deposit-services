@@ -61,6 +61,7 @@
         <module>shared-assembler</module>
         <module>deposit-messaging</module>
         <module>shared-resources</module>
+        <module>filesystem-transport</module>
     </modules>
 
     <profiles>

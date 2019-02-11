@@ -123,7 +123,8 @@ public interface Transport {
         http,
         https,
         ftp,
-        SWORDv2
+        SWORDv2,
+        filesystem
     }
 
     /**
