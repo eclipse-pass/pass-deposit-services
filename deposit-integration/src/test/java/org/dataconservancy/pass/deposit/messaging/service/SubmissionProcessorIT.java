@@ -35,8 +35,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 
-import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
-import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
+import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getDepositUris;
+import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getFileUris;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Johns Hopkins University
+ * Copyright 2019 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.deposit.messaging.service;
+package org.dataconservancy.pass.deposit.integration.shared;
 
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Deposit;
@@ -21,19 +21,17 @@ import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toSet;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class SubmissionTestUtil {
+public class SubmissionUtil {
 
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
         return getIncomingUris(submission, passClient, Deposit.class);
@@ -41,12 +39,6 @@ public class SubmissionTestUtil {
 
     public static Collection<URI> getFileUris(Submission submission, PassClient passClient) {
         return getIncomingUris(submission, passClient, File.class);
-    }
-
-    public static InputStream getSubmissionResources(String resource) {
-        InputStream is = EmptySubmissionIT.class.getResourceAsStream(resource);
-        assertNotNull("Unable to resolve classpath resource " + resource, is);
-        return is;
     }
 
     private static Collection<URI> getIncomingUris(Submission submission, PassClient passClient,

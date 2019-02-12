@@ -155,6 +155,17 @@ public class Condition<T> {
     }
 
     /**
+     * Return the result of the {@link #condition} supplied on construction.  If this {@code Condition} has been
+     * verified, then the result ought to be valid with respect to the {@link #verificationFunc verification function}.
+     *
+     * @return the condition's result, which may be verified (and may be {@code null}, depending on the supplied
+     *         condition)
+     */
+    public T getResult() {
+        return futureResult;
+    }
+
+    /**
      * Execute and re-try this condition until the timeout expires, or the result is verified.
      *
      * @param timeoutMs the timeout threshold, in milliseconds

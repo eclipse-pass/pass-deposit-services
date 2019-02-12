@@ -241,6 +241,15 @@
             <type>test-jar</type>
         </dependency>
 
+        <dependency>
+            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <artifactId>shared-integration</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+        </dependency>
+
     </dependencies>
 
     <build>

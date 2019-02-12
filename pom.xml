@@ -60,6 +60,7 @@
         <module>deposit-messaging</module>
         <module>shared-resources</module>
         <module>filesystem-transport</module>
+        <module>shared-integration</module>
     </modules>
 
     <profiles>
