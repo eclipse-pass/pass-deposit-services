@@ -25,11 +25,6 @@ import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
-import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageProvider;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetadataDomWriterFactory;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsPackageProvider;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
@@ -273,18 +268,6 @@ public class DepositConfig {
         return packagers;
     }
 
-    // TODO: discover Assemblers on the classpath
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Bean
-    public Map<String, Assembler> assemblers(DspaceMetsAssembler dspaceMetsAssembler, NihmsAssembler nihmsAssembler) {
-        return new HashMap<String, Assembler>() {
-            {
-                put(DspaceMetsAssembler.SPEC_DSPACE_METS, dspaceMetsAssembler);
-                put(NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07, nihmsAssembler);
-            }
-        };
-    }
-
     // TODO: discover Transports on the classpath
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
@@ -367,14 +350,4 @@ public class DepositConfig {
         return new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
     }
 
-    @Bean
-    DspaceMetsPackageProvider dspaceMetsPackageProvider(DspaceMetadataDomWriterFactory domWriterFactory) {
-        return new DspaceMetsPackageProvider(domWriterFactory);
-    }
-
-    @Bean
-    @Scope(SCOPE_PROTOTYPE)
-    NihmsPackageProvider nihmsPackageProvider() {
-        return new NihmsPackageProvider();
-    }
 }

@@ -49,7 +49,6 @@
         <module>builder-api</module>
         <module>fedora-builder</module>
         <module>assembler-api</module>
-        <module>nihms-native-assembler</module>
         <!-- nihms-bagit-assembler -->
         <module>transport-api</module>
         <module>ftp-transport</module>
@@ -57,7 +56,6 @@
         <module>deposit-integration</module>
         <module>deposit-util</module>
         <module>sword2-transport</module>
-        <module>dspace-mets-assembler</module>
         <module>shared-assembler</module>
         <module>deposit-messaging</module>
         <module>shared-resources</module>

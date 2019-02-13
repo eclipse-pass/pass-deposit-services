@@ -25,7 +25,6 @@ import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.AbstractAssembler;
 import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
@@ -61,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
 
     @Autowired
-    private DspaceMetsAssembler dspaceMetsAssembler;
+    private AbstractAssembler dspaceMetsAssembler;
 
     @Autowired
     private Registry<Packager> packagerRegistry;
@@ -160,7 +159,7 @@ public class SubmittedStatusHandlingIT extends BaseAssemblerIT {
         return new HashMap<String, Object>() {
             {
                 // TODO: checksums?  check this IT to see what happens
-                put(Spec.KEY, DspaceMetsAssembler.SPEC_DSPACE_METS);
+                put(Spec.KEY, "http://purl.org/net/sword/package/METSDSpaceSIP");
                 put(Archive.KEY, Archive.OPTS.ZIP);
                 put(Compression.KEY, Compression.OPTS.ZIP);
             }

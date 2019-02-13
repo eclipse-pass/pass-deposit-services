@@ -162,13 +162,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>nihms-cli</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.dataconservancy.pass</groupId>
             <artifactId>pass-data-client</artifactId>
             <version>${pass-client.version}</version>
