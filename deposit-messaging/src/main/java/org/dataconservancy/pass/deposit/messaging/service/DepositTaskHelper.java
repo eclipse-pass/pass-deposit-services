@@ -155,21 +155,6 @@ public class DepositTaskHelper {
 
     public void processDepositStatus(URI depositUri) {
 
-        // FIXME: the Deposit in the repository *must* have a depositStatusRef (the caller must have persisted the Deposit)
-        // FIXME: the Deposit in the repository *must* have a RepositoryCopy (even if the caller persisted a place-holder resource)
-        //
-        // Subtle issue to be aware of:
-        //
-        // The Deposit being passed into this method may contain state (e.g. a depositStatusRef) that is not
-        // present on the Deposit resource in the repository.  Therefore, the Deposit retrieved by the CRI may
-        // be out of date with respect to the Deposit provided to this method.
-        //
-        // At this time, the depositStatusRef is the only state that may differ.
-        //
-        // To insure that the depositStatusRef from the 'deposit' method parameter is stored on the 'deposit' from
-        // the CRI, the field is copied in the "critical update" lambda below.  This insures if a conflict arises,
-        // the ConflictHandler will retry the critical update, including the copy of the depositStatusRef.
-
         CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositUri, Deposit.class,
 
                 /*
@@ -177,6 +162,7 @@ public class DepositTaskHelper {
                  *  - Deposit must be in a non-terminal state
                  *  - Deposit must have a depositStatusRef
                  *  - Deposit must have a Repository
+                 *  - Deposit must have a RepositoryCopy, even if it is just a placeholder
                  */
                 (criDeposit) -> {
                     if (terminalDepositStatusPolicy.test(criDeposit.getDepositStatus())) {
@@ -193,6 +179,13 @@ public class DepositTaskHelper {
 
                     if (criDeposit.getRepository() == null) {
                         LOG.warn(PRECONDITION_FAILED + " missing Repository URI.", depositUri);
+                        return false;
+                    }
+
+                    URI repoCopy = criDeposit.getRepositoryCopy();
+
+                    if (repoCopy == null || passClient.readResource(repoCopy, RepositoryCopy.class) == null) {
+                        LOG.warn(PRECONDITION_FAILED + " missing RepositoryCopy URI.", repoCopy);
                         return false;
                     }
 
