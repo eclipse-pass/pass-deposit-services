@@ -21,6 +21,11 @@ import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -28,12 +33,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.BASEDIR;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.CREATE_IF_MISSING;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.OVERWRITE;
+import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.ACCEPTED;
 
 /**
  * Writes {@link PackageStream}s to a directory on the filesystem.
@@ -52,11 +59,17 @@ import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportH
 @Component
 public class FilesystemTransport implements Transport {
 
+    private CriticalRepositoryInteraction cri;
+
     private File baseDir;
 
     private boolean createIfMissing;
 
     private boolean overwrite;
+
+    public FilesystemTransport(CriticalRepositoryInteraction cri) {
+        this.cri = cri;
+    }
 
     @Override
     public TransportSession open(Map<String, String> hints) {
@@ -85,6 +98,7 @@ public class FilesystemTransport implements Transport {
         public TransportResponse send(PackageStream packageStream, Map<String, String> metadata) {
             String filename = packageStream.metadata().name();
             AtomicReference<Exception> transportException = new AtomicReference<>();
+
             File outputFile = new File(baseDir, filename);
 
             if (!outputFile.exists() || overwrite) {
@@ -107,6 +121,27 @@ public class FilesystemTransport implements Transport {
                 @Override
                 public Throwable error() {
                     return transportException.get();
+                }
+
+                @Override
+                public void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
+                    CriticalResult<RepositoryCopy, RepositoryCopy> result =
+                            cri.performCritical(repositoryCopy.getId(), RepositoryCopy.class,
+                                    (rc) -> true,
+                                    (rc) -> rc.getCopyStatus() == ACCEPTED && rc.getExternalIds().size() > 0,
+                                    (rc) -> {
+                                        rc.setExternalIds(Collections.singletonList(outputFile.getAbsolutePath()));
+                                        rc.setCopyStatus(ACCEPTED);
+                                        return rc;
+                                    });
+
+                    if (!result.success()) {
+                        if (result.throwable().isPresent()) {
+                            throw new RuntimeException(result.throwable().get());
+                        } else {
+                            throw new RuntimeException("Failed to update " + repositoryCopy.getId());
+                        }
+                    }
                 }
             };
         }

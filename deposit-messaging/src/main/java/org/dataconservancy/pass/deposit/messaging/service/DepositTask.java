@@ -177,7 +177,8 @@ public class DepositTask implements Runnable {
 
         // Determine *logical* success: was the Deposit accepted by the remote system?
 
-        // TODO: response handlers should be decoupled, this will require an update the the TransportResponse interface; e.g. is the response terminal, or should it be polled?
+        // TODO: clean up
+        // TODO: refactor to the onSuccess(...) TransportResponse handler?
         if (transportResponse instanceof Sword2DepositReceiptResponse) {
             String statementUri = null;
             String itemUri = null;
@@ -253,6 +254,8 @@ public class DepositTask implements Runnable {
                 }
             }
         }
+
+        transportResponse.onSuccess(dc.submission(), dc.deposit(), dc.repoCopy());
 
     }
 
