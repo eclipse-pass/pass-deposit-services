@@ -26,6 +26,9 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -59,6 +62,8 @@ import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.ACCEPTED;
 @Component
 public class FilesystemTransport implements Transport {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FilesystemTransport.class);
+
     private CriticalRepositoryInteraction cri;
 
     private File baseDir;
@@ -67,6 +72,7 @@ public class FilesystemTransport implements Transport {
 
     private boolean overwrite;
 
+    @Autowired
     public FilesystemTransport(CriticalRepositoryInteraction cri) {
         this.cri = cri;
     }
@@ -125,6 +131,8 @@ public class FilesystemTransport implements Transport {
 
                 @Override
                 public void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
+                    LOG.trace("Invoking onSuccess for tuple [{} {} {}]",
+                            submission.getId(), deposit.getId(), repositoryCopy.getId());
                     CriticalResult<RepositoryCopy, RepositoryCopy> result =
                             cri.performCritical(repositoryCopy.getId(), RepositoryCopy.class,
                                     (rc) -> true,
@@ -142,6 +150,8 @@ public class FilesystemTransport implements Transport {
                             throw new RuntimeException("Failed to update " + repositoryCopy.getId());
                         }
                     }
+
+                    LOG.trace("onSuccess updated RepositoryCopy {}", result.resource().get().getId());
                 }
             };
         }

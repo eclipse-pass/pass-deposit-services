@@ -255,6 +255,17 @@ public class DepositTask implements Runnable {
             }
         }
 
+        // If a RepositoryCopy wasn't created by the Sword2DepositReceiptResponse, create an IN_PROGRESS placeholder
+        // copy, attach the Deposit to the placeholder.  Then supply the Submission, Deposit, and RepositoryCopy to
+        // the onSuccess(...) handler of the TransportResponse
+
+        if (dc.repoCopy() == null) {
+            dc.repoCopy(passClient.createAndReadResource(newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS),
+                    RepositoryCopy.class));
+            dc.deposit().setRepositoryCopy(dc.repoCopy().getId());
+            dc.deposit(passClient.updateAndReadResource(dc.deposit(), Deposit.class));
+        }
+
         transportResponse.onSuccess(dc.submission(), dc.deposit(), dc.repoCopy());
 
     }
