@@ -15,6 +15,8 @@
  */
 package submissions;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import resources.SharedResourceUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -65,8 +68,17 @@ public class SubmissionResourceUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionResourceUtil.class);
 
-    private static final Predicate<JsonNode> SUBMISSION_TYPE_FILTER = node ->
+    /**
+     * Used to filter a {@code Stream<JsonNode>} for Submission JSON objects
+     */
+    public static final Predicate<JsonNode> SUBMISSION_TYPE_FILTER = node ->
             node.has("@type") && node.get("@type").asText().equals("Submission");
+
+    /**
+     * Used to filter a {@code Stream<JsonNode>} for Repository JSON objects
+     */
+    public static final Predicate<JsonNode> REPOSITORY_TYPE_FILTER = node ->
+            node.has("@type") && node.get("@type").asText().equals("Repository");
 
     /**
      * Answers a {@code Collection} of Submission URIs that are available for use in testing. <p> URIs returned by this
@@ -168,6 +180,41 @@ public class SubmissionResourceUtil {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Returns the graph of JSON objects for the supplied Submission URI.
+     *
+     * @param submissionUri the URI uniquely identifying the Submission
+     * @return the JSON graph with the Submission object as the root node
+     */
+    public static JsonNode asJson(URI submissionUri) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode nodeTree = null;
+        try {
+            JsonParser parser = mapper.getFactory().createParser(lookupStream(submissionUri));
+            nodeTree = mapper.readTree(parser);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return nodeTree;
+    }
+
+    /**
+     * Serializes the supplied JSON node and its children, and returns an {@code InputStream} to the bytes.
+     *
+     * @param n the JSON node to be serialized
+     * @return the {@code InputStream} to the bytes
+     */
+    public static InputStream toInputStream(JsonNode n) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] bytes = new byte[0];
+        try {
+            bytes = objectMapper.writeValueAsBytes(n);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return new ByteArrayInputStream(bytes);
     }
 
     /**
