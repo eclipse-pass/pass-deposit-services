@@ -7,6 +7,6 @@ if [ -f /bin/depositservices_entrypoint.sh ]; then
     chmod 700 /bin/depositservices_entrypoint.sh
     /bin/depositservices_entrypoint.sh
 else
-    java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -jar deposit-messaging.jar listen
+    java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap org.springframework.boot.loader.JarLauncher listen
 fi
 
