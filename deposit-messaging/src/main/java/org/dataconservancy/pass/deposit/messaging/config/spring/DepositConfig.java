@@ -21,36 +21,35 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
+import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.SubmissionStatusService;
+import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
 import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageProvider;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetadataDomWriterFactory;
+import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
 import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsPackageProvider;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
-import org.dataconservancy.pass.deposit.assembler.shared.PackageProvider;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
-import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
-import org.dataconservancy.pass.deposit.messaging.config.repository.SwordV2Binding;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
-import org.dataconservancy.pass.client.PassClientDefault;
-import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.model.InMemoryMapRegistry;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
 import org.dataconservancy.pass.deposit.messaging.policy.DirtyDepositPolicy;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -275,11 +274,14 @@ public class DepositConfig {
     // TODO: discover Transports on the classpath
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public Map<String, Transport> transports(Sword2Transport sword2Transport, FtpTransport ftpTransport) {
+    public Map<String, Transport> transports(Sword2Transport sword2Transport,
+                                             FtpTransport ftpTransport,
+                                             FilesystemTransport fsTransport) {
         return new HashMap<String, Transport>() {
             {
                 put(Sword2Transport.PROTOCOL.SWORDv2.name(), sword2Transport);
                 put(FtpTransport.PROTOCOL.ftp.name(), ftpTransport);
+                put(Transport.PROTOCOL.filesystem.name(), fsTransport);
             }
         };
     }
