@@ -61,12 +61,28 @@ public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     @Override
-    protected void afterExecute(Runnable r, Throwable t) {
-        super.afterExecute(r, t);
+    protected void afterExecute(Runnable runnable, Throwable throwable) {
+        super.afterExecute(runnable, throwable);
+
+        if (throwable == null && runnable instanceof Future<?>) {
+            try {
+                Future<?> future = (Future<?>) runnable;
+                if (future.isDone()) {
+                    future.get();
+                }
+            } catch (CancellationException ce) {
+                throwable = ce;
+            } catch (ExecutionException ee) {
+                throwable = ee.getCause();
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
         // Only invoke the exception handler if the Throwable is present, otherwise the stream closing logic supplied
         // by ArchivingPackageStream is executed erroneously.
-        if (exceptionHandler != null && t != null) {
-            exceptionHandler.accept(r, t);
+        if (exceptionHandler != null && throwable != null) {
+            exceptionHandler.accept(runnable, throwable);
         }
     }
 }
