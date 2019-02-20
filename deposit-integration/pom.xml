@@ -443,6 +443,25 @@
                             <goal>stop</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>push-after-its</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <retries>5</retries>
+                            <images>
+                                <image>
+                                    <name>oapass/deposit-services-core:%v</name>
+                                    <build>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <skip>true</skip>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
