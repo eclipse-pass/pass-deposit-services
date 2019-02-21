@@ -19,12 +19,11 @@ import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
@@ -34,6 +33,7 @@ import submissions.SubmissionResourceUtil;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Set;
 
 import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getDepositUris;
 import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getFileUris;
@@ -41,7 +41,6 @@ import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -84,51 +83,79 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // 2. The Deposit resources should be in a SUBMITTED (for PubMed Central) or ACCEPTED (for JScholarship) state
 
-        Condition<Deposit.DepositStatus> j10pStatusCondition = new Condition<>(() -> {
-            Repository j10p = repositoryForName(submission, J10P_REPO_NAME);
-            Deposit j10pDeposit = depositForRepositoryUri(submission, j10p.getId());
-            return j10pDeposit.getDepositStatus();
-        }, "J10P Deposit Status");
+        // These statuses are dependant on the transport being used - because the TransportResponse.onSuccess(...)
+        // method may modify the repository resources associated with the Submission.
 
-        Condition<Deposit.DepositStatus> pubMedStatusCondition = new Condition<>(() -> {
-            Repository pmc = repositoryForName(submission, PMC_REPO_NAME);
-            Deposit pmcDeposit = depositForRepositoryUri(submission, pmc.getId());
-            return pmcDeposit.getDepositStatus();
-        }, "PMC Deposit Status");
+        /* brainstorming - must discover the Deposit resources that result from this test differently */
+        // There should be one Deposit for each Repository attached to the Submission
+        // Poll the index and wait for those: Poll for Deposits that link to the Submission
 
-        assertTrue("Deposit resource with unexpected status for " + J10P_REPO_NAME,
-                j10pStatusCondition.awaitAndVerify(status -> ACCEPTED == status));
+        Condition<Set<Deposit>> deposits = depositsForSubmission(submission.getId(), submission.getRepositories().size(),
+                (deposit, repo) -> {
+                    if (deposit.getDepositStatusRef() != null) {
+                        if (deposit.getRepositoryCopy() == null) {
+                            return false;
+                        } else {
+                            RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
+                                    RepositoryCopy.class);
 
-        assertTrue("Deposit resource with unexpected status for " + PMC_REPO_NAME,
-                pubMedStatusCondition.awaitAndVerify(status -> SUBMITTED == status));
+                            return ACCEPTED == deposit.getDepositStatus() &&
+                                    COMPLETE == repoCopy.getCopyStatus() &&
+                                    repoCopy.getAccessUrl() != null &&
+                                    repoCopy.getExternalIds().size() > 0;
+                        }
+                    }
+
+                    return SUBMITTED == deposit.getDepositStatus() &&
+                            deposit.getRepositoryCopy() == null;
+                });
+
+        deposits.await();
+
+        // sanity check
+
+        assertEquals(submission.getRepositories().size(), deposits.getResult().size());
+        assertEquals(deposits.getResult().stream().filter(deposit -> deposit.getSubmission().equals(submission.getId())).count(), submission.getRepositories().size());
+        assertTrue(deposits.getResult().stream().anyMatch(deposit -> deposit.getDepositStatusRef() != null && deposit.getDepositStatus() == ACCEPTED));
+        assertTrue(deposits.getResult().stream().anyMatch(deposit -> deposit.getDepositStatusRef() == null && deposit.getDepositStatus() == SUBMITTED));
+
+        /* brainstorming */
+        // If there is a depositStatusRef on the Deposit resource, then we wait for the ACCEPTED status
+        // If there is no DSR, then we wait for SUBMITTED
+        // Logic independent of the Repository used.
+        // This is really testing the polling of the depositStatusRef by the DefaultDepositStatusProcessor, invoked
+        // by the DepositTaskHelper.processDepositStatus(URI) method, which is invoked by:
+        // - SubmittedUpdateRunner
+        // - DepositProcessor (*method used by this IT*)
+        // - DepositUpdater
 
         // 2a. If the Repository for the Deposit uses SWORD (i.e. is a DSpace repository like JScholarship) then a
         // non-null 'depositStatusRef' should be present, and its RepositoryCopy should be COMPLETE
 
-        Repository dspaceRepo = repositoryForName(submission, J10P_REPO_NAME);
-        Deposit dspaceDeposit = depositForRepositoryUri(submission, dspaceRepo.getId());
-
-        Condition<Deposit> depositCondition = new Condition<>(() ->
-                passClient.readResource(dspaceDeposit.getId(), Deposit.class), "Get J10P Deposit");
-        assertTrue("Expected a non-null deposit status reference for " + J10P_REPO_NAME,
-                depositCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
-        assertTrue("Expected a RepositoryCopy to be linked to the " + J10P_REPO_NAME + " Deposit.",
-                depositCondition.awaitAndVerify(deposit -> deposit.getRepositoryCopy() != null));
-        Condition<RepositoryCopy> repositoryCopyCondition = new Condition<>(() ->
-                passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class), "Get J10P Repository Copy");
-        assertTrue("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy",
-                repositoryCopyCondition.awaitAndVerify(repoCopy -> COMPLETE == repoCopy.getCopyStatus()));
+//        Repository dspaceRepo = repositoryForName(submission, J10P_REPO_NAME);
+//        Deposit dspaceDeposit = depositForRepositoryUri(submission, dspaceRepo.getId());
+//
+//        Condition<Deposit> depositCondition = new Condition<>(() ->
+//                passClient.readResource(dspaceDeposit.getId(), Deposit.class), "Get J10P Deposit");
+//        assertTrue("Expected a non-null deposit status reference for " + J10P_REPO_NAME,
+//                depositCondition.awaitAndVerify((deposit) -> deposit.getDepositStatusRef() != null));
+//        assertTrue("Expected a RepositoryCopy to be linked to the " + J10P_REPO_NAME + " Deposit.",
+//                depositCondition.awaitAndVerify(deposit -> deposit.getRepositoryCopy() != null));
+//        Condition<RepositoryCopy> repositoryCopyCondition = new Condition<>(() ->
+//                passClient.readResource(dspaceDeposit.getRepositoryCopy(), RepositoryCopy.class), "Get J10P Repository Copy");
+//        assertTrue("Expected a \"COMPLETE\" status for the JScholarship RepositoryCopy",
+//                repositoryCopyCondition.awaitAndVerify(repoCopy -> COMPLETE == repoCopy.getCopyStatus()));
 
         // 2b. If the Repository for the Deposit is for PubMed Central, then the 'depositStatusRef' should be null, and
         // the status of the Deposit should be SUBMITTED, and there should be no RepositoryCopy
-
-        Repository pmcRepo = repositoryForName(submission, PMC_REPO_NAME);
-        Deposit pmcDeposit = depositForRepositoryUri(submission, pmcRepo.getId());
-
-        assertNull("Expected a null deposit status reference for " + PMC_REPO_NAME,
-                pmcDeposit.getDepositStatusRef());
-        assertEquals(Deposit.DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
-        assertNull("Expected a null RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
+//
+//        Repository pmcRepo = repositoryForName(submission, PMC_REPO_NAME);
+//        Deposit pmcDeposit = depositForRepositoryUri(submission, pmcRepo.getId());
+//
+//        assertNull("Expected a null deposit status reference for " + PMC_REPO_NAME,
+//                pmcDeposit.getDepositStatusRef());
+//        assertEquals(Deposit.DepositStatus.SUBMITTED, pmcDeposit.getDepositStatus());
+//        assertNull("Expected a null RepositoryCopy resource for PubMed Central deposit.", pmcDeposit.getRepositoryCopy());
 
     }
 
