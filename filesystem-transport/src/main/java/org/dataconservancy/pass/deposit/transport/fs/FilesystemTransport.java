@@ -22,7 +22,10 @@ import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Deposit.DepositStatus;
+import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
@@ -36,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.BASEDIR;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.CREATE_IF_MISSING;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.OVERWRITE;
-import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 /**
  * Writes {@link PackageStream}s to a directory on the filesystem.
@@ -129,29 +133,50 @@ public class FilesystemTransport implements Transport {
                     return transportException.get();
                 }
 
+                /**
+                 * If the package file created by {@link FilesystemTransport.FilesystemTransportSession#send(PackageStream, Map)
+                 * send(...)} exists, then the {@code RepositoryCopy.CopyStatus} is updated to {@code ACCEPTED}, the
+                 * {@code RepositoryCopy.externalIds} are updated to contain the path to the package file, and the
+                 * {@code Deposit.DepositStatus} is updated to {@code ACCEPTED}.
+                 *
+                 * @param submission the Submission that resulted in success
+                 * @param deposit the Deposit associated with the Submission
+                 * @param repositoryCopy the RepositoryCopy encapsulating the package file created by this {@code
+                 *                       Transport}
+                 */
                 @Override
                 public void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
                     LOG.trace("Invoking onSuccess for tuple [{} {} {}]",
                             submission.getId(), deposit.getId(), repositoryCopy.getId());
-                    CriticalResult<RepositoryCopy, RepositoryCopy> result =
+                    CriticalResult<RepositoryCopy, RepositoryCopy> rcCr =
                             cri.performCritical(repositoryCopy.getId(), RepositoryCopy.class,
-                                    (rc) -> true,
-                                    (rc) -> rc.getCopyStatus() == ACCEPTED && rc.getExternalIds().size() > 0,
+                                    (rc) -> outputFile.exists(),
+                                    (rc) -> rc.getCopyStatus() == CopyStatus.COMPLETE
+                                            && rc.getExternalIds().size() > 0
+                                            && rc.getAccessUrl() != null,
                                     (rc) -> {
-                                        rc.setExternalIds(Collections.singletonList(outputFile.getAbsolutePath()));
-                                        rc.setCopyStatus(ACCEPTED);
+                                        rc.getExternalIds().add(outputFile.toURI().toString());
+                                        rc.setCopyStatus(CopyStatus.COMPLETE);
+                                        rc.setAccessUrl(outputFile.toURI());
                                         return rc;
                                     });
 
-                    if (!result.success()) {
-                        if (result.throwable().isPresent()) {
-                            throw new RuntimeException(result.throwable().get());
-                        } else {
-                            throw new RuntimeException("Failed to update " + repositoryCopy.getId());
-                        }
-                    }
+                    verifySuccess(repositoryCopy, rcCr);
 
-                    LOG.trace("onSuccess updated RepositoryCopy {}", result.resource().get().getId());
+                    LOG.trace("onSuccess updated RepositoryCopy {}", rcCr.resource().get().getId());
+
+                    CriticalResult<Deposit, Deposit> depositCr =
+                            cri.performCritical(deposit.getId(), Deposit.class,
+                                    (criDeposit) -> SUBMITTED == criDeposit.getDepositStatus(),
+                                    (criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus(),
+                                    (criDeposit) -> {
+                                        criDeposit.setDepositStatus(DepositStatus.ACCEPTED);
+                                        return criDeposit;
+                                    });
+
+                    verifySuccess(deposit, depositCr);
+
+                    LOG.trace("onSuccess updated Deposit {}", depositCr.resource().get().getId());
                 }
             };
         }
@@ -166,6 +191,16 @@ public class FilesystemTransport implements Transport {
             // no-op
         }
 
+    }
+
+    private void verifySuccess(PassEntity entity, CriticalResult<?, ?> result) {
+        if (!result.success()) {
+            if (result.throwable().isPresent()) {
+                throw new RuntimeException(result.throwable().get());
+            } else {
+                throw new RuntimeException("Failed to update " + entity.getId());
+            }
+        }
     }
 
 }
