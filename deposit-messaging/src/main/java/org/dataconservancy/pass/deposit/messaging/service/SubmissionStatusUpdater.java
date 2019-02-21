@@ -105,7 +105,7 @@ public class SubmissionStatusUpdater {
      * @param passClient the client used to communicate with the index
      * @return the URIs of Submissions that may need their SubmissionStatus updated
      */
-    private static Collection<URI> toUpdate(PassClient passClient) {
+    static Collection<URI> toUpdate(PassClient passClient) {
         return Stream.of(Submission.SubmissionStatus.values())
                 .filter(status -> status != Submission.SubmissionStatus.COMPLETE)
                 .filter(status -> status != Submission.SubmissionStatus.CANCELLED)
@@ -132,8 +132,7 @@ public class SubmissionStatusUpdater {
         static Predicate<Submission> preCondition = (submission) -> submission.getSubmissionStatus() != null &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
-                submission.getSubmitted() != null &&
-                submission.getSubmitted() == Boolean.TRUE;
+                Boolean.TRUE == submission.getSubmitted();
 
         /**
          * Verifies the expected state of the Submission after updating Submission.submissionStatus:
@@ -143,8 +142,7 @@ public class SubmissionStatusUpdater {
          * </ul>
          */
         static Predicate<Submission> postCondition = (submission -> submission.getSubmissionStatus() != null &&
-                submission.getSubmitted() != null
-                && submission.getSubmitted() == Boolean.TRUE);
+                Boolean.TRUE == submission.getSubmitted());
 
         /**
          * Critical section calculates the Submission.submissionStatus, which may or may not be different from the

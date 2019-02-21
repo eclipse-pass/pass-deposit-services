@@ -16,9 +16,12 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
@@ -38,21 +41,28 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomAggregatedDepositStatusExcept;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.*;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -109,7 +119,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         Submission submission = new Submission();
         submission.setId(submissionUri);
         submission.setRepositories(repositoryIds);
-        submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
         DepositSubmission depositSubmission = new DepositSubmission();
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
@@ -284,7 +294,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         Submission submission = new Submission();
         submission.setId(submissionUri);
         submission.setRepositories(repositoryIds);
-        submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
         DepositSubmission depositSubmission = new DepositSubmission();
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
@@ -326,7 +336,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         Submission submission = new Submission();
         submission.setId(submissionUri);
         submission.setRepositories(repositoryIds);
-        submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
         DepositSubmission depositSubmission = new DepositSubmission();
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
@@ -383,7 +393,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         Submission submission = new Submission();
         submission.setId(submissionUri);
         submission.setRepositories(repositoryIds);
-        submission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        submission.setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
         DepositSubmission depositSubmission = new DepositSubmission();
 
         // Mock the CRI that returns the "In-Progress" Submission and builds the DepositSubmission.
@@ -452,4 +462,155 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         assertTrue(keys.isEmpty());
     }
 
+    /**
+     * The submission is accepted if the submission policy supplied to the precondition accepts the submission
+     */
+    @Test
+    public void criFuncPreconditionSuccess() {
+        Submission s = mock(Submission.class);
+        when(submissionPolicy.test(s)).thenReturn(true);
+
+        assertTrue(preCondition(submissionPolicy).test(s));
+
+        verify(submissionPolicy).test(s);
+    }
+
+    /**
+     * The submission is rejected if the submission policy supplied to the precondition rejects the submission
+     */
+    @Test
+    public void criFuncPreconditionFail() {
+        Submission s = mock(Submission.class);
+        when(submissionPolicy.test(s)).thenReturn(false);
+
+        assertFalse(preCondition(submissionPolicy).test(s));
+
+        verify(submissionPolicy).test(s);
+    }
+
+    /**
+     * Postcondition succeeds when:
+     * - The Submission aggregate deposit status is IN_PROGRESS
+     * - The DepositSubmission has at least one file
+     * - The DepositFile has a non-empty location
+     */
+    @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void criFuncPostconditionSuccess() {
+        Submission s = mock(Submission.class);
+        DepositSubmission ds = mock(DepositSubmission.class);
+        DepositFile df = mock(DepositFile.class);
+
+        when(s.getAggregatedDepositStatus()).thenReturn(AggregatedDepositStatus.IN_PROGRESS);
+        when(ds.getFiles()).thenReturn(Collections.singletonList(df));
+        when(df.getLocation()).thenReturn(randomUri().toString());
+
+        assertTrue(postCondition().test(s, ds));
+
+        verify(s).getAggregatedDepositStatus();
+        verify(ds, atLeastOnce()).getFiles();
+        verify(df, atLeastOnce()).getLocation();
+    }
+
+    /**
+     * Postcondition fails when the AggregatedDepositStatus is not IN_PROGRESS
+     */
+    @Test
+    public void criFuncPostconditionFailsAggregateDepositStatus() {
+        Submission s = mock(Submission.class);
+        DepositSubmission ds = mock(DepositSubmission.class);
+
+        when(s.getAggregatedDepositStatus()).thenReturn(
+                randomAggregatedDepositStatusExcept(AggregatedDepositStatus.IN_PROGRESS));
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("expected status 'in-progress'");
+
+        assertFalse(postCondition().test(s, ds));
+
+        verify(s).getAggregatedDepositStatus();
+        verifyZeroInteractions(ds);
+    }
+
+    /**
+     * Postcondition fails when there are no DepositFiles
+     */
+    @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void criFuncPostconditionFailsNoDepositFiles() {
+        Submission s = mock(Submission.class);
+        DepositSubmission ds = mock(DepositSubmission.class);
+
+        when(s.getAggregatedDepositStatus()).thenReturn(AggregatedDepositStatus.IN_PROGRESS);
+        when(ds.getFiles()).thenReturn(Collections.emptyList());
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("no files attached");
+
+        assertFalse(postCondition().test(s, ds));
+
+        verify(s).getAggregatedDepositStatus();
+        verify(ds).getFiles();
+        verifyZeroInteractions(ds);
+    }
+
+    /**
+     * Postcondition fails if any of the DepositFiles is missing a location
+     */
+    @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void criFuncPostconditionFailsDepositFileLocation() {
+        Submission s = mock(Submission.class);
+        DepositSubmission ds = mock(DepositSubmission.class);
+        DepositFile file1 = mock(DepositFile.class);
+        DepositFile file2 = mock(DepositFile.class);
+
+
+        when(s.getAggregatedDepositStatus()).thenReturn(AggregatedDepositStatus.IN_PROGRESS);
+        when(ds.getFiles()).thenReturn(Arrays.asList(file1, file2));
+        when(file1.getLocation()).thenReturn(randomUri().toString());
+        when(file2.getLocation()).thenReturn("  ");
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("missing URIs");
+
+        assertFalse(postCondition().test(s, ds));
+
+        verify(s).getAggregatedDepositStatus();
+        verify(ds).getFiles();
+        verify(file1).getLocation();
+        verify(file2).getLocation();
+    }
+
+    @Test
+    public void criFuncCriticalSuccess() throws InvalidModel {
+        URI submissionUri = randomUri();
+        Submission s = mock(Submission.class);
+        DepositSubmission ds = mock(DepositSubmission.class);
+
+        when(s.getId()).thenReturn(submissionUri);
+        when(submissionBuilder.build(submissionUri.toString())).thenReturn(ds);
+
+        assertSame(ds, critical(submissionBuilder).apply(s));
+
+        verify(submissionBuilder).build(submissionUri.toString());
+        verify(s).setAggregatedDepositStatus(AggregatedDepositStatus.IN_PROGRESS);
+    }
+
+    @Test
+    public void criFuncCriticalFailsModelBuilderException() throws InvalidModel {
+        URI submissionUri = randomUri();
+        Submission s = mock(Submission.class);
+
+        when(s.getId()).thenReturn(submissionUri);
+        when(submissionBuilder.build(submissionUri.toString())).thenThrow(InvalidModel.class);
+
+        thrown.expect(RuntimeException.class);
+        thrown.expectCause(isA(InvalidModel.class));
+
+        critical(submissionBuilder).apply(s);
+
+        verify(submissionBuilder).build(submissionUri.toString());
+        verify(s).getId();
+        verifyNoMoreInteractions(s);
+    }
 }

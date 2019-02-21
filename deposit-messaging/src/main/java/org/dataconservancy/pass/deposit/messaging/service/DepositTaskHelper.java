@@ -20,6 +20,7 @@ import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
@@ -45,12 +46,16 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
 
 /**
  * Encapsulates functionality common to performing the submission of a Deposit to the TaskExecutor.
@@ -74,6 +79,17 @@ public class DepositTaskHelper {
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
 
     private static final String POSTCONDITION_FAILED = "Refusing to update {}, the following post-condition failed: ";
+
+    private static final String ERR_RESOLVE_REPOSITORY = "Unable to resolve Repository Configuration for Repository " +
+            "%s (%s).  Verify the Deposit Services runtime configuration location and " + "content.";
+
+    private static final String ERR_PARSING_STATUS_DOC = "Failed to update deposit status for [%s], parsing the " +
+            "status document referenced by %s failed: %s";
+
+    private static final String ERR_MAPPING_STATUS = "Failed to update deposit status for [%s], mapping the status " +
+            "obtained from  %s failed";
+
+    private static final String ERR_UPDATE_REPOCOPY = "Failed to create or update RepositoryCopy '%s' for %s";
 
     private PassClient passClient;
 
@@ -156,106 +172,9 @@ public class DepositTaskHelper {
     public void processDepositStatus(URI depositUri) {
 
         CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositUri, Deposit.class,
-
-                /*
-                 * Preconditions:
-                 *  - Deposit must be in a non-terminal state
-                 *  - Deposit must have a depositStatusRef
-                 *  - Deposit must have a Repository
-                 *  - Deposit must have a RepositoryCopy, even if it is just a placeholder
-                 */
-                (criDeposit) -> {
-                    if (terminalDepositStatusPolicy.test(criDeposit.getDepositStatus())) {
-                        LOG.warn(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
-                                criDeposit.getId(), criDeposit.getDepositStatus());
-                        return false;
-                    }
-
-                    if (criDeposit.getDepositStatusRef() == null ||
-                            criDeposit.getDepositStatusRef().trim().length() == 0) {
-                        LOG.warn(PRECONDITION_FAILED + " missing Deposit status reference.", depositUri);
-                        return false;
-                    }
-
-                    if (criDeposit.getRepository() == null) {
-                        LOG.warn(PRECONDITION_FAILED + " missing Repository URI.", depositUri);
-                        return false;
-                    }
-
-                    URI repoCopy = criDeposit.getRepositoryCopy();
-
-                    if (repoCopy == null || passClient.readResource(repoCopy, RepositoryCopy.class) == null) {
-                        LOG.warn(PRECONDITION_FAILED + " missing RepositoryCopy URI.", repoCopy);
-                        return false;
-                    }
-
-                    return true;
-                },
-
-                /*
-                 * Postconditions: the repoCopy returned from the critical section must not be null.
-                 */
-                (criDeposit, criRepoCopy) -> criRepoCopy != null,
-
-                (criDeposit) -> {
-                    AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
-                    RepositoryCopy repoCopy;
-                    try {
-                        Repository repo = passClient.readResource(criDeposit.getRepository(), Repository.class);
-                        repoCopy = passClient.readResource(criDeposit.getRepositoryCopy(), RepositoryCopy.class);
-                        RepositoryConfig repoConfig = lookupConfig(repo, repositories)
-                                .orElseThrow(() -> new RemedialDepositException(
-                                                format("Unable to resolve Repository Configuration for Repository %s " +
-                                                        "(%s).  " + "Verify the Deposit Services runtime " +
-                                                        "configuration location and content.",
-                                                        repo.getName(), repo.getId()), repo));
-
-                        status.set(repoConfig.getRepositoryDepositConfig()
-                                .getDepositProcessing()
-                                .getProcessor()
-                                .process(criDeposit, repoConfig));
-                    } catch (RemedialDepositException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        String msg = format("Failed to update deposit status for [%s], " +
-                                        "parsing the status document referenced by %s failed: %s",
-                                criDeposit.getId(), criDeposit.getDepositStatusRef(), e.getMessage());
-                        throw new DepositServiceRuntimeException(msg, e, criDeposit);
-                    }
-
-                    if (status.get() == null) {
-                        String msg = format("Failed to update deposit status for [%s], " +
-                                        "mapping the status obtained from  %s failed",
-                                criDeposit.getId(), criDeposit.getDepositStatusRef());
-                        throw new DepositServiceRuntimeException(msg, criDeposit);
-                    }
-
-                    switch (status.get()) {
-                        case ACCEPTED: {
-                            LOG.info("Deposit {} was accepted.", criDeposit.getId());
-                            criDeposit.setDepositStatus(ACCEPTED);
-                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
-                            break;
-                        }
-
-                        case REJECTED: {
-                            LOG.info("Deposit {} was rejected.", criDeposit.getId());
-                            criDeposit.setDepositStatus(Deposit.DepositStatus.REJECTED);
-                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.REJECTED);
-                            break;
-                        }
-                    }
-
-                    try {
-                        repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
-                    } catch (Exception e) {
-                        String msg = String.format("Failed to create or update RepositoryCopy '%s' for %s",
-                                repoCopy.getId(), criDeposit.getId());
-                        throw new DepositServiceRuntimeException(msg, e, criDeposit);
-                    }
-
-                    return repoCopy;
-                });
+                DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient),
+                DepositStatusCriFunc.postcondition(),
+                DepositStatusCriFunc.critical(repositories, passClient));
 
         if (!cr.success()) {
             if (cr.throwable().isPresent()) {
@@ -339,6 +258,131 @@ public class DepositTaskHelper {
                 .map(realm -> (BasicAuthRealm) realm)
                 .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
                 .findAny();
+    }
+
+    static class DepositStatusCriFunc {
+
+        /**
+         * Preconditions:
+         * <ul>
+         *     <li>Deposit must be in an intermediate state</li>
+         *     <li>Deposit must have a depositStatusRef</li>
+         *     <li>Deposit must have a Repository</li>
+         *     <li>Deposit must have a RepositoryCopy, even if it is just a placeholder</li>
+         * </ul>
+         */
+        static Predicate<Deposit> precondition(Policy<Deposit.DepositStatus> statusPolicy, PassClient passClient) {
+            return (deposit) -> {
+                if (!statusPolicy.test(deposit.getDepositStatus())) {
+                    LOG.debug(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
+                            deposit.getId(), deposit.getDepositStatus());
+                    return false;
+                }
+
+                if (deposit.getDepositStatusRef() == null || deposit.getDepositStatusRef().trim().length() == 0) {
+                    LOG.debug(PRECONDITION_FAILED + " missing Deposit status reference.", deposit.getId());
+                    return false;
+                }
+
+                if (deposit.getRepository() == null) {
+                    LOG.debug(PRECONDITION_FAILED + " missing Repository URI on the Deposit", deposit.getId());
+                    return false;
+                }
+
+                URI repoCopy = deposit.getRepositoryCopy();
+
+                if (repoCopy == null || passClient.readResource(repoCopy, RepositoryCopy.class) == null) {
+                    LOG.warn(PRECONDITION_FAILED + " missing RepositoryCopy on the Deposit", deposit.getId());
+                    return false;
+                }
+
+                return true;
+            };
+        }
+
+        /**
+         * Postcondition: if the critical section sets a Deposit.DepositStatus, it must be congruent with
+         * RepositoryCopy.copyStatus, otherwise the Deposit must have a non-null RepositoryCopy:
+         * <dl>
+         *     <dt>Deposit.DepositStatus = ACCEPTED</dt>
+         *     <dd>RepositoryCopy.CopyStatus = COMPLETE</dd>
+         *     <dt>Deposit.DepositStatus = REJECTED</dt>
+         *     <dd>RepositoryCopy.CopyStatus = REJECTED</dd>
+         * </dl>
+         *
+         * @return
+         */
+        static BiPredicate<Deposit, RepositoryCopy> postcondition() {
+            return (deposit, repoCopy) -> {
+                if (repoCopy == null) {
+                    return false;
+                }
+
+                if (deposit.getDepositStatus() == ACCEPTED) {
+                    return RepositoryCopy.CopyStatus.COMPLETE == repoCopy.getCopyStatus();
+                }
+
+                if (deposit.getDepositStatus() == REJECTED) {
+                    return RepositoryCopy.CopyStatus.REJECTED == repoCopy.getCopyStatus();
+                }
+
+                return true;
+            };
+        }
+
+        static Function<Deposit, RepositoryCopy> critical(Repositories repositories, PassClient passClient) {
+            return (deposit) -> {
+                AtomicReference<Deposit.DepositStatus> status = new AtomicReference<>();
+                try {
+                    Repository repo = passClient.readResource(deposit.getRepository(), Repository.class);
+                    RepositoryConfig repoConfig = lookupConfig(repo, repositories)
+                            .orElseThrow(() ->
+                                    new RemedialDepositException(
+                                            format(ERR_RESOLVE_REPOSITORY, repo.getName(), repo.getId()), repo));
+                    DepositStatusProcessor statusProcessor = repoConfig.getRepositoryDepositConfig()
+                            .getDepositProcessing()
+                            .getProcessor();
+                    status.set(statusProcessor.process(deposit, repoConfig));
+                } catch (RemedialDepositException e) {
+                    throw e;
+                } catch (Exception e) {
+                    String msg = format(ERR_PARSING_STATUS_DOC,
+                            deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
+                    throw new DepositServiceRuntimeException(msg, e, deposit);
+                }
+
+                if (status.get() == null) {
+                    String msg = format(ERR_MAPPING_STATUS, deposit.getId(), deposit.getDepositStatusRef());
+                    throw new DepositServiceRuntimeException(msg, deposit);
+                }
+
+                try {
+                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(), RepositoryCopy.class);
+
+                    switch (status.get()) {
+                        case ACCEPTED: {
+                            LOG.info("Deposit {} was accepted.", deposit.getId());
+                            deposit.setDepositStatus(ACCEPTED);
+                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
+                            repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
+                            break;
+                        }
+
+                        case REJECTED: {
+                            LOG.info("Deposit {} was rejected.", deposit.getId());
+                            deposit.setDepositStatus(Deposit.DepositStatus.REJECTED);
+                            repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.REJECTED);
+                            repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
+                            break;
+                        }
+                    }
+                    return repoCopy;
+                } catch (Exception e) {
+                    String msg = String.format(ERR_UPDATE_REPOCOPY, deposit.getRepositoryCopy(), deposit.getId());
+                    throw new DepositServiceRuntimeException(msg, e, deposit);
+                }
+            };
+        }
     }
 
 }
