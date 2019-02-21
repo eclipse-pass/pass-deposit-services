@@ -19,6 +19,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.model.Deposit;
@@ -37,6 +38,11 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static okhttp3.Credentials.basic;
 import static okhttp3.RequestBody.create;
@@ -169,6 +175,39 @@ public abstract class AbstractSubmissionFixture {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Answers a Condition that will await the creation of {@code expectedCount} {@code Deposit} resources that meet
+     * the requirements of the supplied {@code filter}.
+     *
+     * @param submissionUri the URI of the Submission
+     * @param expectedCount the number of Deposit resources expected for the Submission (normally equal to the number of
+     *                      Repository resources present on the Submission)
+     * @param filter filters for Deposit resources with a desired state (e.g., a certain deposit status)
+     * @return the Condition
+     */
+    protected Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
+                                                        BiPredicate<Deposit, Repository> filter) {
+        Callable<Set<Deposit>> deposits = () -> {
+            Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
+                {
+                    put("submission", submissionUri.toString());
+                }
+            });
+
+            return depositUris.stream()
+                    .map(uri -> passClient.readResource(uri, Deposit.class))
+                    .filter(deposit ->
+                            filter.test(deposit, passClient.readResource(deposit.getRepository(), Repository.class)))
+                    .collect(Collectors.toSet());
+        };
+
+        Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
+
+        String name = String.format("Searching for %s Deposits for Submission URI %s", expectedCount, submissionUri);
+
+        return new Condition<>(deposits, verification, name);
     }
 
     /**
