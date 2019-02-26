@@ -135,7 +135,7 @@ public class FilesystemTransport implements Transport {
 
                 /**
                  * If the package file created by {@link FilesystemTransport.FilesystemTransportSession#send(PackageStream, Map)
-                 * send(...)} exists, then the {@code RepositoryCopy.CopyStatus} is updated to {@code ACCEPTED}, the
+                 * send(...)} exists, then the {@code RepositoryCopy.CopyStatus} is updated to {@code COMPLETE}, the
                  * {@code RepositoryCopy.externalIds} are updated to contain the path to the package file, and the
                  * {@code Deposit.DepositStatus} is updated to {@code ACCEPTED}.
                  *

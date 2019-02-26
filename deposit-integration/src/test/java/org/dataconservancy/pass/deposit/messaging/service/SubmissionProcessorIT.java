@@ -86,6 +86,8 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // 3. The Submission's AggregateDepositStatus should be set to ACCEPTED
 
+        // 4. The Submission's SubmissionStatus should be changed to COMPLETE
+
         Condition<Set<Deposit>> deposits = depositsForSubmission(submission.getId(),
                 submission.getRepositories().size(),
                 (deposit, repo) -> {
@@ -106,7 +108,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
                             String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
 
                     return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
-                            CopyStatus.ACCEPTED == repoCopy.getCopyStatus() &&
+                            CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
                             repoCopy.getAccessUrl() != null &&
                             repoCopy.getExternalIds().size() > 0;
                 });
@@ -123,11 +125,15 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         Condition<Submission> statusVerification =
                 new Condition<>(() -> passClient.readResource(submission.getId(), Submission.class),
-                        (s) -> AggregatedDepositStatus.ACCEPTED == s.getAggregatedDepositStatus(),
-                        "Submission AggregatedDepositStatus Verification");
-        statusVerification.await();
+                        "Get updated Submission");
+
+        statusVerification.awaitAndVerify(
+                sub -> AggregatedDepositStatus.ACCEPTED == sub.getAggregatedDepositStatus());
+        statusVerification.awaitAndVerify(
+                sub -> SubmissionStatus.COMPLETE == sub.getSubmissionStatus());
 
         assertEquals(AggregatedDepositStatus.ACCEPTED, statusVerification.getResult().getAggregatedDepositStatus());
+        assertEquals(SubmissionStatus.COMPLETE, statusVerification.getResult().getSubmissionStatus());
     }
 
 }
