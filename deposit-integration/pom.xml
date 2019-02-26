@@ -34,6 +34,7 @@
         <postgres.skip>false</postgres.skip>
         <fcrepo.skip>false</fcrepo.skip>
         <fcrepo.server>${docker.host.address}</fcrepo.server>
+        <fcrepo.jms.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</fcrepo.jms.baseurl>
         <pass.fedora.user>fedoraAdmin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
@@ -388,7 +389,7 @@
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
                                     <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
                                     <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
-                                    <FCREPO_JMS_BASEURL>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</FCREPO_JMS_BASEURL>
+                                    <FCREPO_JMS_BASEURL>${fcrepo.jms.baseurl}</FCREPO_JMS_BASEURL>
                                 </env>
                                 <network>
                                     <name>pass-net</name>
