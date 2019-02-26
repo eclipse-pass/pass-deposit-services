@@ -15,15 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import java.io.InputStream;
-
-import java.net.URI;
-
-import java.util.Collection;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
@@ -33,12 +24,17 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
 import submissions.SubmissionResourceUtil;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Collection;
 
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getDepositUris;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionTestUtil.getFileUris;
