@@ -112,7 +112,6 @@ public class SubmissionStatusUpdater {
                 .map(status -> status.name().toLowerCase())
                 .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
                 .flatMap(Collection::stream)
-                .peek(uri -> LOG.debug("Collecting Submission URI {}", uri))
                 .collect(Collectors.toSet());
     }
 
