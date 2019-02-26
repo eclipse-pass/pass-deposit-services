@@ -18,6 +18,7 @@ package org.dataconservancy.pass.deposit.messaging.config.quartz;
 
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.support.quartz.DepositUpdaterJob;
+import org.dataconservancy.pass.deposit.messaging.support.quartz.SubmissionStatusUpdaterJob;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.SimpleTrigger;
@@ -50,6 +51,10 @@ public class QuartzConfig {
 
     private final String DEPOSIT_UPDATER_JOB = "depositUpdater";
 
+    private final String SUBMISSION_STATUS_JOB_GROUP = "submissionStatusJobs";
+
+    private final String SUBMISSION_UPDATER_JOB = "submissionStatusUpdater";
+
     @Value("${pass.deposit.jobs.default-interval-ms}")
     private long defaultJobInterval;
 
@@ -73,6 +78,25 @@ public class QuartzConfig {
                         .withIntervalInMilliseconds(defaultJobInterval)
                         .repeatForever())
                 .forJob(depositUpdaterJobDetail)
+                .build();
+    }
+
+    @Bean
+    public JobDetail submissionStatusUpdaterJobDetail() {
+        return JobBuilder.newJob(SubmissionStatusUpdaterJob.class)
+                .withIdentity(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
+                .storeDurably()
+                .build();
+    }
+
+    @Bean
+    public SimpleTrigger submissionStatusUpdateTrigger(JobDetail submissionStatusUpdaterJobDetail) {
+        return TriggerBuilder.newTrigger()
+                .forJob(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
+                .withSchedule(simpleSchedule()
+                        .withIntervalInMilliseconds(defaultJobInterval)
+                        .repeatForever())
+                .forJob(submissionStatusUpdaterJobDetail)
                 .build();
     }
 
