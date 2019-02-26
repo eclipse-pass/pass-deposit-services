@@ -89,7 +89,7 @@ public class SubmissionStatusUpdater {
 
         submissionUris.forEach(uri -> {
             try {
-                LOG.debug("Updating Submission.submissionStatus for {}", uri);
+                LOG.trace("Updating Submission.submissionStatus for {}", uri);
                 cri.performCritical(uri, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
                         CriFunc.critical(statusService));
             } catch (Exception e) {
