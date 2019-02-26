@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit;
 
+import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientDefault;
@@ -79,8 +80,12 @@ public class IndexSmokeIT extends BaseIT {
         URI userUri = passClient.createResource(user);
 
         LOG.debug(">>>> Waiting for user {} to appear in index", userUri);
-        attemptAndVerify(30, () -> passClient.findByAttribute(User.class, "@id", userUri),
-                    (uri) -> uri.getPath().equals(userUri.getPath()));
+
+        Condition<URI> userCondition = new Condition<>(
+                () -> passClient.findByAttribute(User.class, "@id", userUri),
+                "Poll index for User.");
+
+        assertTrue(userCondition.awaitAndVerify((uri) -> uri.getPath().equals(userUri.getPath())));
 
         Repository nih = new Repository();
         nih.setName("NIHMS");
@@ -97,12 +102,16 @@ public class IndexSmokeIT extends BaseIT {
         URI repoJsUri = passClient.createResource(js);
 
         LOG.debug(">>>> Waiting for repo {} to appear in index", repoNihUri);
-        attemptAndVerify(30, () -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
-                (uri) -> uri.getPath().equals(repoNihUri.getPath()));
+        Condition<URI> repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
+                "Poll index for repo");
+
+        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoNihUri.getPath())));
 
         LOG.debug(">>>> Waiting for repo {} to appear in index", repoJsUri);
-        attemptAndVerify(30, () -> passClient.findByAttribute(Repository.class, "@id", repoJsUri),
-                (uri) -> uri.getPath().equals(repoJsUri.getPath()));
+        repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoJsUri),
+                "Poll index for repo");
+
+        assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoJsUri.getPath())));
 
         Submission submission = new Submission();
         submission.setSource(Submission.Source.PASS);
@@ -115,8 +124,11 @@ public class IndexSmokeIT extends BaseIT {
         LOG.debug(">>>> Creating Submission {}", submission);
         URI submissionUri = passClient.createResource(submission);
 
+        Condition<URI> submissionCondition = new Condition<>(() -> passClient.findByAttribute(Submission.class, "@id"
+                , submissionUri), "Poll index for Submission.");
+
         LOG.debug(">>>> Waiting for submission {} to appear in index", submissionUri);
-        attemptAndVerify(30, () -> passClient.findByAttribute(Submission.class, "@id", submissionUri),
-                (uri) -> uri.getPath().equals(submissionUri.getPath()));
+
+        assertTrue(submissionCondition.awaitAndVerify((uri) -> uri.getPath().equals(submissionUri.getPath())));
     }
 }

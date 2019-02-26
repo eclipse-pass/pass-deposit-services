@@ -1,0 +1,28 @@
+FROM ${docker.indexer.version}
+
+#
+# In the Deposit Services integration environment on Travis, JMS messages contain URIs to Fedora resources in the
+# form: http://localhost:44453/fcrepo/rest/....
+#
+# This is governed by the FCREPO_JMS_BASEURL.  The integration tests running *outside* of Docker need to be able to
+# resolve these resources, and the indexer running *inside* Docker also need to resolve these resources.  Resolving
+# localhost from outside of Docker works, but resolving localhost from within the indexer container does not work:
+# localhost needs to resolve to the Fedora repository, fcrepo.
+#
+# This Docker container munges /etc/hosts for the production index container, so that lookups for localhost will
+# resolve to the IP for the fcrepo machine.
+#
+# For whatever reason, this hack cannot take place in the docker-maven-plugin using <networks> or <links> (at least, I
+# couldn't get it to work).
+#
+
+CMD echo "Munging /etc/hosts for the Travis build..." ; \
+      apk add --no-cache bind-tools ; \
+      FCREPO_IP=`dig fcrepo +short` ; \
+      echo "Discovered FCREPO_IP: ${FCREPO_IP}" ; \
+      sed -e '/127.0.0.1/d' < /etc/hosts > /tmp/moo ; \
+      sed -e '/localhost/d' < /tmp/moo > /etc/hosts ; \
+      echo "${FCREPO_IP}  localhost" >> /etc/hosts ; \
+      cat /etc/hosts ; \
+      rm -rf /var/cache/apk/ ; \
+    ./wait_and_start.sh pass-indexer-cli-${PI_VERSION}-SNAPSHOT-shaded.jar ;

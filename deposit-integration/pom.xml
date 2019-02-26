@@ -424,10 +424,14 @@
                         </image>
                         <image>
                             <alias>indexer</alias>
-                            <name>${docker.indexer.version}</name>
+                            <name>oapass/indexer-wrapped:latest</name>
+                            <build>
+                                <dockerFile>${project.build.testOutputDirectory}/docker/Dockerfile-indexer</dockerFile>
+                            </build>
                             <run>
                                 <skip>${indexer.skip}</skip>
                                 <env>
+                                    <TRAVIS>${env.TRAVIS}</TRAVIS>
                                     <PI_FEDORA_USER>${pass.fedora.user}</PI_FEDORA_USER>
                                     <PI_FEDORA_PASS>${pass.fedora.password}</PI_FEDORA_PASS>
                                     <PI_FEDORA_INTERNAL_BASE>http://fcrepo:${fcrepo.http.port}/fcrepo/rest/</PI_FEDORA_INTERNAL_BASE>
