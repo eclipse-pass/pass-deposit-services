@@ -178,9 +178,7 @@ public class Condition<T> {
         long backoffMs = initialBackoffMs;
         Exception failureException = null;
 
-        if (!this.submitted) {
-            submit();
-        }
+        submitInternal();
 
         do {
             try {
