@@ -18,14 +18,11 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.SubmissionStatusService;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +33,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import static java.lang.String.format;
 
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 
@@ -54,22 +50,18 @@ public class DepositProcessor implements Consumer<Deposit> {
     private PassClient passClient;
 
     private DepositTaskHelper depositHelper;
-    
-    private SubmissionStatusService statusService;
 
     @Autowired
     public DepositProcessor(Policy<Deposit.DepositStatus> terminalDepositStatusPolicy,
                             Policy<Submission.AggregatedDepositStatus> terminalSubmissionStatusPolicy,
                             CriticalRepositoryInteraction cri,
                             PassClient passClient,
-                            DepositTaskHelper depositHelper,
-                            SubmissionStatusService statusService) {
+                            DepositTaskHelper depositHelper) {
         this.terminalDepositStatusPolicy = terminalDepositStatusPolicy;
         this.terminalSubmissionStatusPolicy = terminalSubmissionStatusPolicy;
         this.cri = cri;
         this.passClient = passClient;
         this.depositHelper = depositHelper;
-        this.statusService = statusService;
     }
 
     public void accept(Deposit deposit) {
@@ -124,19 +116,6 @@ public class DepositProcessor implements Consumer<Deposit> {
                                 criSubmission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.REJECTED);
                                 LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(),
                                         Submission.AggregatedDepositStatus.REJECTED);
-                            }
-                        }
-
-                        //calculate an updated SubmissionStatus if the aggregatedDepositStatus has changed
-                        if (!origDepStatus.equals(criSubmission.getAggregatedDepositStatus())) {
-                            try {
-                                SubmissionStatus submissionStatus = statusService.calculateSubmissionStatus(criSubmission);
-                                criSubmission.setSubmissionStatus(submissionStatus);
-                                LOG.trace(">>>> Updating {} submission status to {}", criSubmission.getId(), submissionStatus);
-                            } catch (Exception ex) {
-                                String msg = format("Failed to update status for Submission [%s]. "
-                                        + "Submission status may now be out of sync", criSubmission.getId());
-                                throw new DepositServiceRuntimeException(msg, ex, criSubmission);
                             }
                         }
                         

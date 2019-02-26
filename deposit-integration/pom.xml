@@ -34,6 +34,7 @@
         <postgres.skip>false</postgres.skip>
         <fcrepo.skip>false</fcrepo.skip>
         <fcrepo.server>${docker.host.address}</fcrepo.server>
+        <fcrepo.jms.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</fcrepo.jms.baseurl>
         <pass.fedora.user>fedoraAdmin</pass.fedora.user>
         <pass.fedora.password>moo</pass.fedora.password>
         <pass.fedora.baseurl>http://${docker.host.address}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
@@ -293,6 +294,7 @@
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
                 <configuration>
+                    <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                     <images>
                         <image>
                             <alias>ftpserver</alias>
@@ -316,6 +318,10 @@
                                     <port>30009:30009</port>
                                     <port>30010:30010</port>
                                 </ports>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>ftp</alias>
+                                </network>
                             </run>
                         </image>
                         <image>
@@ -332,6 +338,10 @@
                                 <env>
                                     <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
                                 </env>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>postgres</alias>
+                                </network>
                             </run>
                         </image>
                         <image>
@@ -346,14 +356,15 @@
                                 <ports>
                                     <port>${dspace.port}:${dspace.port}</port>
                                 </ports>
-                                <links>
-                                    <link>postgres</link>
-                                </links>
                                 <env>
                                     <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
                                     <DSPACE_PORT>${dspace.port}</DSPACE_PORT>
                                     <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
                                 </env>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>dspace</alias>
+                                </network>
                             </run>
                         </image>
                         <image>
@@ -378,8 +389,12 @@
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
                                     <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
                                     <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
-                                    <FCREPO_JMS_BASEURL>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</FCREPO_JMS_BASEURL>
+                                    <FCREPO_JMS_BASEURL>${fcrepo.jms.baseurl}</FCREPO_JMS_BASEURL>
                                 </env>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>fcrepo</alias>
+                                </network>
                             </run>
                         </image>
                         <image>
@@ -401,18 +416,22 @@
                                     <bootstrap.memory_lock>true</bootstrap.memory_lock>
                                     <ES_JAVA_OPTS>-Xms512m -Xmx512m</ES_JAVA_OPTS>
                                 </env>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>elasticsearch</alias>
+                                </network>
                             </run>
                         </image>
                         <image>
                             <alias>indexer</alias>
-                            <name>${docker.indexer.version}</name>
+                            <name>oapass/indexer-wrapped:latest</name>
+                            <build>
+                                <dockerFile>${project.build.testOutputDirectory}/docker/Dockerfile-indexer</dockerFile>
+                            </build>
                             <run>
                                 <skip>${indexer.skip}</skip>
-                                <links>
-                                    <link>elasticsearch</link>
-                                    <link>fcrepo</link>
-                                </links>
                                 <env>
+                                    <TRAVIS>${env.TRAVIS}</TRAVIS>
                                     <PI_FEDORA_USER>${pass.fedora.user}</PI_FEDORA_USER>
                                     <PI_FEDORA_PASS>${pass.fedora.password}</PI_FEDORA_PASS>
                                     <PI_FEDORA_INTERNAL_BASE>http://fcrepo:${fcrepo.http.port}/fcrepo/rest/</PI_FEDORA_INTERNAL_BASE>
@@ -423,6 +442,10 @@
                                     <PI_FEDORA_JMS_QUEUE>fedora</PI_FEDORA_JMS_QUEUE>
                                     <PI_TYPE_PREFIX>http://oapass.org/ns/pass#</PI_TYPE_PREFIX>
                                 </env>
+                                <network>
+                                    <name>pass-net</name>
+                                    <alias>indexer</alias>
+                                </network>
                             </run>
                         </image>
                     </images>
