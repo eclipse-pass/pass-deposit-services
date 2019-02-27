@@ -47,7 +47,7 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
      * @see <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
      */
     @Override
-    public boolean accept(Submission submission) {
+    public boolean test(Submission submission) {
 
         if (submission == null) {
             LOG.debug("Null submissions not accepted for processing.");

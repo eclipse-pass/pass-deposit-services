@@ -41,60 +41,60 @@ public class SubmissionMessagePolicyTest {
     @Before
     public void setUp() throws Exception {
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(any())).thenReturn(true);
+        when(agentPolicy.test(any())).thenReturn(true);
         underTest = new SubmissionMessagePolicy(agentPolicy);
     }
 
     @Test
     public void acceptCreationOfSubmission() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptModificationOfSubmission() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION);
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptCreationOfSubmissionWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", SUBMISSION_RESOURCE, "http://biz/baz");
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_CREATION);
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptModificationOfSubmissionWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", SUBMISSION_RESOURCE, "http://biz/baz");
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_MODIFICATION);
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void denyModificationOfNonSubmissions() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
-        assertFalse(underTest.accept(mc));
+        assertFalse(underTest.test(mc));
     }
 
     @Test
     public void denyCreationOfNonSubmissions() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION);
-        assertFalse(underTest.accept(mc));
+        assertFalse(underTest.test(mc));
     }
 
     @Test
     public void denyCreationOfNonSubmissionsWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", DEPOSIT_RESOURCE, "http://biz/baz");
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_CREATION);
-        assertFalse(underTest.accept(mc));
+        assertFalse(underTest.test(mc));
     }
 
     @Test
     public void denyModificationsOfNonSubmissionsWithMultipleResources() throws Exception {
         String resource = String.format("%s, %s, %s", "http://foo/bar", DEPOSIT_RESOURCE, "http://biz/baz");
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(resource, RESOURCE_MODIFICATION);
-        assertFalse(underTest.accept(mc));
+        assertFalse(underTest.test(mc));
     }
 
     @Test
@@ -102,23 +102,23 @@ public class SubmissionMessagePolicyTest {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
 
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(mc)).thenReturn(false);
+        when(agentPolicy.test(mc)).thenReturn(false);
         underTest = new SubmissionMessagePolicy(agentPolicy);
 
-        assertFalse(underTest.accept(mc));
-        verify(agentPolicy).accept(mc);
+        assertFalse(underTest.test(mc));
+        verify(agentPolicy).test(mc);
     }
 
     @Test
     public void acceptFromMissingAgentName() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptWhenMissingAttribution() throws Exception {
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
 }

@@ -31,6 +31,6 @@ public interface JmsMessagePolicy extends Policy<MessageContext> {
      * @param messageContext the {@code MessageContext} which carries the original JMS message
      * @return {@code true} if the message is to be processed further
      */
-    boolean accept(MessageContext messageContext);
+    boolean test(MessageContext messageContext);
 
 }

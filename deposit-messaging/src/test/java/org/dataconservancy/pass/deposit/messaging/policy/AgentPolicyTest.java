@@ -36,40 +36,40 @@ public class AgentPolicyTest {
     @Test
     public void denyFromSameUserAgent() throws Exception {
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(any())).thenReturn(false);
+        when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
-        assertFalse(underTest.accept(mc));
+        assertFalse(underTest.test(mc));
     }
 
     @Test
     public void acceptFromDifferentUserAgent() throws Exception {
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(any())).thenReturn(false);
+        when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-not-equal.json");
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptAgentMissingName() throws Exception {
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(any())).thenReturn(false);
+        when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptAgentMissingObject() throws Exception {
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
-        when(agentPolicy.accept(any())).thenReturn(false);
+        when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
         DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
-        assertTrue(underTest.accept(mc));
+        assertTrue(underTest.test(mc));
     }
 }

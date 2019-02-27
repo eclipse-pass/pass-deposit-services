@@ -27,11 +27,11 @@ public class AlwaysTrueSubmissionPolicyTest {
 
     @Test
     public void testObject() throws Exception {
-        assertTrue(new AlwaysTrueSubmissionPolicy().accept(new Submission()));
+        assertTrue(new AlwaysTrueSubmissionPolicy().test(new Submission()));
     }
 
     @Test
     public void testNullObject() throws Exception {
-        assertTrue(new AlwaysTrueSubmissionPolicy().accept(null));
+        assertTrue(new AlwaysTrueSubmissionPolicy().test(null));
     }
 }

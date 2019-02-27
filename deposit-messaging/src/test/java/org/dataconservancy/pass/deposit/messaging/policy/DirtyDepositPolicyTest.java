@@ -29,12 +29,12 @@ public class DirtyDepositPolicyTest {
 
     @Test
     public void testNullObject() throws Exception {
-        assertTrue(new DirtyDepositPolicy().accept(null));
+        assertTrue(new DirtyDepositPolicy().test(null));
     }
 
     @Test
     public void testNonNullStatus() throws Exception {
         Stream.of(Deposit.DepositStatus.values()).forEach(status ->
-                assertFalse(new DirtyDepositPolicy().accept(status)));
+                assertFalse(new DirtyDepositPolicy().test(status)));
     }
 }

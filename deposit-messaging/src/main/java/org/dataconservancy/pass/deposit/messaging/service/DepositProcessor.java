@@ -66,7 +66,7 @@ public class DepositProcessor implements Consumer<Deposit> {
 
     public void accept(Deposit deposit) {
 
-        if (terminalDepositStatusPolicy.accept(deposit.getDepositStatus())) {
+        if (terminalDepositStatusPolicy.test(deposit.getDepositStatus())) {
             // terminal Deposit status, so update its Submission aggregate deposit status.
 
             // obtain a critical over the submission
@@ -75,7 +75,7 @@ public class DepositProcessor implements Consumer<Deposit> {
                     /*
                      * The Submission must not be in a terminal state in order for us to update its status
                      */
-                    (criSubmission) -> !terminalSubmissionStatusPolicy.accept(criSubmission.getAggregatedDepositStatus()),
+                    (criSubmission) -> !terminalSubmissionStatusPolicy.test(criSubmission.getAggregatedDepositStatus()),
 
                     /*
                      * Any (or no) updates to the Submission are acceptable
@@ -108,7 +108,7 @@ public class DepositProcessor implements Consumer<Deposit> {
                         // If all the statuses are terminal, then we can update the aggregated deposit status of
                         // the submission
                         if (deposits.stream().allMatch((criDeposit) ->
-                                terminalDepositStatusPolicy.accept(criDeposit.getDepositStatus()))) {
+                                terminalDepositStatusPolicy.test(criDeposit.getDepositStatus()))) {
                             if (deposits.stream().allMatch((criDeposit) -> deposit.getDepositStatus() == ACCEPTED)) {
                                 criSubmission.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.ACCEPTED);
                                 LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(), ACCEPTED);

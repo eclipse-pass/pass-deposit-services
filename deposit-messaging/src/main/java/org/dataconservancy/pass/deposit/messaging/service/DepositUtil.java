@@ -223,7 +223,7 @@ public class DepositUtil {
      */
     public static boolean markSubmissionFailed(URI submissionUri, CriticalRepositoryInteraction cri) {
         CriticalResult<Submission, Submission> updateResult = cri.performCritical(submissionUri, Submission.class,
-                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.accept(submission.getAggregatedDepositStatus()),
+                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(submission.getAggregatedDepositStatus()),
                 (submission) -> submission.getAggregatedDepositStatus() == FAILED,
                 (submission) -> {
                     submission.setAggregatedDepositStatus(FAILED);
@@ -254,7 +254,7 @@ public class DepositUtil {
      */
     public static boolean markDepositFailed(URI depositUri, CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(depositUri, Deposit.class,
-                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.accept(deposit.getDepositStatus()),
+                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(deposit.getDepositStatus()),
                 (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
                 (deposit) -> {
                     deposit.setDepositStatus(Deposit.DepositStatus.FAILED);

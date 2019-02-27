@@ -37,7 +37,7 @@ public class PassUserSubmittedPolicyTest {
 
     @Test
     public void nullSubmission() throws Exception {
-        assertFalse(underTest.accept(null));
+        assertFalse(underTest.test(null));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(false);
         s.setSource(Submission.Source.PASS);
 
-        assertFalse(underTest.accept(s));
+        assertFalse(underTest.test(s));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(true);
         s.setSource(Submission.Source.PASS);
 
-        assertTrue(underTest.accept(s));
+        assertTrue(underTest.test(s));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(true);
         s.setSource(Submission.Source.OTHER);
 
-        assertFalse(underTest.accept(s));
+        assertFalse(underTest.test(s));
     }
 
     @Test
@@ -73,7 +73,7 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(false);
         s.setSource(Submission.Source.OTHER);
 
-        assertFalse(underTest.accept(s));
+        assertFalse(underTest.test(s));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(false);
         s.setSource(null);
 
-        assertFalse(underTest.accept(s));
+        assertFalse(underTest.test(s));
     }
 
     @Test
@@ -91,6 +91,6 @@ public class PassUserSubmittedPolicyTest {
         s.setSubmitted(true);
         s.setSource(null);
 
-        assertFalse(underTest.accept(s));
+        assertFalse(underTest.test(s));
     }
 }

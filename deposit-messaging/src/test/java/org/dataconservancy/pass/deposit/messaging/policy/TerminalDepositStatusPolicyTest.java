@@ -44,7 +44,7 @@ public class TerminalDepositStatusPolicyTest {
 
     @Test
     public void testNullStatus() throws Exception {
-        assertFalse(underTest.accept(null));
+        assertFalse(underTest.test(null));
         verifyZeroInteractions(evaluator);
     }
 
@@ -53,7 +53,7 @@ public class TerminalDepositStatusPolicyTest {
         Deposit.DepositStatus terminal = Deposit.DepositStatus.ACCEPTED;
         when(evaluator.isTerminal(terminal)).thenReturn(true);
 
-        assertTrue(underTest.accept(terminal));
+        assertTrue(underTest.test(terminal));
         verify(evaluator).isTerminal(terminal);
     }
 
@@ -62,7 +62,7 @@ public class TerminalDepositStatusPolicyTest {
         Deposit.DepositStatus terminal = Deposit.DepositStatus.SUBMITTED;
         when(evaluator.isTerminal(terminal)).thenReturn(false);
 
-        assertFalse(underTest.accept(terminal));
+        assertFalse(underTest.test(terminal));
         verify(evaluator).isTerminal(terminal);
     }
 

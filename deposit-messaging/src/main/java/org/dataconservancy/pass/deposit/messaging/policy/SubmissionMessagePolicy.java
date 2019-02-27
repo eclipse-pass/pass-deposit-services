@@ -67,13 +67,13 @@ public class SubmissionMessagePolicy extends FedoraMessagePolicy {
      * @return {@code true} if the message represents the creation or modification of a {@code Submission}
      */
     @Override
-    public boolean accept(DepositUtil.MessageContext messageContext) {
-        boolean result = super.accept(messageContext);
+    public boolean test(DepositUtil.MessageContext messageContext) {
+        boolean result = super.test(messageContext);
         if (!result) {
             return false;
         }
 
-        return agentPolicy.accept(messageContext);
+        return agentPolicy.test(messageContext);
     }
 
     /**

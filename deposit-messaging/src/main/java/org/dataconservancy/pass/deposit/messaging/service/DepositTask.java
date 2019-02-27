@@ -40,7 +40,6 @@ import java.util.Map;
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
-import static java.util.Collections.emptyMap;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
@@ -107,7 +106,7 @@ public class DepositTask implements Runnable {
                  * Only "intermediate" deposits can be processed by {@code DepositTask}
                  */
                 (deposit) -> {
-                    boolean accept = intermediateDepositStatusPolicy.accept(deposit.getDepositStatus());
+                    boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
                     if (!accept) {
                         LOG.debug(">>>> Update precondition failed for {}", deposit.getId());
                     }

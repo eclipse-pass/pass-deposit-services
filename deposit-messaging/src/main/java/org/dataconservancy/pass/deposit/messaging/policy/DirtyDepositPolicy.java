@@ -39,7 +39,7 @@ public class DirtyDepositPolicy implements Policy<Deposit.DepositStatus> {
      * @return {@code true} if the {@code DepositStatus} of {@code o} is {@code null}
      */
     @Override
-    public boolean accept(Deposit.DepositStatus o) {
+    public boolean test(Deposit.DepositStatus o) {
         if (o != null) {
             LOG.debug(">>>> Deposit will not be accepted for processing: status = '{}'", o);
             return false;
