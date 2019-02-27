@@ -179,7 +179,7 @@ public class DepositTaskHelper {
                  *  - Deposit must have a Repository
                  */
                 (criDeposit) -> {
-                    if (terminalDepositStatusPolicy.accept(criDeposit.getDepositStatus())) {
+                    if (terminalDepositStatusPolicy.test(criDeposit.getDepositStatus())) {
                         LOG.warn(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
                                 criDeposit.getId(), criDeposit.getDepositStatus());
                         return false;

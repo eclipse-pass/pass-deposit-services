@@ -30,7 +30,6 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +93,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         CriticalResult<DepositSubmission, Submission> result = critical.performCritical(submission.getId(), Submission.class,
 
                 // PassUserSubmittedPolicy will log rejects
-                (s) -> submissionPolicy.accept(s),
+                (s) -> submissionPolicy.test(s),
 
                 (s, ds) -> {
                     if (s.getAggregatedDepositStatus() != IN_PROGRESS) {

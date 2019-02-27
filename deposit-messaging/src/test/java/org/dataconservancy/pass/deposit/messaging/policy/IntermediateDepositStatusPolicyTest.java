@@ -15,7 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusEvaluator;
 import org.dataconservancy.pass.deposit.messaging.status.StatusEvaluator;
 import org.dataconservancy.pass.model.Deposit;
 import org.junit.Before;
@@ -24,7 +23,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -45,7 +43,7 @@ public class IntermediateDepositStatusPolicyTest {
 
     @Test
     public void testNullStatus() throws Exception {
-        assertTrue(underTest.accept(null));
+        assertTrue(underTest.test(null));
     }
 
     @Test
@@ -53,7 +51,7 @@ public class IntermediateDepositStatusPolicyTest {
         Deposit.DepositStatus terminal = Deposit.DepositStatus.ACCEPTED;
         when(evaluator.isTerminal(terminal)).thenReturn(true);
 
-        assertFalse(underTest.accept(terminal));
+        assertFalse(underTest.test(terminal));
         verify(evaluator).isTerminal(terminal);
     }
 
@@ -62,7 +60,7 @@ public class IntermediateDepositStatusPolicyTest {
         Deposit.DepositStatus terminal = Deposit.DepositStatus.SUBMITTED;
         when(evaluator.isTerminal(terminal)).thenReturn(false);
 
-        assertTrue(underTest.accept(terminal));
+        assertTrue(underTest.test(terminal));
         verify(evaluator).isTerminal(terminal);
     }
 
@@ -71,7 +69,7 @@ public class IntermediateDepositStatusPolicyTest {
         Deposit.DepositStatus failed = Deposit.DepositStatus.FAILED;
         when(evaluator.isTerminal(failed)).thenReturn(false);
 
-        assertTrue(underTest.accept(failed));
+        assertTrue(underTest.test(failed));
         verify(evaluator).isTerminal(failed);
     }
 }

@@ -77,7 +77,7 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
      * @return false if the JMS message user agent is equal to the user agent string supplied on construction
      */
     @Override
-    public boolean accept(DepositUtil.MessageContext messageContext) {
+    public boolean test(DepositUtil.MessageContext messageContext) {
         JsonNode attribution = null;
         try {
             attribution = objectMapper.readTree(messageContext.message().getPayload().toString()).findValue

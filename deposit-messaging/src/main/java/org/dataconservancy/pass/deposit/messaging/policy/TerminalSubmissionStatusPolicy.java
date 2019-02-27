@@ -43,7 +43,7 @@ public class TerminalSubmissionStatusPolicy implements Policy<Submission.Aggrega
      * @return true if the status is <em>terminal</em>
      */
     @Override
-    public boolean accept(Submission.AggregatedDepositStatus status) {
+    public boolean test(Submission.AggregatedDepositStatus status) {
         return status != null && submissionStatusEvaluator.isTerminal(status);
     }
 

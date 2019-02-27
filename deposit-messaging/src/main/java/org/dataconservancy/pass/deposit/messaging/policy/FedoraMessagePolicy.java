@@ -43,7 +43,7 @@ public abstract class FedoraMessagePolicy implements JmsMessagePolicy {
      * @return {@code true} if the message is one of the acceptable {@code FedoraResourceEventType}s
      */
     @Override
-    public boolean accept(DepositUtil.MessageContext messageContext) {
+    public boolean test(DepositUtil.MessageContext messageContext) {
         // the message must be one of these FedoraResourceEventTypes
         boolean result = acceptableFedoraResourceEventTypes().stream().anyMatch((ret) ->
                 isMessageA(ret.EVENT_TYPE, ret.RESOURCE_TYPE, messageContext));

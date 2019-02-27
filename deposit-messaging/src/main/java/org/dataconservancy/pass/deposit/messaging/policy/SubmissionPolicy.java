@@ -31,6 +31,6 @@ public interface SubmissionPolicy extends Policy<Submission> {
      * @param submission the Submission
      * @return {@code true} if the Submission is suitable for processing
      */
-    boolean accept(Submission submission);
+    boolean test(Submission submission);
 
 }

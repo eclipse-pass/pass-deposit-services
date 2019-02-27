@@ -37,7 +37,7 @@ public class IntermediateDepositStatusPolicy implements Policy<Deposit.DepositSt
     }
 
     @Override
-    public boolean accept(Deposit.DepositStatus o) {
+    public boolean test(Deposit.DepositStatus o) {
         return o == null || !statusEvaluator.isTerminal(o);
     }
 }

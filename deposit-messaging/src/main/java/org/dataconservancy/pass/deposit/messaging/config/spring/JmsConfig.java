@@ -166,7 +166,7 @@ public class JmsConfig {
                 mc.ackMode(), mc.id(), mc.message().getPayload());
 
         // verify the message is one we want, otherwise ack it right away and return
-        if (!jmsPolicy.accept(mc)) {
+        if (!jmsPolicy.test(mc)) {
             ackMessage(mc);
             return true;
         }

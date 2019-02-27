@@ -36,7 +36,7 @@ public class TerminalDepositStatusPolicy implements Policy<Deposit.DepositStatus
     }
 
     @Override
-    public boolean accept(Deposit.DepositStatus o) {
+    public boolean test(Deposit.DepositStatus o) {
         return o != null && statusEvaluator.isTerminal(o);
     }
 }

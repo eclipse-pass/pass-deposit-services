@@ -15,13 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
+import java.util.function.Predicate;
+
 /**
  * Generic interface representing a simple policy.
+ *
+ * Policies are simply predicates, but the name of the interface represents a semantic that is useful.
  *
  * @param <T> type of object being accepted or rejected by this {@code Policy}
  */
 @FunctionalInterface
-public interface Policy<T> {
+public interface Policy<T> extends Predicate<T> {
 
     /**
      * Return {@code true} if this {@code Policy} accepts the supplied object
@@ -29,5 +33,5 @@ public interface Policy<T> {
      * @param o the object being evaluated by this {@code Policy}
      * @return {@code true} if the object is acceptable according to this {@code Policy}
      */
-    boolean accept(T o);
+    boolean test(T o);
 }

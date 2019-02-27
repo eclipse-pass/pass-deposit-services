@@ -33,7 +33,7 @@ public class AlwaysTrueSubmissionPolicy implements SubmissionPolicy {
      * @return always {@code true}
      */
     @Override
-    public boolean accept(Submission submission) {
+    public boolean test(Submission submission) {
         return true;
     }
 
