@@ -61,6 +61,13 @@ public class QuartzConfig {
     @Value("${pass.deposit.jobs.concurrency}")
     private int jobWorkerConcurrency;
 
+    /**
+     * This property is set to <em>true</em> if we are to disable the Quartz scheduler.  If the property is missing, it
+     * will default to <em>false</em> (i.e. enable the scheduler).
+     */
+    @Value("${pass.deposit.jobs.disabled}")
+    private boolean disabled;
+
 
     @Bean
     public JobDetail depositUpdaterJobDetail() {
@@ -125,7 +132,13 @@ public class QuartzConfig {
 
     @Bean
     public SchedulerFactoryBeanCustomizer quartzCustomizer(ThreadPoolTaskExecutor quartzTaskExecutor) {
-        return (factoryBean) -> factoryBean.setTaskExecutor(quartzTaskExecutor);
+        return (factoryBean) -> {
+            factoryBean.setTaskExecutor(quartzTaskExecutor);
+            factoryBean.setAutoStartup(!disabled);
+            if (disabled) {
+                LOG.debug("Quartz SchedulerFactoryBean autoStartup is disabled!");
+            }
+        };
     }
 
 }
