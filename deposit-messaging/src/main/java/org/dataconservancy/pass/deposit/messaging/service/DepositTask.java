@@ -293,7 +293,7 @@ public class DepositTask implements Runnable {
         repoCopy.setCopyStatus(copyStatus);
         repoCopy.setRepository(dc.repository().getId());
         repoCopy.setPublication(dc.submission().getPublication());
-        if (itemUri != null) {
+        if (itemUri != null && itemUri.trim().length() > 0) {
             repoCopy.setExternalIds(Collections.singletonList(itemUri));
             try {
                 repoCopy.setAccessUrl(new URI(itemUri));
