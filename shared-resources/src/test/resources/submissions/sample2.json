@@ -37,6 +37,7 @@
     "name" : "PubMed Central",
     "description" : "Contains lots of medical papers",
     "url" : "http://example.com",
+    "repositoryKey": "pmc",
     "formSchema" : "{}",
     "@id" : "fake:repository1",
     "@type" : "Repository"
