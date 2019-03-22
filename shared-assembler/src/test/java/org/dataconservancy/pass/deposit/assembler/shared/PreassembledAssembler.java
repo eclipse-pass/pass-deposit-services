@@ -20,6 +20,7 @@ import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +37,7 @@ import java.util.Map;
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@Component
 public class PreassembledAssembler implements Assembler {
 
     private String spec;
@@ -44,14 +46,58 @@ public class PreassembledAssembler implements Assembler {
 
     private File packageFile;
 
+    private InputStream packageStream;
+
+    private String packageName;
+
+    private long packageLength;
+
+    private Archive.OPTS archive;
+
+    private Compression.OPTS compression;
+
+    /**
+     * Constructor that requires the caller to use the accessors to provide state.
+     */
     public PreassembledAssembler() {
 
     }
 
+    /**
+     * Constructor with required parameters for streaming back a File.
+     *
+     * @param spec
+     * @param checksum
+     * @param packageFile
+     */
     public PreassembledAssembler(String spec, PackageStream.Checksum checksum, File packageFile) {
         this.spec = spec;
         this.checksum = checksum;
         this.packageFile = packageFile;
+    }
+
+    /**
+     * Constructor with required parameters for streaming back an InputStream.
+     *
+     * TODO: create an InputStream wrapper that encapsulates the required state
+     *
+     * @param spec
+     * @param checksum
+     * @param packageName
+     * @param packageLength
+     * @param archive
+     * @param compression
+     * @param packageStream
+     */
+    public PreassembledAssembler(String spec, PackageStream.Checksum checksum, String packageName, long packageLength,
+                                 Archive.OPTS archive, Compression.OPTS compression, InputStream packageStream) {
+        this.spec = spec;
+        this.checksum = checksum;
+        this.packageName = packageName;
+        this.packageLength = packageLength;
+        this.packageStream = packageStream;
+        this.compression = compression;
+        this.archive = archive;
     }
 
     public String getSpec() {
@@ -78,16 +124,60 @@ public class PreassembledAssembler implements Assembler {
         this.packageFile = packageFile;
     }
 
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public InputStream getPackageStream() {
+        return packageStream;
+    }
+
+    public void setPackageStream(InputStream packageStream) {
+        this.packageStream = packageStream;
+    }
+
+    public long getPackageLength() {
+        return packageLength;
+    }
+
+    public void setPackageLength(long packageLength) {
+        this.packageLength = packageLength;
+    }
+
+    public Archive.OPTS getArchive() {
+        return archive;
+    }
+
+    public void setArchive(Archive.OPTS archive) {
+        this.archive = archive;
+    }
+
+    public Compression.OPTS getCompression() {
+        return compression;
+    }
+
+    public void setCompression(Compression.OPTS compression) {
+        this.compression = compression;
+    }
+
     @Override
     public PackageStream assemble(DepositSubmission submission, Map<String, Object> options) {
         return new PackageStream() {
             @Override
             public InputStream open() {
                 try {
-                    return new FileInputStream(packageFile);
+                    if (packageFile != null) {
+                        return new FileInputStream(packageFile);
+                    }
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
+
+                return packageStream;
             }
 
             @Override
@@ -105,7 +195,15 @@ public class PreassembledAssembler implements Assembler {
                 return new Metadata() {
                     @Override
                     public String name() {
-                        return packageFile.getName();
+                        if (packageName != null) {
+                            return packageName;
+                        }
+
+                        if (packageFile != null) {
+                            return packageFile.getName();
+                        }
+
+                        throw new IllegalStateException("No Package name is set.");
                     }
 
                     @Override
@@ -136,7 +234,15 @@ public class PreassembledAssembler implements Assembler {
 
                     @Override
                     public long sizeBytes() {
-                        return packageFile.length();
+                        if (packageLength > -1) {
+                            return packageLength;
+                        }
+
+                        if (packageFile != null) {
+                            return packageFile.length();
+                        }
+
+                        throw new IllegalStateException("No Package length!");
                     }
 
                     @Override
@@ -146,6 +252,14 @@ public class PreassembledAssembler implements Assembler {
 
                     @Override
                     public Compression.OPTS compression() {
+                        if (compression != null) {
+                            return compression;
+                        }
+
+                        if (packageFile == null) {
+                            return Compression.OPTS.NONE;
+                        }
+
                         if (packageFile.getName().endsWith(".gz") || packageFile.getName().endsWith(".gzip")) {
                             return Compression.OPTS.GZIP;
                         }
@@ -170,6 +284,14 @@ public class PreassembledAssembler implements Assembler {
 
                     @Override
                     public Archive.OPTS archive() {
+                        if (archive != null) {
+                            return archive;
+                        }
+
+                        if (packageFile == null) {
+                            return Archive.OPTS.NONE;
+                        }
+
                         if (packageFile.getName().endsWith(".tar")) {
                             return Archive.OPTS.TAR;
                         }
