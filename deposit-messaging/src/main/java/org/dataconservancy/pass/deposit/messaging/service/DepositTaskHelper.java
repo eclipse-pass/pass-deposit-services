@@ -152,7 +152,7 @@ public class DepositTaskHelper {
         try {
             DepositWorkerContext dc = toDepositWorkerContext(
                     deposit, submission, depositSubmission, repo, packager);
-            DepositTask depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri, this);
+            DepositTask depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
