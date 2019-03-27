@@ -312,7 +312,6 @@ public class DepositTask implements Runnable {
                 repoCopy = passClient.createAndReadResource(repoCopy, RepositoryCopy.class);
                 criDeposit.setRepositoryCopy(repoCopy.getId());
 
-                dc.deposit(criDeposit);
                 dc.repoCopy(repoCopy);
 
                 return repoCopy;
@@ -321,12 +320,13 @@ public class DepositTask implements Runnable {
 
         static Predicate<Deposit> verifyResourceState(DepositWorkerContext dc) {
             return (criDeposit) -> {
-                return criDeposit == dc.deposit() &&
-                        dc.deposit().getDepositStatusRef() != null &&
+                // Update the Deposit Context with the latest Deposit from the repository.  This will be the
+                // Deposit resource that is updated by the updateResources(...) method
+                dc.deposit(criDeposit);
+                return dc.deposit().getDepositStatusRef() != null &&
                         dc.repoCopy() != null &&
                         !dc.repoCopy().getExternalIds().isEmpty() &&
                         dc.repoCopy().getAccessUrl() != null;
-
             };
         }
 
