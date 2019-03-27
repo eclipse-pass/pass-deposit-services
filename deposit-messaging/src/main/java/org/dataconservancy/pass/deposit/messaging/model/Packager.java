@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.model;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.messaging.config.repository.AssemblerOptions;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.transport.Transport;
@@ -25,6 +26,7 @@ import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static java.lang.Integer.toHexString;
@@ -81,9 +83,14 @@ public class Packager {
                 toHexString(identityHashCode(this)),
                 (repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
 
-        return repositoryConfig.getAssemblerConfig()
-                .getOptions()
-                .asOptionsMap();
+        AssemblerOptions assemblerOptions = repositoryConfig.getAssemblerConfig().getOptions();
+        if (assemblerOptions == null) {
+            LOG.warn("The assembler {} associated with the packager {} does not have any configured options.  " +
+                    "This may result in assembly failure or corrupt packages.", assembler.getClass().getName(), name);
+            return Collections.emptyMap();
+        }
+
+        return assemblerOptions.asOptionsMap();
     }
 
     public Transport getTransport() {
