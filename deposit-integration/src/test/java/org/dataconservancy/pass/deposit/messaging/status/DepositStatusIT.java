@@ -154,7 +154,6 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() != null);
-        c.setTimeoutThresholdMs(20 * 1000);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
@@ -178,7 +177,6 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() == null);
-        c.setTimeoutThresholdMs(20*1000);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
@@ -199,7 +197,6 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() == null);
-        c.setTimeoutThresholdMs(20 * 1000);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
@@ -219,7 +216,6 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() == null);
-        c.setTimeoutThresholdMs(20 * 1000);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
@@ -250,7 +246,6 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() == null);
-        c.setTimeoutThresholdMs(20 * 1000);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
