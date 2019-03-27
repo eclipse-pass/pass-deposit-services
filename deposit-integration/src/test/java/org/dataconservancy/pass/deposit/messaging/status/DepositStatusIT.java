@@ -44,9 +44,11 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -108,6 +110,9 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
     @SpyBean(name = "errorHandler")
     private DepositServiceErrorHandler errorHandler;
 
+    @SpyBean
+    private DepositStatusProcessor depositStatusProcessor;
+
     /**
      * Mocks up the {@link #assembler} so that it streams back a {@link #PACKAGE_PATH package} conforming to the
      * DSpace METS SIP profile.
@@ -157,9 +162,16 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
-        assertNotNull(deposits.iterator().next().getDepositStatusRef());
+        Deposit deposit = deposits.iterator().next();
+        assertNotNull(deposit.getDepositStatusRef());
 
         verifyZeroInteractions(errorHandler);
+
+        ArgumentCaptor<Deposit> processedDepositCaptor = ArgumentCaptor.forClass(Deposit.class);
+
+        // Insure the DepositStatusProcessor processed the Deposit
+        verify(depositStatusProcessor).process(processedDepositCaptor.capture(), any());
+        assertEquals(deposit.getId(), processedDepositCaptor.getValue().getId());
     }
 
     /**
