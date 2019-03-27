@@ -70,6 +70,8 @@ public abstract class AbstractSubmissionFixture {
             "   \"submissionStatus\": \"submitted\"\n" +
             "}";
 
+    private static final long TRAVIS_CONDITION_TIMEOUT_MS = 180 * 1000;
+
     protected Submission submission;
 
     protected Map<URI, PassEntity> submissionResources;
@@ -207,7 +209,15 @@ public abstract class AbstractSubmissionFixture {
 
         String name = String.format("Searching for %s Deposits for Submission URI %s", expectedCount, submissionUri);
 
-        return new Condition<>(deposits, verification, name);
+        Condition<Set<Deposit>> condition = new Condition<>(deposits, verification, name);
+
+        if (System.getenv("TRAVIS") != null || System.getProperty("travis") != null) {
+            if (condition.getTimeoutThresholdMs() < TRAVIS_CONDITION_TIMEOUT_MS) {
+                condition.setTimeoutThresholdMs(TRAVIS_CONDITION_TIMEOUT_MS);
+            }
+        }
+
+        return condition;
     }
 
     /**

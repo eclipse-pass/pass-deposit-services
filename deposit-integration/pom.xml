@@ -500,6 +500,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <systemProperties>
+                        <travis>${env.TRAVIS}</travis>
                         <docker.host.address>${docker.host.address}</docker.host.address>
                         <LOCAL_FTP_SERVER>${docker.host.address}</LOCAL_FTP_SERVER>
                         <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
