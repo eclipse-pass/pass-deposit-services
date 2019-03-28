@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import submissions.SubmissionResourceUtil;
@@ -78,6 +79,7 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(properties = {"pass.deposit.repository.configuration=" +
         "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositStatusIT.json"})
 @Import({DepositConfig.class, JmsConfig.class, QuartzConfig.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)  // the repository configuration json pollutes the context
 public class DepositStatusIT extends AbstractSubmissionFixture {
 
     /**
