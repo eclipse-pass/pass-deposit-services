@@ -250,17 +250,27 @@ public class DepositConfig {
                     String transportProtocol = repoConfig.getTransportConfig().getProtocolBinding().getProtocol();
                     String assemblerBean = repoConfig.getAssemblerConfig().getBeanName();
 
+                    // Resolve the Transport impl from the protocol binding, currently assumes a 1:1 protocol binding to transport impl
+                    Transport transport = transports.values()
+                            .stream()
+                            .filter(candidate -> candidate.protocol().name().equalsIgnoreCase(transportProtocol))
+                            .findAny()
+                            .orElseThrow(() ->
+                                    new RuntimeException("Missing Transport implementation for protocol binding " +
+                                            transportProtocol));
+
                     LOG.info("Configuring Packager for Repository configuration {}", repoConfig.getRepositoryKey());
-                    LOG.info("  Assembler: {}", assemblerBean);
                     LOG.info("  Repository Key: {}", repositoryKey);
+                    LOG.info("  Assembler: {}", assemblerBean);
                     LOG.info("  Transport Binding: {}", transportProtocol);
+                    LOG.info("  Transport Implementation: {}", transport);
                     if (dspBeanName != null) {
                         LOG.info("  Deposit Status Processor: {}", dspBeanName);
                     }
 
                     return new Packager(repositoryKey,
                             assemblers.get(assemblerBean),
-                            transports.get(transportProtocol),
+                            transport,
                             repoConfig,
                             dsp);
                 })
@@ -268,6 +278,27 @@ public class DepositConfig {
 
 
         return packagers;
+    }
+
+    @Bean
+    public Map<String, Transport> transports(ApplicationContext appCtx) {
+
+        Map<String, Transport> transports = appCtx.getBeansOfType(Transport.class);
+
+        if (transports.size() == 0) {
+            LOG.error(">>>> No Transport implementations found; Deposit Services will not properly process deposits");
+            return transports;
+        }
+
+        transports.forEach((beanName, impl) -> {
+            LOG.debug(">>>> Discovered Transport implementation {}: {}", beanName, impl.getClass().getName());
+            if (!appCtx.isSingleton(beanName)) {
+                LOG.warn("Transport implementation {} with beanName {} is *not* a singleton; this will likely " +
+                        "result in corrupted packages being streamed to downstream Repositories.");
+            }
+        });
+
+        return transports;
     }
 
     @Bean
@@ -279,30 +310,15 @@ public class DepositConfig {
             return assemblers;
         }
 
-        assemblers.forEach((key, value) -> {
-            LOG.debug(">>>> Discovered Assembler implementation {}: {}", key, value.getClass().getName());
-            if (!appCtx.isSingleton(key)) {
+        assemblers.forEach((beanName, impl) -> {
+            LOG.debug(">>>> Discovered Assembler implementation {}: {}", beanName, impl.getClass().getName());
+            if (!appCtx.isSingleton(beanName)) {
                 LOG.warn("Assembler implementation {} with beanName {} is *not* a singleton; this will likely " +
                         "result in corrupted packages being streamed to downstream Repositories.");
             }
         });
 
         return assemblers;
-    }
-
-    // TODO: discover Transports on the classpath
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Bean
-    public Map<String, Transport> transports(Sword2Transport sword2Transport,
-                                             FtpTransport ftpTransport,
-                                             FilesystemTransport fsTransport) {
-        return new HashMap<String, Transport>() {
-            {
-                put(Sword2Transport.PROTOCOL.SWORDv2.name(), sword2Transport);
-                put(FtpTransport.PROTOCOL.ftp.name(), ftpTransport);
-                put(Transport.PROTOCOL.filesystem.name(), fsTransport);
-            }
-        };
     }
 
     @Bean

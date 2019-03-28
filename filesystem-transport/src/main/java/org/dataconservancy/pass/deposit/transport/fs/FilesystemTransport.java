@@ -82,6 +82,11 @@ public class FilesystemTransport implements Transport {
     }
 
     @Override
+    public PROTOCOL protocol() {
+        return PROTOCOL.filesystem;
+    }
+
+    @Override
     public TransportSession open(Map<String, String> hints) {
         baseDir = new File(hints.get(BASEDIR));
         createIfMissing = Boolean.parseBoolean(hints.getOrDefault(CREATE_IF_MISSING, "true"));
