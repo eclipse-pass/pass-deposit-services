@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import submissions.SubmissionResourceUtil;
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = {"pass.deposit.jobs.default-interval-ms=5000"})
 @Import({DepositConfig.class, JmsConfig.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionProcessorIT.class);
