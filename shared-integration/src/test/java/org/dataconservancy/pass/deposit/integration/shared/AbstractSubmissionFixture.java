@@ -29,6 +29,8 @@ import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -60,8 +62,9 @@ public abstract class AbstractSubmissionFixture {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private static final String MERGE_PATCH = "application/merge-patch+json";
+    private static Logger LOG = LoggerFactory.getLogger(AbstractSubmissionFixture.class);
 
+    private static final String MERGE_PATCH = "application/merge-patch+json";
 
     private static final String SUBMIT_TRUE_PATCH = "" +
             "{\n" + "   \"@id\": \"%s\",\n" +
@@ -211,13 +214,32 @@ public abstract class AbstractSubmissionFixture {
 
         Condition<Set<Deposit>> condition = new Condition<>(deposits, verification, name);
 
-        if (System.getenv("TRAVIS") != null || System.getProperty("travis") != null) {
+        if (travis()) {
+            LOG.info("Travis detected.");
             if (condition.getTimeoutThresholdMs() < TRAVIS_CONDITION_TIMEOUT_MS) {
+                LOG.info("Setting Condition timeout to {} ms", TRAVIS_CONDITION_TIMEOUT_MS);
                 condition.setTimeoutThresholdMs(TRAVIS_CONDITION_TIMEOUT_MS);
             }
         }
 
         return condition;
+    }
+
+    private static boolean travis() {
+        if (System.getenv("TRAVIS") != null &&
+                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("TRAVIS") != null && System.getProperty("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("travis") != null && System.getProperty("travis").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
