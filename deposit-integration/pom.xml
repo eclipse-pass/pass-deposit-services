@@ -41,6 +41,10 @@
         <pass.elasticsearch.host>${docker.host.address}</pass.elasticsearch.host>
         <pass.elasticsearch.url>http://${pass.elasticsearch.host}:${es.port}/pass/</pass.elasticsearch.url>
         <dspace.server>${docker.host.address}</dspace.server>
+        <dspace.baseuri>http://${dspace.server}:${dspace.port}</dspace.baseuri>
+        <dspace.username>dspace-admin@oapass.org</dspace.username>
+        <dspace.password>foobar</dspace.password>
+        <dspace.collection.handle>123456789/2</dspace.collection.handle>
         <ftp.server>${docker.host.address}</ftp.server>
         <ftp-control.port>21</ftp-control.port>
         <ftp-data-01.port>30000</ftp-data-01.port>
@@ -357,9 +361,10 @@
                                 </wait>
                                 <ports>
                                     <port>${dspace.port}:${dspace.port}</port>
+                                    <port>5005:5005</port>
                                 </ports>
                                 <env>
-                                    <DSPACE_HOST>${docker.host.address}</DSPACE_HOST>
+                                    <DSPACE_HOST>${dspace.server}</DSPACE_HOST>
                                     <DSPACE_PORT>${dspace.port}</DSPACE_PORT>
                                     <POSTGRES_DB_PORT>${postgres.port}</POSTGRES_DB_PORT>
                                 </env>
@@ -495,6 +500,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <systemProperties>
+                        <travis>${env.TRAVIS}</travis>
                         <docker.host.address>${docker.host.address}</docker.host.address>
                         <LOCAL_FTP_SERVER>${docker.host.address}</LOCAL_FTP_SERVER>
                         <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
@@ -506,6 +512,10 @@
                         <fcrepo.jms.port>${fcrepo.jms.port}</fcrepo.jms.port>
                         <dspace.host>${dspace.server}</dspace.host>
                         <dspace.port>${dspace.port}</dspace.port>
+                        <dspace.baseuri>${dspace.baseuri}</dspace.baseuri>
+                        <dspace.username>${dspace.username}</dspace.username>
+                        <dspace.password>${dspace.password}</dspace.password>
+                        <dspace.collection.handle>${dspace.collection.handle}</dspace.collection.handle>
                         <ftp.host>${ftp.server}</ftp.host>
                         <ftp.port>${ftp-control.port}</ftp.port>
                         <sword.user>${sword.user}</sword.user>

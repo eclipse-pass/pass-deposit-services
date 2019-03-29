@@ -47,13 +47,20 @@ public class DepositServiceErrorHandler implements ErrorHandler {
 
     @Override
     public void handleError(Throwable t) {
-        Throwable cause = t.getCause();
-        if (!(cause instanceof DepositServiceRuntimeException)) {
-            LOG.error("Unrecoverable error: {}", t.getMessage(), t);
-            return;
-        }
+        DepositServiceRuntimeException dsException = null;
 
-        DepositServiceRuntimeException dsException = (DepositServiceRuntimeException)cause;
+        // If the supplied Throwable isn't an instance of DepositServiceRuntimeException, check to see if the cause is
+        // TODO: should we iterate over every cause looking for a DepositServiceRuntimeException?
+        if (!(t instanceof DepositServiceRuntimeException)) {
+            Throwable cause = t.getCause();
+            if (!(cause instanceof DepositServiceRuntimeException)) {
+                LOG.error("Unrecoverable error: {}", t.getMessage(), t);
+                return;
+            }
+            dsException = (DepositServiceRuntimeException)cause;
+        } else {
+            dsException = (DepositServiceRuntimeException)t;
+        }
 
         if (dsException.getResource() != null) {
             if (dsException.getResource().getClass() == Deposit.class) {
@@ -69,7 +76,8 @@ public class DepositServiceErrorHandler implements ErrorHandler {
             return;
         }
 
-        LOG.error("Unrecoverable error (note that {} is missing its PassEntity resource)",
+        LOG.error("Unrecoverable error (note that {} is missing its PassEntity resource - no resources will be be " +
+                        "marked as FAILED)",
                     dsException.getClass().getName(), t);
 
     }

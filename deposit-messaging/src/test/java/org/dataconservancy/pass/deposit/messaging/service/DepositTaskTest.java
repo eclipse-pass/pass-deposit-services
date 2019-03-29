@@ -17,39 +17,44 @@ package org.dataconservancy.pass.deposit.messaging.service;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.DefaultConflictHandler;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.swordapp.client.DepositReceipt;
 import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.SwordIdentifier;
 
 import java.net.URI;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Ignore("FIXME")
 public class DepositTaskTest {
 
     private DepositUtil.DepositWorkerContext dc;
@@ -60,35 +65,38 @@ public class DepositTaskTest {
 
     private CriticalRepositoryInteraction cri;
 
-    private DepositTaskHelper depositHelper;
-
     private DepositTask underTest;
-
 
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
-        dc = mock(DepositUtil.DepositWorkerContext.class);
+        DepositUtil.DepositWorkerContext dwc = new DepositUtil.DepositWorkerContext();
+        dc = spy(dwc);
         passClient = mock(PassClient.class);
         intermediateDepositStatusPolicy = mock(Policy.class);
-        cri = mock(CriticalRepositoryInteraction.class);
-        depositHelper = mock(DepositTaskHelper.class);
-        underTest = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri, depositHelper);
+        cri = new CriticalPath(passClient, new DefaultConflictHandler(passClient));
+        underTest = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void j10sStatementUrlHack() throws Exception {
-        ArgumentCaptor<String> depositStatusRef = ArgumentCaptor.forClass(String.class);
+        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         String prefix = "http://moo";
         String replacement = "http://foo";
 
-        Deposit d = depositContext(dc);
-        Sword2DepositReceiptResponse tr = transportResponse();
-        criSuccess(d, tr, cri);
-        DepositReceipt depositReceipt = depositReceipt(tr);
-        SwordIdentifier statementLink = identifierFor(prefix);
-        when(depositReceipt.getAtomStatementLink()).thenReturn(statementLink);
+        URI dspaceItemUri = randomUri();
+        SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
+        when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
+        SwordIdentifier swordStatement = identifierFor(prefix);
+
+        DepositReceipt dr = mock(DepositReceipt.class);
+        Sword2DepositReceiptResponse tr = new Sword2DepositReceiptResponse(dr);
+        when(dr.getStatusCode()).thenReturn(200);
+        when(dr.getSplashPageLink()).thenReturn(dspaceItem);
+        when(dr.getAtomStatementLink()).thenReturn(swordStatement);
+
+        Deposit d = depositContext(dc, tr, passClient);
 
         underTest.setSwordSleepTimeMs(1); // move things along...
         underTest.setReplacementPrefix(replacement);
@@ -96,115 +104,110 @@ public class DepositTaskTest {
 
         underTest.run();
 
-        verify(d).setDepositStatusRef(depositStatusRef.capture());
-
-        assertEquals(replacement, depositStatusRef.getValue());
+        assertEquals(replacement, d.getDepositStatusRef());
     }
 
     @Test
     public void j10sStatementUrlHackWithNullValues() throws Exception {
-        ArgumentCaptor<String> depositStatusRef = ArgumentCaptor.forClass(String.class);
+        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         String prefix = "http://moo";
+        String replacement = null;
 
-        Deposit d = depositContext(dc);
-        Sword2DepositReceiptResponse tr = transportResponse();
-        criSuccess(d, tr, cri);
-        DepositReceipt depositReceipt = depositReceipt(tr);
-        SwordIdentifier statementLink = identifierFor(prefix);
-        when(depositReceipt.getAtomStatementLink()).thenReturn(statementLink);
+        URI dspaceItemUri = randomUri();
+        SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
+        when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
+        SwordIdentifier swordStatement = identifierFor(prefix);
 
-        underTest.setSwordSleepTimeMs(1); // move things along...
-        underTest.setReplacementPrefix(null);
-        underTest.setPrefixToMatch(null);
+        DepositReceipt dr = mock(DepositReceipt.class);
+        Sword2DepositReceiptResponse tr = new Sword2DepositReceiptResponse(dr);
+        when(dr.getStatusCode()).thenReturn(200);
+        when(dr.getSplashPageLink()).thenReturn(dspaceItem);
+        when(dr.getAtomStatementLink()).thenReturn(swordStatement);
 
-        underTest.run();
-
-        verify(d).setDepositStatusRef(depositStatusRef.capture());
-
-        assertEquals(prefix, depositStatusRef.getValue());
-    }
-
-    @Test
-    public void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
-        ArgumentCaptor<String> depositStatusRef = ArgumentCaptor.forClass(String.class);
-        String href = "http://baz";
-        String prefix = "http://moo";
-        String replacement = "http://foo";
-
-        Deposit d = depositContext(dc);
-        Sword2DepositReceiptResponse tr = transportResponse();
-        criSuccess(d, tr, cri);
-        DepositReceipt depositReceipt = depositReceipt(tr);
-        SwordIdentifier statementLink = identifierFor(href);
-        when(depositReceipt.getAtomStatementLink()).thenReturn(statementLink);
+        Deposit d = depositContext(dc, tr, passClient);
 
         underTest.setSwordSleepTimeMs(1); // move things along...
         underTest.setReplacementPrefix(replacement);
         underTest.setPrefixToMatch(prefix);
-        assertNotEquals(href, prefix);
 
         underTest.run();
 
-        verify(d).setDepositStatusRef(depositStatusRef.capture());
+        assertEquals(prefix, d.getDepositStatusRef());
+    }
 
-        assertEquals(href, depositStatusRef.getValue());
+    @Test
+    public void j10sStatementUrlHackWithNonMatchingValues() throws Exception {
+        when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
+        String href = "http://baz";
+        String prefix = "http://moo";
+        String replacement = "http://foo";
+
+        URI dspaceItemUri = randomUri();
+        SwordIdentifier dspaceItem = mock(SwordIdentifier.class);
+        when(dspaceItem.getHref()).thenReturn(dspaceItemUri.toString());
+        SwordIdentifier swordStatement = identifierFor(href);
+
+        DepositReceipt dr = mock(DepositReceipt.class);
+        Sword2DepositReceiptResponse tr = new Sword2DepositReceiptResponse(dr);
+        when(dr.getStatusCode()).thenReturn(200);
+        when(dr.getSplashPageLink()).thenReturn(dspaceItem);
+        when(dr.getAtomStatementLink()).thenReturn(swordStatement);
+
+        Deposit d = depositContext(dc, tr, passClient);
+
+        underTest.setSwordSleepTimeMs(1); // move things along...
+        underTest.setReplacementPrefix(replacement);
+        underTest.setPrefixToMatch(prefix);
+
+        underTest.run();
+
+        assertEquals(href, d.getDepositStatusRef());
     }
 
     /**
-     * Populates the supplied {@code depositContext} with a mock {@code Repository}, {@code Submission} and
+     * Populates the supplied {@code depositContext} with a {@code Repository}, {@code Submission} and
      * {@code Deposit}.
      *
      * @param depositContext
      * @return
      */
-    private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext) {
-        Repository r = mock(Repository.class);
-        when(r.getId()).thenReturn(URI.create("uuid:" + UUID.randomUUID().toString()));
-        Submission s = mock(Submission.class);
-        when(depositContext.submission()).thenReturn(s);
-        when(depositContext.repository()).thenReturn(r);
-        Deposit d = mock(Deposit.class);
-        when(depositContext.deposit()).thenReturn(d);
+    private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext, TransportResponse tr, PassClient passClient) {
+        Repository r = new Repository();
+        r.setId(randomUri());
+        depositContext.repository(r);
+
+        Submission s = new Submission();
+        s.setId(randomUri());
+        s.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.IN_PROGRESS);
+        depositContext.submission(s);
+
+        Deposit d = new Deposit();
+        d.setId(randomUri());
+        d.setSubmission(s.getId());
+        d.setDepositStatus(randomIntermediateDepositStatus.get());
+        depositContext.deposit(d);
+
+        when(passClient.readResource(d.getId(), Deposit.class)).thenReturn(d);
+        when(passClient.updateAndReadResource(any(), any())).thenAnswer((inv) -> inv.getArgument(0));
+        when(passClient.createAndReadResource(any(), any())).thenAnswer((inv) -> inv.getArgument(0));
+
+        Assembler assembler = mock(Assembler.class);
+        PackageStream stream = mock(PackageStream.class);
+        Packager packager = mock(Packager.class);
+        Transport transport = mock(Transport.class);
+        TransportSession session = mock(TransportSession.class);
+
+        Map<String, String> packagerConfig = new HashMap<>();
+        when(packager.getAssembler()).thenReturn(assembler);
+        when(packager.getConfiguration()).thenReturn(packagerConfig);
+        when(assembler.assemble(any(), anyMap())).thenReturn(stream);
+        when(packager.getTransport()).thenReturn(transport);
+        when(transport.open(anyMap())).thenReturn(session);
+        when(session.send(eq(stream), any())).thenReturn(tr);
+
+        when(depositContext.packager()).thenReturn(packager);
+
         return d;
-    }
-
-    /**
-     * Mocks a successful CRI that answers the supplied {@code deposit} as the CRI {@code resource()} and the supplied
-     * {@code transportResponse} as the CRI {@code response()}.
-     *
-     * @param deposit
-     * @param transportResponse
-     * @param cri
-     */
-    @SuppressWarnings("unchecked")
-    private static void criSuccess(Deposit deposit, Sword2DepositReceiptResponse transportResponse, CriticalRepositoryInteraction cri) {
-        CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
-        when(cr.success()).thenReturn(true);
-        when(cr.resource()).thenReturn(Optional.of(deposit));
-        when(cr.result()).thenReturn(Optional.of(transportResponse));
-        when(cri.performCritical(any(), eq(Deposit.class), any(Predicate.class), any(BiPredicate.class),
-                any(Function.class))).thenReturn(cr);
-    }
-
-    /**
-     * Answers a mock {@link DepositReceipt} that is attached to the supplied {@link Sword2DepositReceiptResponse}
-     *
-     * @param tr
-     * @return
-     */
-    private static DepositReceipt depositReceipt(Sword2DepositReceiptResponse tr) {
-        DepositReceipt depositReceipt = mock(DepositReceipt.class);
-        when(tr.getReceipt()).thenReturn(depositReceipt);
-        return depositReceipt;
-    }
-
-    /**
-     * Answers a mock {@link Sword2DepositReceiptResponse}
-     *
-     * @return
-     */
-    private static Sword2DepositReceiptResponse transportResponse() {
-        return mock(Sword2DepositReceiptResponse.class);
     }
 
     /**

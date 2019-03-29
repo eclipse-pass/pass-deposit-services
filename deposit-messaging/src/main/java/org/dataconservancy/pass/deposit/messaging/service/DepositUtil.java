@@ -411,6 +411,10 @@ public class DepositUtil {
             return repository;
         }
 
+        public void repository(Repository repository) {
+            this.repository = repository;
+        }
+
         /**
          * the {@code Packager} used to assemble and stream the custodial content
          *
@@ -427,6 +431,10 @@ public class DepositUtil {
          */
         public Submission submission() {
             return submission;
+        }
+
+        public void submission(Submission submission) {
+            this.submission = submission;
         }
 
         /**

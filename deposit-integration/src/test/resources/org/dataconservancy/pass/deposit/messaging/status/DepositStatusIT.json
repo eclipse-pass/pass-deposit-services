@@ -1,0 +1,44 @@
+{
+  "pmc": {
+
+    "deposit-config": {
+      "processing": {
+        "beanName": "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
+      },
+      "mapping": {
+        "http://dspace.org/state/archived": "accepted",
+        "http://dspace.org/state/withdrawn": "rejected",
+        "default-mapping": "submitted"
+      }
+    },
+
+    "assembler": {
+      "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
+      "beanName": "preassembledAssembler"
+    },
+
+    "transport-config": {
+      "auth-realms": [
+        {
+          "mech": "basic",
+          "username": "${dspace.username}",
+          "password": "${dspace.password}",
+          "url": "${dspace.baseuri}/swordv2"
+        }
+      ],
+      "protocol-binding": {
+        "protocol": "SWORDv2",
+        "username": "${dspace.username}",
+        "password": "${dspace.password}",
+        "server-fqdn": "${dspace.host}",
+        "server-port": "${dspace.port}",
+        "service-doc": "${dspace.baseuri}/swordv2/servicedocument",
+        "default-collection": "${dspace.baseuri}/swordv2/collection/${dspace.collection.handle}",
+        "on-behalf-of": null,
+        "deposit-receipt": true,
+        "user-agent": "pass-deposit/DepositStatusIT"
+      }
+
+    }
+  }
+}
