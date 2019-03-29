@@ -82,6 +82,11 @@ public class Sword2Transport implements Transport {
         this.clientFactory = clientFactory;
     }
 
+    @Override
+    public PROTOCOL protocol() {
+        return PROTOCOL.SWORDv2;
+    }
+
     /**
      * Hints <em>must</em> carry:
      * <ul>

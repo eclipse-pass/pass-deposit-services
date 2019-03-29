@@ -128,6 +128,13 @@ public interface Transport {
     }
 
     /**
+     * Return the transport protocol implemented by this instance
+     *
+     * @return the protocol provided by this instance
+     */
+    PROTOCOL protocol();
+
+    /**
      * Open a {@link TransportSession} with the underlying transport.  The returned {@code TransportSession} should be
      * ready to use by the caller, without the caller having to perform any further setup (the implementation of this
      * method should perform all necessary actions to allow {@link TransportSession#send(PackageStream, Map)} to

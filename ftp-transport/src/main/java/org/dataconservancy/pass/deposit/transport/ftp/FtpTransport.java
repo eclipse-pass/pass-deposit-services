@@ -83,6 +83,11 @@ public class FtpTransport implements Transport {
         this.ftpClientFactory = ftpClientFactory;
     }
 
+    @Override
+    public PROTOCOL protocol() {
+        return PROTOCOL.ftp;
+    }
+
     /**
      * Uses the supplied configuration hints to open a new session with an FTP server.  Each session has new {@link
      * FTPClient} which is used to communicate with the remote FTP server.  The {@link #FtpTransport(FtpClientFactory)

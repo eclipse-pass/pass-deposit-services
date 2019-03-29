@@ -25,11 +25,15 @@ import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.config.quartz.QuartzConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.dataconservancy.pass.model.Deposit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -44,13 +48,16 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -63,7 +70,7 @@ import static org.mockito.Mockito.when;
  * employed here.
  *
  * Note this IT uses a specific runtime configuration for Deposit Services in the classpath resource
- * DepositStatusIT.json.  The status mapping indicates that by default the state of a Deposit will be SUBMITTED unless
+ * DepositTaskIT.json.  The status mapping indicates that by default the state of a Deposit will be SUBMITTED unless
  * the package is archived (SUCCESS) or withdrawn (REJECTED).  Now, if an exception occurs when performing the SWORD
  * deposit to DSpace (for example, if the package is corrupt), there will be no SWORD state to examine because the
  * package could not be ingested.  In the case of a corrupt package that is rejected without getting in the front door,
@@ -77,10 +84,10 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = {"pass.deposit.repository.configuration=" +
-        "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositStatusIT.json"})
+        "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositTaskIT.json"})
 @Import({DepositConfig.class, JmsConfig.class, QuartzConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)  // the repository configuration json pollutes the context
-public class DepositStatusIT extends AbstractSubmissionFixture {
+public class DepositTaskIT extends AbstractSubmissionFixture {
 
     /**
      * Package specification URI identifying a DSpace SIP with METS metadata
@@ -115,6 +122,9 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
     @SpyBean
     private DepositStatusProcessor depositStatusProcessor;
 
+    @SpyBean
+    private Sword2Transport sword2Transport;
+
     /**
      * Mocks up the {@link #assembler} so that it streams back a {@link #PACKAGE_PATH package} conforming to the
      * DSpace METS SIP profile.
@@ -143,7 +153,7 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
      * set to {@code false} so that Deposit Services won't act.
      *
      * Note that the 'repositoryKey' field on the Repository present in the graph has a value of 'pmc', used to
-     * configure the repository in 'DepositStatusIT.json'.
+     * configure the repository in 'DepositTaskIT.json'.
      *
      * @return
      */
@@ -157,23 +167,40 @@ public class DepositStatusIT extends AbstractSubmissionFixture {
      */
     @Test
     public void success() {
+        // Configure a spy on the TransportSession returned by the Transport
+        AtomicReference<TransportSession> transportSessionSpy = new AtomicReference<>();
+        doAnswer(inv -> {
+            transportSessionSpy.set((TransportSession) spy(inv.callRealMethod()));
+            return transportSessionSpy.get();
+        }).when(sword2Transport).open(any());
+
+        // "Click" submit
         triggerSubmission(submission.getId());
 
+        // Wait for the Deposit resource to show up as ACCEPTED (terminal state)
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
                 deposit.getDepositStatusRef() != null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
                 Deposit.DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         Deposit deposit = deposits.iterator().next();
+
+        // Insure a Deposit.depositStatusRef was set on the Deposit resource
         assertNotNull(deposit.getDepositStatusRef());
 
+        // No exceptions should be handled by the error handler
         verifyZeroInteractions(errorHandler);
 
+        // Insure the DepositStatusProcessor processed the Deposit.depositStatusRef
         ArgumentCaptor<Deposit> processedDepositCaptor = ArgumentCaptor.forClass(Deposit.class);
-
-        // Insure the DepositStatusProcessor processed the Deposit
         verify(depositStatusProcessor).process(processedDepositCaptor.capture(), any());
         assertEquals(deposit.getId(), processedDepositCaptor.getValue().getId());
+
+        // Insure the Transport and TransportSession were invoked
+        ArgumentCaptor<PackageStream> packageStreamCaptor = ArgumentCaptor.forClass(PackageStream.class);
+        verify(sword2Transport).open(any());
+        verify(transportSessionSpy.get()).send(packageStreamCaptor.capture(), any());
+        assertNotNull(packageStreamCaptor.getValue());
     }
 
     /**
