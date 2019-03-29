@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFixture;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;

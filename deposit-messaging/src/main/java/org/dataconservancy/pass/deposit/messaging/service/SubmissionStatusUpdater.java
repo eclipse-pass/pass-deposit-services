@@ -89,7 +89,7 @@ public class SubmissionStatusUpdater {
 
         submissionUris.forEach(uri -> {
             try {
-                LOG.debug("Updating Submission.submissionStatus for {}", uri);
+                LOG.trace("Updating Submission.submissionStatus for {}", uri);
                 cri.performCritical(uri, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
                         CriFunc.critical(statusService));
             } catch (Exception e) {
@@ -105,14 +105,13 @@ public class SubmissionStatusUpdater {
      * @param passClient the client used to communicate with the index
      * @return the URIs of Submissions that may need their SubmissionStatus updated
      */
-    private static Collection<URI> toUpdate(PassClient passClient) {
+    static Collection<URI> toUpdate(PassClient passClient) {
         return Stream.of(Submission.SubmissionStatus.values())
                 .filter(status -> status != Submission.SubmissionStatus.COMPLETE)
                 .filter(status -> status != Submission.SubmissionStatus.CANCELLED)
                 .map(status -> status.name().toLowerCase())
                 .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
                 .flatMap(Collection::stream)
-                .peek(uri -> LOG.debug("Collecting Submission URI {}", uri))
                 .collect(Collectors.toSet());
     }
 
@@ -133,8 +132,7 @@ public class SubmissionStatusUpdater {
         static Predicate<Submission> preCondition = (submission) -> submission.getSubmissionStatus() != null &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
-                submission.getSubmitted() != null &&
-                submission.getSubmitted() == Boolean.TRUE;
+                Boolean.TRUE == submission.getSubmitted();
 
         /**
          * Verifies the expected state of the Submission after updating Submission.submissionStatus:
@@ -144,8 +142,7 @@ public class SubmissionStatusUpdater {
          * </ul>
          */
         static Predicate<Submission> postCondition = (submission -> submission.getSubmissionStatus() != null &&
-                submission.getSubmitted() != null
-                && submission.getSubmitted() == Boolean.TRUE);
+                Boolean.TRUE == submission.getSubmitted());
 
         /**
          * Critical section calculates the Submission.submissionStatus, which may or may not be different from the

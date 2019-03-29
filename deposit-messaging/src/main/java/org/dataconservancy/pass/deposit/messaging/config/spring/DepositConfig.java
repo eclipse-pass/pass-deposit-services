@@ -25,11 +25,6 @@ import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsAssembler;
-import org.dataconservancy.pass.deposit.assembler.assembler.nihmsnative.NihmsPackageProvider;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetadataDomWriterFactory;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsAssembler;
-import org.dataconservancy.pass.deposit.assembler.dspace.mets.DspaceMetsPackageProvider;
 import org.dataconservancy.pass.deposit.assembler.shared.ExceptionHandlingThreadPoolExecutor;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
@@ -253,19 +248,21 @@ public class DepositConfig {
 
                     String repositoryKey = repoConfig.getRepositoryKey();
                     String transportProtocol = repoConfig.getTransportConfig().getProtocolBinding().getProtocol();
+                    String assemblerBean = repoConfig.getAssemblerConfig().getBeanName();
 
                     LOG.info("Configuring Packager for Repository configuration {}", repoConfig.getRepositoryKey());
+                    LOG.info("  Assembler: {}", assemblerBean);
                     LOG.info("  Repository Key: {}", repositoryKey);
                     LOG.info("  Transport Binding: {}", transportProtocol);
                     if (dspBeanName != null) {
                         LOG.info("  Deposit Status Processor: {}", dspBeanName);
                     }
 
-                    return new Packager(
-                            repoConfig.getRepositoryKey(),
-                            assemblers.get(repoConfig.getAssemblerConfig().getSpec()),
-                            transports.get(repoConfig.getTransportConfig().getProtocolBinding().getProtocol()),
-                            repoConfig, dsp);
+                    return new Packager(repositoryKey,
+                            assemblers.get(assemblerBean),
+                            transports.get(transportProtocol),
+                            repoConfig,
+                            dsp);
                 })
                 .collect(Collectors.toMap(Packager::getName, Function.identity()));
 
@@ -273,16 +270,24 @@ public class DepositConfig {
         return packagers;
     }
 
-    // TODO: discover Assemblers on the classpath
-    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Bean
-    public Map<String, Assembler> assemblers(DspaceMetsAssembler dspaceMetsAssembler, NihmsAssembler nihmsAssembler) {
-        return new HashMap<String, Assembler>() {
-            {
-                put(DspaceMetsAssembler.SPEC_DSPACE_METS, dspaceMetsAssembler);
-                put(NihmsAssembler.SPEC_NIHMS_NATIVE_2017_07, nihmsAssembler);
+    public Map<String, Assembler> assemblers(ApplicationContext appCtx) {
+        Map<String, Assembler> assemblers = appCtx.getBeansOfType(Assembler.class);
+
+        if (assemblers.size() == 0) {
+            LOG.error(">>>> No Assembler implementations found; Deposit Services will not properly process deposits.");
+            return assemblers;
+        }
+
+        assemblers.forEach((key, value) -> {
+            LOG.debug(">>>> Discovered Assembler implementation {}: {}", key, value.getClass().getName());
+            if (!appCtx.isSingleton(key)) {
+                LOG.warn("Assembler implementation {} with beanName {} is *not* a singleton; this will likely " +
+                        "result in corrupted packages being streamed to downstream Repositories.");
             }
-        };
+        });
+
+        return assemblers;
     }
 
     // TODO: discover Transports on the classpath
@@ -367,14 +372,4 @@ public class DepositConfig {
         return new ExceptionHandlingThreadPoolExecutor(1, 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
     }
 
-    @Bean
-    DspaceMetsPackageProvider dspaceMetsPackageProvider(DspaceMetadataDomWriterFactory domWriterFactory) {
-        return new DspaceMetsPackageProvider(domWriterFactory);
-    }
-
-    @Bean
-    @Scope(SCOPE_PROTOTYPE)
-    NihmsPackageProvider nihmsPackageProvider() {
-        return new NihmsPackageProvider();
-    }
 }

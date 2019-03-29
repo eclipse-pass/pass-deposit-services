@@ -16,6 +16,10 @@
 
 package org.dataconservancy.pass.deposit.transport;
 
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.Submission;
+
 public interface TransportResponse {
 
     /**
@@ -33,5 +37,28 @@ public interface TransportResponse {
      * @return the cause of the error, may be {@code null}
      */
     Throwable error();
+
+    /**
+     * Invoked as a callback by Deposit Services after creating or updating PASS repository resources related to the
+     * successful transfer of bytes by a Transport.  At a minimum {@link #success()} must return {@code true} for this
+     * callback to be invoked.
+     * <p>
+     * Implementations should not assume that the invocation of {@code onSuccess(...)} implies <em>logical</em> success;
+     * nothing should be inferred with respect to the custody of materials.  {@code onSuccess(...)} is invoked on
+     * <em>physical</em> success, but that does not imply that a transfer of custody has taken place.
+     * </p>
+     * <p>
+     * Implementations may interrogate and update the PASS repository resources that are supplied by method parameters.
+     * For example, a transport implementation may be able to provide identifiers or other metadata that may be useful
+     * to record in PASS.
+     * </p>
+     *
+     * @param submission
+     * @param deposit
+     * @param repositoryCopy
+     */
+    default void onSuccess(Submission submission, Deposit deposit, RepositoryCopy repositoryCopy) {
+        // no-op
+    }
 
 }

@@ -1,22 +1,9 @@
 {
 
   "JScholarship": {
-
-    "deposit-config": {
-
-      "processing": {
-        "beanName" : "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
-      },
-
-      "mapping": {
-        "http://dspace.org/state/archived": "accepted",
-        "http://dspace.org/state/withdrawn": "rejected",
-        "default-mapping": "submitted"
-      }
-    },
-
     "assembler": {
-      "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
+      "specification": "simple",
+      "beanName": "simpleAssembler",
       "options": {
         "archive": "ZIP",
         "compression": "NONE",
@@ -26,63 +13,20 @@
         ]
       }
     },
-
     "transport-config": {
-      "auth-realms": [
-        {
-          "mech": "basic",
-          "username": "dspace-admin@oapass.org",
-          "password": "foobar",
-          "url": "https://jscholarship.library.jhu.edu/"
-        },
-        {
-          "mech": "basic",
-          "username": "dspace-admin@oapass.org",
-          "password": "foobar",
-          "url": "https://dspace-prod.mse.jhu.edu:8080/"
-        },
-        {
-          "mech": "basic",
-          "username": "dspace-admin@oapass.org",
-          "password": "foobar",
-          "url": "http://${dspace.host}:${dspace.port}/swordv2"
-        }
-      ],
-
       "protocol-binding": {
-        "protocol": "SWORDv2",
-        "username": "dspace-admin@oapass.org",
-        "password": "foobar",
-        "server-fqdn": "${dspace.host}",
-        "server-port": "${dspace.port}",
-        "service-doc": "http://${dspace.host}:${dspace.port}/swordv2/servicedocument",
-        "default-collection": "http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2",
-        "on-behalf-of": null,
-        "deposit-receipt": true,
-        "user-agent": "pass-deposit/x.y.z"
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
       }
     }
   },
 
   "PubMed Central": {
-
-
-    "deposit-config": {
-
-      "processing": {
-
-      },
-
-      "mapping": {
-        "INFO": "accepted",
-        "ERROR": "rejected",
-        "WARN": "rejected",
-        "default-mapping": "submitted"
-      }
-    },
-
     "assembler": {
-      "specification": "nihms-native-2017-07",
+      "specification": "simple",
+      "beanName": "simpleAssembler",
       "options": {
         "archive": "ZIP",
         "compression": "NONE",
@@ -92,18 +36,12 @@
         ]
       }
     },
-
     "transport-config": {
       "protocol-binding": {
-        "protocol": "ftp",
-        "username": "nihmsftpuser",
-        "password": "nihmsftppass",
-        "server-fqdn": "${ftp.host}",
-        "server-port": "${ftp.port}",
-        "data-type": "binary",
-        "transfer-mode": "stream",
-        "use-pasv": true,
-        "default-directory": "/logs/upload/%s"
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
       }
     }
   }

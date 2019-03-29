@@ -21,6 +21,7 @@ import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.model.Registry;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.deposit.messaging.policy.SubmissionPolicy;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
@@ -39,7 +40,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -88,54 +92,14 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
     public void accept(Submission submission) {
 
-        // Mark the Submission as being IN_PROGRESS immediately.  If this fails, we've essentially lost a JMS message
+        // Validates the incoming Submission, marks it as being IN_PROGRESS immediately.
+        // If this fails, we've essentially lost a JMS message
 
-        CriticalResult<DepositSubmission, Submission> result = critical.performCritical(submission.getId(), Submission.class,
-
-                // PassUserSubmittedPolicy will log rejects
-                (s) -> submissionPolicy.test(s),
-
-                (s, ds) -> {
-                    if (s.getAggregatedDepositStatus() != IN_PROGRESS) {
-                        String msg = "Update postcondition failed for %s: expected status '%s' but actual status is " +
-                                "'%s'";
-                        throw new IllegalStateException(String.format(msg, s.getId(), IN_PROGRESS, s
-                                .getAggregatedDepositStatus()));
-                    }
-
-                    // Treat the lack of files on the Submission as a FAILURE, as that is not a transient issue
-                    // (that is, files will not magically appear on the Submission in the future).
-
-                    if (ds.getFiles().size() < 1) {
-                        String msg = "Update postcondition failed for %s: the DepositSubmission has no files " +
-                                "attached! (Hint: check the incoming links to the Submission)";
-                        throw new IllegalStateException(String.format(msg, s.getId()));
-                    }
-
-                    // Each DepositFile must have a URI that links to its content
-                    String filesMissingLocations = ds.getFiles().stream()
-                            .filter(df -> df.getLocation() == null || df.getLocation().trim().length() == 0)
-                            .map(DepositFile::getName)
-                            .collect(Collectors.joining(", "));
-
-                    if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
-                        String msg = "Update postcondition failed for %s: the following DepositFiles are missing " +
-                                "URIs referencing their binary content: %s";
-                        throw new IllegalStateException(String.format(msg, s.getId(), filesMissingLocations));
-                    }
-
-                    return true;
-                },
-                (s) -> {
-                    DepositSubmission ds = null;
-                    try {
-                        ds = fcrepoModelBuilder.build(s.getId().toString());
-                    } catch (InvalidModel invalidModel) {
-                        throw new RuntimeException(invalidModel.getMessage(), invalidModel);
-                    }
-                    s.setAggregatedDepositStatus(IN_PROGRESS);
-                    return ds;
-                });
+        CriticalResult<DepositSubmission, Submission> result =
+                critical.performCritical(submission.getId(), Submission.class,
+                CriFunc.preCondition(submissionPolicy),
+                CriFunc.postCondition(),
+                CriFunc.critical(fcrepoModelBuilder));
 
         if (!result.success()) {
 
@@ -164,30 +128,113 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
                 .forEach(repo -> {
-                    Deposit deposit = null;
-                    Packager packager = null;
-                    try {
-                        deposit = createDeposit(updatedS, repo);
-
-                        for (final String key : getLookupKeys(repo)) {
-                            if ((packager = packagerRegistry.get(key)) != null)
-                                break;
-                        }
-                        
-                        if (packager == null) {
-                            throw new NullPointerException(format("No Packager found for tuple [%s, %s, %s]: " +
-                                            "Missing Packager for Repository named '%s'",
-                                    updatedS.getId(), deposit.getId(), repo.getId(), repo.getName()));
-                        }
-                        deposit = passClient.createAndReadResource(deposit, Deposit.class);
-                    } catch (Exception e) {
-                        String msg = format(FAILED_TO_PROCESS_DEPOSIT, updatedS.getId(), repo.getId(),
-                                (deposit == null) ? "null" : deposit.getId(), e.getMessage());
-                        throw new DepositServiceRuntimeException(msg, e, deposit);
-                    }
-
-                    depositTaskHelper.submitDeposit(updatedS, depositSubmission, repo, deposit, packager);
+                    submitDeposit(updatedS, depositSubmission, repo);
                 });
+    }
+
+    void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo) {
+        Deposit deposit = null;
+        Packager packager = null;
+        try {
+            deposit = createDeposit(submission, repo);
+
+            for (final String key : getLookupKeys(repo)) {
+                if ((packager = packagerRegistry.get(key)) != null)
+                    break;
+            }
+
+            if (packager == null) {
+                throw new NullPointerException(format("No Packager found for tuple [%s, %s, %s]: " +
+                                "Missing Packager for Repository named '%s'",
+                        submission.getId(), deposit.getId(), repo.getId(), repo.getName()));
+            }
+            deposit = passClient.createAndReadResource(deposit, Deposit.class);
+        } catch (Exception e) {
+            String msg = format(FAILED_TO_PROCESS_DEPOSIT, submission.getId(), repo.getId(),
+                    (deposit == null) ? "null" : deposit.getId(), e.getMessage());
+            throw new DepositServiceRuntimeException(msg, e, deposit);
+        }
+
+        depositTaskHelper.submitDeposit(submission, depositSubmission, repo, deposit, packager);
+    }
+
+    static class CriFunc {
+
+        /**
+         * Answers the critical function which builds a {@link DepositSubmission} from the Submission, then sets the
+         * {@link Submission.AggregatedDepositStatus} to {@code IN_PROGRESS}.
+         *
+         * @param modelBuilder the model builder used to build the {@code DepositSubmission}
+         * @return the Function that builds the DepositSubmission and sets the aggregated deposit status on the Submission
+         */
+        static Function<Submission, DepositSubmission> critical(SubmissionBuilder modelBuilder) {
+            return (s) -> {
+                DepositSubmission ds = null;
+                try {
+                    ds = modelBuilder.build(s.getId().toString());
+                } catch (InvalidModel invalidModel) {
+                    throw new RuntimeException(invalidModel.getMessage(), invalidModel);
+                }
+                s.setAggregatedDepositStatus(IN_PROGRESS);
+                return ds;
+            };
+        }
+
+        /**
+         * Answers a BiPredicate that verifies the state of the Submission and the DepositSubmission.
+         * <ul>
+         *     <li>The Submission.AggregatedDepositStatus must be IN_PROGRESS</li>
+         *     <li>The DepositSubmission must have at least one {@link DepositSubmission#getFiles() file} attached</li>
+         *     <li>Each DepositFile must have a non-empty {@link DepositFile#getLocation() location}</li>
+         * </ul>
+         *
+         * @return a BiPredicate that verifies the state created or set by the critical function on repository resources
+         * @throws IllegalStateException if the Submission, DepositSubmission, or DepositFiles have invalid state
+         */
+        static BiPredicate<Submission, DepositSubmission> postCondition() {
+            return (s, ds) -> {
+                if (IN_PROGRESS != s.getAggregatedDepositStatus()) {
+                    String msg = "Update postcondition failed for %s: expected status '%s' but actual status is " +
+                            "'%s'";
+                    throw new IllegalStateException(String.format(msg, s.getId(), IN_PROGRESS, s
+                            .getAggregatedDepositStatus()));
+                }
+
+                // Treat the lack of files on the Submission as a FAILURE, as that is not a transient issue
+                // (that is, files will not magically appear on the Submission in the future).
+
+                if (ds.getFiles().size() < 1) {
+                    String msg = "Update postcondition failed for %s: the DepositSubmission has no files " +
+                            "attached! (Hint: check the incoming links to the Submission)";
+                    throw new IllegalStateException(String.format(msg, s.getId()));
+                }
+
+                // Each DepositFile must have a URI that links to its content
+                String filesMissingLocations = ds.getFiles().stream()
+                        .filter(df -> df.getLocation() == null || df.getLocation().trim().length() == 0)
+                        .map(DepositFile::getName)
+                        .collect(Collectors.joining(", "));
+
+                if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
+                    String msg = "Update postcondition failed for %s: the following DepositFiles are missing " +
+                            "URIs referencing their binary content: %s";
+                    throw new IllegalStateException(String.format(msg, s.getId(), filesMissingLocations));
+                }
+
+                return true;
+            };
+        }
+
+        /**
+         * Answers a Predicate that will accept the Submission for processing if it is accepted by the supplied
+         * {@link Policy}.
+         *
+         * @param submissionPolicy the submission policy
+         * @return a Predicate that invokes the submission policy
+         */
+        static Predicate<Submission> preCondition(SubmissionPolicy submissionPolicy) {
+            return submissionPolicy::test;
+        }
     }
     
     static Collection<String> getLookupKeys(Repository repo) {
@@ -207,7 +254,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         return keys;
     }
 
-    private Deposit createDeposit(Submission submission, Repository repo) {
+    private static Deposit createDeposit(Submission submission, Repository repo) {
         Deposit deposit;
         deposit = new Deposit();
         deposit.setRepository(repo.getId());

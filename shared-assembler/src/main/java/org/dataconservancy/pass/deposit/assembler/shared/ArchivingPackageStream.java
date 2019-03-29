@@ -21,6 +21,7 @@ import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +32,14 @@ import java.io.PipedOutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+
+import static java.lang.Runtime.getRuntime;
 
 /**
  * Creates {@link PackageStream}s in a supported {@link Archive archival format}.  Package options, including the
@@ -81,6 +86,30 @@ public class ArchivingPackageStream implements PackageStream {
     private StreamWriter streamWriter;
 
     private ArchiveOutputStreamFactory archiveOutputStreamFactory;
+
+    private PackageProvider packageProvider;
+
+    public ArchivingPackageStream(DepositSubmission submission,
+                                  List<DepositFileResource> custodialContent,
+                                  MetadataBuilder metadataBuilder,
+                                  ResourceBuilderFactory rbf,
+                                  Map<String, Object> packageOptions,
+                                  PackageProvider packageProvider) {
+        this.custodialContent = custodialContent;
+        this.metadataBuilder = metadataBuilder;
+        this.rbf = rbf;
+        this.packageOptions = packageOptions;
+        this.executorService = new ExceptionHandlingThreadPoolExecutor(getRuntime().availableProcessors(),
+                getRuntime().availableProcessors() * 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10));
+        this.packageProvider = packageProvider;
+        this.streamWriter = new DefaultStreamWriterImpl(submission, custodialContent, rbf, packageOptions,
+                packageProvider);
+        if (STREAMING_IO_LOG.isDebugEnabled()) {
+            this.archiveOutputStreamFactory = new DebuggingArchiveOutputStreamFactory(packageOptions);
+        } else {
+            this.archiveOutputStreamFactory = new DefaultArchiveOutputStreamFactory(packageOptions);
+        }
+    }
 
     /**
      * Creates a package stream that uses the archive format specified in the {@code packageOptions}.  The supplied

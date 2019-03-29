@@ -49,7 +49,6 @@
         <module>builder-api</module>
         <module>fedora-builder</module>
         <module>assembler-api</module>
-        <module>nihms-native-assembler</module>
         <!-- nihms-bagit-assembler -->
         <module>transport-api</module>
         <module>ftp-transport</module>
@@ -57,11 +56,11 @@
         <module>deposit-integration</module>
         <module>deposit-util</module>
         <module>sword2-transport</module>
-        <module>dspace-mets-assembler</module>
         <module>shared-assembler</module>
         <module>deposit-messaging</module>
         <module>shared-resources</module>
         <module>filesystem-transport</module>
+        <module>shared-integration</module>
     </modules>
 
     <profiles>
@@ -145,7 +144,7 @@
         <commons-net.version>3.6</commons-net.version>
         <commons-compress.version>1.15</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
-        <mockito.version>2.12.0</mockito.version>
+        <mockito.version>2.24.5</mockito.version>
         <okhttp.version>3.10.0</okhttp.version>
         <guava.version>23.5-jre</guava.version>
         <args4j.version>2.33</args4j.version>
