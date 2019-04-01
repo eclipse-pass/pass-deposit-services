@@ -23,6 +23,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.dataconservancy.deposit.util.async.Condition;
+import org.dataconservancy.pass.client.PassJsonAdapter;
+import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.shared.PackageVerifier;
@@ -63,7 +65,6 @@ import static java.lang.Math.floorDiv;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
-import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static submissions.SubmissionResourceUtil.REPOSITORY_TYPE_FILTER;
@@ -96,6 +97,10 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      */
     private static ExecutorService itExecutorService;
 
+    private static OkHttpClient okHttp;
+
+    private static URL passIndexUrl;
+
     private PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
 
     private PackageVerifier verifier;
@@ -103,6 +108,8 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     private Map<String, Object> packageOpts;
 
     private Set<File> packageDirs = new HashSet<>();
+
+    private PassJsonAdapter jsonAdapter = new PassJsonAdapterBasic();
 
     /**
      * Instantiates the {@link #itExecutorService}.
@@ -118,17 +125,21 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * This integration test won't work if the {@code accessUrl} carries a {@code fedora_uri normalizer} according to
      * the ElasticSearch index configuration.  {@code copyIndex()} attempts to copy an existing index to a new location
      * with an updated configuration that removes the {@code normalizer} from {@code accessUrl}.
+     * <p>
+     * The old index location will be aliased to the new index location, so the environment variables and various
+     * clients of the index won't have to be updated with the new location.
+     * </p>
      *
      * @throws IOException if there is an error creating or copying indexes around
      */
     @BeforeClass
     public static void copyIndex() throws IOException {
-        OkHttpClient okHttp = new OkHttpClient.Builder()
+        okHttp = new OkHttpClient.Builder()
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(90, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS).build();
 
-        URL passIndexUrl = new URL(getenv().getOrDefault("PASS_ELASTICSEARCH_URL",
+        passIndexUrl = new URL(getenv().getOrDefault("PASS_ELASTICSEARCH_URL",
                 getProperty("pass.elasticsearch.url")));
 
         assertNotNull("Missing value for PASS_ELASTICSEARCH_URL environment variable or " +
@@ -246,33 +257,28 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         // A Condition executes this logic, and provides the results (the Set of RepositoryCopy resources created for
         // each Submission)
 
-        Condition<Set<URI>> repoCountCondition = new Condition<>(
+        Condition<Collection<RepositoryCopy>> repoCountCondition = new Condition<>(
         () -> {
-            Map<String, Object> attributes = new HashMap<String, Object>() {
-                {
-                    put("copyStatus", COMPLETE.toString().toLowerCase());
-                    put("accessUrl", "file:/packages/*");
-                }
-            };
-
             LOG.debug("Executing Repository Count Condition");
 
-            Set<URI> candidates = passClient.findAllByAttributes(RepositoryCopy.class, attributes);
+            Collection<RepositoryCopy> candidates = RepositoryCopyPackageQuery.execute(
+                    okHttp, jsonAdapter, passIndexUrl.toString() + "/_search");
+
             LOG.debug("Found {} candidates", candidates.size());
 
-            Set<URI> results = candidates.stream()
-                    .filter(candidateRepoCopyUri -> {
-                        if (!candidateRepoCopyUri.toString().startsWith(fcrepoBaseUrl)) {
+            Set<RepositoryCopy> results = candidates.stream()
+                    .filter(candidate -> {
+                        if (!candidate.getId().toString().startsWith(fcrepoBaseUrl)) {
                             LOG.warn("Excluding RepositoryCopy with unknown base url: {} " + "(doesn't start with {})",
-                                    candidateRepoCopyUri, fcrepoBaseUrl);
+                                    candidate, fcrepoBaseUrl);
                             return false;
                         }
                         return true;
                     })
-                    .filter(candidateRepoCopyUri -> {
-                        // Filter RepositoryCopy URIs that have in incoming link from a Deposit resource created
+                    .filter(candidate -> {
+                        // Filter RepositoryCopies that have in incoming link from a Deposit resource created
                         // for each Submission.
-                        Map<String, Collection<URI>> incoming = passClient.getIncoming(candidateRepoCopyUri);
+                        Map<String, Collection<URI>> incoming = passClient.getIncoming(candidate.getId());
                         return incoming.getOrDefault("repositoryCopy", Collections.emptySet())
                                 .stream()
                                 .map(depositUri -> passClient.readResource(depositUri, Deposit.class))
@@ -289,17 +295,17 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         (results) -> {
             if (results.size() > 0) {
                 LOG.debug("Discovered {} Repository Copies: ", results.size());
-                results.forEach(repoCopy -> LOG.debug("  {}", repoCopy));
+                results.forEach(repoCopy -> LOG.debug("  {}", repoCopy.getId()));
             }
             return results.size() == expectedRepositoryCopyCount;
             }, "Repository Copy Count");
 
-        LOG.info("Waiting for {} Submissions to be processed and produce {} expected Repository Copies " + "by " +
-                "Deposit Services.", submissions.size(), expectedRepositoryCopyCount);
+        LOG.info("Waiting for {} Submissions to be processed and produce {} expected Repository Copies " +
+                "by Deposit Services.", submissions.size(), expectedRepositoryCopyCount);
         repoCountCondition.setTimeoutThresholdMs(300 * 1000);
         repoCountCondition.await();
 
-        Set<URI> repositoryCopies = repoCountCondition.getResult();
+        Collection<RepositoryCopy> repositoryCopies = repoCountCondition.getResult();
         // sanity
         assertEquals(expectedRepositoryCopyCount, repositoryCopies.size());
 
@@ -307,7 +313,6 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         // Explode the package to a temporary directory
 
         repositoryCopies.stream()
-                .map(uri -> passClient.readResource(uri, RepositoryCopy.class))
                 .flatMap(rc -> rc.getExternalIds().stream())
                 .map(URI::create)
                 .map(URI::getPath)
