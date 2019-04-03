@@ -67,14 +67,15 @@ public interface PackageVerifier {
      * </p>
      *
      * @param submission the submission containing custodial content that is contained in the package
-     * @param baseDir the base directory containing the exploded version of the package
+     * @param explodedPackage the exploded version of the package, including a reference to the original archive file
      * @param options the options used when creating the package
      * @throws Exception if there are any errors verifying the exploded package
      */
-    void verify(DepositSubmission submission, File baseDir, Map<String, Object> options) throws Exception;
+    void verify(DepositSubmission submission, ExplodedPackage explodedPackage, Map<String, Object> options)
+            throws Exception;
 
     /**
-     * Typically invoked by subclasses from their implementation of {@link #verify(DepositSubmission, File, Map)}.  This
+     * Typically invoked by subclasses from their implementation of {@link #verify(DepositSubmission, ExplodedPackage, Map)}.  This
      * implementation insures that every file present in the submission is present in the extracted package, and that
      * every custodial file in the extracted package is present in the submission.
      * <p>

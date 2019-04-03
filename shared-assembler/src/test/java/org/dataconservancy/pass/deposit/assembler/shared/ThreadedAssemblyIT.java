@@ -276,7 +276,7 @@ public abstract class ThreadedAssemblyIT {
                         (Compression.OPTS)packageOptions.get(Compression.KEY));
                 LOG.info("Extracted package {} to {}", packageFile, dir);
                 // Have subclass verify the content in the extracted package directory
-                verifier.verify(submission, dir, packageOptions);
+                verifier.verify(submission, new ExplodedPackage(packageFile, dir), packageOptions);
                 LOG.info("Successfully verified package in {}", dir);
                 toClean.add(dir);
             } catch (Exception e) {

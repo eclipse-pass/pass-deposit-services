@@ -29,6 +29,7 @@ import org.dataconservancy.pass.deposit.transport.TransportSession;
 import org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +62,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * This IT insures that the SWORD transport properly handles the Deposit.depositStatusRef field by updating the
@@ -110,6 +112,8 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
 
     private final ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
 
+    private Submission submission;
+
     @Autowired
     private PreassembledAssembler assembler;
 
@@ -157,9 +161,9 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
      *
      * @return
      */
-    @Override
-    protected InputStream getSubmissionResources() {
-        return SubmissionResourceUtil.lookupStream(URI.create("fake:submission2"));
+    @Before
+    public void submit() {
+        submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission2"))));
     }
 
     /**

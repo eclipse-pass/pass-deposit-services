@@ -25,6 +25,7 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -56,9 +58,11 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionFixture {
     @Autowired
     private SubmissionStatusUpdater underTest;
 
-    @Override
-    protected InputStream getSubmissionResources() {
-        return SubmissionResourceUtil.lookupStream(URI.create("fake:submission3"));
+    private Submission submission;
+
+    @Before
+    public void submit() {
+        submission = findSubmission(createSubmission(lookupStream(URI.create("fake:submission3"))));
     }
 
     @Test

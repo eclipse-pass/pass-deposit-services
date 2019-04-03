@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static okhttp3.Credentials.basic;
@@ -75,10 +76,6 @@ public abstract class AbstractSubmissionFixture {
 
     private static final long TRAVIS_CONDITION_TIMEOUT_MS = 180 * 1000;
 
-    protected Submission submission;
-
-    protected Map<URI, PassEntity> submissionResources;
-
     @Autowired
     protected PassClient passClient;
 
@@ -108,18 +105,7 @@ public abstract class AbstractSubmissionFixture {
      */
     @Before
     public void setUpOkHttp() throws Exception {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.authenticator((route, response) -> {
-            if (response.header("Authorization") != null) {
-                return null;
-            }
-            return response
-                    .request()
-                    .newBuilder()
-                    .header("Authorization", basic(fcrepoUser, fcrepoPass))
-                    .build();
-        });
-        okHttp = builder.build();
+        okHttp = fcrepoClient(fcrepoUser, fcrepoPass);
     }
 
     /**
@@ -127,43 +113,68 @@ public abstract class AbstractSubmissionFixture {
      *
      * @throws Exception
      */
-    @Before
-    public void createSubmission() throws Exception {
+    public Map<URI, PassEntity> createSubmission(InputStream submissionGraph) {
         PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
         HashMap<URI, PassEntity> uriMap = new HashMap<>();
-        URI submissionUri;
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        try (InputStream is = getSubmissionResources()) {
-            submissionUri = passAdapter.jsonToFcrepo(is, uriMap);
-        }
+        URI submissionUri = passAdapter.jsonToFcrepo(submissionGraph, uriMap);
 
         // Find the Submission entity that was uploaded
-        submission = (Submission) uriMap
-                .values()
-                .stream()
-                .filter((entity) -> entity.getId().equals(submissionUri))
-                .filter((entity) -> entity instanceof Submission)
-                .findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing expected Submission; it was not added to the repository"));
-
-        assertNotNull("Missing expected Submission; it was not added to the repository.", submission);
+        Submission submission = findSubmission(uriMap);
 
         // verify state of the initial Submission
-        assertEquals(Submission.Source.PASS, submission.getSource());
-        assertEquals(NOT_STARTED, submission.getAggregatedDepositStatus());
+        assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
+                Submission.Source.PASS, submission.getSource());
+        assertEquals("Submission must have a Submission.aggregatedDepositStatus = " +
+                        "Submission.AggregatedDepositStatus.NOT_STARTED",
+                NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
         assertTrue("Unexpected incoming links to " + submissionUri,
                 getDepositUris(submission, passClient).isEmpty());
 
-        submissionResources = uriMap;
+        return uriMap;
     }
 
-    protected abstract InputStream getSubmissionResources();
+    public static Submission findSubmission(Map<URI, PassEntity> entities) {
+        Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
 
-    protected void triggerSubmission(URI submissionUri) {
+        long count = entities
+                .values()
+                .stream()
+                .filter(submissionFilter)
+                .count();
+
+        assertEquals("Found " + count + " Submission resources, expected exactly 1", count, 1);
+
+        return (Submission) entities
+                .values()
+                .stream()
+                .filter(submissionFilter)
+                .findAny()
+                .get();
+    }
+
+    /**
+     * Flips the {@code Submission.submitted} flag to {@code true}, at which point Deposit Services will process
+     * the {@code Submission}.  The {@code Submission} should be considered read-only to clients external to the Deposit
+     * Services runtime after invoking this method.   This means <strong>prior</strong> to invoking this method, the
+     * {@code Submission} should be fully linked to all necessary resources, including {@link
+     * org.dataconservancy.pass.model.File file} content and any {@link Repository repositories}.  The {@link
+     * Submission#getSource() source} and {@link Submission#getAggregatedDepositStatus() deposit status} should also be
+     * set properly.  If the Ember UI is being emulated then the proper values are:
+     * <dl>
+     *     <dt>source</dt>
+     *     <dd>{@link Submission.Source#PASS}</dd>
+     *     <dt>deposit status</dt>
+     *     <dd>{@link Submission.AggregatedDepositStatus#NOT_STARTED}</dd>
+     * </dl>
+     * Note: Deposit Services doesn't care about, or examine, {@link Submission.SubmissionStatus}.
+     *
+     * @param submissionUri the URI of a {@code Submission} that is ready for processing
+     */
+    public void triggerSubmission(URI submissionUri) {
         String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, contextUri);
 
         Request post = new Request.Builder()
@@ -192,7 +203,7 @@ public abstract class AbstractSubmissionFixture {
      * @param filter filters for Deposit resources with a desired state (e.g., a certain deposit status)
      * @return the Condition
      */
-    protected Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
+    public Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
                                                         BiPredicate<Deposit, Repository> filter) {
         Callable<Set<Deposit>> deposits = () -> {
             Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
@@ -225,31 +236,15 @@ public abstract class AbstractSubmissionFixture {
         return condition;
     }
 
-    private static boolean travis() {
-        if (System.getenv("TRAVIS") != null &&
-                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        if (System.getProperty("TRAVIS") != null && System.getProperty("TRAVIS").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        if (System.getProperty("travis") != null && System.getProperty("travis").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        return false;
-    }
-
     /**
      * Looks for, and returns, the Repository attached to the supplied Submission with the specified name.
      *
      * @param submission
      * @param repositoryName
-     * @return
+     * @return the Repository
+     * @throws RuntimeException if the Repository cannot be found
      */
-    protected Repository repositoryForName(Submission submission, String repositoryName) {
+    public Repository repositoryForName(Submission submission, String repositoryName) {
         return submission
                 .getRepositories()
                 .stream()
@@ -267,9 +262,10 @@ public abstract class AbstractSubmissionFixture {
      *
      * @param submission
      * @param repositoryUri
-     * @return
+     * @return the Deposit
+     * @throws RuntimeException if the Deposit cannot be found
      */
-    protected Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
+    public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
         Collection<URI> depositUris = getDepositUris(submission, passClient);
         return depositUris
                 .stream()
@@ -279,5 +275,53 @@ public abstract class AbstractSubmissionFixture {
                 .orElseThrow(() ->
                         new RuntimeException("Missing Deposit for Repository " + repositoryUri + " on Submission " +
                                 submission.getId()));
+    }
+
+    /**
+     * Method for determining whether the runtime platform is Travis.  Useful for conditionally extending timeouts.
+     *
+     * @return true if the runtime platform is the Travis integration environment
+     */
+    public static boolean travis() {
+        if (System.getenv("TRAVIS") != null &&
+                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("TRAVIS") != null && System.getProperty("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("travis") != null && System.getProperty("travis").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Answers an OkHttpClient for communicating with a Fedora repository.  It will automatically supply an {@code
+     * Authorization} header on the HTTP response if required.
+     *
+     * @param fcrepoUser the user to use for authentication to fedora, may be {@code null} if Fedora doesn't require
+     *                   authn
+     * @param fcrepoPass the password to use for authentication to fedora, may be {@code null} if Fedora doesn't require
+     *                   authn
+     * @return an OkHttpClient configured for communicating with a Fedora repository
+     */
+    public OkHttpClient fcrepoClient(String fcrepoUser, String fcrepoPass) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.authenticator((route, response) -> {
+            if (response.header("Authorization") != null) {
+                return null;
+            }
+            return response
+                    .request()
+                    .newBuilder()
+                    .header("Authorization", basic(fcrepoUser, fcrepoPass))
+                    .build();
+        });
+
+        return builder.build();
     }
 }
