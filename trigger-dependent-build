@@ -30,9 +30,9 @@ repo_id=23585218
 # Only run for master builds. Pull request builds have the branch set to master,
 # so ignore those too.
 #
-#if [ "${TRAVIS_BRANCH}" != "master" ] || [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-#  exit 0
-#fi
+if [ "${TRAVIS_BRANCH}" != "master" ] || [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+  exit 0
+fi
 
 # Make an API request using the auth token set above. First argument is the path
 # of the API method, all later arguments are passed to curl directly.
@@ -58,13 +58,6 @@ function env-var {
 last_master_build_id=`travis-api /repos/$repo_id/branches/master |
                       sed 's/{"branch":{"id":\([0-9]*\),.*/\1/'`
 
-# Set the three environment variables needed, and capture their IDs so that they
-# can be removed later.
-#
-#env_var_ids=(`env-var DEPENDENT_BUILD true`
-#             `env-var TRIGGER_COMMIT $TRAVIS_COMMIT`
-#             `env-var TRIGGER_REPO $TRAVIS_REPO_SLUG`)
-
 # Restart the last master build.
 #
 travis-api /builds/$last_master_build_id/restart -X POST
@@ -74,12 +67,3 @@ travis-api /builds/$last_master_build_id/restart -X POST
 until travis-api /builds/$last_master_build_id | grep '"state":"started"'; do
   sleep 5
 done
-
-# Remove all of the environment variables set above. This does mean that if this
-# script is terminated for whatever reason, these will need to be cleaned up
-# manually. We can do this either through the API, or by going to Settings ->
-# Environment Variables in the Travis web interface.
-#
-#for env_var_id in "${env_var_ids[@]}"; do
-#  travis-api /settings/env_vars/$env_var_id?repository_id=$repo_id -X DELETE
-#done
