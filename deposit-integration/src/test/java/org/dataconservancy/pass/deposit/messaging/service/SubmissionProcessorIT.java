@@ -25,6 +25,7 @@ import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
 import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -59,9 +61,11 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
     private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission11");
 
-    @Override
-    protected InputStream getSubmissionResources() {
-        return SubmissionResourceUtil.lookupStream(SUBMISSION_RESOURCES);
+    private Submission submission;
+
+    @Before
+    public void submit() {
+        submission = findSubmission(createSubmission(lookupStream(SUBMISSION_RESOURCES)));
     }
 
     @Test

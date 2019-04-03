@@ -19,6 +19,8 @@ import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFix
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
+import org.dataconservancy.pass.model.Submission;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,7 @@ import java.io.InputStream;
 import java.net.URI;
 
 import static org.hamcrest.CoreMatchers.isA;
+import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -43,9 +46,11 @@ public class EmptySubmissionIT extends AbstractSubmissionIT {
 
     private static final URI SUBMISSION_RESOURCES = URI.create("fake:submission10");
 
-    @Override
-    protected InputStream getSubmissionResources() {
-        return SubmissionResourceUtil.lookupStream(SUBMISSION_RESOURCES);
+    private Submission submission;
+
+    @Before
+    public void submit() {
+        submission = findSubmission(createSubmission(lookupStream(SUBMISSION_RESOURCES)));
     }
 
     @Test

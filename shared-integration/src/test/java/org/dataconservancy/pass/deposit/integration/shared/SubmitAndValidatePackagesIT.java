@@ -285,11 +285,10 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         indexUtil.copyIndex(passIndexUrl, newIndexUrl, transformConfig(objectMapper));
     }
 
-    @Override
     @Before
-    public void createSubmission() throws Exception {
+    public void preparePackagesForVerification() throws Exception {
         Collection<Submission> submissions =
-                getSubmissions()
+                performSubmissions()
                         .stream()
                         .map(submissionUri -> passClient.readResource(submissionUri, Submission.class))
                         .collect(Collectors.toSet());
@@ -419,7 +418,7 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * class to know what they are without some heavy lifting.
      */
     @Test
-    public void perform() {
+    public void verifyPackages() {
         toVerify.forEach((depositSubmission, baseDir) -> {
             try {
                 getVerifier(depositSubmission, baseDir)
@@ -459,7 +458,7 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * @return a Collection of Submissions that have been persisted in the PASS respository and submitted for processing
      *         by Deposit Services
      */
-    protected Collection<URI> getSubmissions() {
+    protected Collection<URI> performSubmissions() {
         Map<Future<URI>, Map<URI, PassEntity>> futureSubmissions = new HashMap<>();
 
         // Create a Submission resource for each test submission resource in the 'shared-resources' module
@@ -542,7 +541,6 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
 
         return submissions.keySet();
     }
-
 
     /**
      * Determines the compression format based on the package file name.

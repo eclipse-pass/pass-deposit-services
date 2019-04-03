@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static okhttp3.Credentials.basic;
@@ -74,10 +75,6 @@ public abstract class AbstractSubmissionFixture {
             "}";
 
     private static final long TRAVIS_CONDITION_TIMEOUT_MS = 180 * 1000;
-
-    protected Submission submission;
-
-    protected Map<URI, PassEntity> submissionResources;
 
     @Autowired
     protected PassClient passClient;
@@ -116,41 +113,48 @@ public abstract class AbstractSubmissionFixture {
      *
      * @throws Exception
      */
-    @Before
-    public void createSubmission() throws Exception {
+    public Map<URI, PassEntity> createSubmission(InputStream submissionGraph) {
         PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
         HashMap<URI, PassEntity> uriMap = new HashMap<>();
-        URI submissionUri;
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        try (InputStream is = getSubmissionResources()) {
-            submissionUri = passAdapter.jsonToFcrepo(is, uriMap);
-        }
+        URI submissionUri = passAdapter.jsonToFcrepo(submissionGraph, uriMap);
 
         // Find the Submission entity that was uploaded
-        submission = (Submission) uriMap
-                .values()
-                .stream()
-                .filter((entity) -> entity.getId().equals(submissionUri))
-                .filter((entity) -> entity instanceof Submission)
-                .findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing expected Submission; it was not added to the repository"));
-
-        assertNotNull("Missing expected Submission; it was not added to the repository.", submission);
+        Submission submission = findSubmission(uriMap);
 
         // verify state of the initial Submission
-        assertEquals(Submission.Source.PASS, submission.getSource());
-        assertEquals(NOT_STARTED, submission.getAggregatedDepositStatus());
+        assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
+                Submission.Source.PASS, submission.getSource());
+        assertEquals("Submission must have a Submission.aggregatedDepositStatus = " +
+                        "Submission.AggregatedDepositStatus.NOT_STARTED",
+                NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
         assertTrue("Unexpected incoming links to " + submissionUri,
                 getDepositUris(submission, passClient).isEmpty());
 
-        submissionResources = uriMap;
+        return uriMap;
     }
 
-    protected abstract InputStream getSubmissionResources();
+    public static Submission findSubmission(Map<URI, PassEntity> entities) {
+        Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
+
+        long count = entities
+                .values()
+                .stream()
+                .filter(submissionFilter)
+                .count();
+
+        assertEquals("Found " + count + " Submission resources, expected exactly 1", count, 1);
+
+        return (Submission) entities
+                .values()
+                .stream()
+                .filter(submissionFilter)
+                .findAny()
+                .get();
+    }
 
     /**
      * Flips the {@code Submission.submitted} flag to {@code true}, at which point Deposit Services will process
