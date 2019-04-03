@@ -108,18 +108,7 @@ public abstract class AbstractSubmissionFixture {
      */
     @Before
     public void setUpOkHttp() throws Exception {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.authenticator((route, response) -> {
-            if (response.header("Authorization") != null) {
-                return null;
-            }
-            return response
-                    .request()
-                    .newBuilder()
-                    .header("Authorization", basic(fcrepoUser, fcrepoPass))
-                    .build();
-        });
-        okHttp = builder.build();
+        okHttp = fcrepoClient(fcrepoUser, fcrepoPass);
     }
 
     /**
@@ -163,7 +152,25 @@ public abstract class AbstractSubmissionFixture {
 
     protected abstract InputStream getSubmissionResources();
 
-    protected void triggerSubmission(URI submissionUri) {
+    /**
+     * Flips the {@code Submission.submitted} flag to {@code true}, at which point Deposit Services will process
+     * the {@code Submission}.  The {@code Submission} should be considered read-only to clients external to the Deposit
+     * Services runtime after invoking this method.   This means <strong>prior</strong> to invoking this method, the
+     * {@code Submission} should be fully linked to all necessary resources, including {@link
+     * org.dataconservancy.pass.model.File file} content and any {@link Repository repositories}.  The {@link
+     * Submission#getSource() source} and {@link Submission#getAggregatedDepositStatus() deposit status} should also be
+     * set properly.  If the Ember UI is being emulated then the proper values are:
+     * <dl>
+     *     <dt>source</dt>
+     *     <dd>{@link Submission.Source#PASS}</dd>
+     *     <dt>deposit status</dt>
+     *     <dd>{@link Submission.AggregatedDepositStatus#NOT_STARTED}</dd>
+     * </dl>
+     * Note: Deposit Services doesn't care about, or examine, {@link Submission.SubmissionStatus}.
+     *
+     * @param submissionUri the URI of a {@code Submission} that is ready for processing
+     */
+    public void triggerSubmission(URI submissionUri) {
         String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, contextUri);
 
         Request post = new Request.Builder()
@@ -192,7 +199,7 @@ public abstract class AbstractSubmissionFixture {
      * @param filter filters for Deposit resources with a desired state (e.g., a certain deposit status)
      * @return the Condition
      */
-    protected Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
+    public Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
                                                         BiPredicate<Deposit, Repository> filter) {
         Callable<Set<Deposit>> deposits = () -> {
             Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
@@ -225,31 +232,15 @@ public abstract class AbstractSubmissionFixture {
         return condition;
     }
 
-    private static boolean travis() {
-        if (System.getenv("TRAVIS") != null &&
-                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        if (System.getProperty("TRAVIS") != null && System.getProperty("TRAVIS").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        if (System.getProperty("travis") != null && System.getProperty("travis").equalsIgnoreCase("true")) {
-            return true;
-        }
-
-        return false;
-    }
-
     /**
      * Looks for, and returns, the Repository attached to the supplied Submission with the specified name.
      *
      * @param submission
      * @param repositoryName
-     * @return
+     * @return the Repository
+     * @throws RuntimeException if the Repository cannot be found
      */
-    protected Repository repositoryForName(Submission submission, String repositoryName) {
+    public Repository repositoryForName(Submission submission, String repositoryName) {
         return submission
                 .getRepositories()
                 .stream()
@@ -267,9 +258,10 @@ public abstract class AbstractSubmissionFixture {
      *
      * @param submission
      * @param repositoryUri
-     * @return
+     * @return the Deposit
+     * @throws RuntimeException if the Deposit cannot be found
      */
-    protected Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
+    public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
         Collection<URI> depositUris = getDepositUris(submission, passClient);
         return depositUris
                 .stream()
@@ -279,5 +271,53 @@ public abstract class AbstractSubmissionFixture {
                 .orElseThrow(() ->
                         new RuntimeException("Missing Deposit for Repository " + repositoryUri + " on Submission " +
                                 submission.getId()));
+    }
+
+    /**
+     * Method for determining whether the runtime platform is Travis.  Useful for conditionally extending timeouts.
+     *
+     * @return true if the runtime platform is the Travis integration environment
+     */
+    public static boolean travis() {
+        if (System.getenv("TRAVIS") != null &&
+                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("TRAVIS") != null && System.getProperty("TRAVIS").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        if (System.getProperty("travis") != null && System.getProperty("travis").equalsIgnoreCase("true")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Answers an OkHttpClient for communicating with a Fedora repository.  It will automatically supply an {@code
+     * Authorization} header on the HTTP response if required.
+     *
+     * @param fcrepoUser the user to use for authentication to fedora, may be {@code null} if Fedora doesn't require
+     *                   authn
+     * @param fcrepoPass the password to use for authentication to fedora, may be {@code null} if Fedora doesn't require
+     *                   authn
+     * @return an OkHttpClient configured for communicating with a Fedora repository
+     */
+    public OkHttpClient fcrepoClient(String fcrepoUser, String fcrepoPass) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.authenticator((route, response) -> {
+            if (response.header("Authorization") != null) {
+                return null;
+            }
+            return response
+                    .request()
+                    .newBuilder()
+                    .header("Authorization", basic(fcrepoUser, fcrepoPass))
+                    .build();
+        });
+
+        return builder.build();
     }
 }
