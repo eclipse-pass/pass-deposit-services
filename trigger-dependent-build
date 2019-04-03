@@ -30,9 +30,9 @@ repo_id=23585218
 # Only run for master builds. Pull request builds have the branch set to master,
 # so ignore those too.
 #
-if [ "${TRAVIS_BRANCH}" != "master" ] || [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-  exit 0
-fi
+#if [ "${TRAVIS_BRANCH}" != "master" ] || [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+#  exit 0
+#fi
 
 # Make an API request using the auth token set above. First argument is the path
 # of the API method, all later arguments are passed to curl directly.
