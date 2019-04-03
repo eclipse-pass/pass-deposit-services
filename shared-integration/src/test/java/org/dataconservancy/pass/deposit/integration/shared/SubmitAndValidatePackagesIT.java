@@ -421,8 +421,9 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     public void verifyPackages() {
         toVerify.forEach((depositSubmission, baseDir) -> {
             try {
-                getVerifier(depositSubmission, baseDir)
-                        .verify(depositSubmission, baseDir, Collections.emptyMap());
+                PackageVerifier verifier = getVerifier(depositSubmission, baseDir);
+                LOG.debug("Invoking verify on {} using {}", baseDir, verifier);
+                verifier.verify(depositSubmission, baseDir, Collections.emptyMap());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
