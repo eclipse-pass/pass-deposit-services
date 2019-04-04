@@ -26,3 +26,5 @@ script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml de
 
 jdk:
 - oraclejdk8
+
+after_success: ./trigger-dependent-build
