@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
+
 /**
  * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(
  * DepositSubmission, Map)} and {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link
@@ -103,6 +105,7 @@ public abstract class AbstractAssembler implements Assembler {
     @Override
     public PackageStream assemble(DepositSubmission submission, Map<String, Object> options) {
         MetadataBuilder metadataBuilder = mbf.newInstance();
+        buildMetadata(metadataBuilder, options);
         metadataBuilder.name(sanitizeFilename(submission.getName()));
 
         List<DepositFileResource> custodialResources = resolveCustodialResources(submission.getFiles());
