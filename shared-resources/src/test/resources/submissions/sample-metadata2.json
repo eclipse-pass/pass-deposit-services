@@ -1,6 +1,6 @@
 [
   {
-    "metadata":"{\n  \"authors\": [\n    {\n      \"author\": \"Christine Cagney\"\n    },\n    {\n      \"author\": \"Mary Beth Lacey\"\n    }\n  ],\n  \"agreements\": {\n    \"JScholarship\": \"Text removed.\"\n  },\n  \"title\": \"My Test Article\",\n  \"journal-title\": \"Nature Communications\",\n  \"issns\": [\n    {\n      \"issn\": \"2041-1723\",\n      \"pubType\": \"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": \"Fall 2016\",\n  \"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  \"agent_information\": {\n    \"name\": \"Chrome\",\n    \"version\": \"69\"\n  }\n}",
+    "metadata":"{\n  \"authors\": [\n    {\n      \"author\": \"Christine Cagney\"\n    },\n    {\n      \"author\": \"Mary Beth Lacey\"\n    },\n    {\n      \"author\": \"David Michael Starsky\"\n    },\n    {\n      \"author\": \"Kenneth Richard Hutchinson\"\n    }\n  ],\n  \"agreements\": {\n    \"JScholarship\": \"Text removed.\"\n  },\n  \"title\": \"My Test Article\",\n  \"journal-title\": \"Nature Communications\",\n  \"issns\": [\n    {\n      \"issn\": \"2041-1723\",\n      \"pubType\": \"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": \"Fall 2016\",\n  \"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  \"agent_information\": {\n    \"name\": \"Chrome\",\n    \"version\": \"69\"\n  }\n}",
     "source" : "pass",
     "submitted" : true,
     "submittedDate" : "2017-06-02T00:00:00.000Z",
