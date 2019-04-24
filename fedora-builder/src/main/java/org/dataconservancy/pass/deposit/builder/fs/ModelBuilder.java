@@ -17,7 +17,6 @@
 package org.dataconservancy.pass.deposit.builder.fs;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
@@ -26,6 +25,7 @@ import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
@@ -57,7 +57,9 @@ abstract class ModelBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(ModelBuilder.class);
 
-    private static final String ISSN_MAP_KEY = "issn-map";
+    private static final String ISSNS = "issns";
+
+    private static final String ISSN = "issn";
 
     private static final String MANUSCRIPT_TITLE_KEY = "title";
 
@@ -75,27 +77,17 @@ abstract class ModelBuilder {
 
     private static final String PUBLICATION_DATE_KEY = "publicationDate";
 
-    private static final String COMMON_ID_KEY = "common";
-
-    private static final String DATA_KEY = "data";
-
-    private static final String CROSSREF_KEY = "crossref";
-
     private static final String EMBARGO_END_DATE_KEY = "Embargo-end-date";
-
-    private static final String ID_KEY = "id";
 
     private static final String AUTHORS_KEY = "authors";
 
     private static final String AUTHOR_KEY = "author";
 
-    private static final String PUB_TYPE_KEY = "pub-type";
+    private static final String PUB_TYPE_KEY = "pubType";
 
     private static final String EMBARGO_END_DATE_PATTERN = "yyyy-MM-dd";
 
-    private static final String PMC_KEY = "pmc";
-
-    private static final String NLMTA_KEY = "nlmta";
+    private static final String NLMTA_KEY = "journal-NLMTA-ID";
 
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
@@ -224,25 +216,18 @@ abstract class ModelBuilder {
         getStringProperty(submissionData, PUBLICATION_DATE_KEY)
                 .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
 
-        getObjectProperty(submissionData, ISSN_MAP_KEY).ifPresent(issnMapObject -> {
-            issnMapObject.keySet().forEach(issn -> {
-                getObjectProperty(issnMapObject, issn).ifPresent(issnObj -> {
-                    getArrayProperty(issnObj, PUB_TYPE_KEY).ifPresent(typeArray -> {
-                        if (typeArray.size() < 1) {
-                            return;
-                        }
-                        String typeDesc = typeArray.get(0).getAsString();
-                        try {
-                            DepositMetadata.IssnPubType pubType =
-                                    new DepositMetadata.IssnPubType(issn, parseTypeDescription(typeDesc));
-                            metadata.getJournalMetadata().getIssnPubTypes().putIfAbsent(issn, pubType);
-                        } catch (IllegalArgumentException e) {
-                            LOG.warn("Unable to parse a JournalPublicationType from the type description " + "'{}'",
-                                    typeDesc, e);
-                            return;
-                        }
-                    });
-                });
+        getArrayProperty(submissionData, ISSNS).ifPresent(issns -> {
+            issns.forEach(issnObj -> {
+                try {
+                    String issn = issnObj.getAsJsonObject().get(ISSN).getAsString();
+                    JournalPublicationType pubType = parseTypeDescription(
+                            issnObj.getAsJsonObject().get(PUB_TYPE_KEY).getAsString());
+                    metadata.getJournalMetadata().getIssnPubTypes()
+                            .putIfAbsent(issn, new DepositMetadata.IssnPubType(issn, pubType));
+                } catch (Exception e) {
+                    LOG.warn("Unable to parse ISSNs from '{}'", issnObj.getAsString(), e);
+                    throw new RuntimeException(e);
+                }
             });
         });
 
@@ -295,25 +280,10 @@ abstract class ModelBuilder {
      */
     private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
             throws InvalidModel {
-        JsonArray metadataJson = new JsonParser().parse(metadataStr).getAsJsonArray();
-        // The "crossref data has precedence and must be processed last
-        JsonObject crossRefData = null;
-        for (JsonElement element : metadataJson) {
-            JsonObject obj = element.getAsJsonObject();
-            String type = obj.get(ID_KEY).getAsString();
-            JsonObject data = obj.get(DATA_KEY).getAsJsonObject();
-            if (type.equals(COMMON_ID_KEY)) {
-                processCommonMetadata(depositMetadata, data);
-            }
-            else if (type.equals(CROSSREF_KEY)) {
-                crossRefData = data;
-            } else if (type.equals(PMC_KEY)) {
-                processPmcMetadata(depositMetadata, data);
-            }
-        }
-        if (crossRefData != null) {
-            processCrossrefMetadata(depositMetadata, crossRefData);
-        }
+        JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
+        processCommonMetadata(depositMetadata, json);
+        processPmcMetadata(depositMetadata, json);
+        processCrossrefMetadata(depositMetadata, json);
     }
 
     /**

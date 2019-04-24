@@ -128,6 +128,7 @@ public class FilesystemModelBuilderTest {
         DepositMetadata.Journal journalMetadata = submission.getMetadata().getJournalMetadata();
         assertEquals(EXPECTED_TITLE, journalMetadata.getJournalTitle());
         assertEquals(EXPECTED_PUB_DATE, journalMetadata.getPublicationDate());
+        assertEquals(2, journalMetadata.getIssnPubTypes().size());
         journalMetadata.getIssnPubTypes().values().forEach(pubType -> {
             assertTrue(EXPECTED_ISSN_PUBTYPES.containsKey(pubType.issn));
             assertEquals(EXPECTED_ISSN_PUBTYPES.get(pubType.issn), pubType.pubType);
