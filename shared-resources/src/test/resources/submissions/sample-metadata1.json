@@ -1,6 +1,6 @@
 [
   {
-    "metadata" : "[{\"id\" : \"JScholarship\", \"data\" : {\"authors\" : [{\"author\" : \"Christine Cagney\"},{\"author\" : \"Mary Beth Lacey\"}], \"embargo\" : \"Text removed.\", \"agreement-to-deposit\" : \"true\"}},{ \"id\" : \"common\", \"data\" : {\"title\" : \"My Test Article\",\"journal-title\":\"Nature Communications\",\"ISSN\":\"2041-1723\",\"publisher\":\"Elsevier\",\"publicationDate\":\"Fall 2016\",\"abstract\":\"Abstract text\",\"authors\":[{\"author\" : \"Christine Cagney\"},{\"author\" : \"Mary Beth Lacey\"}]} },{ \"id\":\"crossref\", \"data\":{} },{ \"id\":\"pmc\", \"data\":{\"nlmta\":\"Nat Commun\"} },{ \"id\":\"agent_information\", \"data\":{\"information\":{\"name\":\"Chrome\",\"version\":\"69\"}} }]",
+    "metadata" : "{\n  \"authors\": [\n    {\n      \"author\": \"Christine Cagney\"\n    },\n    {\n      \"author\": \"Mary Beth Lacey\"\n    }\n  ],\n  \"agreements\": {\n    \"JScholarship\": \"Text removed.\"\n  },\n  \"title\": \"My Test Article\",\n  \"journal-title\": \"Nature Communications\",\n  \"issns\": [\n    {\n      \"issn\": \"2041-1723\",\n      \"pubType\": \"Print\"\n    }\n  ],\n  \"publisher\": \"Elsevier\",\n  \"publicationDate\": \"Fall 2016\",\n  \"abstract\": \"Abstract text\",\n  \"journal-NLMTA-ID\": \"Nat Commun\",\n  \"agent_information\": {\n    \"name\": \"Chrome\",\n    \"version\": \"69\"\n  }\n}",
     "source" : "pass",
     "submitted" : true,
     "submittedDate" : "2017-06-02T00:00:00.000Z",
