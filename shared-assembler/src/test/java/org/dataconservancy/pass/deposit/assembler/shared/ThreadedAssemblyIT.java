@@ -15,15 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
-import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import resources.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,11 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +49,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 
 import static java.lang.Math.floorDiv;
 import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
@@ -133,6 +129,11 @@ public abstract class ThreadedAssemblyIT {
      * Provides access to classpath resources as a {@link DepositSubmission}.
      */
     protected SharedSubmissionUtil submissionUtil = new SharedSubmissionUtil();
+
+    /**
+     * Builds sample Submission graphs present on the classpath (in concert with {@link #submissionUtil})
+     */
+    protected SubmissionBuilder builder = new FilesystemModelBuilder();
 
     /**
      * The factory used to create instances of {@link org.dataconservancy.pass.deposit.assembler.MetadataBuilder}.
@@ -237,7 +238,7 @@ public abstract class ThreadedAssemblyIT {
             } while (submissionId < 1 || submissionId == 5 || submissionId == 7);
 
             URI submissionUri = URI.create("fake:submission" + submissionId);
-            DepositSubmission submission = submissionUtil.asDepositSubmission(submissionUri);
+            DepositSubmission submission = submissionUtil.asDepositSubmission(submissionUri, builder);
             LOG.info("Submitting package {}", submissionUri);
             LOG.info(".");
             results.put(submission, itExecutorService.submit(() -> underTest.assemble(submission, packageOptions)));

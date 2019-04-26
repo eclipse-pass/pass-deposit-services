@@ -24,10 +24,10 @@ import org.apache.commons.io.FileUtils;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.BaseAssemblerIT;
 import org.dataconservancy.pass.deposit.assembler.shared.Extension;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import resources.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
@@ -115,8 +115,10 @@ public class DepositTestUtil {
      */
     public static DepositSubmission composeSubmission() {
         SharedSubmissionUtil util = new SharedSubmissionUtil();
+        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder();
+
         try {
-            return util.asDepositSubmission(URI.create("fake:submission3"));
+            return util.asDepositSubmission(URI.create("fake:submission3"), fsModelBuilder);
         } catch (InvalidModel invalidModel) {
             throw new RuntimeException(invalidModel.getMessage(), invalidModel);
         }
@@ -124,8 +126,10 @@ public class DepositTestUtil {
 
     public static DepositSubmission composeSubmission(URI submissionUri) {
         SharedSubmissionUtil util = new SharedSubmissionUtil();
+        FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder();
+
         try {
-            return util.asDepositSubmission(submissionUri);
+            return util.asDepositSubmission(submissionUri, fsModelBuilder);
         } catch (InvalidModel invalidModel) {
             throw new RuntimeException(invalidModel.getMessage(), invalidModel);
         }
