@@ -41,8 +41,10 @@ import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,6 +174,7 @@ import static submissions.SubmissionResourceUtil.toInputStream;
  * @see PackageVerifier
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
+@RunWith(SpringRunner.class)
 public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixture {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmitAndValidatePackagesIT.class);
