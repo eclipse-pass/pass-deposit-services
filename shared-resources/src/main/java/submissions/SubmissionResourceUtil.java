@@ -74,7 +74,7 @@ import static org.junit.Assert.assertTrue;
  * <h3>Minimal example Submission graph</h3>
  * Replicated below is a sample submission graph.  The URI of the submission is {@code fake:submission10}, which is the
  * same URI a developer would use to identify the graph.  Note the JSON objects contained in the graph each have opaque
- * identifiers, and the objects are properly linked to each other according to the <a href="https://github .com/OA-PASS/pass-data-model">PASS data model</a>.
+ * identifiers, and the objects are properly linked to each other according to the <a href="https://github.com/OA-PASS/pass-data-model">PASS data model</a>.
  * To retrieve this graph could invoke a couple different methods depending on the need:
  * <dl>
  *     <dt>{@link #lookupStream(URI)}</dt>
@@ -92,7 +92,7 @@ import static org.junit.Assert.assertTrue;
  * PassJsonFedoraAdapter passAdapter = .... ;
  * // A Map of local entity URIs to the entity that was created in the repository (effectively allowing you to map from
  * // the local URI of a resource to the remote URI of a resource)
- * HashMap<URI, PassEntity> uploadedEntities = new HashMap<>();
+ * HashMap&lt;URI, PassEntity&gt; uploadedEntities = new HashMap&lt;&gt;();
  * passAdapter.jsonToFcrepo(lookupStream("fake:submission10"), uploadedEntities);
  * </pre>
  * Example graph:

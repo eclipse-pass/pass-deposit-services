@@ -43,8 +43,8 @@ public class SharedResourceUtil {
      * Locates a test resource on the classpath by its name.
      * Caller is responsible for closing the returned stream.
      *
-     * @param resourceName
-     * @return
+     * @param resourceName the classpath resource name
+     * @return the input stream
      */
     public static InputStream findStreamByName(String resourceName) {
         return findStreamByName(resourceName, null);
@@ -54,9 +54,9 @@ public class SharedResourceUtil {
      * Locates a test resource on the classpath by its name.
      * Caller is responsible for closing the returned stream.
      *
-     * @param resourceName
-     * @param baseClass
-     * @return
+     * @param resourceName the classpath resource name
+     * @param baseClass the base class to scan from
+     * @return the input stream
      */
     public static InputStream findStreamByName(String resourceName, Class<?> baseClass) {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
@@ -94,8 +94,8 @@ public class SharedResourceUtil {
     /**
      * Finds the URI of a test resource using the resource's name.
      *
-     * @param resourceName
-     * @return
+     * @param resourceName the classpath resource name
+     * @return the uri of the resource
      */
     public static URI findUriByName(String resourceName) {
         return findUriByName(resourceName, null);
@@ -104,9 +104,9 @@ public class SharedResourceUtil {
     /**
      * Finds the URI of a test resource using the resource's name.
      *
-     * @param resourceName
-     * @param baseClass
-     * @return
+     * @param resourceName the classpath resource name
+     * @param baseClass the base class to scan from
+     * @return the uri of the resource
      */
     public static URI findUriByName(String resourceName, Class<?> baseClass) {
         Set<SharedResourceUtil.ElementPathPair> seen = new HashSet<>();
