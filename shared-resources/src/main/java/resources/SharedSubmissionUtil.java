@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Johns Hopkins University
+ * Copyright 2019 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.deposit.builder.fs;
+package resources;
 
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static submissions.SubmissionResourceUtil.lookupUri;
 
 /**
@@ -29,24 +28,14 @@ import static submissions.SubmissionResourceUtil.lookupUri;
  */
 public class SharedSubmissionUtil {
 
-    private FilesystemModelBuilder fsModelBuilder = new FilesystemModelBuilder();
-
-    public SharedSubmissionUtil() {
-
-    }
-
-    public SharedSubmissionUtil(FilesystemModelBuilder fsModelBuilder) {
-        this.fsModelBuilder = fsModelBuilder;
-    }
-
-    public DepositSubmission asDepositSubmission(URI submissionUri) throws InvalidModel {
+    public DepositSubmission asDepositSubmission(URI submissionUri, SubmissionBuilder builder) throws InvalidModel {
         URI submissionJsonUri = lookupUri(submissionUri);
 
         if (submissionJsonUri == null) {
             throw new RuntimeException("Unable to look up test resource URI for submission '" + submissionUri + "'");
         }
 
-        return fsModelBuilder.build(submissionJsonUri.toString());
+        return builder.build(submissionJsonUri.toString());
     }
 
 }

@@ -16,12 +16,13 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.DepositTestUtil;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.fs.SharedSubmissionUtil;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import resources.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.Before;
@@ -64,6 +65,8 @@ public abstract class BaseAssemblerIT {
     protected static final Logger LOG = LoggerFactory.getLogger(BaseAssemblerIT.class);
 
     protected SharedSubmissionUtil submissionUtil;
+
+    protected SubmissionBuilder builder;
 
     /**
      * The custodial resources that are to be packaged up by {@link #setUp()}.  They should be present in the extracted
@@ -119,6 +122,7 @@ public abstract class BaseAssemblerIT {
     @Before
     public void setUp() throws Exception {
         submissionUtil = new SharedSubmissionUtil();
+        builder = new FilesystemModelBuilder();
         mbf = metadataBuilderFactory();
         rbf = resourceBuilderFactory();
         AbstractAssembler underTest = assemblerUnderTest();
@@ -143,7 +147,7 @@ public abstract class BaseAssemblerIT {
     }
 
     protected void prepareSubmission(URI submissionUri) throws InvalidModel {
-        submission = submissionUtil.asDepositSubmission(submissionUri);
+        submission = submissionUtil.asDepositSubmission(submissionUri, builder);
     }
 
     /**

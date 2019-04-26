@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Johns Hopkins University
+ * Copyright 2019 Johns Hopkins University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 package org.dataconservancy.pass.deposit.builder.fs;
 
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.junit.Test;
+import resources.SharedSubmissionUtil;
 import submissions.SubmissionResourceUtil;
 
 import static org.junit.Assert.assertNotNull;
@@ -28,13 +30,15 @@ public class SharedSubmissionUtilTest {
 
     private SharedSubmissionUtil underTest = new SharedSubmissionUtil();
 
+    private FilesystemModelBuilder builder = new FilesystemModelBuilder();
+
     @Test
     public void testLookupByUri() throws Exception {
         String msg = "Unable to convert test submission uri '%s' to a DepositSubmission";
 
         SubmissionResourceUtil.submissionUris().forEach(submissionUri -> {
             try {
-                assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri));
+                assertNotNull(String.format(msg, submissionUri), underTest.asDepositSubmission(submissionUri, builder));
             } catch (InvalidModel invalidModel) {
                 throw new RuntimeException(String.format(msg, submissionUri), invalidModel);
             }

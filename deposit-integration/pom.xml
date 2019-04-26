@@ -134,8 +134,6 @@
             <artifactId>shared-resources</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
         </dependency>
 
         <dependency>
