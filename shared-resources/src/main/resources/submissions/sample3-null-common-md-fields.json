@@ -25,7 +25,7 @@
     "@type" : "Publication"
   },
   {
-    "name" : "AAPS PharmSci",
+    "journalName" : "AAPS PharmSci",
     "issns" : [ "issn123", "issn456" ],
     "nlmta" : "AAPS PharmSci",
     "pmcParticipation" : "A",
