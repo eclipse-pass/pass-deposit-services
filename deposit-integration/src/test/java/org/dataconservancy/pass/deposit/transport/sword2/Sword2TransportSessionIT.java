@@ -685,7 +685,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
     private OkHttpClient newOkHttpClient(AuthCredentials authCreds) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.readTimeout(30, TimeUnit.SECONDS);
+        builder.readTimeout(120, TimeUnit.SECONDS);
 
         String builderName = builder.getClass().getSimpleName();
         String builderHashcode = toHexString(identityHashCode(builder.getClass()));
