@@ -26,7 +26,17 @@ public enum JournalPublicationType {
 
     PPUB("Print"),
 
-    EPUB("Electronic");
+    /**
+     * No longer represented in the metadata blob.  Replaced by {@link #OPUB} with the advent of the JHU Global schema.
+     * NIHMS metadata serialization still uses this publication type when serializing metadata.
+     */
+    EPUB("Electronic"),
+
+    /**
+     * New with JHU Global schema.
+     * NIHMS metadata serialization will translate OPUB type descriptions to EPUB when serializing metadata.
+     */
+    OPUB("Online");
 
     private String typeDescription;
 
