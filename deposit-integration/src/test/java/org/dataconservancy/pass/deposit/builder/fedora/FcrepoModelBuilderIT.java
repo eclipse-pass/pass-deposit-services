@@ -62,7 +62,7 @@ public class FcrepoModelBuilderIT {
     private static final Map<String, DepositMetadata.IssnPubType> EXPECTED_ISSNS =
             new HashMap<String, DepositMetadata.IssnPubType>() {
                 {
-                    put("2042-650X", new DepositMetadata.IssnPubType("2042-650X", JournalPublicationType.EPUB));
+                    put("2042-650X", new DepositMetadata.IssnPubType("2042-650X", JournalPublicationType.OPUB));
                     put("2042-6496", new DepositMetadata.IssnPubType("2042-6496", JournalPublicationType.PPUB));
                 }
             };

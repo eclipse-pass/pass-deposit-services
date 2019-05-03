@@ -54,7 +54,7 @@ public class FilesystemModelBuilderTest {
             new HashMap<String, JournalPublicationType>() {
                 {
                     put("2042-6496", JournalPublicationType.PPUB);
-                    put("2042-650X", JournalPublicationType.EPUB);
+                    put("2042-650X", JournalPublicationType.OPUB);
                 }
             };
 
