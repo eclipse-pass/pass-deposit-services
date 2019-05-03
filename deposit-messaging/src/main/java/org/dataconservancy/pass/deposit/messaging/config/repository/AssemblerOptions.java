@@ -63,12 +63,18 @@ public class AssemblerOptions {
     public Map<String, Object> asOptionsMap() {
         return new HashMap<String, Object>() {
             {
-                put(Compression.KEY, Compression.OPTS.valueOf(compression.toUpperCase()));
-                put(Archive.KEY, Archive.OPTS.valueOf(archive.toUpperCase()));
-                put(Checksum.KEY,
-                        algorithms.stream()
-                                .map(algo -> Checksum.OPTS.valueOf(algo.toUpperCase()))
-                                .collect(Collectors.toList()));
+                if (compression != null) {
+                    put(Compression.KEY, Compression.OPTS.valueOf(compression.toUpperCase()));
+                }
+                if (archive != null) {
+                    put(Archive.KEY, Archive.OPTS.valueOf(archive.toUpperCase()));
+                }
+                if (algorithms != null) {
+                    put(Checksum.KEY,
+                            algorithms.stream()
+                                    .map(algo -> Checksum.OPTS.valueOf(algo.toUpperCase()))
+                                    .collect(Collectors.toList()));
+                }
             }
         };
     }

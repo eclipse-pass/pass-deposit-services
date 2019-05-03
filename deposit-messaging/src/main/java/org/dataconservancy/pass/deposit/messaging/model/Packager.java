@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.messaging.model;
 
 import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AssemblerOptions;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.Integer.toHexString;
@@ -78,19 +80,49 @@ public class Packager {
         return assembler;
     }
 
+    /**
+     * Returns the options of associated with the Assembler, including the Assembler specification.
+     *
+     * <p><strong>Example assembler configuration</strong></p>
+     * <pre>
+     * "assembler": {
+     *       "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
+     *       "beanName": "dspaceMetsAssembler",
+     *       "options": {
+     *         "archive": "ZIP",
+     *         "compression": "NONE",
+     *         "algorithms": [
+     *           "sha512",
+     *           "md5"
+     *         ]
+     *       }
+     *     }
+     * </pre>
+     * This method will return each key in {@code options}, <em>and</em> include {@code specification} as well. Keys in
+     * the returned {@code Map} are according to {@link PackageOptions}.
+     *
+     * @return the Assembler options, including the specification
+     */
     public Map<String, Object> getAssemblerOptions() {
         LOG.debug(">>>> Packager {}@{} RepositoryConfig: {}", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)),
                 (repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
 
         AssemblerOptions assemblerOptions = repositoryConfig.getAssemblerConfig().getOptions();
-        if (assemblerOptions == null) {
+        if (assemblerOptions == null || assemblerOptions.asOptionsMap() == null ||
+                assemblerOptions.asOptionsMap().isEmpty()) {
             LOG.warn("The assembler {} associated with the packager {} does not have any configured options.  " +
                     "This may result in assembly failure or corrupt packages.", assembler.getClass().getName(), name);
-            return Collections.emptyMap();
         }
 
-        return assemblerOptions.asOptionsMap();
+        Map<String, Object> optionsMap = (assemblerOptions == null || assemblerOptions.asOptionsMap() == null ||
+                assemblerOptions.asOptionsMap().isEmpty()) ?
+                new HashMap<>() : assemblerOptions.asOptionsMap();
+
+        // Include the package specification in the options map
+        optionsMap.putIfAbsent(PackageOptions.Spec.KEY, repositoryConfig.getAssemblerConfig().getSpec());
+
+        return optionsMap;
     }
 
     public Transport getTransport() {
