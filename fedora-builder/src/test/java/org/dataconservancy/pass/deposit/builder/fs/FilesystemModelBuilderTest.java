@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
@@ -40,6 +41,7 @@ import static submissions.SubmissionResourceUtil.lookupStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +89,10 @@ public class FilesystemModelBuilderTest {
     private static final URI SAMPLE_SUBMISSION_RESOURCE_UNTRIMMED_DOI = URI.create("fake:submission9");
 
     private static final URI SAMPLE_SUBMISSION_RESOURCE_TABLE_AND_FIGURE = URI.create("fake:submission4");
+
+    private static final URI SAMPLE_SUBMISSION_NO_ISSN = URI.create("fake:submission15");
+
+    private static final URI SAMPLE_SUBMISSION_INCOMPLETE_ISSN = URI.create("fake:submission16");
 
     private SubmissionResourceUtil submissionUtil;
 
@@ -217,5 +223,25 @@ public class FilesystemModelBuilderTest {
         assertTrue(types.contains(DepositFileType.supplement));
         assertTrue(types.contains(DepositFileType.table));
         assertTrue(types.contains(DepositFileType.manuscript));
+    }
+
+    @Test
+    public void buildWithNoIssnInfo() throws Exception {
+        // Create submission data with no ISSNs: there shouldn't be any ISSNs in the submission
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_NO_ISSN), emptyMap());
+        assertNotNull(submission);
+
+        assertEquals(Collections.emptyMap(), submission.getMetadata().getJournalMetadata().getIssnPubTypes());
+    }
+
+    @Test
+    public void buildWithIncompleteIssnInfo() throws InvalidModel {
+        // Create submission data with incomplete ISSNs: there should be one ISSN in the submission for 2042-650X
+        submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_INCOMPLETE_ISSN), emptyMap());
+        assertNotNull(submission);
+
+        assertEquals(1, submission.getMetadata().getJournalMetadata().getIssnPubTypes().size());
+        assertEquals(JournalPublicationType.OPUB,
+                submission.getMetadata().getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
     }
 }

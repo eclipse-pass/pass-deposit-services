@@ -217,15 +217,24 @@ abstract class ModelBuilder {
                 .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
 
         getArrayProperty(submissionData, ISSNS).ifPresent(issns -> {
-            issns.forEach(issnObj -> {
+            issns.forEach(issnObjAsStr -> {
                 try {
-                    String issn = issnObj.getAsJsonObject().get(ISSN).getAsString();
-                    JournalPublicationType pubType = parseTypeDescription(
-                            issnObj.getAsJsonObject().get(PUB_TYPE_KEY).getAsString());
-                    metadata.getJournalMetadata().getIssnPubTypes()
-                            .putIfAbsent(issn, new DepositMetadata.IssnPubType(issn, pubType));
+                    JsonObject issnObj = issnObjAsStr.getAsJsonObject();
+
+                    Optional<String> issn = getStringProperty(issnObj, ISSN);
+                    Optional<String> pubType = getStringProperty(issnObj, PUB_TYPE_KEY);
+
+                    issn.ifPresent(i ->
+                            pubType.ifPresent(p ->
+                                    metadata.getJournalMetadata()
+                                            .getIssnPubTypes()
+                                            .putIfAbsent(i,
+                                                    new DepositMetadata.IssnPubType(i, parseTypeDescription(p)))));
+
                 } catch (Exception e) {
-                    LOG.warn("Unable to parse ISSNs from '{}'", issnObj.getAsString(), e);
+                    // Shouldn't happen.  If ISSNs can't be parsed, then they should be ignored, and not included
+                    // in the Journal metadata
+                    LOG.warn("Unable to parse ISSNs from '{}'", issnObjAsStr, e);
                     throw new RuntimeException(e);
                 }
             });
