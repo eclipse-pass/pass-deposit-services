@@ -22,7 +22,7 @@ before_install:
 install: mvn -U install -Ddocker.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml deploy
-   -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false; fi
+   -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false -Ddocker.useColor=false; fi
 
 jdk:
 - oraclejdk8
