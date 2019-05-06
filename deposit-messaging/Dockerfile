@@ -1,5 +1,11 @@
 FROM openjdk:8u151-jdk-alpine3.7
 
+LABEL version=${project.parent.version}
+LABEL commit=${git.commit.id.abbrev}
+LABEL commitdate=${git.commit.time}
+LABEL builddate=${git.build.time}
+LABEL dirty=${git.dirty}
+
 ARG SPRING_ACTIVEMQ_BROKER_URL
 ARG PASS_FEDORA_BASEURL
 ARG PASS_FEDORA_USER
