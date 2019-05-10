@@ -145,8 +145,8 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
             if (packager == null) {
                 throw new NullPointerException(format("No Packager found for tuple [%s, %s, %s]: " +
-                                "Missing Packager for Repository named '%s'",
-                        submission.getId(), deposit.getId(), repo.getId(), repo.getName()));
+                                "Missing Packager for Repository named '%s' (key: %s)",
+                        submission.getId(), deposit.getId(), repo.getId(), repo.getName(), repo.getRepositoryKey()));
             }
             deposit = passClient.createAndReadResource(deposit, Deposit.class);
         } catch (Exception e) {
