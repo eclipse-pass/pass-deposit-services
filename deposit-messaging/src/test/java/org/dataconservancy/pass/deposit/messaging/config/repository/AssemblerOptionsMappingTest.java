@@ -19,7 +19,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -36,6 +38,19 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
             "        ]\n" +
             "}";
 
+    private static final String OPTIONS_CONFIG_ADDITIONAL_VALUES = "" +
+            "{\n" +
+            "        \"archive\": \"ZIP\",\n" +
+            "        \"compression\": \"NONE\",\n" +
+            "        \"algorithms\": [\n" +
+            "          \"sha512\",\n" +
+            "          \"md5\"\n" +
+            "        ],\n" +
+            "        \"stringkey\": \"stringvalue\",\n" +
+            "        \"arraykey\": [\n" +
+            "          \"arrayvalue\"\n" +
+            "        ]\n" +
+            "}";
 
     @Test
     public void mapOptions() throws IOException {
@@ -48,4 +63,17 @@ public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
         assertTrue(options.getAlgorithms().contains("md5"));
     }
 
+    @Test
+    public void mapOptionsWithAddtionalValues() throws IOException {
+        AssemblerOptions options = mapper.readValue(OPTIONS_CONFIG_ADDITIONAL_VALUES, AssemblerOptions.class);
+
+        assertEquals("ZIP", options.getArchive());
+        assertEquals("NONE", options.getCompression());
+        assertEquals(2, options.getAlgorithms().size());
+        assertTrue(options.getAlgorithms().contains("sha512"));
+        assertTrue(options.getAlgorithms().contains("md5"));
+
+        assertEquals("stringvalue", options.getOptionsMap().get("stringkey"));
+        assertEquals(singletonList("arrayvalue"), options.getOptionsMap().get("arraykey"));
+    }
 }

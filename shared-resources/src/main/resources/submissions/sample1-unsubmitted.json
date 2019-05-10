@@ -7,7 +7,7 @@
     "aggregatedDepositStatus" : "not-started",
     "submissionStatus" : "approval-requested",
     "publication" : "fake:publication1",
-    "repositories" : [ "fake:repository1", "fake:repository2" ],
+    "repositories" : [ "fake:repository1", "fake:repository2", "fake:repository3" ],
     "submitter" : "fake:user2",
     "grants" : [ "fake:grant1" ],
     "@id" : "fake:submission11",
@@ -49,6 +49,13 @@
     "url" : "http://j10p.com",
     "formSchema" : "{}",
     "@id" : "fake:repository2",
+    "@type" : "Repository"
+  },
+  {
+    "name" : "BagIt Repo",
+    "repositoryKey" : "BagIt",
+    "description" : "Repository for storing bags",
+    "@id" : "fake:repository3",
     "@type" : "Repository"
   },
   {

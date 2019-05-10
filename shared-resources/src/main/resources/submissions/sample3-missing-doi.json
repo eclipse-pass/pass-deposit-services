@@ -41,6 +41,13 @@
     "@type" : "Repository"
   },
   {
+    "name" : "BagIt Repo",
+    "repositoryKey" : "BagIt",
+    "description" : "Repository for storing bags",
+    "@id" : "fake:repository3",
+    "@type" : "Repository"
+  },
+  {
     "awardNumber" : "R01EY026617",
     "awardStatus" : "active",
     "localKey" : "112233",
