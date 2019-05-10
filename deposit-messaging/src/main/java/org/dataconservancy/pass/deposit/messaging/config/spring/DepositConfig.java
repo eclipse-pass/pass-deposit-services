@@ -332,7 +332,7 @@ public class DepositConfig {
     public ThreadPoolTaskExecutor depositWorkers(DepositServiceErrorHandler errorHandler) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setMaxPoolSize(depositWorkersConcurrency);
-        executor.setQueueCapacity(10);
+        executor.setQueueCapacity(depositWorkersConcurrency * 2);
         executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
             String msg = String.format(">>>> Task %s@%s rejected, will be retried later.",
                     rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
