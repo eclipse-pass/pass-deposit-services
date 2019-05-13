@@ -16,7 +16,9 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
@@ -33,19 +35,26 @@ import org.junit.rules.ExpectedException;
 import org.springframework.core.task.TaskRejectedException;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomAggregatedDepositStatusExcept;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.*;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
+import static org.dataconservancy.pass.model.Repository.IntegrationType.WEB_LINK;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -58,6 +67,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -65,6 +75,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static submissions.SubmissionResourceUtil.asJson;
+import static submissions.SubmissionResourceUtil.asStream;
+import static submissions.SubmissionResourceUtil.lookupUri;
 
 public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
@@ -181,6 +194,104 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Insure that a DepositTask was submitted for each Deposit (number of Repositories == number of Deposits)
         verify(taskExecutor, times(submission.getRepositories().size())).execute(any(DepositTask.class));
+    }
+
+    /**
+     * Insures that the DepositTaskHelper does not process any [Submission, Deposit, Repository] tuples where the
+     * Repository has an IntegrationType of "web-link".
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void filterRepositoryByIntegrationType() {
+
+        // Mock a DepositTaskHelper for this test.
+        DepositTaskHelper mockHelper = mock(DepositTaskHelper.class);
+        underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
+                submissionPolicy, mockHelper, cri);
+
+        // Boilerplate to build a sample Submission and mock the PassClient to return the Submission and Repository
+        // resources when asked.
+        FilesystemModelBuilder builder = new FilesystemModelBuilder();
+        PassJsonAdapterBasic adapter = new PassJsonAdapterBasic();
+
+        URI submissionUri = URI.create("fake:submission1");
+
+        Map<URI, Submission> submissionMap =
+                asStream(asJson(submissionUri)).filter(node -> node.has("@id") && node.has("@type") && node.get(
+                        "@type").asText().equals("Submission")).collect(Collectors.toMap(node -> URI.create(node.get(
+                                "@id").asText()), node -> {
+            try {
+                return adapter.toModel(toInputStream(node.toString(), UTF_8), Submission.class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
+
+        Map<URI, Repository> repoMap = asStream(asJson(submissionUri)).filter(node -> node.has("@id") && node.has(
+                "@type") && node.get("@type").asText().equals("Repository")).collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()), node -> {
+            try {
+                return adapter.toModel(toInputStream(node.toString(), UTF_8), Repository.class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
+
+        when(passClient.readResource(any(URI.class), eq(Submission.class))).then(inv -> submissionMap.get(inv.getArgument(0)));
+
+        when(passClient.readResource(any(URI.class), eq(Repository.class))).then(inv -> repoMap.get(inv.getArgument(0)));
+
+        // Mock a successful CRI
+        when(cri.performCritical(eq(submissionUri), eq(Submission.class), any(Predicate.class),
+                any(BiPredicate.class), any(Function.class))).thenAnswer(inv -> {
+            return new CriticalResult<>(builder.build(lookupUri(submissionUri).toString()),
+                    submissionMap.get(submissionUri), true);
+        });
+
+        // Mock a Package registry lookup
+        when(packagerRegistry.get(any())).thenReturn(mock(Packager.class));
+
+        // Mock the DepositTaskHelper to record the Repositories it is submitting to.
+        List<Repository> capturedRepos = new ArrayList<>();
+        doAnswer(inv -> {
+            capturedRepos.add(inv.getArgument(2));
+            return null;
+        }).when(mockHelper).submitDeposit(eq(submissionMap.get(submissionUri)), any(DepositSubmission.class),
+                any(Repository.class), eq(null), any(Packager.class));
+
+        // Total count of Repository resources attached to the Submission
+        int allRepos = submissionMap.get(submissionUri).getRepositories().size();
+
+        // Verify that we start with at least one repository that has an integration type of web-link attached
+        // to the Submission.  The SubmissionProcessor should filter those repositories, and not invoke the
+        // DepositTaskHelper for those [Deposit, Submission, Repository] tuples
+        int weblinkRepos = (int)submissionMap.get(submissionUri)
+                .getRepositories()
+                .stream()
+                .map(repoMap::get)
+                .filter(repo -> WEB_LINK == repo.getIntegrationType())
+                .count();
+        assertTrue("Expected at least one repository with integration type " + WEB_LINK,
+                weblinkRepos > 0);
+
+
+        // Invoke the SubmissionProcessor
+        underTest.accept(submissionMap.get(submissionUri));
+
+        // Verify the DepositTaskHelper was called once for each *non-web-link* Repository
+        verify(mockHelper, times(allRepos - weblinkRepos))
+                .submitDeposit(
+                        eq(submissionMap.get(submissionUri)),
+                        any(DepositSubmission.class),
+                        any(Repository.class),
+                        eq(null),
+                        any(Packager.class));
+
+        assertEquals(allRepos - weblinkRepos, capturedRepos.size());
+
+        capturedRepos.stream().filter(repo -> WEB_LINK == repo.getIntegrationType()).findAny().ifPresent(repo -> {
+            throw new RuntimeException("Should not have any Repositories with integration type " + WEB_LINK);
+        });
+
     }
 
     @Test
