@@ -1,4 +1,4 @@
-FROM openjdk:8u151-jdk-alpine3.7
+FROM openjdk:8u212-jre-alpine3.9@sha256:5c5867cd2d4d198d1e53562c8202dfa388832b6f7d8276e69eae212b326c7777
 
 LABEL version=${project.parent.version}
 LABEL commit=${git.commit.id.abbrev}
@@ -49,7 +49,8 @@ RUN apk update && \
     apk add --no-cache ca-certificates wget python py-pip && \
     pip install awscli && \
     chmod 700 /bin/aws_entrypoint.sh && \
-    mkdir /app
+    mkdir /app && \
+    echo "networkaddress.cache.ttl=10" >> ${JAVA_HOME}/lib/security/java.security
 
 COPY ${project.build.directory}/${project.artifactId}-${project.version}-exec.jar .
 
