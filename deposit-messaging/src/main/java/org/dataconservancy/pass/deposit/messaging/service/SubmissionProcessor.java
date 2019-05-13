@@ -126,7 +126,10 @@ public class SubmissionProcessor implements Consumer<Submission> {
 
         LOG.debug(">>>> Processing Submission {}", submission.getId());
 
-        updatedS.getRepositories().stream().map(repoUri -> passClient.readResource(repoUri, Repository.class))
+        updatedS.getRepositories()
+                .stream()
+                .map(repoUri -> passClient.readResource(repoUri, Repository.class))
+                .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
                 .forEach(repo -> {
                     submitDeposit(updatedS, depositSubmission, repo);
                 });
