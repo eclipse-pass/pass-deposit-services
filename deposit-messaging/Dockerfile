@@ -1,4 +1,4 @@
-FROM openjdk:8u212-jre-alpine3.9@sha256:5c5867cd2d4d198d1e53562c8202dfa388832b6f7d8276e69eae212b326c7777
+FROM openjdk:8u151-jdk-alpine3.7@sha256:bd4030dd52cfb61a61e622fe74483e4e2089a2ef3d782bbf742a0d99093da119
 
 LABEL version=${project.parent.version}
 LABEL commit=${git.commit.id.abbrev}
