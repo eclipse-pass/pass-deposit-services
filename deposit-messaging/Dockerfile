@@ -39,7 +39,8 @@ ENV DEPOSIT_SERVICES_VERSION=${project.version} \
     PASS_FEDORA_USER=${PASS_FEDORA_USER:-fedoraAdmin} \
     PASS_FEDORA_PASSWORD=${PASS_FEDORA_PASSWORD:-moo} \
     PASS_ELASTICSEARCH_LIMIT=${PASS_ELASTICSEARCH_LIMIT:-100} \
-    PASS_DEPOSIT_REPOSITORY_CONFIGURATION=${PASS_DEPOSIT_REPOSITORY_CONFIGURATION:-classpath:/repositories.json}
+    PASS_DEPOSIT_REPOSITORY_CONFIGURATION=${PASS_DEPOSIT_REPOSITORY_CONFIGURATION:-classpath:/repositories.json} \
+    IMAGE_JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/jre
 
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${DEPOSIT_DEBUG_PORT}
 
@@ -50,7 +51,7 @@ RUN apk update && \
     pip install awscli && \
     chmod 700 /bin/aws_entrypoint.sh && \
     mkdir /app && \
-    echo "networkaddress.cache.ttl=10" >> ${JAVA_HOME}/lib/security/java.security
+    echo "networkaddress.cache.ttl=10" >> ${IMAGE_JAVA_HOME}/lib/security/java.security
 
 COPY ${project.build.directory}/${project.artifactId}-${project.version}-exec.jar .
 
