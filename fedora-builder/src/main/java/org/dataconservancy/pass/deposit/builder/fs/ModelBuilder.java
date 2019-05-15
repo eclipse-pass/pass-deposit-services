@@ -234,8 +234,7 @@ abstract class ModelBuilder {
                 } catch (Exception e) {
                     // Shouldn't happen.  If ISSNs can't be parsed, then they should be ignored, and not included
                     // in the Journal metadata
-                    LOG.warn("Unable to parse ISSNs from '{}'", issnObjAsStr, e);
-                    throw new RuntimeException(e);
+                    LOG.warn("Unable to parse ISSNs from '{}'", issnObjAsStr);
                 }
             });
         });
@@ -287,7 +286,7 @@ abstract class ModelBuilder {
      * @param metadataStr
      * @throws InvalidModel
      */
-    private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
+    void processMetadata(DepositMetadata depositMetadata, String metadataStr)
             throws InvalidModel {
         JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
         processCommonMetadata(depositMetadata, json);
