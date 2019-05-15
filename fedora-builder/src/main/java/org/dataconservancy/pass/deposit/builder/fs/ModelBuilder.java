@@ -287,7 +287,7 @@ abstract class ModelBuilder {
      * @param metadataStr
      * @throws InvalidModel
      */
-    private void processMetadata(DepositMetadata depositMetadata, String metadataStr)
+    void processMetadata(DepositMetadata depositMetadata, String metadataStr)
             throws InvalidModel {
         JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
         processCommonMetadata(depositMetadata, json);
