@@ -19,6 +19,7 @@ package org.dataconservancy.pass.deposit.model;
 import java.net.URI;
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -462,6 +463,13 @@ public class DepositMetadata {
         public void setType(PERSON_TYPE type) {
             this.type = type;
         }
+    }
+
+    public DepositMetadata() {
+        this.manuscriptMetadata = new Manuscript();
+        this.journalMetadata = new Journal();
+        this.articleMetadata = new Article();
+        this.persons = new ArrayList<>();
     }
 
     public Manuscript getManuscriptMetadata() {
