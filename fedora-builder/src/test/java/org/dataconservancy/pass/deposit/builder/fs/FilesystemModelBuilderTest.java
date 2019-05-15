@@ -230,7 +230,6 @@ public class FilesystemModelBuilderTest {
         // Create submission data with no ISSNs: there shouldn't be any ISSNs in the submission
         submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_NO_ISSN), emptyMap());
         assertNotNull(submission);
-
         assertEquals(Collections.emptyMap(), submission.getMetadata().getJournalMetadata().getIssnPubTypes());
     }
 
@@ -243,5 +242,139 @@ public class FilesystemModelBuilderTest {
         assertEquals(1, submission.getMetadata().getJournalMetadata().getIssnPubTypes().size());
         assertEquals(JournalPublicationType.OPUB,
                 submission.getMetadata().getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+    }
+
+    /**
+     * Insures that an ISSN must be present with its publication type in order to be parsed into {@link
+     * DepositMetadata.Journal}.
+     * <p>
+     * An ISSN with an ISSN number but without a publication type is not parsed into the Journal metadata.  Likewise,
+     * an ISSN with a publication type but without an ISSN number is not parsed into Journal metadata.
+     * </p>
+     *
+     * @throws InvalidModel shouldn't happen
+     */
+    @Test
+    public void processMetadataIncompleteIssn() throws InvalidModel {
+        /* Testing an "issns" array like:        
+        "issns": [
+            {
+              "pubType": "Print"
+            },
+            {
+              "issn": "2042-650X"
+            }
+          ]
+         */
+        String issns = "{\"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\" } ]}";
+        DepositMetadata depositMetadata = new DepositMetadata();
+
+        underTest.processMetadata(depositMetadata, issns);
+        assertTrue(depositMetadata.getJournalMetadata().getIssnPubTypes().isEmpty());
+    }
+
+    /**
+     * Insures that an ISSN must be present with its publication type in order to be parsed into {@link
+     * DepositMetadata.Journal}.
+     * <p>
+     * An ISSN with an ISSN number but without a publication type is not parsed into the Journal metadata.  Likewise,
+     * an ISSN with a publication type but without an ISSN number is not parsed into Journal metadata.
+     * </p>
+     *
+     * @throws InvalidModel shouldn't happen
+     */
+    @Test
+    public void processMetadataMixedIssn() throws InvalidModel {
+        /* Testing an "issns" array like:
+        "issns": [
+            {
+              "pubType": "Print"
+            },
+            {
+              "issn": "2042-650X", "pubType": "Online"
+            }
+          ]
+         */
+        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\" } ] }";
+        DepositMetadata depositMetadata = new DepositMetadata();
+
+        underTest.processMetadata(depositMetadata, issns);
+        assertEquals(1, depositMetadata.getJournalMetadata().getIssnPubTypes().size());
+        assertEquals(JournalPublicationType.parseTypeDescription("Online"),
+                depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+    }
+
+    /**
+     * Insures that an ISSN must be present with its publication type in order to be parsed into {@link
+     * DepositMetadata.Journal}.
+     * <p>
+     * An ISSN with an ISSN number but without a publication type is not parsed into the Journal metadata.  Likewise,
+     * an ISSN with a publication type but without an ISSN number is not parsed into Journal metadata.
+     * </p>
+     *
+     * @throws InvalidModel shouldn't happen
+     */
+    @Test
+    public void processMetadataMixedIssn2() throws InvalidModel {
+        /* Testing an "issns" array like:
+        "issns": [
+            {
+              "issn": "2042-650X"
+            },
+            {
+              "issn": "2042-650X", "pubType": "Online"
+            }
+          ]
+         */
+        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\" } ] }";
+        DepositMetadata depositMetadata = new DepositMetadata();
+
+        underTest.processMetadata(depositMetadata, issns);
+        assertEquals(1, depositMetadata.getJournalMetadata().getIssnPubTypes().size());
+        assertEquals(JournalPublicationType.parseTypeDescription("Online"),
+                depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+    }
+
+    /**
+     * Insures that parsing an empty array of ISSNs doesn't cause an exception.
+     *
+     * @throws InvalidModel shouldn't happen
+     */
+    @Test
+    public void emptyIssns() throws InvalidModel {
+        String issns = "{ \"title\": \"foo\", \"issns\": [ ] }";
+        DepositMetadata depositMetadata = new DepositMetadata();
+
+        underTest.processMetadata(depositMetadata, issns);
+        assertTrue(depositMetadata.getJournalMetadata().getIssnPubTypes().isEmpty());
+
+        // insure that *something* parsed
+        assertEquals("foo", depositMetadata.getArticleMetadata().getTitle());
+    }
+
+    /**
+     * Insure that processing of an unknown publication type does not halt processing.  The ISSN with the unknown
+     * publication type should be ignored.
+     *
+     * @throws InvalidModel shouldn't happen
+     */
+    @Test
+    public void unknownPublicationType() throws InvalidModel {
+        // Insure the "Unknown" type is actually unknown
+        String UNKNOWN_TYPE = "Unknown";
+        try {
+            JournalPublicationType.parseTypeDescription(UNKNOWN_TYPE);
+            fail("Must use a publication type that is not known to " + JournalPublicationType.class);
+        } catch (Exception e) {
+            // expected
+        }
+        String issns = "{ \"title\": \"foo\", \"issns\": [ { \"issn\": \"2042-650X\", \"pubType\": \"" + UNKNOWN_TYPE + "\" } ] }";
+        DepositMetadata depositMetadata = new DepositMetadata();
+
+        underTest.processMetadata(depositMetadata, issns);
+        assertTrue(depositMetadata.getJournalMetadata().getIssnPubTypes().isEmpty());
+
+        // insure that *something* parsed
+        assertEquals("foo", depositMetadata.getArticleMetadata().getTitle());
     }
 }
