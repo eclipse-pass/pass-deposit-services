@@ -36,6 +36,7 @@ import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Before;
@@ -298,6 +299,10 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
 
         long expectedRepositoryCopyCount = submissions.stream()
                 .flatMap(submission -> submission.getRepositories().stream())
+                .map(repoUri -> passClient.readResource(repoUri, Repository.class))
+                // Filter out Repositories that have an integration type of web link, because Deposit Services will not
+                // attempt deposits to those repositories
+                .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
                 .count();
 
         // A Condition executes this logic, and provides the results (the Set of RepositoryCopy resources created for
