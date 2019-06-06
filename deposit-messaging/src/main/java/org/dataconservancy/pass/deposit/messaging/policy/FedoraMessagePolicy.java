@@ -49,7 +49,7 @@ public abstract class FedoraMessagePolicy implements JmsMessagePolicy {
                 isMessageA(ret.EVENT_TYPE, ret.RESOURCE_TYPE, messageContext));
 
         if (!result) {
-            LOG.trace(">>>> Dropping message {}, it did not match any of the acceptable " +
+            LOG.trace("Dropping message {}, it did not match any of the acceptable " +
                             "FedoraResourceEventTypes {}: was {}",
                     messageContext.id(),
                     acceptableFedoraResourceEventTypes().stream().map(Objects::toString).collect(joining(",")),

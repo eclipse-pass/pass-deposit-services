@@ -237,7 +237,7 @@ public abstract class AbstractAssembler implements Assembler {
                     if (fedoraBaseUrl != null && location.startsWith(fedoraBaseUrl)) {
                         if (fedoraUser != null) {
                             try {
-                                LOG.trace(">>>> Returning AuthenticatedResource for {}", location);
+                                LOG.trace("Returning AuthenticatedResource for {}", location);
                                 delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);

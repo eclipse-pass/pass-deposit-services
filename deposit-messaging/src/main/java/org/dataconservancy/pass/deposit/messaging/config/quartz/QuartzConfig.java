@@ -113,7 +113,7 @@ public class QuartzConfig {
         executor.setMaxPoolSize(jobWorkerConcurrency);
         executor.setQueueCapacity(10);
         executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
-            String msg = String.format(">>>> Task %s@%s rejected by the Quartz-Worker thread pool task executor.",
+            String msg = String.format("Task %s@%s rejected by the Quartz-Worker thread pool task executor.",
                     rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
             LOG.error(msg);
         });

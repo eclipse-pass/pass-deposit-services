@@ -59,7 +59,7 @@ public class DrainQueueConfig {
     @JmsListener(destination = "submission")
     public void drain(Message msg) {
         try {
-            LOG.trace(">>>> draining message {}", msg.getJMSMessageID());
+            LOG.trace("draining message {}", msg.getJMSMessageID());
             msg.acknowledge();
         } catch (JMSException e) {
             throw new RuntimeException(e);

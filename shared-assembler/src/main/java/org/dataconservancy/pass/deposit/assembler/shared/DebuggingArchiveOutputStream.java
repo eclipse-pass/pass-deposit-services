@@ -38,7 +38,7 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
 
     @Override
     public void putArchiveEntry(ArchiveEntry entry) throws IOException {
-        STREAMING_IO_LOG.debug(">>>> {}@{} putting entry: '{}', {} bytes (directory: {})",
+        STREAMING_IO_LOG.debug("{}@{} putting entry: '{}', {} bytes (directory: {})",
                 this.getClass().getSimpleName(), toHexString(identityHashCode(this)),
                 entry.getName(), entry.getSize(), entry.isDirectory());
         delegate.putArchiveEntry(entry);
@@ -46,14 +46,14 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
 
     @Override
     public void closeArchiveEntry() throws IOException {
-        STREAMING_IO_LOG.debug(">>>> {}@{} closing entry", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug("{}@{} closing entry", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)));
         delegate.closeArchiveEntry();
     }
 
     @Override
     public void finish() throws IOException {
-        STREAMING_IO_LOG.debug(">>>> {}@{} finish() invoked: ",
+        STREAMING_IO_LOG.debug("{}@{} finish() invoked: ",
                 this.getClass().getSimpleName(), toHexString(identityHashCode(this)),
                 new Exception("finish() invoked"));
         delegate.finish();
@@ -61,14 +61,14 @@ public class DebuggingArchiveOutputStream extends ArchiveOutputStream {
 
     @Override
     public ArchiveEntry createArchiveEntry(File inputFile, String entryName) throws IOException {
-        STREAMING_IO_LOG.debug(">>>> {}@{} creating entry: '{}' from '{}'", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug("{}@{} creating entry: '{}' from '{}'", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), entryName, inputFile);
         return delegate.createArchiveEntry(inputFile, entryName);
     }
 
     @Override
     public void close() throws IOException {
-        STREAMING_IO_LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug("{}@{} close() invoked: ", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), new Exception("close() invoked"));
         delegate.close();
     }

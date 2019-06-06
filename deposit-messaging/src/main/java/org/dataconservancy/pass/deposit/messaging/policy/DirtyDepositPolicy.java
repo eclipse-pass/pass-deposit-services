@@ -41,7 +41,7 @@ public class DirtyDepositPolicy implements Policy<Deposit.DepositStatus> {
     @Override
     public boolean test(Deposit.DepositStatus o) {
         if (o != null) {
-            LOG.debug(">>>> Deposit will not be accepted for processing: status = '{}'", o);
+            LOG.debug("Deposit will not be accepted for processing: status = '{}'", o);
             return false;
         }
 

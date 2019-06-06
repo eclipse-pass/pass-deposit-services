@@ -73,7 +73,7 @@ public class DepositTaskHelper {
 
     public static final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
 
-    public static final String MISSING_PACKAGER = ">>>> No Packager found for tuple [{}, {}, {}]: " +
+    public static final String MISSING_PACKAGER = "No Packager found for tuple [{}, {}, {}]: " +
             "Missing Packager for Repository named '{}', marking Deposit as FAILED.";
 
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
@@ -157,7 +157,7 @@ public class DepositTaskHelper {
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
 
-            LOG.debug(">>>> Submitting task ({}@{}) for tuple [{}, {}, {}]",
+            LOG.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
                     depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
                     submission.getId(), repo.getId(), deposit.getId());
             taskExecutor.execute(depositTask);

@@ -188,7 +188,7 @@ public class ArchivingPackageStream implements PackageStream {
                 LOG.error("Error encountered when writing the package stream.", throwable);
             }
 
-            STREAMING_IO_LOG.debug(">>>> {} closing {} and {}", this, pipedOut, archiveOut);
+            STREAMING_IO_LOG.debug("{} closing {} and {}", this, pipedOut, archiveOut);
             try {
 
                 pipedOut.close();

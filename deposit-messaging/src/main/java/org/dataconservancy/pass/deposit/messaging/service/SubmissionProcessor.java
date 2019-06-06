@@ -124,7 +124,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         DepositSubmission depositSubmission = result.result().orElseThrow(() ->
             new DepositServiceRuntimeException("Missing expected DepositSubmission", submission));
 
-        LOG.debug(">>>> Processing Submission {}", submission.getId());
+        LOG.debug("Processing Submission {}", submission.getId());
 
         updatedS.getRepositories()
                 .stream()

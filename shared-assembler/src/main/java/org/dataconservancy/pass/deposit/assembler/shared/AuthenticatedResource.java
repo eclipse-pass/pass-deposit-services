@@ -69,7 +69,7 @@ public class AuthenticatedResource extends UrlResource {
 
     @Override
     protected void customizeConnection(HttpURLConnection con) throws IOException {
-        LOG.trace(">>>> Customizing {}@{}", con.getClass().getName(), toHexString(identityHashCode(con)));
+        LOG.trace("Customizing {}@{}", con.getClass().getName(), toHexString(identityHashCode(con)));
         byte[] bytes = String.format("%s:%s", username, password).getBytes();
         con.setRequestProperty("Authorization", "Basic " + getEncoder().encodeToString(bytes));
     }

@@ -173,7 +173,7 @@ public class DepositConfig {
         String builderHashcode = toHexString(identityHashCode(builder.getClass()));
 
         if (fedoraUser != null) {
-            LOG.trace(">>>> {}:{} adding Authorization interceptor", builderName, builderHashcode);
+            LOG.trace("{}:{} adding Authorization interceptor", builderName, builderHashcode);
             builder.addInterceptor((chain) -> {
                 Request request = chain.request();
                 if (!request.url().toString().startsWith(fedoraBaseUrl)) {
@@ -187,7 +187,7 @@ public class DepositConfig {
             });
         }
 
-        LOG.trace(">>>> {}:{} adding Accept interceptor", builderName, builderHashcode);
+        LOG.trace("{}:{} adding Accept interceptor", builderName, builderHashcode);
         builder.addInterceptor((chain) -> {
             Request request = chain.request();
             if (!request.url().toString().startsWith(fedoraBaseUrl)) {
@@ -199,12 +199,12 @@ public class DepositConfig {
         });
 
         if (LOG.isDebugEnabled()) {
-            LOG.trace(">>>> {}:{} adding Logging interceptor", builderName, builderHashcode);
+            LOG.trace("{}:{} adding Logging interceptor", builderName, builderHashcode);
             HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::debug);
             builder.addInterceptor(httpLogger);
         }
 
-        LOG.trace(">>>> {}:{} adding User-Agent interceptor", builderName, builderHashcode);
+        LOG.trace("{}:{} adding User-Agent interceptor", builderName, builderHashcode);
         builder.addInterceptor((chain) -> {
             Request.Builder reqBuilder = chain.request().newBuilder();
             reqBuilder.removeHeader("User-Agent");
@@ -213,7 +213,7 @@ public class DepositConfig {
         });
 
         OkHttpClient client = builder.build();
-        LOG.trace(">>>> {}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
+        LOG.trace("{}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
                 client.getClass().getSimpleName(), toHexString(identityHashCode(client.getClass())));
 
         return client;
@@ -283,12 +283,12 @@ public class DepositConfig {
         Map<String, Transport> transports = appCtx.getBeansOfType(Transport.class);
 
         if (transports.size() == 0) {
-            LOG.error(">>>> No Transport implementations found; Deposit Services will not properly process deposits");
+            LOG.error("No Transport implementations found; Deposit Services will not properly process deposits");
             return transports;
         }
 
         transports.forEach((beanName, impl) -> {
-            LOG.debug(">>>> Discovered Transport implementation {}: {}", beanName, impl.getClass().getName());
+            LOG.debug("Discovered Transport implementation {}: {}", beanName, impl.getClass().getName());
             if (!appCtx.isSingleton(beanName)) {
                 LOG.warn("Transport implementation {} with beanName {} is *not* a singleton; this will likely " +
                         "result in corrupted packages being streamed to downstream Repositories.");
@@ -303,12 +303,12 @@ public class DepositConfig {
         Map<String, Assembler> assemblers = appCtx.getBeansOfType(Assembler.class);
 
         if (assemblers.size() == 0) {
-            LOG.error(">>>> No Assembler implementations found; Deposit Services will not properly process deposits.");
+            LOG.error("No Assembler implementations found; Deposit Services will not properly process deposits.");
             return assemblers;
         }
 
         assemblers.forEach((beanName, impl) -> {
-            LOG.debug(">>>> Discovered Assembler implementation {}: {}", beanName, impl.getClass().getName());
+            LOG.debug("Discovered Assembler implementation {}: {}", beanName, impl.getClass().getName());
             if (!appCtx.isSingleton(beanName)) {
                 LOG.warn("Assembler implementation {} with beanName {} is *not* a singleton; this will likely " +
                         "result in corrupted packages being streamed to downstream Repositories.");
@@ -331,7 +331,7 @@ public class DepositConfig {
         executor.setMaxPoolSize(depositWorkersConcurrency);
         executor.setQueueCapacity(depositWorkersConcurrency * 2);
         executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
-            String msg = String.format(">>>> Task %s@%s rejected, will be retried later.",
+            String msg = String.format("Task %s@%s rejected, will be retried later.",
                     rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
             if (rejectedTask instanceof DepositTask && ((DepositTask)rejectedTask).getDepositWorkerContext() != null) {
                 DepositServiceRuntimeException ex = new DepositServiceRuntimeException(msg, ((DepositTask)

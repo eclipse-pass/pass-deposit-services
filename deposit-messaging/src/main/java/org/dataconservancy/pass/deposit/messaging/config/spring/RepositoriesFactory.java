@@ -66,7 +66,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
     @Override
     public Repositories getObject() throws Exception {
         URI configurationUri = repositoryConfigResource.getURI();
-        LOG.trace(">>>> Repositories configuration resource: {}", configurationUri);
+        LOG.trace("Repositories configuration resource: {}", configurationUri);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace("Configuration dump:\n{}", IOUtils.toString(

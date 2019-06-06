@@ -98,7 +98,7 @@ public class DepositTask implements Runnable {
     @Override
     public void run() {
 
-        LOG.debug(">>>> Running {}@{}", DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
+        LOG.debug("Running {}@{}", DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
 
         CriticalResult<TransportResponse, Deposit> physicalResult =
                 cri.performCritical(dc.deposit().getId(), Deposit.class,
@@ -400,7 +400,7 @@ public class DepositTask implements Runnable {
             return (deposit) -> {
                 boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
                 if (!accept) {
-                    LOG.debug(">>>> Update precondition failed for {}", deposit.getId());
+                    LOG.debug("Update precondition failed for {}", deposit.getId());
                 }
 
                 return accept;

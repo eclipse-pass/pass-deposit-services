@@ -178,7 +178,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
                 writeResource(archiveOut, archiveEntry, observableIn);
             }
 
-            LOG.debug(">>>> Adding resource: {}", resourceBuilder.build());
+            LOG.debug("Adding resource: {}", resourceBuilder.build());
             return resourceBuilder.build();
         }
     }
@@ -232,7 +232,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
             throws IOException {
         archiveOut.putArchiveEntry(archiveEntry);
         int bytesWritten = IOUtils.copy(archiveEntryIn, archiveOut);
-        STREAMING_IO_LOG.debug(">>>> Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
+        STREAMING_IO_LOG.debug("Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);
         archiveOut.closeArchiveEntry();
     }
 
