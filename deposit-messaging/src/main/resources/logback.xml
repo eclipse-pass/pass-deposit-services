@@ -60,6 +60,10 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
+  <!-- DEBUG level will show policy messages that refuse to process Submissions based on some attribute of the
+       *Submission*, TRACE level will show policy messages that refuse the JMS message for some lower-level reason:
+       e.g. the user-agent of the message, or the type of the fedora resource -->
+
   <logger name="org.dataconservancy.pass.deposit.messaging.policy" additivity="false"
           level="${org.dataconservancy.pass.deposit.messaging.policy.level:-INFO}">
     <appender-ref ref="STDERR"/>
