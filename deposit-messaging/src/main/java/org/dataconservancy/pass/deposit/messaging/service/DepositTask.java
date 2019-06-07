@@ -124,12 +124,12 @@ public class DepositTask implements Runnable {
             // one of the pre or post conditions failed, or the critical code path (creating a package failed)
             if (physicalResult.throwable().isPresent()) {
                 Throwable t = physicalResult.throwable().get();
-                String msg = String.format("Failed to perform deposit for tuple [%s, %s, %s]: %s",
+                String msg = format("Failed to perform deposit for tuple [%s, %s, %s]: %s",
                         dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(), t.getMessage());
                 throw new DepositServiceRuntimeException(msg, t, dc.deposit());
             }
 
-            String msg = String.format("Failed to perform deposit for tuple [%s, %s, %s]",
+            String msg = format("Failed to perform deposit for tuple [%s, %s, %s]",
                     dc.submission().getId(), dc.repository().getId(), dc.deposit().getId());
             throw new DepositServiceRuntimeException(msg, dc.deposit());
         }
@@ -196,7 +196,7 @@ public class DepositTask implements Runnable {
 
                     throw new RuntimeException(t.getMessage(), t);
                 } else {
-                    throw new RuntimeException(String.format("Failed updating Deposit and RepositoryCopy for tuple " +
+                    throw new RuntimeException(format("Failed updating Deposit and RepositoryCopy for tuple " +
                             "[%s, %s, %s]", dc.submission().getId(), dc.repository().getId(), dc.deposit().getId()));
                 }
             }
@@ -400,7 +400,8 @@ public class DepositTask implements Runnable {
             return (deposit) -> {
                 boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
                 if (!accept) {
-                    LOG.debug("Update precondition failed for {}", deposit.getId());
+                    LOG.debug("Precondition failed for {}: Deposit must have an intermediate deposit status",
+                            deposit.getId());
                 }
 
                 return accept;
@@ -425,11 +426,20 @@ public class DepositTask implements Runnable {
          */
         static Function<Deposit, TransportResponse> performDeposit(DepositWorkerContext dc) {
             return (deposit) -> {
-                Packager packager = dc.packager();
+                Packager packager = null;
+                PackageStream packageStream = null;
+                Map<String, String> packagerConfig = null;
 
-                PackageStream packageStream = packager.getAssembler().assemble(
-                        dc.depositSubmission(), packager.getAssemblerOptions());
-                Map<String, String> packagerConfig = packager.getConfiguration();
+                try {
+                    packager = dc.packager();
+                    packageStream = packager.getAssembler().assemble(
+                            dc.depositSubmission(), packager.getAssemblerOptions());
+                    packagerConfig = packager.getConfiguration();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error resolving a Packager or Packager configuration for " +
+                            dc.deposit().getId(), e);
+                }
+
                 try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
                     TransportResponse tr = transport.send(packageStream, packagerConfig);
                     deposit.setDepositStatus(SUBMITTED);
@@ -451,19 +461,19 @@ public class DepositTask implements Runnable {
         static BiPredicate<Deposit, TransportResponse> depositPostcondition(DepositWorkerContext dc) {
             return (deposit, tr) -> {
                 if (deposit.getDepositStatus() != SUBMITTED) {
-                    LOG.debug("Postcondition failed for {}.  Expected status '{}' but actual status " +
+                    LOG.debug("Postcondition failed for {}: Expected Deposit status '{}' but actual status " +
                             "is '{}'", deposit.getId(), SUBMITTED, deposit.getDepositStatus());
                     return false;
                 }
 
                 if (!tr.success()) {
                     if (tr.error() != null) {
-                        LOG.debug("Postcondition failed for {}.  Transport of package to endpoint " +
-                                "failed: {}", deposit.getId(), tr.error().getMessage(), tr.error());
-                        throw new RuntimeException(tr.error());
+                        final String msg = format("Postcondition failed for %s: Transport of package to " +
+                                "endpoint failed: %s", deposit.getId(), tr.error().getMessage());
+                        throw new RuntimeException(msg, tr.error());
                     } else {
-                        throw new RuntimeException("Postcondition failed for " + deposit.getId() + ".  " +
-                                "Transport of package to endpoint failed.");
+                        throw new RuntimeException(format("Postcondition failed for %s: Transport of package to " +
+                                "endpoint failed.", deposit.getId()));
                     }
                 }
 
