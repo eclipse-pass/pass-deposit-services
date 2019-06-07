@@ -53,6 +53,7 @@ import java.util.function.Predicate;
 import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
+import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
@@ -157,7 +158,7 @@ public class DepositTaskHelper {
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
 
-            LOG.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
+            WORKERS_LOGGER.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
                     depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
                     submission.getId(), repo.getId(), deposit.getId());
             taskExecutor.execute(depositTask);
@@ -199,6 +200,8 @@ public class DepositTaskHelper {
                     "was not satisfied.", depositUri));
             return;
         }
+
+        LOG.info("Successfully processed Deposit {}", depositUri);
     }
 
     String getStatementUriPrefix() {
@@ -294,7 +297,7 @@ public class DepositTaskHelper {
                 URI repoCopy = deposit.getRepositoryCopy();
 
                 if (repoCopy == null || passClient.readResource(repoCopy, RepositoryCopy.class) == null) {
-                    LOG.warn(PRECONDITION_FAILED + " missing RepositoryCopy on the Deposit", deposit.getId());
+                    LOG.debug(PRECONDITION_FAILED + " missing RepositoryCopy on the Deposit", deposit.getId());
                     return false;
                 }
 
@@ -363,7 +366,7 @@ public class DepositTaskHelper {
 
                     switch (status.get()) {
                         case ACCEPTED: {
-                            LOG.info("Deposit {} was accepted.", deposit.getId());
+                            LOG.debug("Deposit {} was accepted.", deposit.getId());
                             deposit.setDepositStatus(ACCEPTED);
                             repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
@@ -371,7 +374,7 @@ public class DepositTaskHelper {
                         }
 
                         case REJECTED: {
-                            LOG.info("Deposit {} was rejected.", deposit.getId());
+                            LOG.debug("Deposit {} was rejected.", deposit.getId());
                             deposit.setDepositStatus(Deposit.DepositStatus.REJECTED);
                             repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.REJECTED);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
