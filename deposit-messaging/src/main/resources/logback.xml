@@ -38,25 +38,40 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
+  <!-- Default logging for the JMS messaging sub-system is INFO -->
+
+  <logger name="org.dataconservancy.pass.deposit.messaging" additivity="false"
+          level="${org.dataconservancy.pass.deposit.messaging.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
   <logger name="org.dataconservancy.pass.deposit.messaging.config" additivity="false"
-          level="${org.dataconservancy.pass.deposit.config.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.config.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <logger name="org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.jms.submission.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <logger name="org.dataconservancy.pass.deposit.messaging.service.DepositProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.jms.deposit.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.level:-DEBUG}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <logger name="org.dataconservancy.pass.deposit.messaging.policy" additivity="false"
-          level="${org.dataconservancy.pass.deposit.policy.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.policy.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
+
+  <!-- Cross-cutting loggers -->
+
+  <logger name="WORKERS_LOGGER" additivity="false"
+          level="${WORKERS_LOGGER.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
   <!-- the rest client is noisy, and detracts from looking at test logging output -->
   <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
     <appender-ref ref="STDERR"/>

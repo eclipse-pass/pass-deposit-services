@@ -198,9 +198,9 @@ public class DepositConfig {
                     .addHeader("Accept", "application/ld+json").build());
         });
 
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("{}:{} adding Logging interceptor", builderName, builderHashcode);
-            HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::debug);
+            HttpLoggingInterceptor httpLogger = new HttpLoggingInterceptor(LOG::trace);
             builder.addInterceptor(httpLogger);
         }
 
