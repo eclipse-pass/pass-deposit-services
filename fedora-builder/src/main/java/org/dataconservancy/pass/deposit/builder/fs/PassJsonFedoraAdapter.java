@@ -319,7 +319,7 @@ public class PassJsonFedoraAdapter {
             f.setUri(binaryUri);
             f.setSubmission(s.getId());
             client.updateResource(f);
-            LOG.debug("Uploaded binary {} for {} to {}.  Updating File 'uri' field to {} from {}",
+            LOG.trace("Uploaded binary {} for {} to {}.  Updating File 'uri' field to {} from {}",
                     contentUri, f.getId(), s.getId(), binaryUri, contentUri);
         } catch (Exception e) {
             throw new RuntimeException("Error uploading resource " + contentResource + " to " + f.getId() +
