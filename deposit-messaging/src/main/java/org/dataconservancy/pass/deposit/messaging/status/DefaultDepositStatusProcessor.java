@@ -63,8 +63,9 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
         URI swordState = statusResolver.resolve(URI.create(deposit.getDepositStatusRef()), repositoryConfig);
 
         if (swordState == null) {
-            LOG.warn("No SWORD deposit status was found in {} by {}.",
-                    deposit.getDepositStatusRef(), statusResolver.getClass().getSimpleName());
+            LOG.warn("SWORD state cannot be resolved from SWORD statement {}: no SWORD status was found by " +
+                            "DepositStatusResolver impl {}.",
+                    deposit.getId(), deposit.getDepositStatusRef(), statusResolver.getClass().getSimpleName());
             return null;
         }
 
@@ -74,14 +75,14 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
             Map<String, String> statusMap = statusMapping.getStatusMap();
             status = statusMap.getOrDefault(swordState.toString(), statusMapping.getDefaultMapping());
         } catch (RuntimeException e) {
-            LOG.error("Error mapping the SWORD state {} to a PASS Deposit.DepositStatus: {}",
-                    swordState, e.getMessage());
+            LOG.error("SWORD state '{}' for {} cannot be mapped to a Deposit.DepositStatus from SWORD statement {}: {}",
+                    swordState, deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
             throw e;
         }
 
         if (status == null) {
             LOG.warn("Error mapping the SWORD state {} (parsed from the SWORD statement {}) to a " +
-                    "PASS Deposit.DepositStatus; returning 'null'.", swordState, deposit.getDepositStatusRef());
+                    "Deposit.DepositStatus; returning 'null'.", swordState, deposit.getDepositStatusRef());
             return null;
         }
 
