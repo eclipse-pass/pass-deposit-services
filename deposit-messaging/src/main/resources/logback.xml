@@ -69,6 +69,13 @@
     <appender-ref ref="STDERR"/>
   </logger>
 
+  <!-- DEBUG level will show FTP session opening and closing, TRACE will log more details of a session. -->
+
+  <logger name="org.dataconservancy.pass.deposit.transport.ftp" additivity="false"
+          level="{org.dataconservancy.pass.deposit.transport.ftp.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+
   <!-- Cross-cutting loggers -->
 
   <logger name="WORKERS_LOGGER" additivity="false"
