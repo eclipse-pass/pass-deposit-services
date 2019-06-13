@@ -129,9 +129,6 @@ public class ExHandingPipedInputStream extends PipedInputStream {
             return;
         }
 
-        LOG.error("The writing side of this PipedInputStream encountered an exception: {}",
-                writerEx.getMessage(), writerEx);
-
         throw new IOException("The writing side of this PipedInputStream encountered an exception: " +
                 writerEx.getMessage(), writerEx);
     }
