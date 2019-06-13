@@ -15,9 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -114,7 +111,7 @@ public class AssemblerSupport {
         // by the supplied InputStream
         if (!in.markSupported()) {
             MediaType defaultMimeType = MediaType.OCTET_STREAM;
-            LOG.info("Mime type detection of {}@{} failed: mark(int) is not supported.  Using default mime type {}",
+            LOG.debug("Mime type detection of {}@{} failed: mark(int) is not supported.  Using default mime type {}",
                     in.getClass().getName(), Integer.toHexString(System.identityHashCode(in)), defaultMimeType);
 
             return defaultMimeType;
@@ -125,13 +122,4 @@ public class AssemblerSupport {
         return detector.detect(in, new Metadata());
     }
 
-    public static InputStream updateLength(ArchiveEntry entry, SizedStream toSize) throws IOException {
-        if (entry instanceof TarArchiveEntry) {
-            ((TarArchiveEntry) entry).setSize(toSize.getLength());
-        } else if (entry instanceof ZipArchiveEntry) {
-            ((ZipArchiveEntry) entry).setSize(toSize.getLength());
-         }
-        LOG.debug("Updating archive entry {} size to {}", entry.getName(), toSize.getLength());
-        return toSize.getInputStream();
-    }
 }
