@@ -190,7 +190,7 @@ public abstract class AbstractAssembler implements Assembler {
                                 "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
                                 "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
                     } catch (IOException e) {
-                        LOG.trace("Processing DepositFileResource:" +
+                        LOG.trace("Caught exception processing DepositFileResource:" +
                                         "\n\t{}: '{}'" +
                                         "\n\t\t{}: '{}'" +
                                         "\n\t{}: '{}'" +
@@ -204,7 +204,7 @@ public abstract class AbstractAssembler implements Assembler {
                                 "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
                                 "depositFile.label", dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
                                 "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
-                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
+                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null, e);
                     }
                 })
                 .peek(dfr -> {
