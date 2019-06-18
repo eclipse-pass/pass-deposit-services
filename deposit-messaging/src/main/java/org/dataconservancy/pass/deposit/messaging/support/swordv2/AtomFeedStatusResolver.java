@@ -138,7 +138,7 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
             statementDoc = abderaParser.parse(resource.getInputStream());
             return AtomUtil.parseSwordState(statementDoc);
         } catch (Exception e) {
-            String msg = format(ERR, atomStatementUri, "Error resolving or parsing Atom statement");
+            String msg = format(ERR, atomStatementUri, "Error resolving or parsing Atom statement: " + e.getMessage());
             throw new RuntimeException(msg, e);
         }
     }
