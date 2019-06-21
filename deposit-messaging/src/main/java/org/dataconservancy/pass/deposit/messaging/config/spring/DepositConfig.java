@@ -21,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
+import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -164,8 +165,8 @@ public class DepositConfig {
     }
 
     @Bean
-    public FilesystemModelBuilder fileSystemModelBuilder() {
-        return new FilesystemModelBuilder();
+    public FilesystemModelBuilder fileSystemModelBuilder(PassClient passClient) {
+        return new FilesystemModelBuilder(passClient);
     }
 
     @Bean
