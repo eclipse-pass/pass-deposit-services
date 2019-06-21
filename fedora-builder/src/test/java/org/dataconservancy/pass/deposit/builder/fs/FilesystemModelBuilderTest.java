@@ -25,6 +25,8 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
 import submissions.SubmissionResourceUtil;
@@ -50,7 +52,11 @@ import java.util.Map;
 public class FilesystemModelBuilderTest {
 
     private static final String EXPECTED_TITLE = "Food & Function";
+
     private static final String EXPECTED_PUB_DATE = "2018-09-12";
+
+    private static final DateTime EXPECTED_SUBMITTED_DATE =
+            DateTime.parse("2017-06-02T00:00:00.000Z", DateTimeFormat.forPattern("YYYY-M-d'T'H':'m':'s'.'SSSZ").withZoneUTC());
 
     private static final Map<String, JournalPublicationType> EXPECTED_ISSN_PUBTYPES =
             new HashMap<String, JournalPublicationType>() {
@@ -124,6 +130,7 @@ public class FilesystemModelBuilderTest {
 
         assertEquals(submission.getId(), submissionEntity.getId().toString());
         assertEquals(EXPECTED_DOI, submission.getMetadata().getArticleMetadata().getDoi().toString());
+        assertEquals(EXPECTED_SUBMITTED_DATE, submission.getSubmissionDate());
 
         assertNotNull(submission.getFiles());
         assertEquals(8, submission.getFiles().size());

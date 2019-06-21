@@ -25,7 +25,6 @@ import org.dataconservancy.pass.deposit.model.DepositFileType;
 import org.dataconservancy.pass.deposit.model.DepositManifest;
 import org.dataconservancy.pass.deposit.model.DepositMetadata;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.model.JournalPublicationType;
 import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
@@ -325,6 +324,8 @@ abstract class ModelBuilder {
         submission.setId(submissionEntity.getId().toString());
         // The deposit data model requires a "name" - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
+        
+        submission.setSubmissionDate(submissionEntity.getSubmittedDate());
 
         // Data from the Submission's user resource
       
