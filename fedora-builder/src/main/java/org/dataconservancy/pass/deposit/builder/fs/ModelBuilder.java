@@ -209,7 +209,6 @@ abstract class ModelBuilder {
             });
         });
 
-        // The publisher name and publication date can also be found in the "crossref" section.
         getStringProperty(submissionData, PUBLISHER_KEY)
                 .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
 
@@ -265,12 +264,6 @@ abstract class ModelBuilder {
                 throw new RuntimeException(im.getMessage(), im);
             }
         });
-
-        getStringProperty(submissionData, PUBLISHER_KEY)
-                .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
-
-        getStringProperty(submissionData, PUBLICATION_DATE_KEY)
-                .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
     }
 
     private void processPmcMetadata(DepositMetadata metadata, JsonObject submissionData) {
