@@ -93,7 +93,7 @@ public class FcrepoModelBuilderIT {
         // Upload sample data to Fedora repository to get its Submission URI.
         URI submissionUri;
         try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
-            submissionUri = adapter.jsonToFcrepo(is, entities);
+            submissionUri = adapter.jsonToFcrepo(is, entities).getId();
         }
 
         // Find the Submission entity that was uploaded

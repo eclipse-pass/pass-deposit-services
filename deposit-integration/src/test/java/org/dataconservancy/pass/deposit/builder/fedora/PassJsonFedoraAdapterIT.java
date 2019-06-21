@@ -71,7 +71,7 @@ public class PassJsonFedoraAdapterIT {
             // Upload the sample data to the Fedora repo.
             URI submissionUri;
             try (InputStream is = lookupStream(SAMPLE_DATA_FILE)) {
-                submissionUri = adapter.jsonToFcrepo(is, entities);
+                submissionUri = adapter.jsonToFcrepo(is, entities).getId();
             }
 
             // Download the data from the server to a temporary JSON file

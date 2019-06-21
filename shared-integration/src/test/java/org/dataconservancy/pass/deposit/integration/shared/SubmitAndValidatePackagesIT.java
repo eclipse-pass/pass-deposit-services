@@ -514,7 +514,7 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
 
             LOG.info("Creating Submission in the Fedora repository for {}", localSubmissionUri);
             Future<URI> passSubmissionUri =
-                    itExecutorService.submit(() -> passAdapter.jsonToFcrepo(toInputStream(root), submissionMap));
+                    itExecutorService.submit(() -> passAdapter.jsonToFcrepo(toInputStream(root), submissionMap).getId());
             futureSubmissions.put(passSubmissionUri, submissionMap);
         }
 
