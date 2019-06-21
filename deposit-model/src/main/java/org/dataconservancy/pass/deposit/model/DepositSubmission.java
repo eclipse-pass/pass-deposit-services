@@ -15,7 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.model;
 
+import org.joda.time.DateTime;
+
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Encapsulates a submission to the target system, including the manuscript and supplement files, metadata describing
@@ -29,6 +32,13 @@ public class DepositSubmission {
      * Internal, submission engine, identifier
      */
     private String id;
+
+    /**
+     * Date the Submission resource was submitted to the PASS repository.
+     *
+     * Set by Ember when the user clicks the Submit button
+     */
+    private DateTime submissionDate;
 
     /**
      * Manifest containing an entry for each file in the submission
@@ -90,34 +100,47 @@ public class DepositSubmission {
         this.name = name;
     }
 
+    /**
+     * Date the Submission resource was submitted to the PASS repository.
+     *
+     * Set by Ember when the user clicks the Submit button
+     */
+    public DateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    /**
+     * Date the Submission resource was submitted to the PASS repository.
+     *
+     * Set by Ember when the user clicks the Submit button
+     */
+    public void setSubmissionDate(DateTime submissionDate) {
+        this.submissionDate = submissionDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         DepositSubmission that = (DepositSubmission) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (manifest != null ? !manifest.equals(that.manifest) : that.manifest != null) return false;
-        if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
-        if (files != null ? !files.equals(that.files) : that.files != null) return false;
-        return name != null ? name.equals(that.name) : that.name == null;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(submissionDate, that.submissionDate) &&
+                Objects.equals(manifest, that.manifest) &&
+                Objects.equals(metadata, that.metadata) &&
+                Objects.equals(files, that.files) &&
+                Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (manifest != null ? manifest.hashCode() : 0);
-        result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
-        result = 31 * result + (files != null ? files.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return Objects.hash(id, submissionDate, manifest, metadata, files, name);
     }
 
     @Override
     public String toString() {
         return "DepositSubmission{" +
                 "id='" + id + '\'' +
+                ", submissionDate=" + submissionDate +
                 ", manifest=" + manifest +
                 ", metadata=" + metadata +
                 ", files=" + files +

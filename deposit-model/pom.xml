@@ -27,4 +27,11 @@
     <artifactId>deposit-model</artifactId>
     <name>Submission Model</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
