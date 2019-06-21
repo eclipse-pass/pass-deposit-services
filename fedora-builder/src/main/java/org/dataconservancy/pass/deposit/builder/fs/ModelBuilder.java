@@ -54,7 +54,7 @@ import static org.dataconservancy.pass.deposit.model.JournalPublicationType.pars
  */
 abstract class ModelBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ModelBuilder.class);
+    static final Logger LOG = LoggerFactory.getLogger(ModelBuilder.class);
 
     private static final String ISSNS = "issns";
 

@@ -43,10 +43,10 @@ import java.util.Map;
  * must contain exactly one Submission object, which is the root of the data tree for a deposit.
  * </p>
  * <p>
- * If a {@link PassClient} is provided on construction, the resources present in the local graph will be deposited to
+ * If a {@link #isUseFedora()} is {@code true}, the resources present in the local graph will be deposited to
  * the PASS repository.  This results in a new Fedora resource for each resource present in the JSON graph.  The
- * map of local resource identifiers to PASS repository identifiers is obtained by calling {@link #getUriMap()} after
- * invoking one of the {@link #build(String)} or {@link #build(InputStream, Map)} methods.
+ * resulting {@code DepositSubmission} will be built from the Fedora resources, not the local resources from the JSON
+ * graph.
  * </p>
  *
  * @author Ben Trumbore (wbt3@cornell.edu)
@@ -55,40 +55,29 @@ import java.util.Map;
 public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBuilder, StreamingSubmissionBuilder {
 
     /**
-     * Must be non-null if {@link #depositToPass} is {@code true}.
+     * Indicates whether or not the DepositSubmission should be created from Fedora representations
      */
-    private PassClient passClient;
+    private boolean useFedora = false;
 
     /**
-     * Indicates whether or not the PASS resources read from the local JSON should have equivalent resources deposited
-     * to the PASS repository.  If this flag is {@code true}, then a {@link #passClient PASS client} <em>must</em>
-     * be supplied on {@link #FilesystemModelBuilder(PassClient) construction}.
-     */
-    private boolean depositToPass = false;
-
-    /**
-     * If local PASS resources are deposited to the PASS repository, this map will be keyed by the local PASS resource
-     * URI, mapping to the PASS repository URI.
-     */
-    private ThreadLocal<Map<URI, URI>> uriMap = ThreadLocal.withInitial(HashMap::new);
-
-    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
-
-    /**
-     * Constructs a builder that will build local resources, but not deposit them to Fedora.
+     * Constructs a builder that uses local resources to build a DepositSubmission
      */
     public FilesystemModelBuilder() {
 
     }
 
     /**
-     * Constructs a builder that deposits newly built resources to Fedora.
+     * Constructs a builder that uses Fedora resources to build a DepositSubmission
      *
-     * @param passClient the PASS client used to deposit newly built resources to Fedora
+     * @param useFedora when {@code true} this builder will first deposit resources to Fedora, then use the Fedora
+     *                  resources to build the {@code DepositSubmission}
      */
-    public FilesystemModelBuilder(PassClient passClient) {
-        this.passClient = passClient;
-        this.depositToPass = true;
+    public FilesystemModelBuilder(boolean useFedora) {
+        this.useFedora = useFedora;
+        if (useFedora) {
+            LOG.info("{} will build DepositSubmission objects using Fedora resources instead of local resources",
+                    this.getClass().getSimpleName());
+        }
     }
 
     /***
@@ -155,85 +144,38 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
      */
     @Override
     public DepositSubmission build(InputStream stream, Map<String, String> streamMd) throws InvalidModel {
-        PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
-        HashMap<URI, PassEntity> entities = new HashMap<>();
-        Submission submissionEntity = reader.jsonToPass(stream, entities);
+        PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
+        Submission submissionEntity;
 
-        reader.jsonToFcrepo(stream, )
-
-        return createDepositSubmission(submissionEntity, entities);
+        if (useFedora) {
+            HashMap<URI, PassEntity> fedoraEntityMap = new HashMap<>();
+            submissionEntity = adapter.jsonToFcrepo(stream, fedoraEntityMap);
+            return createDepositSubmission(submissionEntity, fedoraEntityMap);
+        } else {
+            HashMap<URI, PassEntity> entities = new HashMap<>();
+            submissionEntity = adapter.jsonToPass(stream, entities);
+            return createDepositSubmission(submissionEntity, entities);
+        }
     }
 
     /**
-     * The PASS client used to deposit local resources to Fedora.
+     * If {@code true}, then this builder will deposit each locally built resource to Fedora, and build the
+     * {@code DepositSubmission} from the resources in Fedora.
      *
-     * @return the PASS client, may be {@code null}
-     * @see #FilesystemModelBuilder(PassClient)
+     * @return whether or not build the {@code DepositSubmission} using Fedora resources
      */
-    public PassClient getPassClient() {
-        return passClient;
+    public boolean isUseFedora() {
+        return useFedora;
     }
 
     /**
-     * The PASS client used to deposit local resources to Fedora.
+     * If {@code true}, then this builder will deposit each locally built resource to Fedora, and build the
+     * {@code DepositSubmission} from the resources in Fedora.
      *
-     * @param passClient the PASS client
-     * @see #FilesystemModelBuilder(PassClient)
+     * @param useFedora whether or not build the {@code DepositSubmission} using Fedora resources
      */
-    public void setPassClient(PassClient passClient) {
-        this.passClient = passClient;
-    }
-
-    /**
-     * If {@code true}, and if {@link #getPassClient()} is <em>not</em> {@code null}, then this builder will deposit
-     * each locally built resource to Fedora.
-     *
-     * @return whether or not to use a {@code PassClient} to deposit locally built resources to Fedora
-     */
-    public boolean isDepositToPass() {
-        return depositToPass;
-    }
-
-    /**
-     * If {@code true}, and if {@link #getPassClient()} is <em>not</em> {@code null}, then this builder will deposit
-     * each locally built resource to Fedora.
-     *
-     * @param depositToPass whether or not to use a {@code PassClient} to deposit locally built resources to Fedora
-     */
-    public void setDepositToPass(boolean depositToPass) {
-        this.depositToPass = depositToPass;
-    }
-
-    /**
-     * Returns a mapping of local PASS entity URIs and their equivalent resources in Fedora.
-     * <p>
-     * This map will be empty if {@link #isDepositToPass()} is {@code false}.  If {@link #isDepositToPass()} is {@code
-     * true} <em>and</em> {@link #getPassClient()} is not {@code null}, this map will be populated after each call to
-     * either {@code build(...)} method.
-     * </p>
-     * <p>
-     * This builder is typically instantiated as a singleton.  In order to avoid cross-talk between multiple threads
-     * invoking the {@code build(...)} methods, the underlying {@code Map} is managed as a {@code ThreadLocal}.  This
-     * means that a caller ought to be able to perform:
-     * </p>
-     * <ol>
-     *     <li>{@link #build(String)}</li>
-     *     <li>{@link #getUriMap()}</li>
-     *     <li><em>read results from map</em></li>
-     *     <li>{@code getUriMap().clear()}</li>
-     *     <li><em>builder ready for next invocation</em></li>
-     * </ol>
-     * <p>
-     * Note that this map will grow unless cleared by the caller.
-     * </p>
-     *
-     * @return a map of local entity URIs to Fedora entity URIs
-     * @see #FilesystemModelBuilder(PassClient)
-     * @see #setPassClient(PassClient)
-     * @see #setDepositToPass(boolean)
-     */
-    public Map<URI, URI> getUriMap() {
-        return uriMap.get();
+    public void setUseFedora(boolean useFedora) {
+        this.useFedora = useFedora;
     }
 
 }
