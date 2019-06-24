@@ -118,7 +118,7 @@ public abstract class AbstractSubmissionFixture {
         HashMap<URI, PassEntity> uriMap = new HashMap<>();
 
         // Upload sample data to Fedora repository to get its Submission URI.
-        URI submissionUri = passAdapter.jsonToFcrepo(submissionGraph, uriMap);
+        URI submissionUri = passAdapter.jsonToFcrepo(submissionGraph, uriMap).getId();
 
         // Find the Submission entity that was uploaded
         Submission submission = findSubmission(uriMap);

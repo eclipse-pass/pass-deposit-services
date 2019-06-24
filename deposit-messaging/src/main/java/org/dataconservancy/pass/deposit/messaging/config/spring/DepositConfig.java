@@ -21,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
+import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassClientDefault;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -41,9 +42,6 @@ import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
 import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport;
-import org.dataconservancy.pass.deposit.transport.ftp.FtpTransport;
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +58,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -165,7 +162,7 @@ public class DepositConfig {
 
     @Bean
     public FilesystemModelBuilder fileSystemModelBuilder() {
-        return new FilesystemModelBuilder();
+        return new FilesystemModelBuilder(true);
     }
 
     @Bean

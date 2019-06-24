@@ -188,9 +188,9 @@ public class PassJsonFedoraAdapter {
      * pass.fedora.user and pass.fedora.password system properties.
      *
      * @param entities the PassEntity objects to upload.  Keys are updated to be URIs on the Fedora server.
-     * @return the URI on the Fedora server of the newly created Submission resource.
+     * @return the newly created Submission resource from Fedora.
      */
-    public URI passToFcrepo(HashMap<URI, PassEntity> entities) {
+    public Submission passToFcrepo(HashMap<URI, PassEntity> entities) {
         PassClient client = PassClientFactory.getPassClient();
         HashMap<URI, URI> uriMap = new HashMap<>();
         URI submissionUri = null;
@@ -256,7 +256,7 @@ public class PassJsonFedoraAdapter {
         entities.values().stream().filter(e -> e instanceof File)
                 .forEach(f -> uploadBinaryToSubmission(repoSubmission, (File) f, client));
 
-        return submissionUri;
+        return repoSubmission;
     }
 
     /**
@@ -437,9 +437,9 @@ public class PassJsonFedoraAdapter {
      * pass.fedora.user and pass.fedora.password system properties.
      *
      * @param is the stream containing the JSON data.
-     * @return the RUI of the root Submission resource on the Fedora server.
+     * @return the root Submission resource on the Fedora server.
      */
-    public URI jsonToFcrepo(InputStream is) {
+    public Submission jsonToFcrepo(InputStream is) {
         HashMap<URI, PassEntity> entities = new HashMap<>();
         return jsonToFcrepo(is, entities);
     }
@@ -457,9 +457,9 @@ public class PassJsonFedoraAdapter {
      *
      * @param is the stream containing the JSON data.
      * @param entities a map which will be filled with all uploaded PassEntities.
-     * @return the RUI of the root Submission resource on the Fedora server.
+     * @return the root Submission resource on the Fedora server.
      */
-    public URI jsonToFcrepo(InputStream is, HashMap<URI, PassEntity> entities) {
+    public Submission jsonToFcrepo(InputStream is, HashMap<URI, PassEntity> entities) {
         entities.clear();
         jsonToPass(is, entities);
         return passToFcrepo(entities);
