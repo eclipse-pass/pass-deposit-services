@@ -68,5 +68,28 @@
         "overwrite": "true"
       }
     }
+  },
+
+  "dash": {
+    "assembler": {
+      "specification": "simple",
+      "beanName": "simpleAssembler",
+      "options": {
+        "archive": "ZIP",
+        "compression": "NONE",
+        "algorithms": [
+          "sha512",
+          "md5"
+        ]
+      }
+    },
+    "transport-config": {
+      "protocol-binding": {
+        "protocol": "filesystem",
+        "baseDir": "target/packages",
+        "createIfMissing": "true",
+        "overwrite": "true"
+      }
+    }
   }
 }

@@ -7,7 +7,7 @@
     "aggregatedDepositStatus" : "not-started",
     "submissionStatus" : "submitted",
     "publication" : "fake:publication1",
-    "repositories" : [ "fake:repository1", "fake:repository2", "fake:repository3", "fake:repository4" ],
+    "repositories" : [ "fake:repository1", "fake:repository2", "fake:repository3", "fake:repository4","fake:repository5" ],
     "submitter" : "fake:user2",
     "grants" : [ "fake:grant1" ],
     "@id" : "fake:submission1",
@@ -67,6 +67,13 @@
     "description" : "Web-Link only repository",
     "integrationType" : "web-link",
     "@id" : "fake:repository4",
+    "@type" : "Repository"
+  },
+  {
+    "name" : "DASH Repo",
+    "repositoryKey" : "dash",
+    "description" : "DASH repository",
+    "@id" : "fake:repository5",
     "@type" : "Repository"
   },
   {
