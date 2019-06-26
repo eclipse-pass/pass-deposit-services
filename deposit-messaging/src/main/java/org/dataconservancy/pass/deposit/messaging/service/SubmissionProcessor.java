@@ -110,8 +110,9 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, cause.getMessage());
                 throw new DepositServiceRuntimeException(msg, cause, submission);
             } else {
-                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, "<Unknown cause>");
-                throw new DepositServiceRuntimeException(msg, submission);
+                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, "no cause was present, probably a pre- or post-condition was not satisfied.");
+                LOG.debug(msg);
+                return;
             }
         }
 
