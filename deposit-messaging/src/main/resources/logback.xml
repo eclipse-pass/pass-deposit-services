@@ -28,10 +28,10 @@
   <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.nihms.level:-DEBUG}">
+  <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-DEBUG}">
+  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-WARN}">
@@ -51,12 +51,12 @@
   </logger>
 
   <logger name="org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
   <logger name="org.dataconservancy.pass.deposit.messaging.service.DepositProcessor" additivity="false"
-          level="${org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.level:-DEBUG}">
+          level="${org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
 
