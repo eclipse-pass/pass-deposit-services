@@ -195,7 +195,9 @@ public class DepositTaskHelper {
                 }
             }
 
-            LOG.error(format("Failed to update Deposit %s", depositUri));
+            LOG.debug(format("Failed to update Deposit %s: no cause was present, probably a pre- or post-condition " +
+                    "was not satisfied.", depositUri));
+            return;
         }
     }
 
