@@ -1,10 +1,10 @@
 FROM openjdk:8u151-jdk-alpine3.7@sha256:bd4030dd52cfb61a61e622fe74483e4e2089a2ef3d782bbf742a0d99093da119
 
-LABEL version=${project.parent.version}
-LABEL commit=${git.commit.id.abbrev}
-LABEL commitdate=${git.commit.time}
-LABEL builddate=${git.build.time}
-LABEL dirty=${git.dirty}
+LABEL deposit-services-version=${project.parent.version}
+LABEL deposit-services-commit=${git.commit.id.abbrev}
+LABEL deposit-services-commitdate=${git.commit.time}
+LABEL deposit-services-builddate=${git.build.time}
+LABEL deposit-services-dirty=${git.dirty}
 
 ARG SPRING_ACTIVEMQ_BROKER_URL
 ARG PASS_FEDORA_BASEURL
