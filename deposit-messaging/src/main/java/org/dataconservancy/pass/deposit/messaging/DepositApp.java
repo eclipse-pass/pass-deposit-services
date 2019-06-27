@@ -69,7 +69,7 @@ public class DepositApp {
 
     private String fcrepoBaseUrl;
 
-    private static final String GIT_PROPERTIES_RESOURCE_PATH = "/git.properties";
+    private static final String GIT_PROPERTIES_RESOURCE_PATH = "/deposit-services-git.properties";
 
     public static void main(String[] args) {
 
