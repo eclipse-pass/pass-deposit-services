@@ -169,7 +169,8 @@
         <docker.dspace.version>oapass/dspace:latest</docker.dspace.version>
         <docker.ftp.version>oapass/ftpserver:latest</docker.ftp.version>
 
-        <pass.jsonld.context>https://oa-pass.github.io/pass-data-model/src/main/resources/context-3.4.jsonld</pass.jsonld.context>
+        <pass.jsonld.context.version>3.4</pass.jsonld.context.version>
+        <pass.jsonld.context>https://oa-pass.github.io/pass-data-model/src/main/resources/context-${pass.jsonld.context.version}.jsonld</pass.jsonld.context>
 
     </properties>
 
