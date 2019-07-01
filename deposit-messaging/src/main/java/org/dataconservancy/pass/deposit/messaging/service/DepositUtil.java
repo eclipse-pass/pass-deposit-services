@@ -231,11 +231,11 @@ public class DepositUtil {
                 });
 
         if (!updateResult.success()) {
-            LOG.info("Updating status of {} to {} failed: {}", submissionUri, FAILED, updateResult.throwable()
+            LOG.debug("Updating status of {} to {} failed: {}", submissionUri, FAILED, updateResult.throwable()
                     .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
                     updateResult.throwable().get());
         } else {
-            LOG.info("Marking {} as FAILED.", submissionUri);
+            LOG.debug("Marked {} as FAILED.", submissionUri);
         }
 
         return updateResult.success();
@@ -262,12 +262,12 @@ public class DepositUtil {
                 });
 
         if (!updateResult.success()) {
-            LOG.info("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,
+            LOG.debug("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,
                     updateResult.throwable()
                             .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
                     updateResult.throwable().get());
         } else {
-            LOG.info("Marking {} as FAILED.", depositUri);
+            LOG.debug("Marked {} as FAILED.", depositUri);
         }
 
         return updateResult.success();

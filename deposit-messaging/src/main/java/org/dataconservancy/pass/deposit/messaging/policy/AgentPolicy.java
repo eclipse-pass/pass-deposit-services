@@ -93,7 +93,7 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
                         .equals(Constants.Prov.SOFTWARE_AGENT)) {
                     if (node.has("name") && node.findValue("name").textValue()
                             .equals(depositServicesUserAgent)) {
-                        LOG.trace(">>>> Dropping message that originated from this agent: {}",
+                        LOG.trace("Dropping message that originated from this agent: {}",
                                 depositServicesUserAgent);
                         return false;
                     } else {

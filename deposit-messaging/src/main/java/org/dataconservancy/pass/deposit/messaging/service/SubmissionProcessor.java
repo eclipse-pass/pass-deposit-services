@@ -102,20 +102,18 @@ public class SubmissionProcessor implements Consumer<Submission> {
                 CriFunc.critical(fcrepoModelBuilder));
 
         if (!result.success()) {
-
-            // If a throwable is present on the CriticalResult, re-throw it as a DepositServiceRuntimeException.
-            // The DepositServiceErrorHandler will pick up the exception and mark the Submission as FAILED.
+            // Throw DepositServiceRuntimeException, which will be processed by the DepositServiceErrorHandler
+            final String msg_tmpl = "Unable to update status of %s to '%s': %s";
 
             if (result.throwable().isPresent()) {
                 Throwable cause = result.throwable().get();
-                LOG.warn("Unable to update status of {} to '{}': {}",
-                        submission.getId(), IN_PROGRESS, cause.getMessage());
-                String msg = format("Unable to update status of %s to '%s': %s",
-                        submission.getId(), IN_PROGRESS, cause.getMessage());
+                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, cause.getMessage());
                 throw new DepositServiceRuntimeException(msg, cause, submission);
+            } else {
+                String msg = format(msg_tmpl, submission.getId(), IN_PROGRESS, "no cause was present, probably a pre- or post-condition was not satisfied.");
+                LOG.debug(msg);
+                return;
             }
-
-            return;
         }
 
         Submission updatedS = result.resource().orElseThrow(() ->
@@ -124,7 +122,7 @@ public class SubmissionProcessor implements Consumer<Submission> {
         DepositSubmission depositSubmission = result.result().orElseThrow(() ->
             new DepositServiceRuntimeException("Missing expected DepositSubmission", submission));
 
-        LOG.debug(">>>> Processing Submission {}", submission.getId());
+        LOG.info("Processing Submission {}", submission.getId());
 
         updatedS.getRepositories()
                 .stream()

@@ -129,14 +129,14 @@ public class FailedDepositRunner {
                              */
                             (d) -> {
                                 if (deposit.getDepositStatus() != FAILED && deposit.getDepositStatus() != null) {
-                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(), "Deposit status must equal 'null' " +
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(), "Deposit status must equal 'null' " +
                                             "or '" + FAILED + "', but was '" + deposit.getDepositStatus() + "'");
                                     return false;
                                 }
 
                                 packager[0] = packagerRegistry.get(repo.getName());
                                 if (packager[0] == null) {
-                                    LOG.info(MISSING_PACKAGER,
+                                    LOG.warn(MISSING_PACKAGER,
                                             submission.getId(), repo.getId(), deposit.getId(), repo.getName());
                                     return false;
                                 }
@@ -145,14 +145,14 @@ public class FailedDepositRunner {
                                     depositSubmission[0] =
                                             fcrepoModelBuilder.build(submission.getId().toString());
                                 } catch (InvalidModel invalidModel) {
-                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(),
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                             "Failed to build the DepositSubmission model", invalidModel);
                                     return false;
                                 }
 
                                 if (depositSubmission[0].getFiles() == null ||
                                         depositSubmission[0].getFiles().size() < 1) {
-                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(), "There are no files attached to " +
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(), "There are no files attached to " +
                                             "the submission " + submission.getId());
                                     return false;
                                 }
@@ -166,7 +166,7 @@ public class FailedDepositRunner {
                                 if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
                                     String msg = "Update precondition failed for %s: the following DepositFiles are " +
                                             "missing URIs referencing their binary content: %s";
-                                    LOG.info(FAILED_TO_PROCESS, deposit.getId(),
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
                                             format(msg, submission.getId(), filesMissingLocations));
                                 }
 
@@ -197,7 +197,7 @@ public class FailedDepositRunner {
                         }
                     }
                 } catch (Exception e) {
-                    LOG.info(FAILED_TO_PROCESS, depositUri, e.getMessage(), e);
+                    LOG.warn(FAILED_TO_PROCESS, depositUri, e.getMessage(), e);
                 }
             });
 

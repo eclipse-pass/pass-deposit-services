@@ -50,7 +50,7 @@ public class RepositoriesFactoryBeanConfig {
     public RepositoriesFactory repositoriesFactory(@Value("${pass.deposit.repository.configuration}")
                                                    Resource configResource,
                                                    ObjectMapper repositoriesMapper) {
-        LOG.trace(">>>> Resolving repository configuration resource from '{}'", configResource);
+        LOG.trace("Resolving repository configuration resource from '{}'", configResource);
         RepositoriesFactory factory = new RepositoriesFactory(configResource, repositoriesMapper);
         return factory;
     }

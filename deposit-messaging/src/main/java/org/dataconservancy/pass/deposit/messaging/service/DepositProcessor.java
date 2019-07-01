@@ -171,11 +171,11 @@ public class DepositProcessor implements Consumer<Deposit> {
                     if (deposits.stream()
                             .allMatch((criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus())) {
                         criSubmission.setAggregatedDepositStatus(AggregatedDepositStatus.ACCEPTED);
-                        LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(),
+                        LOG.debug("Updating {} aggregated deposit status to {}", criSubmission.getId(),
                                 DepositStatus.ACCEPTED);
                     } else {
                         criSubmission.setAggregatedDepositStatus(AggregatedDepositStatus.REJECTED);
-                        LOG.trace(">>>> Updating {} aggregated deposit status to {}", criSubmission.getId(),
+                        LOG.debug("Updating {} aggregated deposit status to {}", criSubmission.getId(),
                                 AggregatedDepositStatus.REJECTED);
                     }
                 }

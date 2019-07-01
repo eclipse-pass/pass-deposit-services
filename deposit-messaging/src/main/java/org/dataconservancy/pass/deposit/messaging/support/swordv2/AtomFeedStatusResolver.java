@@ -39,6 +39,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 /**
  * Attempts to determine the status of a {@link Deposit} by retrieving the Atom Statement associated with the
  * {@code Deposit}, parsing it, and returning a status.
@@ -54,6 +56,8 @@ import java.util.Optional;
 public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusResolver.class);
+
+    private static final String ERR = "Error resolving deposit status URI from SWORD statement <%s>: %s";
 
     private Parser abderaParser;
 
@@ -102,42 +106,41 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
                                     return new UrlResource(atomStatementUri.toURL());
                                 }
                             } catch (MalformedURLException e) {
-                                throw new IllegalArgumentException(
-                                        "Atom statement could not be parsed as URL: '" + atomStatementUri + "'", e);
+                                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
+                                throw new IllegalArgumentException(msg, e);
                             }
                         }).orElseGet(() -> {
                             LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", atomStatementUri);
                             try {
                                 return new UrlResource(atomStatementUri.toURL());
                             } catch (MalformedURLException e) {
-                                throw new IllegalArgumentException(
-                                        "Atom statement could not be parsed as URL: '" + atomStatementUri + "'", e);
+                                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
+                                throw new IllegalArgumentException(msg, e);
                             }
                         });
         } else if (atomStatementUri.getScheme().startsWith("jar")) {
             try {
                 resource = new UrlResource(atomStatementUri);
             } catch (MalformedURLException e) {
-                throw new IllegalArgumentException("Atom statement could not be parsed as URL '" + atomStatementUri +
-                        "':" + e.getMessage(), e);
+                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
+                throw new IllegalArgumentException(msg, e);
             }
         }
 
         if (resource == null) {
-            throw new IllegalArgumentException("Atom statement URI could not be parsed as a Spring resource: '" +
-                    atomStatementUri + "'");
+            throw new IllegalArgumentException(format(ERR, atomStatementUri,
+                    "Statement URI not recognized as a Spring resource"));
         }
 
         Document<Feed> statementDoc = null;
         try {
-            LOG.trace("Retrieving SWORD Statement from: {}", atomStatementUri);
+            LOG.trace("Retrieving and parsing SWORD statement <{}>", atomStatementUri);
             statementDoc = abderaParser.parse(resource.getInputStream());
+            return AtomUtil.parseSwordState(statementDoc);
         } catch (Exception e) {
-            throw new RuntimeException("Error parsing Atom resource '" + resource + "' (resolved from '" +
-                    atomStatementUri + "'): " + e.getMessage(), e);
+            String msg = format(ERR, atomStatementUri, "Error resolving or parsing Atom statement: " + e.getMessage());
+            throw new RuntimeException(msg, e);
         }
-
-        return AtomUtil.parseSwordState(statementDoc);
     }
 
     private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {

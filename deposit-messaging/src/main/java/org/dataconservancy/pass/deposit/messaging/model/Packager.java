@@ -104,9 +104,9 @@ public class Packager {
      * @return the Assembler options, including the specification
      */
     public Map<String, Object> getAssemblerOptions() {
-        LOG.debug(">>>> Packager {}@{} RepositoryConfig: {}", this.getClass().getSimpleName(),
+        LOG.debug("Packager {}@{} RepositoryConfig: {}", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)),
-                (repositoryConfig != null) ? ">>>> " + repositoryConfig : ">>>> null");
+                (repositoryConfig != null) ? repositoryConfig : "null RepositoryConfig");
 
         AssemblerOptions assemblerOptions = repositoryConfig.getAssemblerConfig().getOptions();
         if (assemblerOptions == null || assemblerOptions.asOptionsMap() == null ||

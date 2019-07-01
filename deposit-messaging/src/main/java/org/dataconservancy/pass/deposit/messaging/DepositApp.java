@@ -75,14 +75,14 @@ public class DepositApp {
 
         URL gitPropertiesResource = DepositApp.class.getResource(GIT_PROPERTIES_RESOURCE_PATH);
         if (gitPropertiesResource == null) {
-            LOG.info(">>>> Starting DepositServices (no Git commit information available)");
+            LOG.info("Starting DepositServices (no Git commit information available)");
         } else {
             Properties gitProperties = new Properties();
             try {
                 gitProperties.load(gitPropertiesResource.openStream());
                 boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
 
-            LOG.info(">>>> Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
+            LOG.info("Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
                     gitProperties.get(GIT_BUILD_VERSION_KEY),
                     gitProperties.get(GIT_BRANCH),
                     gitProperties.get(GIT_COMMIT_HASH_KEY),
@@ -90,10 +90,10 @@ public class DepositApp {
                     gitProperties.get(GIT_BUILD_TIME));
 
                 if (isDirty) {
-                    LOG.warn(">>>> ** Deposit Services was compiled from a Git repository with uncommitted changes! **");
+                    LOG.warn("** Deposit Services was compiled from a Git repository with uncommitted changes! **");
                 }
             } catch (IOException e) {
-                LOG.warn(">>>> Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
+                LOG.warn("Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
             }
         }
 
@@ -146,7 +146,7 @@ public class DepositApp {
 
         @Override
         public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
-            LOG.info(">>>> Environment variable values:");
+            LOG.info("Environment:");
 
             // Sort the variables by name and find the longest name
             Map<String, String> vars = System.getenv();
@@ -163,7 +163,7 @@ public class DepositApp {
             // Print the variable names and values
             for (String varName : keys) {
                 String nameString = StringUtils.rightPad(varName, maxLen);
-                LOG.info(">>>>   {} '{}'", nameString, vars.get(varName));
+                LOG.info("   {} '{}'", nameString, vars.get(varName));
             }
 
             // Print out any resolved Spring property placeholders
@@ -180,11 +180,11 @@ public class DepositApp {
                 }
                 if (! resolvedValue.equals(origValue) || ! errorMsg.isEmpty()) {
                     if (firstOne) {
-                        LOG.info(">>>> Resolved Spring Environment property values:");
+                        LOG.info("Resolved Spring Environment property values:");
                         firstOne = false;
                     }
                     String nameString = StringUtils.rightPad(varName, maxLen);
-                    LOG.info(">>>>   {} '{}' {}", nameString, resolvedValue, errorMsg);
+                    LOG.info("   {} '{}' {}", nameString, resolvedValue, errorMsg);
                 }
             }
         }

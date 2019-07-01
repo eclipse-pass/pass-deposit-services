@@ -88,7 +88,7 @@ public class ExHandingPipedInputStream extends PipedInputStream {
     @Override
     public void close() throws IOException {
         // Close the stream, regardless of whether or not there is an exception waiting for us
-        STREAMING_IO_LOG.debug(">>>> {}@{} close() invoked: ", this.getClass().getSimpleName(),
+        STREAMING_IO_LOG.debug("{}@{} close() invoked: ", this.getClass().getSimpleName(),
                 toHexString(identityHashCode(this)), new Exception("close() invoked"));
         try {
             super.close();
@@ -128,9 +128,6 @@ public class ExHandingPipedInputStream extends PipedInputStream {
         if (writerEx == null) {
             return;
         }
-
-        LOG.error("The writing side of this PipedInputStream encountered an exception: {}",
-                writerEx.getMessage(), writerEx);
 
         throw new IOException("The writing side of this PipedInputStream encountered an exception: " +
                 writerEx.getMessage(), writerEx);

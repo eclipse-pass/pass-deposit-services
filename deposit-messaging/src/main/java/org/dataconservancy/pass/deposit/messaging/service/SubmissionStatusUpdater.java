@@ -93,7 +93,7 @@ public class SubmissionStatusUpdater {
                 cri.performCritical(uri, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
                         CriFunc.critical(statusService));
             } catch (Exception e) {
-                LOG.debug("Unable to update the 'submissionStatus' of {}", uri, e);
+                LOG.warn("Unable to update the 'submissionStatus' of {}", uri, e);
             }
         });
     }

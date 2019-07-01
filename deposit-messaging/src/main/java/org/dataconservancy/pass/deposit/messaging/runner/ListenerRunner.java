@@ -48,7 +48,7 @@ public class ListenerRunner implements ApplicationContextAware {
     ApplicationRunner runListeners(@Value("${pass.fedora.baseurl}") String fcrepoBaseUrl, OkHttpClient okHttpClient) {
         Condition<Integer> fcrepoUp = new Condition<>(() -> {
             Request get = new Request.Builder().get().url(fcrepoBaseUrl).build();
-            LOG.trace(">>>> Executing GET {}", fcrepoBaseUrl);
+            LOG.trace("Executing GET {}", fcrepoBaseUrl);
             try (Response res = okHttpClient.newCall(get).execute()) {
                 return res.code();
             }

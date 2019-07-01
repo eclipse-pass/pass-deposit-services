@@ -162,7 +162,7 @@ public class JmsConfig {
      * @return true if the message should be filtered (i.e., <em>not</em> accepted for further processing)
      */
     private static boolean filterMessage(DepositUtil.MessageContext mc, JmsMessagePolicy jmsPolicy) {
-        LOG.trace(">>>> Processing message (ack mode: {}) {} body:\n{}",
+        LOG.trace("Processing message (ack mode: {}) {} body:\n{}",
                 mc.ackMode(), mc.id(), mc.message().getPayload());
 
         // verify the message is one we want, otherwise ack it right away and return

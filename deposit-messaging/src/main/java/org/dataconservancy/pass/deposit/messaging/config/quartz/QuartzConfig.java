@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
+import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 
 @Configuration
@@ -111,11 +112,12 @@ public class QuartzConfig {
     public ThreadPoolTaskExecutor quartzTaskExecutor(DepositServiceErrorHandler errorHandler) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setMaxPoolSize(jobWorkerConcurrency);
-        executor.setQueueCapacity(10);
+        int capacity = 10;
+        executor.setQueueCapacity(capacity);
         executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
-            String msg = String.format(">>>> Task %s@%s rejected by the Quartz-Worker thread pool task executor.",
+            String msg = String.format("Task %s@%s rejected by the Quartz-Worker thread pool task executor.",
                     rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
-            LOG.error(msg);
+            WORKERS_LOGGER.error(msg);
         });
 
         executor.setWaitForTasksToCompleteOnShutdown(true);
@@ -127,6 +129,10 @@ public class QuartzConfig {
             return t;
         };
         executor.setThreadFactory(tf);
+
+        WORKERS_LOGGER.debug("Created Quartz worker thread pool with maxPoolSize: {} and capacity {}",
+                jobWorkerConcurrency, capacity);
+
         return executor;
     }
 
@@ -136,7 +142,8 @@ public class QuartzConfig {
             factoryBean.setTaskExecutor(quartzTaskExecutor);
             factoryBean.setAutoStartup(!disabled);
             if (disabled) {
-                LOG.debug("Quartz SchedulerFactoryBean autoStartup is disabled!");
+                LOG.info("Quartz SchedulerFactoryBean autoStartup is disabled; Quartz jobs will not be run.  " +
+                        "Check the value of 'pass.deposit.jobs.disabled' property or ENV variable.");
             }
         };
     }

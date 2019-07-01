@@ -192,7 +192,7 @@ public class Condition<T> {
                     submitInternal();
                 }
             } catch (InterruptedException ie) {
-                LOG.debug("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                LOG.trace("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
                 result = false;
                 failureException = ie;
                 break;
@@ -204,7 +204,7 @@ public class Condition<T> {
                     // must re-submit after catching an exception, because Future.get will perpetually return the exception unless the Future is re-executed
                     submitInternal();
                 } catch (InterruptedException ie) {
-                    LOG.debug("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                    LOG.trace("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
                     result = false;
                     failureException = ie;
                     break;
@@ -214,7 +214,7 @@ public class Condition<T> {
         } while ((System.currentTimeMillis() - start < timeoutMs) && (result == null || !result));
 
         if (result == null || !result) {
-            LOG.warn("Condition {} failed, elapsed time {} ms", name, System.currentTimeMillis() - start);
+            LOG.debug("Condition {} failed, elapsed time {} ms", name, System.currentTimeMillis() - start);
             if (failureException != null) {
                 LOG.warn("Condition {} failed with exception: {}", name, failureException.getMessage(), failureException);
             }
