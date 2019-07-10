@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static java.lang.Character.toUpperCase;
@@ -41,7 +42,7 @@ public class SubmissionGraph {
         return URI.create("urn:uri:pass:entity:" + COUNTER.getAndIncrement());
     };
 
-    private Submission submission;
+    private static Submission submission;
 
     private static Map<URI, ? super PassEntity> entities = new HashMap<>();
 
@@ -63,7 +64,7 @@ public class SubmissionGraph {
         return type.cast(entities.get(u));
     }
 
-    public static class GenericBuilder<T> {
+    public static class GenericBuilder<T extends PassEntity> {
 
         private Supplier<T> s;
 
@@ -126,7 +127,15 @@ public class SubmissionGraph {
         }
 
         public T build() {
-            return toBuild;
+            return build((submission, toBuild) -> toBuild);
+        }
+
+        public T build(BiFunction<Submission, T, T> func) {
+            func = func.andThen(built -> {
+                entities.put(built.getId(), built);
+                return built;
+            });
+            return func.apply(submission, toBuild);
         }
     }
 

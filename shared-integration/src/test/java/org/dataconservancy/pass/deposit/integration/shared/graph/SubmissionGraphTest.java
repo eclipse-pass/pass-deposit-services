@@ -101,13 +101,21 @@ public class SubmissionGraphTest {
     public void graph() {
         SubmissionGraph graph = new SubmissionGraph();
 
-        URI u = uriSupplier.get();
-        Grant g = new Grant();
-        g.setId(u);
+        Supplier<Grant> grantSupplier = () -> {
+            Grant grant = new Grant();
+            grant.setId(uriSupplier.get());
+            return grant;
+        };
 
-        graph.add(g);
-        Grant foo = graph.get(u, Grant.class);
-
-
+        Grant grant = new SubmissionGraph.GenericBuilder<>(grantSupplier)
+                .set("awardNumber", "123456")
+                .set("localKey", "edu.jhu:123456")
+                .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+                .add("coPis", uriSupplier.get())
+                .add("coPis", uriSupplier.get())
+                .build((submission, g) -> {
+                    submission.getGrants().add(g.getId());
+                    return g;
+                });
     }
 }
