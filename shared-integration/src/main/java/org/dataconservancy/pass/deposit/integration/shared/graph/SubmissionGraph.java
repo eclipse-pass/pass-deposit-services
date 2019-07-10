@@ -21,12 +21,17 @@ import org.dataconservancy.pass.model.Submission;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.lang.Character.toUpperCase;
@@ -44,10 +49,24 @@ public class SubmissionGraph {
 
     private static Submission submission;
 
-    private static Map<URI, ? super PassEntity> entities = new HashMap<>();
+    private static List<LinkInstruction> linkInstructions;
 
-    public SubmissionGraph() {
+    private static Map<URI, PassEntity> entities;
+
+    public static SubmissionGraph newGraph() {
+        return new SubmissionGraph();
+    }
+
+    public void walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
+        entities.values().stream()
+                .filter(p)
+                .forEach(entity -> c.accept(submission, entity));
+    }
+
+    private SubmissionGraph() {
         submission = new Submission();
+        entities = new HashMap<>();
+        linkInstructions = new ArrayList<>();
         submission.setId(uriSupplier.get());
         entities.put(submission.getId(), submission);
     }
@@ -62,6 +81,84 @@ public class SubmissionGraph {
 
     public <T extends PassEntity> T get(URI u, Class<T> type) {
         return type.cast(entities.get(u));
+    }
+
+    public LinkInstruction linkEntity(PassEntity entity) {
+        LinkInstruction li = new LinkInstruction();
+        linkInstructions.add(li);
+        return li.linkEntity(entity);
+    }
+
+    public LinkInstruction linkEntity(Predicate<PassEntity> withPredicate) {
+        LinkInstruction li = new LinkInstruction();
+        linkInstructions.add(li);
+        return li.linkEntity(withPredicate);
+    }
+
+    public enum Rel {
+        PRIMARY_FUNDER,
+        DIRECT_FUNDER,
+        PREPARER,
+        SUBMITTER,
+        PI,
+        COPI,
+        EFFECTIVE_POLICY
+    }
+
+    public SubmissionGraph link() {
+        linkInstructions.forEach(li -> {
+            PassEntity source = null;
+            if (li.withPredicate != null) {
+                source = entities.values().stream().filter(li.withPredicate).findAny().orElseThrow(() -> new RuntimeException("Missing entity"));
+            } else {
+                source = li.source;
+            }
+
+            switch (li.asRel) {
+                case PI:
+                    ((Grant) li.linkTo).setPi(source.getId());
+                    break;
+                case COPI:
+                    ((Grant) li.linkTo).getCoPis().add(source.getId());
+                    break;
+                case PREPARER:
+                    ((Submission) li.linkTo).getPreparers().add(source.getId());
+                    break;
+                case SUBMITTER:
+                    ((Submission) li.linkTo).setSubmitter(source.getId());
+                    break;
+                case DIRECT_FUNDER:
+                    ((Grant) li.linkTo).setDirectFunder(source.getId());
+                    break;
+                case PRIMARY_FUNDER:
+                    ((Grant) li.linkTo).setPrimaryFunder(source.getId());
+                    break;
+                case EFFECTIVE_POLICY:
+                    ((Submission) li.linkTo).getEffectivePolicies().add(source.getId());
+                    break;
+                default:
+                    throw new RuntimeException("Unknown or unhandled relationship: " + li.asRel);
+            }
+        });
+
+        return this;
+    }
+
+    public <T extends PassEntity> GenericBuilder<T> builderFor(Class<T> type) {
+        return builderFor(type, null);
+    }
+
+    public <T extends PassEntity> GenericBuilder<T> builderFor(Class<T> type, Rel rel) {
+        return new GenericBuilder<T>(() -> {
+            T instance = null;
+            try {
+                instance = type.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            instance.setId(uriSupplier.get());
+            return instance;
+        });
     }
 
     public static class GenericBuilder<T extends PassEntity> {
@@ -87,7 +184,7 @@ public class SubmissionGraph {
             }
 
             try {
-                getter = Grant.class.getMethod("get" + fieldName);
+                getter = toBuild.getClass().getMethod("get" + fieldName);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
@@ -137,7 +234,79 @@ public class SubmissionGraph {
             });
             return func.apply(submission, toBuild);
         }
+
+        public T build(TertiaryFunction<Submission, Map<URI, ? super PassEntity>, T, T> func) {
+            func = func.andThen(built -> {
+                entities.put(built.getId(), built);
+                return built;
+            });
+            return func.apply(submission, entities, toBuild);
+        }
     }
+
+    @FunctionalInterface
+    interface TertiaryFunction<T, U, S, R> {
+
+        R apply(T t, U u, S s);
+
+        default <V> TertiaryFunction<T, U, S, V> andThen(Function<? super R, ? extends V> after) {
+            Objects.requireNonNull(after);
+            return (T t, U u, S s) -> after.apply(apply(t, u, s));
+        }
+
+    }
+
+    static class LinkInstruction {
+        private Predicate<PassEntity> withPredicate;
+        private PassEntity source;
+        private PassEntity linkTo;
+        private Rel asRel;
+
+        LinkInstruction linkEntity(PassEntity entity) {
+            source = entity;
+            return this;
+        }
+
+        LinkInstruction linkEntity(Predicate<PassEntity> predicate) {
+            withPredicate = predicate;
+            return this;
+        }
+
+        static Predicate<PassEntity> with(String fieldName, String value) {
+            Predicate<PassEntity> withPredicate = (entity -> {
+                String field;
+                if (Character.isLowerCase(fieldName.charAt(0))) {
+                    field = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
+                } else {
+                    field = fieldName;
+                }
+
+                try {
+                    Method getter = entity.getClass().getMethod("get" + field);
+                    if (Collection.class.isAssignableFrom(getter.getReturnType())) {
+                        return ((Collection) getter.invoke(entity)).contains(value);
+                    }
+                    return getter.invoke(entity).equals(value);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            return withPredicate;
+        }
+
+        LinkInstruction to(PassEntity entity) {
+            linkTo = entity;
+            return this;
+        }
+
+        LinkInstruction as(Rel rel) {
+            asRel = rel;
+            return this;
+        }
+    }
+
+
 
 //    public static class Linker {
 //
@@ -152,98 +321,98 @@ public class SubmissionGraph {
 //
 //    }
 
-    public static class GrantBuilder {
-
-        private Supplier<Grant> s = () -> {
-            Grant grant = new Grant();
-            grant.setId(uriSupplier.get());
-            return grant;
-        };
-
-        private Grant toBuild = s.get();
-
-        public GrantBuilder set(String fieldName, String value) {
-            return set(fieldName, String.class, value);
-        }
-
-        public <T> GrantBuilder add(String fieldName, T value) {
-            Method getter;
-
-            if (Character.isLowerCase(fieldName.charAt(0))) {
-                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
-            }
-
-            try {
-                getter = Grant.class.getMethod("get" + fieldName);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-
-            try {
-                Object obj = getter.invoke(toBuild);
-                if (obj instanceof Collection) {
-                    ((Collection)obj).add(value);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            return this;
-        }
-
-        public <T> GrantBuilder set(String fieldName, Class<T> fieldType, T value) {
-            Method setter;
-
-            if (Character.isLowerCase(fieldName.charAt(0))) {
-                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
-            }
-
-            try {
-                setter = Grant.class.getMethod("set" + fieldName, fieldType);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-
-            try {
-                setter.invoke(toBuild, value);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            return this;
-        }
-
-        public Grant build() {
-            return toBuild;
-        }
-    }
-
-    public class RepositoryBuilder {
-
-    }
-
-    public class JournalBuilder {
-
-    }
-
-    public class PublicationBuilder {
-
-    }
-
-    public class PolicyBuilder {
-
-    }
-
-    public class FunderBuilder {
-
-    }
-
-    public class UserBuilder {
-
-    }
-
-    public class FileBuilder {
-
-    }
+//    public static class GrantBuilder {
+//
+//        private Supplier<Grant> s = () -> {
+//            Grant grant = new Grant();
+//            grant.setId(uriSupplier.get());
+//            return grant;
+//        };
+//
+//        private Grant toBuild = s.get();
+//
+//        public GrantBuilder set(String fieldName, String value) {
+//            return set(fieldName, String.class, value);
+//        }
+//
+//        public <T> GrantBuilder add(String fieldName, T value) {
+//            Method getter;
+//
+//            if (Character.isLowerCase(fieldName.charAt(0))) {
+//                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
+//            }
+//
+//            try {
+//                getter = Grant.class.getMethod("get" + fieldName);
+//            } catch (NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            try {
+//                Object obj = getter.invoke(toBuild);
+//                if (obj instanceof Collection) {
+//                    ((Collection)obj).add(value);
+//                }
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            return this;
+//        }
+//
+//        public <T> GrantBuilder set(String fieldName, Class<T> fieldType, T value) {
+//            Method setter;
+//
+//            if (Character.isLowerCase(fieldName.charAt(0))) {
+//                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
+//            }
+//
+//            try {
+//                setter = Grant.class.getMethod("set" + fieldName, fieldType);
+//            } catch (NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            try {
+//                setter.invoke(toBuild, value);
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            return this;
+//        }
+//
+//        public Grant build() {
+//            return toBuild;
+//        }
+//    }
+//
+//    public class RepositoryBuilder {
+//
+//    }
+//
+//    public class JournalBuilder {
+//
+//    }
+//
+//    public class PublicationBuilder {
+//
+//    }
+//
+//    public class PolicyBuilder {
+//
+//    }
+//
+//    public class FunderBuilder {
+//
+//    }
+//
+//    public class UserBuilder {
+//
+//    }
+//
+//    public class FileBuilder {
+//
+//    }
 
 }

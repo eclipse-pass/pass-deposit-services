@@ -18,16 +18,22 @@ package org.dataconservancy.pass.deposit.integration.shared.graph;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Policy;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.User;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.with;
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.uriSupplier;
 import static org.junit.Assert.*;
 
@@ -36,34 +42,34 @@ import static org.junit.Assert.*;
  */
 public class SubmissionGraphTest {
 
-    @Test
-    public void simple() {
-        Grant grant = new SubmissionGraph.GrantBuilder()
-                .set("awardNumber", "123456")
-                .set("localKey", "edu.jhu:123456")
-                .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
-                .add("coPis", uriSupplier.get())
-                .add("coPis", uriSupplier.get())
-                .build();
-
-        assertEquals("123456", grant.getAwardNumber());
-        assertEquals("edu.jhu:123456", grant.getLocalKey());
-        assertEquals(Grant.AwardStatus.ACTIVE, grant.getAwardStatus());
-
-        assertNotNull(grant.getId());
-        assertNotNull(grant.getCoPis());
-        assertEquals(2, grant.getCoPis().size());
-    }
-
-    @Test
-    public void setList() {
-        Grant grant = new SubmissionGraph.GrantBuilder()
-                .set("coPis", List.class, Arrays.asList(uriSupplier.get(), uriSupplier.get()))
-                .build();
-
-        assertNotNull(grant.getCoPis());
-        assertEquals(2, grant.getCoPis().size());
-    }
+//    @Test
+//    public void simple() {
+//        Grant grant = new SubmissionGraph.GrantBuilder()
+//                .set("awardNumber", "123456")
+//                .set("localKey", "edu.jhu:123456")
+//                .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+//                .add("coPis", uriSupplier.get())
+//                .add("coPis", uriSupplier.get())
+//                .build();
+//
+//        assertEquals("123456", grant.getAwardNumber());
+//        assertEquals("edu.jhu:123456", grant.getLocalKey());
+//        assertEquals(Grant.AwardStatus.ACTIVE, grant.getAwardStatus());
+//
+//        assertNotNull(grant.getId());
+//        assertNotNull(grant.getCoPis());
+//        assertEquals(2, grant.getCoPis().size());
+//    }
+//
+//    @Test
+//    public void setList() {
+//        Grant grant = new SubmissionGraph.GrantBuilder()
+//                .set("coPis", List.class, Arrays.asList(uriSupplier.get(), uriSupplier.get()))
+//                .build();
+//
+//        assertNotNull(grant.getCoPis());
+//        assertEquals(2, grant.getCoPis().size());
+//    }
 
     @Test
     public void generic() {
@@ -91,23 +97,10 @@ public class SubmissionGraphTest {
     }
 
     @Test
-    public void genericMapPut() {
-        Map<URI, ? super PassEntity> map = new HashMap<>();
-        map.put(uriSupplier.get(), new Grant());
-        map.put(uriSupplier.get(), new Submission());
-    }
-
-    @Test
     public void graph() {
-        SubmissionGraph graph = new SubmissionGraph();
+        SubmissionGraph graph = SubmissionGraph.newGraph();
 
-        Supplier<Grant> grantSupplier = () -> {
-            Grant grant = new Grant();
-            grant.setId(uriSupplier.get());
-            return grant;
-        };
-
-        Grant grant = new SubmissionGraph.GenericBuilder<>(grantSupplier)
+        Grant grant = graph.builderFor(Grant.class)
                 .set("awardNumber", "123456")
                 .set("localKey", "edu.jhu:123456")
                 .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
@@ -117,5 +110,51 @@ public class SubmissionGraphTest {
                     submission.getGrants().add(g.getId());
                     return g;
                 });
+
+        graph.builderFor(Funder.class)
+                .set("name", "National Institutes of Health")
+                .set("url", URI.class, URI.create("http://nih.gov"))
+                .set("localKey", "edu.jhu:nih.gov")
+                .build((submission, entities, f) -> {
+                    ((Grant)entities.get(grant.getId())).setPrimaryFunder(f.getId());
+                    return f;
+                });
+
+        graph.builderFor(Policy.class)
+                .set("title", "Institutional Policy")
+                .set("description", "My institutional policy")
+                .set("policyUrl", URI.class, URI.create("http://www.google.com"))
+                .build((submission, p) -> {
+                    graph.walk(e -> e instanceof Funder, (s, e) -> {
+                        Funder f = (Funder)e;
+                        f.setPolicy(p.getId());
+                    });
+                    return p;
+                });
+
+        User user = graph.builderFor(User.class)
+                .set("username", "esm")
+                .set("firstName", "Elliot")
+                .set("lastName", "Metsger")
+                .set("displayName", "Elliot")
+                .set("email", "emetsger@jhu.edu")
+                .add("locatorIds", "emetsge1")
+                .build();
+
+        graph.linkEntity(with("localKey", "edu.jhu:nih.gov"))
+                .to(grant)
+                .as(SubmissionGraph.Rel.PRIMARY_FUNDER);
+
+        graph.linkEntity(with("locatorIds", "emetsge1"))
+                .to(grant)
+                .as(SubmissionGraph.Rel.COPI);
+
+        graph.linkEntity(user)
+                .to(graph.)
+
+        graph.link();
+
+
     }
+
 }
