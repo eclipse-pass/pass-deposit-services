@@ -35,6 +35,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-model</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>deposit-model</artifactId>
             <version>${project.parent.version}</version>
