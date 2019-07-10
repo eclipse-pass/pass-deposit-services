@@ -21,6 +21,7 @@ import org.dataconservancy.pass.model.Submission;
 
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class SubmissionGraph {
 
     private Submission submission;
 
-    private Map<URI, ? super PassEntity> entities = new HashMap<>();
+    private static Map<URI, ? super PassEntity> entities = new HashMap<>();
 
     public SubmissionGraph() {
         submission = new Submission();
@@ -128,6 +129,19 @@ public class SubmissionGraph {
             return toBuild;
         }
     }
+
+//    public static class Linker {
+//
+//        public <T extends PassEntity> void link(PassEntity entity, Class<T> type) {
+//            entities.values().stream().filter(target -> {
+//                Arrays.stream(target.getClass().getDeclaredMethods())
+//                        .filter(method -> method.getName().startsWith("get"))
+//                        .filter(method -> method.get)
+//                })
+//            })
+//        }
+//
+//    }
 
     public static class GrantBuilder {
 
