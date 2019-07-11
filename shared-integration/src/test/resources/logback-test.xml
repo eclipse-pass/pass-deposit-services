@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright 2019 Johns Hopkins University
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<configuration>
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss.SSS} [%20.20thread] %-5level [%30.-30C{0}] - %msg%n
+      </pattern>
+    </encoder>
+    <target>System.err</target>
+  </appender>
+  <root level="WARN">
+    <appender-ref ref="STDERR"/>
+  </root>
+  <logger name="org.springframework" additivity="false" level="${org.springframework.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.fcrepo.client" additivity="false" level="WARN">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.level:-ERROR}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass" additivity="false" level="${org.dataconservancy.pass.level:-WARN}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="STREAMING_IO_LOG" additivity="false"
+          level="${org.dataconservancy.pass.deposit.streaming.io.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <!-- the rest client is noisy, and detracts from looking at test logging output -->
+  <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+  <logger name="org.dataconservancy.pass.deposit.integration.shared.graph" additivity="false" level="${org.dataconservancy.pass.deposit.level:-TRACE}">
+    <appender-ref ref="STDERR"/>
+  </logger>
+</configuration>

@@ -19,13 +19,15 @@ import org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Policy;
+import org.dataconservancy.pass.model.Publication;
+import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.User;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.function.Supplier;
 
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.entityHaving;
+import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.submission;
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.uriSupplier;
 import static org.junit.Assert.*;
 
@@ -102,6 +104,12 @@ public class SubmissionGraphTest {
                 .set("title", "Institutional Policy")
                 .set("description", "My institutional policy")
                 .set("policyUrl", URI.class, URI.create("http://www.google.com"))
+                .linkTo(entityHaving("repositoryKey", "edu:jhu:repo:j10p"), "repositories")
+                .linkFrom(entityHaving("localKey", "edu.jhu"), "policy")
+                .build();
+
+        Repository repo = graph.builderFor(Repository.class)
+                .set("repositoryKey", "edu:jhu:repo:j10p")
                 .build();
 
         User esm = graph.builderFor(User.class)
@@ -111,6 +119,7 @@ public class SubmissionGraphTest {
                 .set("displayName", "Elliot")
                 .set("email", "emetsger@jhu.edu")
                 .add("locatorIds", "emetsge1")
+                .linkFrom(submission(), "submitter")
                 .build();
 
         User msp = graph.builderFor(User.class)
@@ -120,6 +129,14 @@ public class SubmissionGraphTest {
                 .set("displayName", "Moo")
                 .set("email", "mpatton@jhu.edu")
                 .add("locatorIds", "mpatton1")
+                .build();
+
+        Publication pub = graph.builderFor(Publication.class)
+                .set("title", "Publication Title")
+                .set("doi", "http://dx.doi.org/123/45")
+                .set("volume", "1")
+                .set("issue", "4")
+                .linkFrom(submission(), "publication")
                 .build();
 
         // Link the entity with the following localKey to the supplied Grant as the Grant.primaryFunder
@@ -148,6 +165,14 @@ public class SubmissionGraphTest {
         assertEquals(directFunder.getId(), grant.getDirectFunder());
 
         assertEquals(msp.getId(), grant.getPi());
+
+        assertEquals(pub.getId(), submission().getPublication());
+
+        assertEquals(esm.getId(), submission().getSubmitter());
+
+        assertEquals(policy.getId(), directFunder.getPolicy());
+
+        assertEquals(repo.getId(), policy.getRepositories().iterator().next());
     }
 
 }
