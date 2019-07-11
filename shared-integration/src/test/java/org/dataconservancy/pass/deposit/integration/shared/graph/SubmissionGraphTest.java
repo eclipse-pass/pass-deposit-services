@@ -104,6 +104,7 @@ public class SubmissionGraphTest {
                 .set("title", "Institutional Policy")
                 .set("description", "My institutional policy")
                 .set("policyUrl", URI.class, URI.create("http://www.google.com"))
+                // link to other pass entities
                 .linkTo(entityHaving("repositoryKey", "edu:jhu:repo:j10p"), "repositories")
                 .linkFrom(entityHaving("localKey", "edu.jhu"), "policy")
                 .build();
