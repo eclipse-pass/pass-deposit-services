@@ -23,10 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -91,6 +94,7 @@ public class SubmissionGraph {
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("Missing Submission entity"));
     }
+
     public void walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
         entities.values().stream()
                 .filter(p)
@@ -103,6 +107,51 @@ public class SubmissionGraph {
 
     private PassEntity get(URI u) {
         return entities.get(u);
+    }
+
+    public SubmissionGraph remove(URI u) {
+        Objects.requireNonNull(u, "Supplied URI must not be null");
+        entities.remove(u);
+
+        // iterate over remaining entities, and remove any references to the removed entity's URI
+
+        entities.values().forEach(entity -> {
+            Arrays.stream(entity.getClass().getDeclaredFields())
+                    .filter(field -> URI.class.isAssignableFrom(field.getType())
+                            || Collection.class.isAssignableFrom(field.getType())
+                            || Map.class.isAssignableFrom(field.getType()))
+                    .peek(field -> field.setAccessible(true))
+                    .forEach(field -> {
+                        try {
+                            if (Collection.class.isAssignableFrom(field.getType())) {
+                                ((Collection) field.get(entity)).remove(u);
+                            } else if (Map.class.isAssignableFrom(field.getType())) {
+                                Map map = ((Map) field.get(entity));
+                                if (map.containsKey(u)) {
+                                    map.remove(u);
+                                }
+                                if (map.containsValue(u)) {
+                                    AtomicReference key = new AtomicReference();
+                                    map.forEach((k, v) -> {
+                                        if (u.equals(v)) {
+                                            key.set(k);
+                                        }
+                                    });
+
+                                    map.remove(key.get());
+                                }
+                            } else {
+                                if (u.equals(field.get(entity))) {
+                                    field.set(entity, null);
+                                }
+                            }
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        });
+
+        return this;
     }
 
     public <T extends PassEntity> T get(URI u, Class<T> type) {

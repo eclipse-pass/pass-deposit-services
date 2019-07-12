@@ -17,6 +17,7 @@ package org.dataconservancy.pass.deposit.integration.shared.graph;
 
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.Rel;
+import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.Policy;
@@ -30,6 +31,7 @@ import submissions.SubmissionResourceUtil;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.entityHaving;
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.submission;
@@ -191,5 +193,41 @@ public class SubmissionGraphTest {
         assertEquals("fake:submission1", submission().getId().toString());
         LOG.info("Graph contains:");
         graph.walk(entity -> true, (submission, entity) -> LOG.info("  {} ({})", entity.getClass().getSimpleName(), entity.getId()));
+    }
+
+    @Test
+    public void remove() {
+        InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
+        SubmissionGraph graph = SubmissionGraph.newGraph(stream, new PassJsonFedoraAdapter());
+
+        AtomicInteger count = new AtomicInteger(0);
+        graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());
+        assertEquals(8, count.get());
+        count.set(0);
+
+        URI file1 = URI.create("fake:file1");
+        assertNotNull(graph.get(file1, File.class));
+        graph.remove(file1);
+        graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());
+        assertEquals(7, count.get());
+        assertNull(graph.get(file1, File.class));
+
+        // fake:user2 is a PI of fake:grant1
+        // fake:user1 is a co-PI of fake:grant1
+        Grant grant = graph.get(URI.create("fake:grant1"), Grant.class);
+        URI user2 = URI.create("fake:user2");
+        URI user1 = URI.create("fake:user1");
+        assertEquals(user2, grant.getPi());
+        assertTrue(grant.getCoPis().contains(user1));
+        assertNotNull(graph.get(user1, User.class));
+        assertNotNull(graph.get(user2, User.class));
+
+        graph.remove(user2);
+        graph.remove(user1);
+
+        assertNull(graph.get(user1, User.class));
+        assertNull(graph.get(user2, User.class));
+        assertFalse(grant.getCoPis().contains(user1));
+        assertNull(grant.getPi());
     }
 }
