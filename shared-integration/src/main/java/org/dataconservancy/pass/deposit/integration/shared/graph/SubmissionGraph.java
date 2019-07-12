@@ -15,12 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -57,12 +59,22 @@ public class SubmissionGraph {
 
     private static List<LinkInstruction> linkInstructions;
 
-    private static Map<URI, PassEntity> entities;
+    private static HashMap<URI, PassEntity> entities;
 
     public static Predicate<PassEntity> SUBMISSION = (entity) -> entity instanceof Submission;
 
     public static SubmissionGraph newGraph() {
         return new SubmissionGraph();
+    }
+
+    public static SubmissionGraph newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
+        SubmissionGraph graph = new SubmissionGraph();
+        entities.clear();
+        adapter.jsonToPass(in, entities);
+        graph.walk(SUBMISSION, (s, e) -> {
+            submission = s;
+        });
+        return graph;
     }
 
     private SubmissionGraph() {

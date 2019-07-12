@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.Rel;
 import org.dataconservancy.pass.model.Funder;
 import org.dataconservancy.pass.model.Grant;
@@ -23,7 +24,11 @@ import org.dataconservancy.pass.model.Publication;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.User;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import submissions.SubmissionResourceUtil;
 
+import java.io.InputStream;
 import java.net.URI;
 
 import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.entityHaving;
@@ -35,6 +40,8 @@ import static org.junit.Assert.*;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionGraphTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SubmissionGraphTest.class);
 
     @Test
     public void generic() {
@@ -176,4 +183,13 @@ public class SubmissionGraphTest {
         assertEquals(repo.getId(), policy.getRepositories().iterator().next());
     }
 
+    @Test
+    public void streamingGraph() {
+        InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
+        SubmissionGraph graph = SubmissionGraph.newGraph(stream, new PassJsonFedoraAdapter());
+
+        assertEquals("fake:submission1", submission().getId().toString());
+        LOG.info("Graph contains:");
+        graph.walk(entity -> true, (submission, entity) -> LOG.info("  {} ({})", entity.getClass().getSimpleName(), entity.getId()));
+    }
 }
