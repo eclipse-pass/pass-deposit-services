@@ -230,4 +230,18 @@ public class SubmissionGraphTest {
         assertFalse(grant.getCoPis().contains(user1));
         assertNull(grant.getPi());
     }
+
+    @Test
+    public void walk() {
+        InputStream stream = SubmissionResourceUtil.lookupStream(URI.create("fake:submission1"));
+        SubmissionGraph graph = SubmissionGraph.newGraph(stream, new PassJsonFedoraAdapter());
+
+        AtomicInteger count = new AtomicInteger(0);
+        graph.walk(entity -> entity instanceof File, (s, f) -> count.getAndIncrement());
+        assertEquals(8, count.get());
+        count.set(0);
+
+        graph.walk(File.class, (s, f) -> count.getAndIncrement());
+        assertEquals(8, count.get());
+    }
 }

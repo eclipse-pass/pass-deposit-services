@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,6 +101,10 @@ public class SubmissionGraph {
         entities.values().stream()
                 .filter(p)
                 .forEach(entity -> c.accept(submission, entity));
+    }
+
+    public void walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
+        walk(e -> clazz.isAssignableFrom(e.getClass()), c);
     }
 
     private <T extends PassEntity> void add(T passEntity) {
