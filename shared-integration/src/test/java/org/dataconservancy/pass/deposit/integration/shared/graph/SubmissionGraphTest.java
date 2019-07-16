@@ -61,6 +61,9 @@ public class SubmissionGraphTest {
                 .add("coPis", uriSupplier.get())
                 .build();
 
+        SubmissionGraph graph = graphBuilder.build();
+        assertNotNull(graph);
+
         assertEquals("123456", grant.getAwardNumber());
         assertEquals("edu.jhu:123456", grant.getLocalKey());
         assertEquals(Grant.AwardStatus.ACTIVE, grant.getAwardStatus());
@@ -152,6 +155,9 @@ public class SubmissionGraphTest {
                 .linkFrom(graphBuilder.submission(), "publication")
                 .build();
 
+        // Linking instructions can be added when building entities (as above) or arbitrarily set directly on the
+        // graph builder.
+
         // Link the entity with the following localKey to the supplied Grant as the Grant.primaryFunder
         graphBuilder.link(entityHaving("localKey", "edu.jhu:nih.gov"))
                 .to(grant)
@@ -166,7 +172,7 @@ public class SubmissionGraphTest {
                 .to(grant)
                 .as(Rel.COPI);
 
-        // perform the linking of the elements in the graph using the provided link instructions
+        // Build the graph and perform the linking of the elements in the graph using the link instructions supplied above
         SubmissionGraph graph = graphBuilder.build();
 
         assertNotNull(grant.getPrimaryFunder());
