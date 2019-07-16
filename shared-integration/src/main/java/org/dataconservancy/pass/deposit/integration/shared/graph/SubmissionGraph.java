@@ -22,6 +22,8 @@ import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -41,6 +44,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static java.lang.Character.toUpperCase;
 
@@ -61,26 +65,41 @@ public class SubmissionGraph {
 
     private Submission submission;
 
-    private HashMap<URI, PassEntity> entities;
+    private ConcurrentHashMap<URI, PassEntity> entities;
+
+    private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
 
     private SubmissionGraph(HashMap<URI, PassEntity> entities) {
+        this(new ConcurrentHashMap<>(entities));
+    }
+
+    private SubmissionGraph(ConcurrentHashMap<URI, PassEntity> entities) {
+        Objects.requireNonNull(entities, "Entities must not be null!");
         this.entities = entities;
         this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
-                .orElseThrow(() -> new RuntimeException("Missing expected Submission entity."));
+                .orElseThrow(() -> new IllegalArgumentException("Entities are missing expected Submission entity."));
     }
 
     public Submission submission() {
         return submission;
     }
 
-    public void walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
-        entities.values().stream()
-                .filter(p)
-                .forEach(entity -> c.accept(submission, entity));
+    public SubmissionGraph walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
+        Walker.walk(submission, entities, p, c);
+        return this;
     }
 
-    public void walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
-        walk(e -> clazz.isAssignableFrom(e.getClass()), c);
+    public SubmissionGraph walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
+        Walker.walk(submission, entities, clazz, c);
+        return this;
+    }
+
+    public Stream<PassEntity> walk(Class<? extends PassEntity> clazz) {
+        return Walker.walk(entities, clazz);
+    }
+
+    public Stream<PassEntity> walk(Predicate<PassEntity> p) {
+        return Walker.walk(entities, p);
     }
 
     private <T extends PassEntity> void add(T passEntity) {
@@ -92,6 +111,36 @@ public class SubmissionGraph {
     }
 
     public SubmissionGraph remove(URI u) {
+        removeEntity(u, entities);
+        return this;
+    }
+
+    public InputStream asJson() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        adapter.passToJson(new HashMap<>(entities), out);
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    private static class Walker {
+        private static void walk(Submission submission, ConcurrentHashMap<URI, PassEntity> entities, Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
+            walk(entities, p).forEach(entity -> c.accept(submission, entity));
+        }
+
+        private static void walk(Submission submission, ConcurrentHashMap<URI, PassEntity> entities, Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
+            walk(entities, clazz).forEach(entity -> c.accept(submission, entity));
+        }
+
+        private static Stream<PassEntity> walk(ConcurrentHashMap<URI, PassEntity> entities, Class<? extends PassEntity> clazz) {
+            return entities.values().stream()
+                    .filter(e -> clazz.isAssignableFrom(e.getClass()));
+        }
+
+        private static Stream<PassEntity> walk(ConcurrentHashMap<URI, PassEntity> entities, Predicate<PassEntity> p) {
+            return entities.values().stream().filter(p);
+        }
+    }
+
+    private static void removeEntity(URI u, ConcurrentHashMap<URI, PassEntity> entities) {
         Objects.requireNonNull(u, "Supplied URI must not be null");
         entities.remove(u);
 
@@ -132,8 +181,6 @@ public class SubmissionGraph {
                         }
                     });
         });
-
-        return this;
     }
 
     public <T extends PassEntity> T get(URI u, Class<T> type) {
@@ -228,7 +275,7 @@ public class SubmissionGraph {
 
         private List<LinkInstruction> linkInstructions;
 
-        private HashMap<URI, PassEntity> entities;
+        private ConcurrentHashMap<URI, PassEntity> entities;
 
         public static GraphBuilder newGraph() {
             return new GraphBuilder();
@@ -237,12 +284,12 @@ public class SubmissionGraph {
         public static GraphBuilder newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
             HashMap<URI, PassEntity> entities = new HashMap<>();
             adapter.jsonToPass(in, entities);
-            return new GraphBuilder(entities);
+            return new GraphBuilder(new ConcurrentHashMap<URI, PassEntity>(entities));
         }
 
         private GraphBuilder() {
             this.submission = new Submission();
-            this.entities = new HashMap<>();
+            this.entities = new ConcurrentHashMap<>();
             this.linkInstructions = new ArrayList<>();
             this.submission = new Submission();
             this.submission.setId(uriSupplier.get());
@@ -250,8 +297,13 @@ public class SubmissionGraph {
         }
 
         private GraphBuilder(HashMap<URI, PassEntity> entities) {
+            this(new ConcurrentHashMap<>(entities));
+        }
+
+        private GraphBuilder(ConcurrentHashMap<URI, PassEntity> entities) {
+            Objects.requireNonNull(entities, "Entities must not be null!");
             this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
-                    .orElseThrow(() -> new RuntimeException("Supplied graph is missing a Submission entity."));
+                    .orElseThrow(() -> new IllegalArgumentException("Entities is missing a required Submission entity."));
             this.entities = entities;
             this.linkInstructions = new ArrayList<>();
         }
@@ -339,6 +391,30 @@ public class SubmissionGraph {
                 return instance;
             }, entities, linkInstructions);
         }
+
+        public GraphBuilder removeEntity(URI u) {
+            SubmissionGraph.removeEntity(u, entities);
+            return this;
+        }
+
+        public GraphBuilder walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
+            Walker.walk(submission, entities, p, c);
+            return this;
+        }
+
+        public GraphBuilder walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
+            Walker.walk(submission, entities, clazz, c);
+            return this;
+        }
+
+        public Stream<PassEntity> walk(Class<? extends PassEntity> clazz) {
+            return Walker.walk(entities, clazz);
+        }
+
+        public Stream<PassEntity> walk(Predicate<PassEntity> p) {
+            return Walker.walk(entities, p);
+        }
+
     }
 
     /**
