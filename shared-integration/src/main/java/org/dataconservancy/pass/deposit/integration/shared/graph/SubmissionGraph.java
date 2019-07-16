@@ -16,7 +16,6 @@
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
-import org.dataconservancy.pass.model.File;
 import org.dataconservancy.pass.model.Grant;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
@@ -24,10 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,41 +57,20 @@ public class SubmissionGraph {
         return URI.create("urn:uri:pass:entity:" + COUNTER.getAndIncrement());
     };
 
-    private static Submission submission;
-
-    private static List<LinkInstruction> linkInstructions;
-
-    private static HashMap<URI, PassEntity> entities;
-
     public static Predicate<PassEntity> SUBMISSION = (entity) -> entity instanceof Submission;
 
-    public static SubmissionGraph newGraph() {
-        return new SubmissionGraph();
+    private Submission submission;
+
+    private HashMap<URI, PassEntity> entities;
+
+    private SubmissionGraph(HashMap<URI, PassEntity> entities) {
+        this.entities = entities;
+        this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
+                .orElseThrow(() -> new RuntimeException("Missing expected Submission entity."));
     }
 
-    public static SubmissionGraph newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
-        SubmissionGraph graph = new SubmissionGraph();
-        entities.clear();
-        adapter.jsonToPass(in, entities);
-        graph.walk(SUBMISSION, (s, e) -> {
-            submission = s;
-        });
-        return graph;
-    }
-
-    private SubmissionGraph() {
-        submission = new Submission();
-        entities = new HashMap<>();
-        linkInstructions = new ArrayList<>();
-        submission.setId(uriSupplier.get());
-        entities.put(submission.getId(), submission);
-    }
-
-    public static Submission submission() {
-        return (Submission) entities.values().stream()
-                .filter(SUBMISSION)
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("Missing Submission entity"));
+    public Submission submission() {
+        return submission;
     }
 
     public void walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
@@ -164,17 +140,7 @@ public class SubmissionGraph {
         return type.cast(entities.get(u));
     }
 
-    public LinkInstruction link(PassEntity entity) {
-        LinkInstruction li = new LinkInstruction();
-        linkInstructions.add(li);
-        return li.link(entity);
-    }
 
-    public LinkInstruction link(Predicate<PassEntity> withPredicate) {
-        LinkInstruction li = new LinkInstruction();
-        linkInstructions.add(li);
-        return li.link(withPredicate);
-    }
 
     public enum Rel {
         PRIMARY_FUNDER,
@@ -190,64 +156,9 @@ public class SubmissionGraph {
         PUBLISHER
     }
 
-    public SubmissionGraph link() {
-        if (linkInstructions.isEmpty()) {
-            // no link instructions, do nothing
-            LOG.trace("No LinkInstructions to process, returning.");
-            return this;
-        }
 
-        LOG.trace("Processing {} LinkInstructions", linkInstructions.size());
-        linkInstructions.forEach(li -> LOG.trace("  {}", li));
 
-        Iterator<LinkInstruction> iterator = linkInstructions.iterator();
-
-        while (iterator.hasNext()) {
-            LinkInstruction li = iterator.next();
-            LOG.trace("  Processing LinkInstruction {}@{}",
-                    li.getClass().getSimpleName(),
-                    Integer.toHexString(System.identityHashCode(li)));
-            PassEntity source = null;
-            if (li.sourcePredicate != null) {
-                source = entities.values().stream()
-                        .filter(li.sourcePredicate)
-                        .findAny()
-                        .orElseThrow(() -> new RuntimeException("Missing source entity"));
-            } else {
-                source = li.source;
-            }
-
-            PassEntity target= null;
-            if (li.targetPredicate != null) {
-                target = entities.values().stream()
-                        .filter(li.targetPredicate)
-                        .findAny()
-                        .orElseThrow(() -> new RuntimeException("Missing target entity"));
-            } else {
-                target = li.target;
-            }
-
-            LOG.trace("    Linking {} ({}) to {} ({}) using {}",
-                    target.getClass().getSimpleName(),
-                    target.getId(),
-                    source.getClass().getSimpleName(),
-                    source.getId(),
-                    li.rel);
-
-            try {
-                linkUsingRel(target, source, Rel.valueOf(li.rel));
-            } catch (IllegalArgumentException e) {
-                linkUsingField(target, source, li.rel);
-            }
-
-            // Remove successfully processed LinkInstructions
-            iterator.remove();
-        }
-
-        return this;
-    }
-
-    private void linkUsingField(PassEntity target, PassEntity source, String fieldName) {
+    private static void linkUsingField(PassEntity target, PassEntity source, String fieldName) {
         Method setter;
 
         fieldName = upperCase(fieldName);
@@ -282,7 +193,7 @@ public class SubmissionGraph {
         }
     }
 
-    private void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
+    private static void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
         switch (rel) {
             case PI:
                 ((Grant) target).setPi(source.getId());
@@ -310,39 +221,159 @@ public class SubmissionGraph {
         }
     }
 
-    public <T extends PassEntity> GenericBuilder<T> builderFor(Class<T> type) {
-        return new GenericBuilder<T>(() -> {
-            T instance = null;
-            try {
-                instance = type.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+    public static class GraphBuilder {
+
+        private Submission submission;
+
+        private List<LinkInstruction> linkInstructions;
+
+        private HashMap<URI, PassEntity> entities;
+
+        public static GraphBuilder newGraph() {
+            return new GraphBuilder();
+        }
+
+        public static GraphBuilder newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
+            HashMap<URI, PassEntity> entities = new HashMap<>();
+            adapter.jsonToPass(in, entities);
+            return new GraphBuilder(entities);
+        }
+
+        private GraphBuilder() {
+            this.submission = new Submission();
+            this.entities = new HashMap<>();
+            this.linkInstructions = new ArrayList<>();
+            this.submission = new Submission();
+            this.submission.setId(uriSupplier.get());
+            this.entities.put(submission.getId(), submission);
+        }
+
+        private GraphBuilder(HashMap<URI, PassEntity> entities) {
+            this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
+                    .orElseThrow(() -> new RuntimeException("Supplied graph is missing a Submission entity."));
+            this.entities = entities;
+            this.linkInstructions = new ArrayList<>();
+        }
+
+        public Submission submission() {
+            return submission;
+        }
+
+        public SubmissionGraph build() {
+            SubmissionGraph graph = new SubmissionGraph(entities);
+            link();
+
+            return graph;
+        }
+
+        public LinkInstruction link(PassEntity entity) {
+            LinkInstruction li = new LinkInstruction();
+            linkInstructions.add(li);
+            return li.link(entity);
+        }
+
+        public LinkInstruction link(Predicate<PassEntity> withPredicate) {
+            LinkInstruction li = new LinkInstruction();
+            linkInstructions.add(li);
+            return li.link(withPredicate);
+        }
+
+        private GraphBuilder link() {
+            if (linkInstructions.isEmpty()) {
+                // no link instructions, do nothing
+                LOG.trace("No LinkInstructions to process, returning.");
+                return this;
             }
-            instance.setId(uriSupplier.get());
-            return instance;
-        });
+
+            LOG.trace("Processing {} LinkInstructions", linkInstructions.size());
+            linkInstructions.forEach(li -> LOG.trace("  {}", li));
+
+            Iterator<LinkInstruction> iterator = linkInstructions.iterator();
+
+            while (iterator.hasNext()) {
+                LinkInstruction li = iterator.next();
+                LOG.trace("  Processing LinkInstruction {}@{}", li.getClass().getSimpleName(),
+                        Integer.toHexString(System.identityHashCode(li)));
+                PassEntity source = null;
+                if (li.sourcePredicate != null) {
+                    source =
+                            entities.values().stream().filter(li.sourcePredicate).findAny().orElseThrow(() -> new RuntimeException("Missing source entity"));
+                } else {
+                    source = li.source;
+                }
+
+                PassEntity target = null;
+                if (li.targetPredicate != null) {
+                    target =
+                            entities.values().stream().filter(li.targetPredicate).findAny().orElseThrow(() -> new RuntimeException("Missing target entity"));
+                } else {
+                    target = li.target;
+                }
+
+                LOG.trace("    Linking {} ({}) to {} ({}) using {}", target.getClass().getSimpleName(),
+                        target.getId(), source.getClass().getSimpleName(), source.getId(), li.rel);
+
+                try {
+                    linkUsingRel(target, source, Rel.valueOf(li.rel));
+                } catch (IllegalArgumentException e) {
+                    linkUsingField(target, source, li.rel);
+                }
+
+                // Remove successfully processed LinkInstructions
+                iterator.remove();
+            }
+
+            return this;
+        }
+
+        public <T extends PassEntity> EntityBuilder<T> addEntity(Class<T> type) {
+            return new EntityBuilder<T>(() -> {
+                T instance = null;
+                try {
+                    instance = type.newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                instance.setId(uriSupplier.get());
+                return instance;
+            }, entities, linkInstructions);
+        }
     }
 
-    public static class GenericBuilder<T extends PassEntity> {
-
-        private Supplier<T> s;
+    /**
+     * The EntityBuilder shares state with the GraphBuilder supplied on construction:
+     * - the entities in the graph
+     * - the linking instructions
+     *
+     * @param <T> the type of {@code PassEntity} being built
+     */
+    public static class EntityBuilder<T extends PassEntity> {
 
         private T toBuild;
 
-        private GenericBuilder(Supplier<T> s) {
-            if (entities == null) {
-                throw new IllegalStateException(String.format("%s.%s must be invoked prior to using %s",
-                        SubmissionGraph.class.getSimpleName(), "newGraph()", GenericBuilder.class.getSimpleName()));
-            }
-            this.s = s;
+        private Map<URI, PassEntity> entities;
+
+        private List<LinkInstruction> linkInstructions;
+
+        private Submission submission;
+
+        private EntityBuilder(Supplier<T> s, Map<URI, PassEntity> entities, List<LinkInstruction> linkInstructions) {
+            Objects.requireNonNull(s, "Entity Supplier must not be null.");
+            Objects.requireNonNull(entities, "Entities Map must not be null.");
+            Objects.requireNonNull(linkInstructions, "LinkInstructions must not be null");
             this.toBuild = s.get();
+            this.entities = entities;
+            this.linkInstructions = linkInstructions;
+            this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
+                    .orElseThrow(() -> new RuntimeException("Supplied graph is missing a Submission entity."));
         }
 
-        public GenericBuilder<T> set(String fieldName, String value) {
+        public EntityBuilder<T> set(String fieldName, String value) {
             return set(fieldName, String.class, value);
         }
 
-        public <U> GenericBuilder<T> add(String fieldName, U value) {
+        public <U> EntityBuilder<T> add(String fieldName, U value) {
             Method getter;
 
             fieldName = upperCase(fieldName);
@@ -365,7 +396,7 @@ public class SubmissionGraph {
             return this;
         }
 
-        public <U> GenericBuilder<T> set(String fieldName, Class<U> fieldType, U value) {
+        public <U> EntityBuilder<T> set(String fieldName, Class<U> fieldType, U value) {
             Method setter;
 
             fieldName = upperCase(fieldName);
@@ -385,24 +416,28 @@ public class SubmissionGraph {
             return this;
         }
 
-        public GenericBuilder<T> linkFrom(Predicate<PassEntity> predicate, String rel) {
+        public EntityBuilder<T> linkFrom(Predicate<PassEntity> predicate, String rel) {
             linkInstructions.add(new LinkInstruction().link(toBuild).to(predicate).as(rel));
             return this;
         }
 
-        public GenericBuilder<T> linkFrom(PassEntity entity, String rel) {
+        public EntityBuilder<T> linkFrom(PassEntity entity, String rel) {
             linkInstructions.add(new LinkInstruction().link(toBuild).to(entity).as(rel));
             return this;
         }
 
-        public GenericBuilder<T> linkTo(Predicate<PassEntity> predicate, String rel) {
+        public EntityBuilder<T> linkTo(Predicate<PassEntity> predicate, String rel) {
             linkInstructions.add(new LinkInstruction().link(predicate).to(toBuild).as(rel));
             return this;
         }
 
-        public GenericBuilder<T> linkTo(PassEntity entity, String rel) {
+        public EntityBuilder<T> linkTo(PassEntity entity, String rel) {
             linkInstructions.add(new LinkInstruction().link(entity).to(toBuild).as(rel));
             return this;
+        }
+
+        public Submission submission() {
+            return submission;
         }
 
         public T build() {
