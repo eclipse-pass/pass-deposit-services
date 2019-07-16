@@ -250,9 +250,7 @@ public class SubmissionGraph {
     private void linkUsingField(PassEntity target, PassEntity source, String fieldName) {
         Method setter;
 
-        if (Character.isLowerCase(fieldName.charAt(0))) {
-            fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
-        }
+        fieldName = upperCase(fieldName);
 
         try {
             setter = target.getClass().getMethod("set" + fieldName, URI.class);
@@ -347,9 +345,7 @@ public class SubmissionGraph {
         public <U> GenericBuilder<T> add(String fieldName, U value) {
             Method getter;
 
-            if (Character.isLowerCase(fieldName.charAt(0))) {
-                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
-            }
+            fieldName = upperCase(fieldName);
 
             try {
                 getter = toBuild.getClass().getMethod("get" + fieldName);
@@ -372,9 +368,7 @@ public class SubmissionGraph {
         public <U> GenericBuilder<T> set(String fieldName, Class<U> fieldType, U value) {
             Method setter;
 
-            if (Character.isLowerCase(fieldName.charAt(0))) {
-                fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
-            }
+            fieldName = upperCase(fieldName);
 
             try {
                 setter = toBuild.getClass().getMethod("set" + fieldName, fieldType);
@@ -430,6 +424,14 @@ public class SubmissionGraph {
             });
             return func.apply(submission, entities, toBuild);
         }
+    }
+
+    private static String upperCase(String fieldName) {
+        if (Character.isLowerCase(fieldName.charAt(0))) {
+            fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
+                    fieldName.length());
+        }
+        return fieldName;
     }
 
     @FunctionalInterface
