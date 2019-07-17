@@ -84,22 +84,26 @@ public class SubmissionGraph {
         return submission;
     }
 
+    public Stream<PassEntity> stream() {
+        return Streamer.stream(entities);
+    }
+
+    public Stream<PassEntity> stream(Predicate<PassEntity> p) {
+        return Streamer.stream(entities).filter(p);
+    }
+
+    public Stream<PassEntity> stream(Class<? extends PassEntity> clazz) {
+        return stream(entity -> clazz.isAssignableFrom(entity.getClass()));
+    }
+
     public SubmissionGraph walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
-        Walker.walk(submission, entities, p, c);
+        stream(p).forEach(entity -> c.accept(submission, entity));
         return this;
     }
 
     public SubmissionGraph walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
-        Walker.walk(submission, entities, clazz, c);
+        stream(entity -> clazz.isAssignableFrom(entity.getClass())).forEach(entity -> c.accept(submission, entity));
         return this;
-    }
-
-    public Stream<PassEntity> walk(Class<? extends PassEntity> clazz) {
-        return Walker.walk(entities, clazz);
-    }
-
-    public Stream<PassEntity> walk(Predicate<PassEntity> p) {
-        return Walker.walk(entities, p);
     }
 
     private <T extends PassEntity> void add(T passEntity) {
@@ -121,23 +125,12 @@ public class SubmissionGraph {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    private static class Walker {
-        private static void walk(Submission submission, ConcurrentHashMap<URI, PassEntity> entities, Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
-            walk(entities, p).forEach(entity -> c.accept(submission, entity));
+    private static class Streamer {
+
+        private static Stream<PassEntity> stream(Map<URI, PassEntity> entities) {
+            return entities.values().stream();
         }
 
-        private static void walk(Submission submission, ConcurrentHashMap<URI, PassEntity> entities, Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
-            walk(entities, clazz).forEach(entity -> c.accept(submission, entity));
-        }
-
-        private static Stream<PassEntity> walk(ConcurrentHashMap<URI, PassEntity> entities, Class<? extends PassEntity> clazz) {
-            return entities.values().stream()
-                    .filter(e -> clazz.isAssignableFrom(e.getClass()));
-        }
-
-        private static Stream<PassEntity> walk(ConcurrentHashMap<URI, PassEntity> entities, Predicate<PassEntity> p) {
-            return entities.values().stream().filter(p);
-        }
     }
 
     private static void removeEntity(URI u, ConcurrentHashMap<URI, PassEntity> entities) {
@@ -397,22 +390,26 @@ public class SubmissionGraph {
             return this;
         }
 
+        public Stream<PassEntity> stream() {
+            return Streamer.stream(entities);
+        }
+
+        public Stream<PassEntity> stream(Predicate<PassEntity> p) {
+            return Streamer.stream(entities).filter(p);
+        }
+
+        public Stream<PassEntity> stream(Class<? extends PassEntity> clazz) {
+            return stream(entity -> clazz.isAssignableFrom(entity.getClass()));
+        }
+
         public GraphBuilder walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
-            Walker.walk(submission, entities, p, c);
+            stream(p).forEach(entity -> c.accept(submission, entity));
             return this;
         }
 
         public GraphBuilder walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
-            Walker.walk(submission, entities, clazz, c);
+            stream(entity -> clazz.isAssignableFrom(entity.getClass())).forEach(entity -> c.accept(submission, entity));
             return this;
-        }
-
-        public Stream<PassEntity> walk(Class<? extends PassEntity> clazz) {
-            return Walker.walk(entities, clazz);
-        }
-
-        public Stream<PassEntity> walk(Predicate<PassEntity> p) {
-            return Walker.walk(entities, p);
         }
 
     }
