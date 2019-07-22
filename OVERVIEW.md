@@ -118,7 +118,7 @@ Supports the transport of the package stream using FTP.
 
 #### SWORDv2
 
-Supports the transport of the package stream using SWORD protocol version 2.
+Supports the transport of the package stream using [SWORD protocol version 2](http://swordapp.org/sword-v2/sword-v2-specifications/).
 
 ## Runtime Configuration
 

@@ -5,7 +5,7 @@ Assemblers are responsible for gathering custodial and supplemental resources as
 
 ## Use Case
 
-Why develop an `Assembler`?  Broadly speaking, an `Assembler` implementation is required for every packaging specification you wish to support.  For example, if you want to produce BagIt packages and DSpace METS packages, you would need two `Assembler` implementations, each one responsible for producing packages that comport with their respective specifications.
+Why develop an `Assembler`?  Broadly speaking, an `Assembler` implementation is required for every packaging specification you wish to support.  For example, if you want to produce [BagIt packages](https://tools.ietf.org/html/rfc8493) and [DSpace METS packages](https://wiki.duraspace.org/display/DSPACE/DSpaceMETSSIPProfile), you would need two `Assembler` implementations, each one responsible for producing packages that comport with their respective specifications.
 
 Another reason to develop an `Assembler` is to control how the metadata of a submission is mapped into your package.  For example, if your DSpace installation requires custom metadata elements, you would need to develop or extend an existing `Assembler` (for example, by implementing a custom Package Provider) to include the custom metadata as appropriate to your environment.
 
@@ -82,35 +82,37 @@ Extend and implement `org.dataconservancy.pass.deposit.assembler.shared.Threaded
 
 ## Assembler API
 
-The main entrypoint into the Assembler API is on the Assembler interface:
+The main entrypoint into the Assembler API is on the [`Assembler`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/dataconservancy/pass/deposit/assembler/Assembler.java) interface:
 `PackageStream assemble(DepositSubmission, Map<String, Object>)`
-where the `DepositSubmission` is the internal representation of a Submission, and the Map is a set of package options read from `repositories.json`.
+where the `DepositSubmission` is the internal representation of a `Submission`, and the `Map` is a set of package options read from `repositories.json`.
 
-The `AbstractAssembler` provides an implementation of `assemble(DepositSubmission, Map)`, and requires its subclasses to implement:
-`PackageStream createPackageStream(DepositSubmission, List<DepositFileResource>, MetadataBuilder, ResourceBuilderFactory, Map<String, Object>)`
-where the `List<DepositFileResource>` is the custodial content of the submission, the `MetadataBuilder` allowing modification of the package-level metadata, and the `ResourceBuilderFactory` used to generate an instance of `ResourceBuilder` for each `DepositFileResource`.
+The [`AbstractAssembler`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/AbstractAssembler.java) provides an implementation of `assemble(DepositSubmission, Map)`, and requires its subclasses to implement:
+    
+    PackageStream createPackageStream(DepositSubmission, List<DepositFileResource>, MetadataBuilder, ResourceBuilderFactory, Map<String, Object>)
+    
+Where the `List<DepositFileResource>` is the custodial content of the submission, the `MetadataBuilder` allowing modification of the package-level metadata, and the `ResourceBuilderFactory` used to generate an instance of `ResourceBuilder` for each `DepositFileResource`.
 
 The primary benefit of extending `AbstractAssembler` is that the logic for identifying the custodial resources in the submission and creating their representation as `List<DepositSubmission>` is shared.  Subclasses of `AbstractAssembler` must instantiate and return a `PackageStream`.
 
-Examples: DspaceMetsAssembler, NihmsAssembler
+Examples: [`DspaceMetsAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/j10p/J10PDspaceMetsAssembler.java), [`NihmsAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsAssembler.java), [`BagItAssembler`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItAssembler.java) 
 
 ## PackageStream API
 
-Assemblers are invoked by Deposit Services and return a `PackageStream`.  The `PackageStream` represents the content to be sent to a downstream repository.  Conceptually, the `PackageStream` behaves like a Java `InputStream`: the bytes for the stream can come from anywhere (memory, a file on disk, or retrieved from another network resource), and can generally only be read once.
+Assemblers are invoked by Deposit Services and return a [`PackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/assembler-api/src/main/java/org/dataconservancy/pass/deposit/assembler/PackageStream.java).  The `PackageStream` represents the content to be sent to a downstream repository.  Conceptually, the `PackageStream` behaves like a Java `InputStream`: the bytes for the stream can come from anywhere (memory, a file on disk, or retrieved from another network resource), and can generally only be read once.
 
-Practically, the `PackageStream` represents an archive file: either a ZIP, TAR, or some variant like TAR.GZ.  This is encapsulated by the `ArchivingPackageStream` class.  Re-using the `ArchivingPackageStream` class has the advantage that your package resources will be bundled up in a single archive file according to the options supplied to the `Assembler` (e.g. compression and archive type to use).
+Practically, the `PackageStream` represents an archive file: either a ZIP, TAR, or some variant like TAR.GZ.  This is encapsulated by the [`ArchivingPackageStream`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/ArchivingPackageStream.java) class.  Re-using the `ArchivingPackageStream` class has the advantage that your package resources will be bundled up in a single archive file according to the options supplied to the `Assembler` (e.g. compression and archive type to use).
 
 To instantiate an `ArchivingPackageStream` class requires an instance of `PackageProvider`.
 
 ## PackageProvider API
 
-The PackageProvider interface was developed as an ad hoc lifecycle for streaming a package: there's a `start(...)` and `finish(...)` method, along with a `packagePath(...)` method.   `PackageProvider` also defines a new interface: `SupplementalResource`.  This interface is returned by the `finish(...)` method, allowing the `PackageProvider` implementation to generate supplemental (i.e. BagIt tag files or METS.xml files) content after the rest of the package has been streamed.
+The [`PackageProvider`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/PackageProvider.java) interface was developed as an ad hoc lifecycle for streaming a package: there's a `start(...)` and `finish(...)` method, along with a `packagePath(...)` method.   `PackageProvider` also defines a new interface: [`SupplementalResource`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/main/java/org/dataconservancy/pass/deposit/assembler/shared/PackageProvider.java#L84).  This interface is returned by the `finish(...)` method, allowing the `PackageProvider` implementation to generate supplemental (i.e. BagIt tag files or METS.xml files) content after the rest of the package has been streamed.
 
 Implementing this interface therefore allows for customizing where resources will appear in the package, and to customize the metadata that appears in the package.
 
 Because packaging specifications generally have something to say about what resources are included where in the package, a Package Provider is loosely coupled to a package specification.  For example, a Package Provider that placed custodial resources in the `<package root>/foo` directory would be incompatible with a BagIt packaging specification, which requires custodial resources to appear under `<package root>/data`.  Similarly, if your Package Provider is to comport with a DSpace METS packaging scheme, it will need to produce a `<package root>/METS.xml` file with the required content.  Therefore, any `PackageProvider` implementation can be used with any `Assembler` implementation as long as the package specification shared between the two is not violated.  
 
-Examples: DspaceMetsPackageProvider, NihmsPackageProvider
+Examples: [`DspaceMetsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/main/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageProvider.java), [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageProvider.java), [`BagItPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItPackageProvider.java)
 
 ## Recap
 
@@ -121,15 +123,16 @@ When developing your own `Assembler`, you will need to:
   * Implement `PackageProvider`, including the logic to produce supplemental package content like BagIt tag files or DSpace METS.xml files
   * Construct `ArchivingPackageStream` with your `PackageProvider` and return that from your `AbstractAssembler` implementation
 
-Here are two examples:
-DSpace METS Package Provider
-NIHMS Package Provider
+Here are three examples:
+  * [`DspaceMetsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/main/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageProvider.java)
+  * [`NihmsPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/main/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageProvider.java)
+  * [`BagItPackageProvider`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/bagit/BagItPackageProvider.java)
 
 # Concurrency
 
 Assemblers exist in the Deposit Services runtime as singletons.  A single `Assembler` instance may be invoked from multiple threads, therefore all the code paths executed by an `Assembler` must be thread-safe.
 
-`AbstractAssembler` and `ArchivingPackageStream` are already thread-safe; your concrete implementation of `AbstractAssembler` and `PackageProvider` will need to maintain that thread safety.  Streaming a package inherently involves maintaining state, including the updating of metadata for resources as they are streamed.  Package Providers will often maintain state as they generate supplemental resources for a package; the `DspaceMetadataDomWriter`, for example, builds a METS.xml file using a DOM.
+`AbstractAssembler` and `ArchivingPackageStream` are already thread-safe; your concrete implementation of `AbstractAssembler` and `PackageProvider` will need to maintain that thread safety.  Streaming a package inherently involves maintaining state, including the updating of metadata for resources as they are streamed.  Package Providers will often maintain state as they generate supplemental resources for a package; the [`J10PMetadataDomWriter`](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/src/main/java/edu/jhu/library/pass/deposit/provider/j10p/J10PMetadataDomWriter.java), for example, builds a METS.xml file using a DOM.
 
 One strategy for maintaining thread safety is to scope any state maintained over the course of streaming a package to the executing thread.  `Assembler` implementations are free to use whatever mechanisms they wish to insure thread safety, but Deposit Services accomplishes this in its codebase by simply instantiating a new instance of state-maintaining classes each time the `Assembler.assemble(...)` is invoked, and insures that state is not shared (i.e. kept on the Thread stack and not in the JVM heap).  For example:
   * `AbstractAssembler` instantiates a new `MetadataBuilder` each time using a factory pattern
@@ -137,7 +140,7 @@ One strategy for maintaining thread safety is to scope any state maintained over
   * `DefaultStreamWriterImpl` instantiates a new `ResourceBuilder` for each resource being streamed using a factory pattern
   * The `DspaceMetsAssembler` uses a factory pattern to instantiate its state-maintaining objects.
   
-The factory objects may be kept in shared memory (i.e. as instance member variables), but the objects produced by the factories are maintained in the Thread stack (as method variables).  After a `PackageStream` has been opened and subsequently closed, these objects will be released and garbage collected by the JVM.  To help insure thread safety, there is an integration test fixture, `ThreadedAssemblyIT`, which can be subclassed and used by `Assembler` integration tests to verify thread safety.
+The factory objects may be kept in shared memory (i.e. as instance member variables), but the objects produced by the factories are maintained in the Thread stack (as method variables).  After a `PackageStream` has been opened and subsequently closed, these objects will be released and garbage collected by the JVM.  To help insure thread safety, there is an integration test fixture, [`ThreadedAssemblyIT`](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/dataconservancy/pass/deposit/assembler/shared/ThreadedAssemblyIT.java), which can be subclassed and used by `Assembler` integration tests to verify thread safety.
 
 # Testing
 
@@ -165,7 +168,7 @@ To use `ThreadedAssemblyIT`, extend it, and implement the required methods:
   
 The test logic will execute automatically in `ThreadedAssemblyIT.testMultiplePackageStreams()`.  The `PackageVerifier` is very important: it does most of the heavy lifting with respect to passing or failing the integration test, so it must be well written and test all aspects of a generated package.
 
-Example: DspaceMetsThreadedAssemblyIT, NihmsThreadedAssemblyIT
+Example: [`BagItThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/src/test/java/edu/jhu/library/pass/deposit/provider/bagit/BagItThreadedAssemblyIT.java), [`J10PMetsThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/src/test/java/edu/jhu/library/pass/deposit/provider/j10p/J10PMetsThreadedAssemblyIT.java), [`NihmsThreadedAssemblyIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsThreadedAssemblyIT.java)
 
 ## SubmitAndValidatePackagesIT
 
@@ -228,7 +231,7 @@ And the `docker-maven-plugin` configuration for the Deposit Services runtime mus
        </run>
     </image>
     
-When the Deposit Services `FilesystemTransport` writes a package to the `/packages` directory within the container it will also be visible to the IT in the Maven project `target/packages` directory, allowing the `PackageVerifier` access to the package generated by the `Assembler` within Deposit Services.
+When the Deposit Services `FilesystemTransport` writes a package to the `/packages` directory in the _container_ it will also be visible to the IT in the _Maven `target/packages` directory_, allowing the `PackageVerifier` access to the package generated by the `Assembler` within Deposit Services.
 
 ### Test Code
 
@@ -238,7 +241,7 @@ Extend `SubmitAndValidatePackagesIT` and implement the required methods:
   * returning a PackageVerifier
   * determining the compression and archive algorithm used based on the name of the package file on disk
 
-Example: ValidateDspaceAndNihmsProviders, pom.xml, docker-related files, Deposit Services runtime config for ITs
+Example: [`ValidateDspaceAndNihmsProvidersIT`](https://github.com/OA-PASS/jhu-package-providers/blob/master/provider-integration/src/test/java/edu/jhu/library/pass/deposit/provider/integration/ValidateDspaceAndNihmsProvidersIT.java), [`pom.xml`](https://github.com/OA-PASS/jhu-package-providers/blob/master/provider-integration/pom.xml), [docker-related files](https://github.com/OA-PASS/jhu-package-providers/tree/master/provider-integration/src/main/docker), Deposit Services [runtime config for ITs](https://github.com/OA-PASS/jhu-package-providers/blob/master/provider-integration/src/main/docker/repositories.json)
 
 ## PackageVerifier
 
@@ -253,10 +256,10 @@ The verifier is responsible for:
 
 Essentially all aspects of a generated package must be verified through a `PackageVerifier`.
 
-The `PackageVerifier` interface does come with a helper method for ensuring that there is a custodial file in the package for each submitted file, and that there are no unexplained custodial files present in the package. 
+The `PackageVerifier` interface does come with a [helper method](https://github.com/OA-PASS/deposit-services/blob/master/shared-assembler/src/test/java/org/dataconservancy/pass/deposit/assembler/shared/PackageVerifier.java#L95) for ensuring that there is a custodial file in the package for each submitted file, and that there are no unexplained custodial files present in the package. 
 `void verifyCustodialFiles(DepositSubmission, File, FileFilter, BiFunction<File, File, DepositFile>)` where `DepositSubmission` is the original submission, the `File` is the directory on the filesystem that contains the exploded package, the `FileFilter` selects custodial files from the package directory, and the `BiFunction` accepts a `DepositFile` from the submission and maps it to its expected location in the package directory.
 
-Examples: DspaceMetsPackageVerifier, NihmsPackageVerifier
+Examples: [`DspaceMetsPackageVerifier`](https://github.com/OA-PASS/jhu-package-providers/blob/master/shared-dspace-provider/src/test/java/edu/jhu/library/pass/deposit/provider/shared/dspace/DspaceMetsPackageVerifier.java), [`NihmsPackageVerifier`](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/src/test/java/org/dataconservancy/pass/deposit/provider/nihms/NihmsPackageVerifier.java)
 
 # Runtime
 
@@ -271,9 +274,9 @@ Use of Spring Bean names in Deposit Services runtime configuration (`repositorie
 So, how is your `Assembler`, `PackageStream`, and `PackageProvider` wired together?  As outlined above, the wiring of these components is straightforward.  You can either "hardwire" your implementations at compile-time, or you can leverage Spring dependency injection as you wish.
 
 Deposit Services uses Spring Auto Configuration to discover your `Assembler` on the classpath on boot.  Supporting Spring Auto Configuration is very simple:	
-  * Create an empty class at the base of your package provider package hierarchy
+  * Create an empty class at the _base_ of your package provider package hierarchy
     * This is so that the Spring component scanning will work properly
-    * If your `Assembler` is under `org.foo.deposit.assembler.impl`, do not place your `AutoConfiguration` class under `org.foo.deposit.spring.auto`, place it under `org.foo.assembler` or `org.foo.assembler.impl`.
+    * If your `Assembler` is under `org.foo.deposit.assembler.impl`, do _not_ place your `AutoConfiguration` class under `org.foo.deposit.spring.auto`, place it under `org.foo.assembler` or `org.foo.assembler.impl`.
   * Annotate the class with two annotations:
     * `@ComponentScan`
     * `@Configuration`
@@ -349,23 +352,24 @@ On boot, you should see information from the console indicating that your Assemb
 
 Deploying your new Assembler means creating a Docker image that extends the core Deposit Services image by adding your Assembler and its runtime dependencies to the image.  The latest core Deposit Services image can be found on Docker Hub.  After you have added your `Assembler` and created your image, remember to update the `PASS_DEPOSIT_REPOSITORY_CONFIGURATION` environment variable to refer to the configuration containing your new `Assembler`.
 
-The core Deposit Services image is a Spring Boot application in exploded form.  Assuming your `Assembler` is packaged as a JAR, your `Dockerfile` would extend the core Deposit Services image and copy your `Assembler` JAR and its runtime dependencies into the image `BOOT-INF/lib` directory.  See the example `Dockerfile` for the `DspaceMetsAssembler` here.
+The core Deposit Services image is a [Spring Boot](https://docs.spring.io/spring-boot/docs/2.1.4.RELEASE/reference/htmlsingle/) application in [exploded form](https://docs.spring.io/spring-boot/docs/2.1.4.RELEASE/reference/htmlsingle/#executable-jar-jar-file-structure).  Assuming your `Assembler` is packaged as a JAR, your `Dockerfile` would extend the core Deposit Services image and copy your `Assembler` JAR and its runtime dependencies into the image `BOOT-INF/lib` directory.  See the example `Dockerfile` for the `DspaceMetsAssembler` here.
 
 You can use whatever mechanisms you wish in order to create your `Assembler` image.  The examples provided use the `maven-dependency-plugin` and the `docker-maven-plugin` to build and deploy images.
-Production JHU Package Providers Dockerfile
-Extends the core Deposit Services image
-Published to Docker Hub automatically as a part of the build
-Deployed to Production environment
-JHU Package Providers IT Dockerfile
-Extends the Production JHU Package Providers image
-Sets PASS_DEPOSIT_REPOSITORY_CONFIGURATION to point to the configuration used by the ITs (including the use of FilesystemTransport)
-Deployed in the IT environment
+
+  * Production JHU Package Providers Dockerfile
+    * Extends the core Deposit Services image
+    * Published to Docker Hub automatically as a part of the build
+    * Deployed to Production environment
+  * JHU Package Providers IT Dockerfile
+    * Extends the Production JHU Package Providers image
+    * Sets PASS_DEPOSIT_REPOSITORY_CONFIGURATION to point to the configuration used by the ITs (including the use of FilesystemTransport)
+    * Deployed in the IT environment
 
 ### Dependency Gotchas
 
 A good rule of thumb is to import the core Deposit Services parent POM into your Package Provider POM, and use the same version of any dependencies that are shared between the core image and your Package Provider image.
 
-When extending the core Deposit Services image, you must be mindful of the dependencies and classes that are already present in the image. The `BOOT-INF/classes` and `BOOT-INF/lib` directories are shared between the core Deposit Services image and your Assembler.  Be sure that copying your Assembler and dependencies into `BOOT-INF/lib` will not pollute the classpath with multiple versions of the same library.  The easiest thing to do is use the "bill of materials" pattern, where your Assembler's POM has dependency on the core Deposit Services parent pom with a scope of import:
+When extending the core Deposit Services image, you must be mindful of the dependencies and classes that are already present in the image. The `BOOT-INF/classes` and `BOOT-INF/lib` directories are shared between the core Deposit Services image and your Assembler.  Be sure that copying your Assembler and dependencies into `BOOT-INF/lib` will not pollute the classpath with multiple versions of the same library.  The easiest thing to do is use the ["bill of materials"](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies) [pattern](https://www.baeldung.com/spring-maven-bom), where your Assembler's POM has dependency on the core Deposit Services parent pom with a scope of import:
 
     <dependency>
        <groupId>org.dataconservancy.pass.deposit</groupId>
