@@ -49,30 +49,69 @@ import java.util.stream.Stream;
 import static java.lang.Character.toUpperCase;
 
 /**
+ * Encapsulates a collection of {@link PassEntity} objects, loosely modeled as a graph rooted with a {@link Submission}.
+ * <p>
+ * A graph may be created one of two ways:
+ * <ol>
+ *     <li>inner classes supporting a reflection-based fluent builder API</li>
+ *     <li>reading in a graph serialized as JSON</li>
+ * </ol>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionGraph {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionGraph.class);
 
+    /**
+     * Counter supplying unique integers for URIs
+     */
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
+    /**
+     * Creates unique URIs for each entity built by the fluent API
+     */
     static Supplier<URI> uriSupplier = () -> {
         return URI.create("urn:uri:pass:entity:" + COUNTER.getAndIncrement());
     };
 
+    /**
+     * Determines if the supplied entity is an instance of a {@link Submission}
+     */
     public static Predicate<PassEntity> SUBMISSION = (entity) -> entity instanceof Submission;
 
+    /**
+     * The {@code Submission} which is the root of the graph
+     */
     private Submission submission;
 
+    /**
+     * Members of the graph indexed by their URI
+     */
     private ConcurrentHashMap<URI, PassEntity> entities;
 
+    /**
+     * Adapter used to convert between JSON serialization and Fedora
+     */
     private PassJsonFedoraAdapter adapter = new PassJsonFedoraAdapter();
 
+    /**
+     * Creates a new instance of a graph, using the supplied map for the members of the graph.  Wraps the {@code
+     * HashMap} as a {@code ConcurrentHashMap}.
+     *
+     * @param entities the graph members; must contain at least one {@code Submission}, may never be {@code null}
+     * @throws IllegalArgumentException if the supplied {@code HashMap} does not contain a {@code Submission}
+     */
     private SubmissionGraph(HashMap<URI, PassEntity> entities) {
         this(new ConcurrentHashMap<>(entities));
     }
 
+    /**
+     * Creates a new instance of a graph, using the supplied map for the members of the graph.
+     *
+     * @param entities the graph members; must contain at least one {@code Submission}, may never be {@code null}
+     * @throws IllegalArgumentException if the supplied {@code ConcurrentHashMap} does not contain a {@code Submission}
+     */
     private SubmissionGraph(ConcurrentHashMap<URI, PassEntity> entities) {
         Objects.requireNonNull(entities, "Entities must not be null!");
         this.entities = entities;
@@ -80,40 +119,97 @@ public class SubmissionGraph {
                 .orElseThrow(() -> new IllegalArgumentException("Entities are missing expected Submission entity."));
     }
 
+    /**
+     * The {@code Submission} at the root of the graph.
+     *
+     * @return the Submission
+     */
     public Submission submission() {
         return submission;
     }
 
+    /**
+     * The members of the graph as a {@code &lt;Stream&gt;}
+     *
+     * @return the members of the graph
+     */
     public Stream<PassEntity> stream() {
         return Streamer.stream(entities);
     }
 
+    /**
+     * The members of the graph matching the supplied {@code Predicate}
+     *
+     * @param p {@code Predicate} used to test each entity in the graph
+     * @return a {@code &gt;Stream&lt;} of matching entities
+     */
     public Stream<PassEntity> stream(Predicate<PassEntity> p) {
         return Streamer.stream(entities).filter(p);
     }
 
+    /**
+     * The members of the graph that are instances of the supplied {@code Class}. Equivalent to:
+     * <pre>stream(entity -> clazz.isAssignableFrom(entity.getClass()))</pre>
+     *
+     * @param clazz the {@code Class} used to test the type of each entity
+     * @return a {@code &gt;Stream&lt;} of matching entities
+     */
     public Stream<PassEntity> stream(Class<? extends PassEntity> clazz) {
         return stream(entity -> clazz.isAssignableFrom(entity.getClass()));
     }
 
+    /**
+     * Apply the supplied consumer to entities of the graph matching the predicate.
+     *
+     * @param p the predicate matching entities of the graph
+     * @param c the consumer which will be supplied the {@code Submission} at the root of the graph as well as the
+     *          entity matched by the {@code Predicate}
+     * @return this graph
+     */
     public SubmissionGraph walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
         stream(p).forEach(entity -> c.accept(submission, entity));
         return this;
     }
 
+    /**
+     * Apply the supplied consumer to entities of the graph matching the supplied {@code Class}.
+     *
+     * @param clazz the {@code Class} matching entities of the graph
+     * @param c the consumer which will be supplied the {@code Submission} at the root of the graph as well as the
+     *          entity matched by the {@code Predicate}
+     * @return this graph
+     */
     public SubmissionGraph walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
         stream(entity -> clazz.isAssignableFrom(entity.getClass())).forEach(entity -> c.accept(submission, entity));
         return this;
     }
 
+    /**
+     * Adds an entity to the graph.
+     *
+     * @param passEntity the entity
+     * @param <T> the type of the entity
+     */
     private <T extends PassEntity> void add(T passEntity) {
         entities.put(passEntity.getId(), passEntity);
     }
 
+    /**
+     * Retrieve an entity from the graph by its URI.
+     *
+     * @param u the URI of the entity
+     * @return the entity, or {@code null} if it can't be found
+     */
     private PassEntity get(URI u) {
         return entities.get(u);
     }
 
+    /**
+     * Removes the entity identified by the {@code URI} from the graph, and all references to the entity.
+     *
+     * @param u the {@code URI} identifying a member of the graph
+     * @return this graph
+     */
     public SubmissionGraph remove(URI u) {
         removeEntity(u, entities);
         return this;
@@ -133,6 +229,24 @@ public class SubmissionGraph {
 
     }
 
+    /**
+     * Removes the entity from the graph identified by the {@code URI}.  The members of the graph are represented in
+     * the supplied {@code ConcurrentHashMap}.
+     * <p>
+     * This method not only removes the {@code PassEntity} from the {@code ConcurrentHashMap}, it will also remove any
+     * references to the entity by iterating over each field of each remaining {@code PassEntity} in the graph.  For
+     * each field whose type is a {@code Collection}, {@code Map}, or {@code URI}:
+     * </p>
+     * <ul>
+     *     <li>If a {@code Collection} contains the URI of the removed entity, the entry is removed from the {@code
+     *         Collection}</li>
+     *     <li>If a {@code Map} contains the URI as a key or value, the entry is removed from the {@code Map}</li>
+     *     <li>If a {@code URI} is equal to the {@code URI} of the removed entity, the field is nulled out</li>
+     * </ul>
+     *
+     * @param u the URI of the entity being removed
+     * @param entities the members of the graph
+     */
     private static void removeEntity(URI u, ConcurrentHashMap<URI, PassEntity> entities) {
         Objects.requireNonNull(u, "Supplied URI must not be null");
         entities.remove(u);
@@ -176,12 +290,26 @@ public class SubmissionGraph {
         });
     }
 
+    /**
+     * Type-safe method for obtaining a member from the graph.
+     *
+     * @param u the URI of the entity to retrieve
+     * @param type the type of the object identified by the URI
+     * @param <T> the type of the object
+     * @return the member of the graph, or {@code null} if the member was not found
+     */
     public <T extends PassEntity> T get(URI u, Class<T> type) {
-        return type.cast(entities.get(u));
+        PassEntity obj = entities.get(u);
+        if (obj != null) {
+            return type.cast(obj);
+        }
+
+        return null;
     }
 
-
-
+    /**
+     * Enums of popular relationships.
+     */
     public enum Rel {
         PRIMARY_FUNDER,
         DIRECT_FUNDER,
@@ -195,7 +323,6 @@ public class SubmissionGraph {
         JOURNAL,
         PUBLISHER
     }
-
 
 
     private static void linkUsingField(PassEntity target, PassEntity source, String fieldName) {
