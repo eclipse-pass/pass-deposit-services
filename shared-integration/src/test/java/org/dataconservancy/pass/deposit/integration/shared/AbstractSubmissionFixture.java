@@ -56,6 +56,28 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Provides convenience methods for depositing Submission graphs in Fedora.  <strong>N.B.</strong> this test fixture
+ * works best coupled with the {@code SpringJunit4ClassRunner}.  If this fixture is <em>not</em> using the Spring
+ * Runner, then the caller <em>must</em> set the following properties for proper operation:
+ * <ul>
+ *     <li>{@link #fcrepoBaseUrl}, {@link #fcrepoUser}, {@link #fcrepoPass}</li>
+ *     <li>{@link #contextUri}</li>
+ *     <li>{@link #passClient}</li>
+ *     <li>{@link #okHttp} always supplied by {@link #setUpOkHttp()} (this client must have an {@code Interceptor}
+ *         configured for authenticating to Fedora)</li>
+ * </ul>
+ * <p>
+ * When <em>using</em> the Spring Runner, the dependencies are either {@code @Autowired} or supplied by {@code @Value}.
+ * </p>
+ * <ul>
+ *      <li>{@link #fcrepoBaseUrl}, {@link #fcrepoUser}, {@link #fcrepoPass} supplied by the respective {@code @Value}
+ *           expressions {@code ${pass.fedora.baseurl}}, {@code ${pass.fedora.user}},
+ *           {@code ${pass.fedora.password}}</li>
+ *      <li>{@link #contextUri} supplied by the {@code @Value} expression {@code ${pass.jsonld.context}}</li>
+ *      <li>{@link #passClient} supplied by {@code @Autowired}</li>
+ *      <li>{@link #okHttp} always supplied by {@link #setUpOkHttp()} (this client must have an {@code Interceptor}
+ *          configured for authenticating to Fedora)</li>
+ *  </ul>
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public abstract class AbstractSubmissionFixture {
@@ -109,9 +131,17 @@ public abstract class AbstractSubmissionFixture {
     }
 
     /**
-     * Populates Fedora with a Submission, as if it was submitted interactively by a user of the PASS UI.
-     *
-     * @throws Exception
+     * Populates Fedora with a Submission graph serialized as JSON, as if it was submitted interactively by a user of
+     * the PASS UI.
+     * <p>
+     * The submission graph supplied by the {@code InputStream} must satisfy the following conditions, or an {@code
+     * AssertionError} will be thrown:
+     * </p>
+     * <ul>
+     *     <li>The {@code Submission.source} must be {@code Submission.Source.PASS}</li>
+     *     <li>The {@code Submission.aggregatedDepositStatus} must be {@code
+     *         Submission.AggregatedDepositStatus.NOT_STARTED}</li>
+     * </ul>
      */
     public Map<URI, PassEntity> createSubmission(InputStream submissionGraph) {
         PassJsonFedoraAdapter passAdapter = new PassJsonFedoraAdapter();
@@ -137,6 +167,18 @@ public abstract class AbstractSubmissionFixture {
         return uriMap;
     }
 
+    /**
+     * Returns the {@code Submission} from a {@code Map} of entities that represents the graph of entities linked to
+     * by the {@code Submission}.
+     * <p>
+     * The supplied {@code Map} must contain exactly one {@code Submission}, or an {@code AssertionError} is thrown.
+     * </p>
+     *
+     * @param entities a map of entities that comprise a graph rooted in the {@code Submission}
+     * @return the {@code Submission}
+     * @throws AssertionError if zero or more than one {@code Submission} is contained in the supplied entity {@code
+     *         Map}
+     */
     public static Submission findSubmission(Map<URI, PassEntity> entities) {
         Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
 
