@@ -149,7 +149,7 @@ public class SubmissionGraph {
 
     /**
      * The members of the graph that are instances of the supplied {@code Class}. Equivalent to:
-     * <pre>stream(entity -> clazz.isAssignableFrom(entity.getClass()))</pre>
+     * <pre>stream(entity -&gt; clazz.isAssignableFrom(entity.getClass()))</pre>
      *
      * @param clazz the {@code Class} used to test the type of each entity
      * @return a {@code &gt;Stream&lt;} of matching entities
