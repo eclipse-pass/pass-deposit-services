@@ -35,6 +35,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-model</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>deposit-model</artifactId>
             <version>${project.parent.version}</version>
@@ -118,7 +123,6 @@
             <groupId>org.dataconservancy.pass.deposit</groupId>
             <artifactId>fedora-builder</artifactId>
             <version>${project.parent.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
