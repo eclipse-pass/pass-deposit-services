@@ -57,6 +57,9 @@ import static java.lang.Character.toUpperCase;
  *     <li>reading in a graph serialized as JSON</li>
  * </ol>
  *
+ * <em>N.B.</em> this class should be considered alpha-quality and experimental; method signatures and implementation
+ * may not remain stable between releases.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionGraph {
@@ -221,6 +224,9 @@ public class SubmissionGraph {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
+    /**
+     * Streams the member entities of the graph.
+     */
     private static class Streamer {
 
         private static Stream<PassEntity> stream(Map<URI, PassEntity> entities) {
@@ -308,7 +314,7 @@ public class SubmissionGraph {
     }
 
     /**
-     * Enums of popular relationships.
+     * Enum of popular relationships.
      */
     public enum Rel {
         PRIMARY_FUNDER,
@@ -324,42 +330,55 @@ public class SubmissionGraph {
         PUBLISHER
     }
 
-
-    private static void linkUsingField(PassEntity target, PassEntity source, String fieldName) {
+    /**
+     * Links the id of source entity to the target using the supplied field of the target
+     *
+     * @param target the target of the link
+     * @param source the source of the link
+     * @param targetField the field on the target
+     */
+    private static void linkUsingField(PassEntity target, PassEntity source, String targetField) {
         Method setter;
 
-        fieldName = upperCase(fieldName);
+        targetField = upperCase(targetField);
 
         try {
-            setter = target.getClass().getMethod("set" + fieldName, URI.class);
+            setter = target.getClass().getMethod("set" + targetField, URI.class);
             setter.invoke(target, source.getId());
         } catch (NoSuchMethodException e) {
             Method getter = null;
             try {
-                getter = target.getClass().getMethod("get" + fieldName);
+                getter = target.getClass().getMethod("get" + targetField);
                 if (Collection.class.isAssignableFrom(getter.getReturnType())) {
                     ((Collection)getter.invoke(target)).add(source.getId());
                     return;
                 }
-                throw new RuntimeException(String.format("No such method set%s on %s", fieldName, target.getClass().getSimpleName()));
+                throw new RuntimeException(String.format("No such method set%s on %s", targetField, target.getClass().getSimpleName()));
             } catch (NoSuchMethodException ex) {
-                throw new RuntimeException(String.format("No such method get%s on %s", fieldName, target.getClass().getSimpleName()));
+                throw new RuntimeException(String.format("No such method get%s on %s", targetField, target.getClass().getSimpleName()));
             } catch (IllegalAccessException ex) {
-                throw new RuntimeException(String.format("Error accessing get%s on %s: %s", fieldName,
+                throw new RuntimeException(String.format("Error accessing get%s on %s: %s", targetField,
                         target.getClass().getSimpleName(), e.getMessage()), e);
             } catch (InvocationTargetException ex) {
-                throw new RuntimeException(String.format("Error invoking get%s on %s: %s", fieldName,
+                throw new RuntimeException(String.format("Error invoking get%s on %s: %s", targetField,
                         target.getClass().getSimpleName(), e.getMessage()), e);
             }
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(String.format("Error accessing set%s on %s: %s", fieldName,
+            throw new RuntimeException(String.format("Error accessing set%s on %s: %s", targetField,
                     target.getClass().getSimpleName(), e.getMessage()), e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(String.format("Error invoking get%s on %s: %s", fieldName,
+            throw new RuntimeException(String.format("Error invoking get%s on %s: %s", targetField,
                     target.getClass().getSimpleName(), e.getMessage()), e);
         }
     }
 
+    /**
+     * Links the id of source entity to the target using the supplied relationship
+     *
+     * @param target the target of the link
+     * @param source the source of the link
+     * @param rel the relationship
+     */
     private static void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
         switch (rel) {
             case PI:
@@ -388,25 +407,56 @@ public class SubmissionGraph {
         }
     }
 
-
+    /**
+     * Encapsulates the state and operations necessary to initialize, link, and build a submission graph.
+     */
     public static class GraphBuilder {
 
+        /**
+         * The single Submission that is the root of the graph
+         */
         private Submission submission;
 
+        /**
+         * The instructions used to link the members of the graph when it is built
+         */
         private List<LinkInstruction> linkInstructions;
 
+        /**
+         * The members of the graph, keyed by their URI
+         */
         private ConcurrentHashMap<URI, PassEntity> entities;
 
+        /**
+         * Answers a GraphBuilder with an empty Submission that is assigned a random unique identifier.
+         *
+         * @return a newly initialized GraphBuilder with a single Submission as a member
+         */
         public static GraphBuilder newGraph() {
             return new GraphBuilder();
         }
 
+        /**
+         * Answers a GraphBuilder populated with entities supplied by a InputStream.  The InputStream is a JSON encoded
+         * stream of PassEntities. The {@link org.dataconservancy.pass.client.PassJsonAdapter} is used deserialize the
+         * JSON into PassEntity instances.
+         * <p>
+         * The stream must have exactly one Submission.
+         * </p>
+         *
+         * @param in an InputStream of PASS entities encoded as JSON
+         * @param adapter deserializes the stream into PassEntity instances
+         * @return the GraphBuilder populated by members deserialized from the sream
+         */
         public static GraphBuilder newGraph(InputStream in, PassJsonFedoraAdapter adapter) {
             HashMap<URI, PassEntity> entities = new HashMap<>();
             adapter.jsonToPass(in, entities);
             return new GraphBuilder(new ConcurrentHashMap<URI, PassEntity>(entities));
         }
 
+        /**
+         * Instantiate a new builder with no state other than an empty Submission assigned a random identifier.
+         */
         private GraphBuilder() {
             this.submission = new Submission();
             this.entities = new ConcurrentHashMap<>();
@@ -416,10 +466,24 @@ public class SubmissionGraph {
             this.entities.put(submission.getId(), submission);
         }
 
+        /**
+         * Instantiate a new builder, using the contents of the supplied Map as the members of the graph.  The Map
+         * must contain exactly one Submission entity, and may contain other entities.  The Submission ought to have a
+         * non-null identifier.
+         *
+         * @param entities the initial graph members, must contain exactly one Submission
+         */
         private GraphBuilder(HashMap<URI, PassEntity> entities) {
             this(new ConcurrentHashMap<>(entities));
         }
 
+        /**
+         * Instantiate a new builder, using the contents of the supplied Map as the members of the graph.  The Map
+         * must contain exactly one Submission entity, and may contain other entities.  The Submission ought to have a
+         * non-null identifier.
+         *
+         * @param entities the initial graph members, must contain exactly one Submission
+         */
         private GraphBuilder(ConcurrentHashMap<URI, PassEntity> entities) {
             Objects.requireNonNull(entities, "Entities must not be null!");
             this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
@@ -428,10 +492,20 @@ public class SubmissionGraph {
             this.linkInstructions = new ArrayList<>();
         }
 
+        /**
+         * The submission at the root of the graph
+         *
+         * @return the submission
+         */
         public Submission submission() {
             return submission;
         }
 
+        /**
+         * Build and link the entities in the graph.
+         *
+         * @return the graph
+         */
         public SubmissionGraph build() {
             SubmissionGraph graph = new SubmissionGraph(entities);
             link();
@@ -439,18 +513,36 @@ public class SubmissionGraph {
             return graph;
         }
 
-        public LinkInstruction link(PassEntity entity) {
+        /**
+         * Answers a LinkInstruction with the source entity.
+         *
+         * @param sourceEntity the source of the link
+         * @return the LinkInstruction
+         */
+        public LinkInstruction link(PassEntity sourceEntity) {
             LinkInstruction li = new LinkInstruction();
             linkInstructions.add(li);
-            return li.link(entity);
+            return li.link(sourceEntity);
         }
 
-        public LinkInstruction link(Predicate<PassEntity> withPredicate) {
+        /**
+         * Answers a LinkInstruction with the predicate that selects the source of the link from the entities in this
+         * graph.
+         *
+         * @param sourcePredicate a predicate that selects the source of the link from the entities in the graph
+         * @return the LinkInstruction
+         */
+        public LinkInstruction link(Predicate<PassEntity> sourcePredicate) {
             LinkInstruction li = new LinkInstruction();
             linkInstructions.add(li);
-            return li.link(withPredicate);
+            return li.link(sourcePredicate);
         }
 
+        /**
+         * Process all the link instructions for this graph, effectively linking the entities in the graph together.
+         *
+         * @return this GraphBuilder
+         */
         private GraphBuilder link() {
             if (linkInstructions.isEmpty()) {
                 // no link instructions, do nothing
@@ -499,6 +591,14 @@ public class SubmissionGraph {
             return this;
         }
 
+        /**
+         * Add the entity supplied by this builder to the graph when {@link EntityBuilder#build()} or any of its
+         * variants are invoked.
+         *
+         * @param type the type of entity being added to the graph
+         * @param <T> the class type
+         * @return an EntityBuilder use to supply the state of the entity
+         */
         public <T extends PassEntity> EntityBuilder<T> addEntity(Class<T> type) {
             return new EntityBuilder<T>(() -> {
                 T instance = null;
@@ -512,28 +612,65 @@ public class SubmissionGraph {
             }, entities, linkInstructions);
         }
 
+        /**
+         * Removes an entity and all references to the entity from the graph.
+         *
+         * @param u the URI identifying the entity to remove
+         * @return this GraphBuilder
+         */
         public GraphBuilder removeEntity(URI u) {
             SubmissionGraph.removeEntity(u, entities);
             return this;
         }
 
+        /**
+         * Stream all entities in the graph.
+         *
+         * @return a Stream of all entities in the graph
+         */
         public Stream<PassEntity> stream() {
             return Streamer.stream(entities);
         }
 
+        /**
+         * Stream the entities in the graph that are selected by the supplied predicate
+         *
+         * @param p the predicate that selects entities from the graph
+         * @return a Stream of entities that have been selected by the predicate
+         */
         public Stream<PassEntity> stream(Predicate<PassEntity> p) {
             return Streamer.stream(entities).filter(p);
         }
 
+        /**
+         * Stream the entities in the graph that are an instance of the supplied class.
+         *
+         * @param clazz the class that selects the entities
+         * @return a Stream of entities that are an instance of the supplied class
+         */
         public Stream<PassEntity> stream(Class<? extends PassEntity> clazz) {
             return stream(entity -> clazz.isAssignableFrom(entity.getClass()));
         }
 
+        /**
+         * Walk the graph, and apply the consumer to any entity identified by the supplied predicate.
+         *
+         * @param p the predicate that selects the entities to operate on
+         * @param c the consumer to apply to the entity
+         * @return this GraphBuilder
+         */
         public GraphBuilder walk(Predicate<PassEntity> p, BiConsumer<Submission, PassEntity> c) {
             stream(p).forEach(entity -> c.accept(submission, entity));
             return this;
         }
 
+        /**
+         * Walk the graph, and apply the consumer to any entity who is an instance of the supplied class.
+         *
+         * @param clazz the class that selects the entities to operate on
+         * @param c the consumer to apply to the entity
+         * @return this GraphBuilder
+         */
         public GraphBuilder walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
             stream(entity -> clazz.isAssignableFrom(entity.getClass())).forEach(entity -> c.accept(submission, entity));
             return this;
@@ -542,9 +679,16 @@ public class SubmissionGraph {
     }
 
     /**
+     * Building an entity using this builder will automatically add the entity to the graph being built when any
+     * variation of the {@link EntityBuilder#build()} methods are invoked.  Linking intructions created with this
+     * builder will be applied when the graph is built.
+     * <p>
      * The EntityBuilder shares state with the GraphBuilder supplied on construction:
-     * - the entities in the graph
-     * - the linking instructions
+     * </p>
+     * <ul>
+     *   <li>the entities in the graph</li>
+     *   <li>the linking instructions</li>
+     * </ul>
      *
      * @param <T> the type of {@code PassEntity} being built
      */
@@ -558,6 +702,13 @@ public class SubmissionGraph {
 
         private Submission submission;
 
+        /**
+         * Constructs a builder.
+         *
+         * @param s supplies a new instance of the entity to be built
+         * @param entities the entities that are members of the graph
+         * @param linkInstructions the link instructions that will be applied when the graph is built
+         */
         private EntityBuilder(Supplier<T> s, Map<URI, PassEntity> entities, List<LinkInstruction> linkInstructions) {
             Objects.requireNonNull(s, "Entity Supplier must not be null.");
             Objects.requireNonNull(entities, "Entities Map must not be null.");
@@ -569,10 +720,25 @@ public class SubmissionGraph {
                     .orElseThrow(() -> new RuntimeException("Supplied graph is missing a Submission entity."));
         }
 
+        /**
+         * Set the supplied field to a value on this entity.
+         *
+         * @param fieldName the name of the field
+         * @param value the value to set
+         * @return this EntityBuilder
+         */
         public EntityBuilder<T> set(String fieldName, String value) {
             return set(fieldName, String.class, value);
         }
 
+        /**
+         * Adds a member to a Collection maintained by the entity
+         *
+         * @param fieldName the name of the field which must be a Collection
+         * @param value the value to add to the Collection
+         * @param <U> the type of the Collection
+         * @return this EntityBuilder
+         */
         public <U> EntityBuilder<T> add(String fieldName, U value) {
             Method getter;
 
@@ -596,6 +762,15 @@ public class SubmissionGraph {
             return this;
         }
 
+        /**
+         * Set the field on the entity to a value.
+         *
+         * @param fieldName the name of the field in this entity
+         * @param fieldType the type of the field
+         * @param value the value of the field
+         * @param <U> the type of the value of the field
+         * @return this EntityBuilder
+         */
         public <U> EntityBuilder<T> set(String fieldName, Class<U> fieldType, U value) {
             Method setter;
 
@@ -616,34 +791,78 @@ public class SubmissionGraph {
             return this;
         }
 
-        public EntityBuilder<T> linkFrom(Predicate<PassEntity> predicate, String rel) {
-            linkInstructions.add(new LinkInstruction().link(toBuild).to(predicate).as(rel));
+        /**
+         * Link this entity to the entity identified by the predicate as a source.
+         *
+         * @param targetPredicate the predicate identifying the target entity
+         * @param rel the relationship between this entity and the target
+         * @return this EntityBuilder
+         */
+        public EntityBuilder<T> linkFrom(Predicate<PassEntity> targetPredicate, String rel) {
+            linkInstructions.add(new LinkInstruction().link(toBuild).to(targetPredicate).as(rel));
             return this;
         }
 
-        public EntityBuilder<T> linkFrom(PassEntity entity, String rel) {
-            linkInstructions.add(new LinkInstruction().link(toBuild).to(entity).as(rel));
+        /**
+         * Link this entity to the supplied entity as a source.
+         *
+         * @param targetEntity the target entity
+         * @param rel the relationship between this entity and the target
+         * @return this EntityBuilder
+         */
+        public EntityBuilder<T> linkFrom(PassEntity targetEntity, String rel) {
+            linkInstructions.add(new LinkInstruction().link(toBuild).to(targetEntity).as(rel));
             return this;
         }
 
-        public EntityBuilder<T> linkTo(Predicate<PassEntity> predicate, String rel) {
-            linkInstructions.add(new LinkInstruction().link(predicate).to(toBuild).as(rel));
+        /**
+         * Link this entity to the entity identified by the source predicate as a target.
+         *
+         * @param sourcePredicate the predicate identifying the source entity
+         * @param rel the relationship between the source and this entity
+         * @return this EntityBuilder
+         */
+        public EntityBuilder<T> linkTo(Predicate<PassEntity> sourcePredicate, String rel) {
+            linkInstructions.add(new LinkInstruction().link(sourcePredicate).to(toBuild).as(rel));
             return this;
         }
 
-        public EntityBuilder<T> linkTo(PassEntity entity, String rel) {
-            linkInstructions.add(new LinkInstruction().link(entity).to(toBuild).as(rel));
+        /**
+         * Link this entity to the supplied entity as a target.
+         *
+         * @param sourceEntity the source entity
+         * @param rel the relationship between the source and this entity
+         * @return this EntityBuilder
+         */
+        public EntityBuilder<T> linkTo(PassEntity sourceEntity, String rel) {
+            linkInstructions.add(new LinkInstruction().link(sourceEntity).to(toBuild).as(rel));
             return this;
         }
 
+        /**
+         * Returns the {@code Submission} that will end up being the root of the SubmissionGraph.
+         *
+         * @return the Submission
+         */
         public Submission submission() {
             return submission;
         }
 
+        /**
+         * Build the PassEntity, adding it to the graph.
+         *
+         * @return the built entity
+         */
         public T build() {
             return build((submission, toBuild) -> toBuild);
         }
 
+        /**
+         * Build the PassEntity, applying the function to the entity, then adding it to the graph.
+         *
+         * @param func the function to apply to the entity
+         * @return the built entity
+         */
         public T build(BiFunction<Submission, T, T> func) {
             func = func.andThen(built -> {
                 entities.put(built.getId(), built);
@@ -661,6 +880,12 @@ public class SubmissionGraph {
         }
     }
 
+    /**
+     * Upper-cases the first character in the supplied fieldName.
+     *
+     * @param fieldName the fieldName, which may or may not have an upper-cased first character
+     * @return the fieldName, with an upper-cased first character
+     */
     private static String upperCase(String fieldName) {
         if (Character.isLowerCase(fieldName.charAt(0))) {
             fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
@@ -681,6 +906,12 @@ public class SubmissionGraph {
 
     }
 
+    /**
+     * Encapsulates a link (aka relationship) between two PASS entities.  LinkInstructions are applied to the graph
+     * when it is built.  LinkInstructions may be created with criteria (e.g. "link the Repository with this
+     * repositoryKey to the Submission with this identifier") or with concrete instances of the source and target
+     * entities.
+     */
     static class LinkInstruction {
         private Predicate<PassEntity> sourcePredicate;
         private Predicate<PassEntity> targetPredicate;
@@ -688,16 +919,38 @@ public class SubmissionGraph {
         private PassEntity target;
         private String rel;
 
-        LinkInstruction link(PassEntity entity) {
-            source = entity;
+        /**
+         * Begin composing a LinkInstruction with the source entity.
+         *
+         * @param sourceEntity the source of the link
+         * @return this LinkInstruction
+         */
+        LinkInstruction link(PassEntity sourceEntity) {
+            source = sourceEntity;
             return this;
         }
 
-        LinkInstruction link(Predicate<PassEntity> predicate) {
-            sourcePredicate = predicate;
+        /**
+         * Begin composing a LinkInstruction with a predicate that will identify the source entity.
+         *
+         * @param sourcePredicate evaluates {@code true} when a {@code PassEntity} should be considered the source of a
+         *                        LinkInstruction
+         * @return this LinkInstruction
+         */
+        LinkInstruction link(Predicate<PassEntity> sourcePredicate) {
+            this.sourcePredicate = sourcePredicate;
             return this;
         }
 
+        /**
+         * Convenience method which answers a {@code Predicate} that evaluates to {@code true} when the {@code
+         * PassEntity} has a field with the specified value.
+         *
+         * @param fieldName the field name
+         * @param value the value of the field that must be matched in order for this {@code Predicate} to return
+         *              {@code true}
+         * @return a {@code Predicate} capable of evaluating PassEntities who have a field with the supplied value
+         */
         static Predicate<PassEntity> entityHaving(String fieldName, String value) {
             Predicate<PassEntity> withPredicate = (entity -> {
                 String field;
@@ -728,30 +981,50 @@ public class SubmissionGraph {
             return withPredicate;
         }
 
-        LinkInstruction to(PassEntity entity) {
-            target = entity;
+        /**
+         * Identify the target of this LinkInstruction
+         *
+         * @param targetEntity the target of the link
+         * @return this LinkInstruction
+         */
+        LinkInstruction to(PassEntity targetEntity) {
+            target = targetEntity;
             return this;
         }
 
-        LinkInstruction to(Predicate<PassEntity> predicate) {
-            targetPredicate = predicate;
+        /**
+         * Supply a Predicate that will identify the target entity.
+         *
+         * @param targetPredicate evaluates {@code true} when a {@code PassEntity} should be considered the target of a
+         *                        LinkInstruction
+         * @return this LinkInstruction
+         */
+        LinkInstruction to(Predicate<PassEntity> targetPredicate) {
+            this.targetPredicate = targetPredicate;
             return this;
         }
 
+        /**
+         * Specifies the relationship that exists between the source and target.
+         *
+         * @param rel the relationship
+         * @return this LinkInstruction
+         */
         LinkInstruction as(Rel rel) {
             this.rel = rel.name();
             return this;
         }
 
+        /**
+         * Specifies the relationship that exists between the source and target.
+         *
+         * @param rel the relationship
+         * @return this LinkInstruction
+         */
         LinkInstruction as(String rel) {
             this.rel = rel;
             return this;
         }
-
-//        @Override
-//        public String toString() {
-//            return "LinkInstruction{" + "sourcePredicate=" + sourcePredicate + ", targetPredicate=" + targetPredicate + ", source=" + source + ", target=" + target + ", rel=" + rel + '}';
-//        }
     }
 
 }
