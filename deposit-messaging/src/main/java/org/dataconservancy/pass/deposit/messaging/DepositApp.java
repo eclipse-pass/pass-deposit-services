@@ -248,7 +248,7 @@ public class DepositApp {
 
         boolean defaultAdditivity = false;
         String defaultAppender = "STDERR";
-        String rootLoggerName = "ROOT";
+        String rootLoggerName = org.slf4j.Logger.ROOT_LOGGER_NAME;
 
         // Update existing loggers, or add new loggers if they don't exist
         logMerged.forEach((loggerName, level) -> {
