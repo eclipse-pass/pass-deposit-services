@@ -82,29 +82,7 @@ public class DepositApp {
 
         configureLoggingRuntime();
 
-        URL gitPropertiesResource = DepositApp.class.getResource(GIT_PROPERTIES_RESOURCE_PATH);
-        if (gitPropertiesResource == null) {
-            LOG.info("Starting DepositServices (no Git commit information available)");
-        } else {
-            Properties gitProperties = new Properties();
-            try {
-                gitProperties.load(gitPropertiesResource.openStream());
-                boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
-
-            LOG.info("Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
-                    gitProperties.get(GIT_BUILD_VERSION_KEY),
-                    gitProperties.get(GIT_BRANCH),
-                    gitProperties.get(GIT_COMMIT_HASH_KEY),
-                    gitProperties.get(GIT_COMMIT_TIME_KEY),
-                    gitProperties.get(GIT_BUILD_TIME));
-
-                if (isDirty) {
-                    LOG.warn("** Deposit Services was compiled from a Git repository with uncommitted changes! **");
-                }
-            } catch (IOException e) {
-                LOG.warn("Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
-            }
-        }
+        logStartup();
 
         if (args.length < 1 || args[0] == null) {
             throw new IllegalArgumentException("Requires at least one argument!");
@@ -195,6 +173,32 @@ public class DepositApp {
                     String nameString = StringUtils.rightPad(varName, maxLen);
                     LOG.info("   {} '{}' {}", nameString, resolvedValue, errorMsg);
                 }
+            }
+        }
+    }
+
+    private static void logStartup() {
+        URL gitPropertiesResource = DepositApp.class.getResource(GIT_PROPERTIES_RESOURCE_PATH);
+        if (gitPropertiesResource == null) {
+            LOG.info("Starting DepositServices (no Git commit information available)");
+        } else {
+            Properties gitProperties = new Properties();
+            try {
+                gitProperties.load(gitPropertiesResource.openStream());
+                boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
+
+                LOG.info("Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
+                        gitProperties.get(GIT_BUILD_VERSION_KEY),
+                        gitProperties.get(GIT_BRANCH),
+                        gitProperties.get(GIT_COMMIT_HASH_KEY),
+                        gitProperties.get(GIT_COMMIT_TIME_KEY),
+                        gitProperties.get(GIT_BUILD_TIME));
+
+                if (isDirty) {
+                    LOG.warn("** Deposit Services was compiled from a Git repository with uncommitted changes! **");
+                }
+            } catch (IOException e) {
+                LOG.warn("Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
             }
         }
     }
