@@ -366,7 +366,7 @@ public class DepositTaskHelper {
 
                     switch (status.get()) {
                         case ACCEPTED: {
-                            LOG.debug("Deposit {} was accepted.", deposit.getId());
+                            LOG.info("Deposit {} was accepted.", deposit.getId());
                             deposit.setDepositStatus(ACCEPTED);
                             repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.COMPLETE);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
@@ -374,7 +374,7 @@ public class DepositTaskHelper {
                         }
 
                         case REJECTED: {
-                            LOG.debug("Deposit {} was rejected.", deposit.getId());
+                            LOG.info("Deposit {} was rejected.", deposit.getId());
                             deposit.setDepositStatus(Deposit.DepositStatus.REJECTED);
                             repoCopy.setCopyStatus(RepositoryCopy.CopyStatus.REJECTED);
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
