@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.commons.lang.StringUtils;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
@@ -39,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 
 /**
@@ -63,6 +66,10 @@ public class DepositApp {
 
     private static final String GIT_BRANCH = "git.branch";
 
+    private static final String LOGGING_ENV_PREFIX = "PASS_DEPOSIT_LOG_";
+
+    private static final String LOGGING_PROP_PREFIX = LOGGING_ENV_PREFIX.toLowerCase().replace("_", ".");
+
     private String fcrepoUser;
 
     private String fcrepoPass;
@@ -72,6 +79,8 @@ public class DepositApp {
     private static final String GIT_PROPERTIES_RESOURCE_PATH = "/deposit-services-git.properties";
 
     public static void main(String[] args) {
+
+        configureLoggingRuntime();
 
         URL gitPropertiesResource = DepositApp.class.getResource(GIT_PROPERTIES_RESOURCE_PATH);
         if (gitPropertiesResource == null) {
@@ -188,5 +197,75 @@ public class DepositApp {
                 }
             }
         }
+    }
+
+    private static void configureLoggingRuntime() {
+        // assume SLF4J is bound to logback in the current environment
+        LoggerContext context;
+        try {
+            context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        } catch (ClassCastException e) {
+            LOG.warn("Can only set logging levels at runtime when Logback Classic is used.");
+            return;
+        }
+
+        // Strips the prefix off of the System property or environment variable if it exists
+        Function<String, String> keyTransform = (key) -> {
+            String strippedPrefix = key;
+            if (key.startsWith(LOGGING_ENV_PREFIX)) {
+                strippedPrefix = key.substring(LOGGING_ENV_PREFIX.length());
+            }
+
+            if (key.startsWith(LOGGING_PROP_PREFIX)) {
+                strippedPrefix = key.substring(LOGGING_PROP_PREFIX.length());
+            }
+
+            return strippedPrefix;
+        };
+
+        // Collect logging related environment variables, and use them as default values
+        Map<String, String> logFromEnv = System.getenv().keySet().stream()
+                .filter(key -> key.startsWith(LOGGING_ENV_PREFIX))
+                .collect(HashMap::new,
+                        (map, key) -> map.put(keyTransform.apply(key),
+                                System.getenv().get(key)), HashMap::putAll);
+
+
+        // Override logging related env vars with system properties of the same name
+        Map<String, String> logMerged =
+                System.getProperties().keySet().stream()
+                        .map(key -> (String) key)
+                        .filter(key -> key.startsWith(LOGGING_PROP_PREFIX))
+                        .collect(() ->
+                                // Won't work when run in parallel but convenient
+                                logFromEnv,
+                                (map, key) ->
+                                map.put(keyTransform.apply(key), System.getProperty(key)), Map::putAll);
+
+        boolean defaultAdditivity = false;
+        String defaultAppender = "STDERR";
+        String rootLoggerName = "ROOT";
+
+        // Update existing loggers, or add new loggers if they don't exist
+        logMerged.forEach((loggerName, level) -> {
+            ch.qos.logback.classic.Logger logger = null;
+            Level logbackLevel = Level.valueOf(level);
+
+            if ((logger = context.exists(loggerName)) != null) {
+                LOG.info("Updating logger {} level to {}", loggerName, level);
+                logger.setLevel(logbackLevel);
+            } else {
+                LOG.info("Creating new logger {} with log level {} and additivity {}",
+                        loggerName, level, defaultAdditivity);
+                logger = context.getLogger(loggerName);
+                logger.setAdditive(defaultAdditivity);
+                logger.setLevel(logbackLevel);
+                try {
+                    logger.addAppender(context.getLogger(rootLoggerName).getAppender(defaultAppender));
+                } catch (Exception e) {
+                    LOG.warn("Unable to configure appender for new logger {}", loggerName, e);
+                }
+            }
+        });
     }
 }
