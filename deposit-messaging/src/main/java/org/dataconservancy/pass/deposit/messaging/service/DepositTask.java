@@ -324,9 +324,7 @@ public class DepositTask implements Runnable {
                 // Deposit resource that is updated by the updateResources(...) method
                 dc.deposit(criDeposit);
                 return dc.deposit().getDepositStatusRef() != null &&
-                        dc.repoCopy() != null &&
-                        !dc.repoCopy().getExternalIds().isEmpty() &&
-                        dc.repoCopy().getAccessUrl() != null;
+                        dc.repoCopy() != null;
             };
         }
 
