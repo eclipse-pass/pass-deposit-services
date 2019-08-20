@@ -53,12 +53,10 @@ RUN apk update && \
     mkdir /app && \
     echo "networkaddress.cache.ttl=10" >> ${IMAGE_JAVA_HOME}/lib/security/java.security
 
-COPY ${project.build.directory}/${project.artifactId}-${project.version}-exec.jar .
 
 WORKDIR /app
 
-RUN jar -xf /${project.artifactId}-${project.version}-exec.jar && \
-    rm /${project.artifactId}-${project.version}-exec.jar
+ADD ${project.build.directory}/dependency/ .
 
 ENTRYPOINT [ "java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "org.springframework.boot.loader.JarLauncher" ]
 CMD [ "listen" ]
