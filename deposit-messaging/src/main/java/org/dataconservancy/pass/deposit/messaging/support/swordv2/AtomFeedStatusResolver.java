@@ -61,8 +61,15 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
     private Parser abderaParser;
 
+    private boolean followRedirects;
+
     public AtomFeedStatusResolver(Parser abderaParser) {
+        this(abderaParser, false);
+    }
+
+    public AtomFeedStatusResolver(Parser abderaParser, boolean followRedirects) {
         this.abderaParser = abderaParser;
+        this.followRedirects = followRedirects;
     }
 
     /**

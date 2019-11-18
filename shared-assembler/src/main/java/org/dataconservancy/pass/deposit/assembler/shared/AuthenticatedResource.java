@@ -43,11 +43,35 @@ public class AuthenticatedResource extends UrlResource {
 
     private String password;
 
+    private boolean followRedirects;
+
+    /**
+     * Preemptively supplies Basic authentication credentials when the URL is accessed.  Redirects are not followed
+     * when accessing the URL.
+     *
+     * @param url the URL of the resource requiring authentication
+     * @param username the username used to authenticate to the resource, may be empty or {@code null}
+     * @param password the password used to authenticate to the resource, may be empty or {@code null}
+     */
     public AuthenticatedResource(URL url, String username, String password) {
+        this(url, username, password, false);
+    }
+
+    /**
+     * Preemptively supplies Basic authentication credentials when the URL is accessed.  Redirects are followed if
+     * {@code followRedirects} is {@code true}.
+     *
+     * @param url the URL of the resource requiring authentication
+     * @param username the username used to authenticate to the resource, may be empty or {@code null}
+     * @param password the password used to authenticate to the resource, may be empty or {@code null}
+     * @param followRedirects follow redirects when {@code true}
+     */
+    public AuthenticatedResource(URL url, String username, String password, boolean followRedirects) {
         super(url);
         this.url = url;
         this.username = username;
         this.password = password;
+        this.followRedirects = followRedirects;
     }
 
     @Override
@@ -72,6 +96,7 @@ public class AuthenticatedResource extends UrlResource {
         LOG.trace("Customizing {}@{}", con.getClass().getName(), toHexString(identityHashCode(con)));
         byte[] bytes = String.format("%s:%s", username, password).getBytes();
         con.setRequestProperty("Authorization", "Basic " + getEncoder().encodeToString(bytes));
+        con.setInstanceFollowRedirects(followRedirects);
     }
 
 }

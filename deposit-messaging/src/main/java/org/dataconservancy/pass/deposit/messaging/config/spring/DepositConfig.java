@@ -107,6 +107,12 @@ public class DepositConfig {
     @Value("${pass.deposit.repository.configuration}")
     private Resource repositoryConfigResource;
 
+    @Value("${pass.deposit.transport.followRedirects}")
+    private boolean transportFollowsRedirects;
+
+    @Value("${pass.deposit.assembler.followRedirects}")
+    private boolean assemblerFollowsRedirects;
+
     @Bean
     public PassClientDefault passClient() {
 
@@ -355,8 +361,8 @@ public class DepositConfig {
     }
 
     @Bean
-    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser) {
-        return new AtomFeedStatusResolver(abderaParser);
+    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser, @Value("${pass.deposit.transport.followRedirects}") boolean followRedirects) {
+        return new AtomFeedStatusResolver(abderaParser, followRedirects);
     }
 
     @Bean({"defaultDepositStatusProcessor", "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"})

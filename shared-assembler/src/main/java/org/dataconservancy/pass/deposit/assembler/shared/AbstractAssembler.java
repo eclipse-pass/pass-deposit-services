@@ -76,6 +76,8 @@ public abstract class AbstractAssembler implements Assembler {
 
     private String fedoraPassword;
 
+    private boolean followRedirects;
+
     /**
      * Constructs a new assembler that provides {@link MetadataBuilderFactory} and {@link ResourceBuilderFactory} for
      * implementations to create and amend the state of package metadata and resources.
@@ -238,7 +240,7 @@ public abstract class AbstractAssembler implements Assembler {
                         if (fedoraUser != null) {
                             try {
                                 LOG.trace("Returning AuthenticatedResource for {}", location);
-                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
+                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword, followRedirects);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
@@ -315,4 +317,12 @@ public abstract class AbstractAssembler implements Assembler {
         this.fedoraPassword = fedoraPassword;
     }
 
+    public boolean isFollowRedirects() {
+        return followRedirects;
+    }
+
+    @Value("${pass.deposit.assembler.followRedirects}")
+    public void setFollowRedirects(boolean followRedirects) {
+        this.followRedirects = followRedirects;
+    }
 }
