@@ -41,6 +41,7 @@ The primary mechanism for configuring Deposit Services is through environment va
 |`SPRING_ACTIVEMQ_PASSWORD`                     |`null`                                                                         |Password to use when authenticating to the broker
 |`SPRING_ACTIVEMQ_USER`                         |`null`                                                                         |User name to use when authenticating to the broker
 |`SPRING_JMS_LISTENER_CONCURRENCY`              |4                                                                              |the number of JMS messages that can be processed simultaneously by _each_ JMS queue
+|`PASS_DEPOSIT_FOLLOW_REDIRECTS`|false|Specifically controls whether or not the `AutheticatedResource` follows HTTP redirects or not
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, or if `https` ought to be used instead of `http`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=https://fcrepo:8080/rest`)
 
