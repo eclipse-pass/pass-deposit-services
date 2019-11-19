@@ -55,7 +55,7 @@ public class AuthenticatedResourceTest {
         when(resourceUrl.openConnection()).thenReturn(urlConn);
         when(urlConn.getInputStream()).thenReturn(in);
 
-        underTest = new AuthenticatedResource(resourceUrl, user, pass, true);
+        underTest = new AuthenticatedResource(resourceUrl, user, pass);
     }
 
     /**
@@ -89,35 +89,5 @@ public class AuthenticatedResourceTest {
         underTest.getInputStream();
         verify(urlConn).setRequestProperty(eq("Authorization"),
                 eq("Basic " + getEncoder().encodeToString(":".getBytes())));
-    }
-
-    /**
-     * Redirect flag ought to be set to true on the underlying URLConnection instance
-     */
-    @Test
-    public void customizeConnRedirect() throws IOException {
-        underTest.getInputStream();
-        verify(urlConn).setInstanceFollowRedirects(true);
-    }
-
-    /**
-     * Redirect flag ought to be false on the underlying URLConnection instance
-     */
-    @Test
-    public void customizeConnRedirectFalseWithConstructor() throws IOException {
-        underTest = new AuthenticatedResource(resourceUrl, "", "", false);
-        underTest.getInputStream();
-        verify(urlConn).setInstanceFollowRedirects(false);
-    }
-
-    /**
-     * Using the existing constructor for AuthenticatedResource preserves existing behavior (redirects are not followed)
-     */
-    @Test
-    public void existingRedirectBehavior() throws IOException {
-        underTest = new AuthenticatedResource(resourceUrl, "", "");
-        underTest.getInputStream();
-
-        verify(urlConn).setInstanceFollowRedirects(false);
     }
 }
