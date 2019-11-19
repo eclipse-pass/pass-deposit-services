@@ -31,6 +31,7 @@ The primary mechanism for configuring Deposit Services is through environment va
 |`PASS_DEPOSIT_QUEUE_DEPOSIT_NAME`              |deposit                                                                        |the name of the JMS queue that has messages pertaining to `Deposit` resources (used by the `JmsDepositProcessor`)
 |`PASS_DEPOSIT_REPOSITORY_CONFIGURATION`         |classpath:/repositories.json                                                  |points to a properties file containing the configuration for the transport of custodial content to remote repositories.  Values must be [Spring Resource URIs][1].  See below for customizing the repository configuration values.
 |`PASS_DEPOSIT_TRANSPORT_SWORDV2_SLEEP_TIME_MS` |10000                                                                          |the number of milliseconds to wait between depositing a package using SWORD, and checking the SWORD statement for the deposit state
+|`PASS_DEPOSIT_TRANSPORT_SWORDV2_FOLLOW_REDIRECTS`|false|Specifically controls whether or not the `AtomFeedStatusResolver` follows HTTP redirects or not
 |`PASS_DEPOSIT_WORKERS_CONCURRENCY`             |4                                                                              |the number of Deposit Worker threads that can simultaneously run.
 |`PASS_ELASTICSEARCH_LIMIT`                     |100                                                                            |the maximum number of results returned in a single search response
 |`PASS_ELASTICSEARCH_URL`                       |http://${es.host:localhost}:${es.port:9200}/pass                               |the URL used to communicate with the Elastic search API.  Normally this this variable does not need to be changed (see note below)
@@ -41,7 +42,6 @@ The primary mechanism for configuring Deposit Services is through environment va
 |`SPRING_ACTIVEMQ_PASSWORD`                     |`null`                                                                         |Password to use when authenticating to the broker
 |`SPRING_ACTIVEMQ_USER`                         |`null`                                                                         |User name to use when authenticating to the broker
 |`SPRING_JMS_LISTENER_CONCURRENCY`              |4                                                                              |the number of JMS messages that can be processed simultaneously by _each_ JMS queue
-|`PASS_DEPOSIT_FOLLOW_REDIRECTS`|false|Specifically controls whether or not the `AutheticatedResource` follows HTTP redirects or not
 
 > If the Fedora repository is deployed under a webapp context other than `/fcrepo`, or if `https` ought to be used instead of `http`, the environment variable `PASS_FEDORA_BASEURL` must be set to the base of the Fedora REST API (e.g. `PASS_FEDORA_BASEURL=https://fcrepo:8080/rest`)
 
