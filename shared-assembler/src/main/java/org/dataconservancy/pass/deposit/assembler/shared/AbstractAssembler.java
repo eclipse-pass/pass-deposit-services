@@ -240,7 +240,7 @@ public abstract class AbstractAssembler implements Assembler {
                         if (fedoraUser != null) {
                             try {
                                 LOG.trace("Returning AuthenticatedResource for {}", location);
-                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword, followRedirects);
+                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
@@ -317,12 +317,4 @@ public abstract class AbstractAssembler implements Assembler {
         this.fedoraPassword = fedoraPassword;
     }
 
-    public boolean isFollowRedirects() {
-        return followRedirects;
-    }
-
-    @Value("${pass.deposit.assembler.followRedirects}")
-    public void setFollowRedirects(boolean followRedirects) {
-        this.followRedirects = followRedirects;
-    }
 }
