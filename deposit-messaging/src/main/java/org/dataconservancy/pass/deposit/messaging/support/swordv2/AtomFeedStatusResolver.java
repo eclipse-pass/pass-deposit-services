@@ -33,8 +33,11 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
@@ -107,8 +110,13 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
                         .map(realm -> {
                             try {
                                 if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
-                                    return new AuthenticatedResource(atomStatementUri.toURL(),
-                                            realm.getUsername(), realm.getPassword(), followRedirects);
+                                    if (followRedirects) {
+                                        return new AuthenticatedResource(isRedirect(atomStatementUri).orElse(atomStatementUri.toURL()),
+                                                realm.getUsername(), realm.getPassword());
+                                    } else {
+                                        return new AuthenticatedResource(atomStatementUri.toURL(),
+                                                realm.getUsername(), realm.getPassword());
+                                    }
                                 } else {
                                     return new UrlResource(atomStatementUri.toURL());
                                 }
@@ -161,5 +169,48 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
                 .map(realm -> (BasicAuthRealm) realm)
                 .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
                 .max(Comparator.comparingInt(realm -> realm.getBaseUrl().length()));
+    }
+
+    /**
+     * Determines if the supplied URI will be redirected when opened, returning the redirect URL if so.
+     * <p>
+     * Returns an empty Optional if the scheme is not http or https.
+     * Performs a HEAD request on the original URI.
+     * If the response is 300, 301, 302, 303, 305, or 307 (<em>not</em> 306 or 304), the value of the Location header is
+     * returned as a URL.
+     * Otherwise an empty Optional is returned.
+     * If any exceptions occur, they are swallowed and logged at WARN level, and an empty Optional is returned.
+     * </p>
+     *
+     * @param original the URI, which may be of any scheme.
+     * @return an Optional containing the redirect URL, or an empty Optional if the original URI is not redirected
+     */
+    private static Optional<URL> isRedirect(URI original) {
+        if (!"https".equalsIgnoreCase(original.getScheme()) && !"http".equalsIgnoreCase(original.getScheme())) {
+            return Optional.empty();
+        }
+
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection)new URL(original.toString()).openConnection();
+        } catch (IOException e) {
+            LOG.warn("Unable to determine if {} would be redirected, connection could not be opened.", original, e);
+            return Optional.empty();
+        }
+
+        try {
+            conn.setRequestMethod("HEAD");
+            int code = conn.getResponseCode();
+            if (code >= 300 && code <= 307 && code != 306 &&
+                    code != HttpURLConnection.HTTP_NOT_MODIFIED) {
+                return Optional.of(URI.create(conn.getHeaderField("Location")).toURL());
+            }
+        } catch (IOException e) {
+            LOG.warn("Unable to determine if {} would be redirected, an i/o error occurred", original, e);
+        } finally {
+            conn.disconnect();
+        }
+
+        return Optional.empty();
     }
 }
