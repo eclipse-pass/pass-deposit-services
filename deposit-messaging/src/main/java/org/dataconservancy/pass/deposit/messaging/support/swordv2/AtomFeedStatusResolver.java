@@ -108,7 +108,7 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
                             try {
                                 if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
                                     return new AuthenticatedResource(atomStatementUri.toURL(),
-                                            realm.getUsername(), realm.getPassword());
+                                            realm.getUsername(), realm.getPassword(), followRedirects);
                                 } else {
                                     return new UrlResource(atomStatementUri.toURL());
                                 }
