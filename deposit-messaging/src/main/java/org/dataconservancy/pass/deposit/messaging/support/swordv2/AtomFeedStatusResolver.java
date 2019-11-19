@@ -203,7 +203,9 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
             int code = conn.getResponseCode();
             if (code >= 300 && code <= 307 && code != 306 &&
                     code != HttpURLConnection.HTTP_NOT_MODIFIED) {
-                return Optional.of(URI.create(conn.getHeaderField("Location")).toURL());
+                URL location = URI.create(conn.getHeaderField("Location")).toURL();
+                LOG.debug("{} will redirect {} to {}", AtomFeedStatusResolver.class.getSimpleName(), original, location);
+                return Optional.of(location);
             }
         } catch (IOException e) {
             LOG.warn("Unable to determine if {} would be redirected, an i/o error occurred", original, e);
