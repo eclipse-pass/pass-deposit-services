@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -35,6 +36,7 @@ import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepos
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.ARCHIVED_STATUS_RESOURCE;
@@ -130,25 +132,38 @@ public class AtomFeedStatusParserTest {
 
     @Test
     public void parseWithRuntimeException() throws Exception {
+        URI uri = findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class);
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(mock(InputStream.class));
+
         RuntimeException expected = new RuntimeException("Expected exception.");
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Expected exception.");
         expectedException.expectMessage("AtomStatusParser-archived.xml");
+
+        when(resourceResolver.resolve(eq(uri), any(RepositoryConfig.class))).thenReturn(resource);
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expected);
 
-        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), repositoryConfig);
+        underTest.resolve(uri, repositoryConfig);
     }
 
     @Test
     public void parseWithParseException() throws Exception {
+        URI uri = findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class);
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(mock(InputStream.class));
+
         ParseException expectedCause = new ParseException("Expected cause.");
         expectedException.expect(RuntimeException.class);
         expectedException.expectCause(is(expectedCause));
         expectedException.expectMessage("Expected cause.");
         expectedException.expectMessage("AtomStatusParser-archived.xml");
 
+        when(resourceResolver.resolve(eq(uri), any(RepositoryConfig.class))).thenReturn(resource);
         when(abderaParser.parse(any(InputStream.class))).thenThrow(expectedCause);
 
-        underTest.resolve(findUriByName(ARCHIVED_STATUS_RESOURCE, AtomResources.class), repositoryConfig);
+        underTest.resolve(uri, repositoryConfig);
     }
 }
