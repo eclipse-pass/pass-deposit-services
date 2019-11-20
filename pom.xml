@@ -158,8 +158,8 @@
         <jackson.version>2.9.6</jackson.version>
         <messaging-support.version>0.1.3-3.4</messaging-support.version>
 
-        <!-- oapass/fcrepo:4.7.5-3.4 -->
-        <docker.fcrepo.version>oapass/fcrepo@sha256:3e39b01edf56c149279cfc51b647df335c01f9ec38036f1724f337ae35d68fe8</docker.fcrepo.version>
+        <!-- oapass/fcrepo:4.7.5-3.5 -->
+        <docker.fcrepo.version>oapass/fcrepo:4.7.5-3.5@sha256:bb44fff182ace1d0d57372f297cbab8cc04c662db2d10a061213178b7c0c9bba</docker.fcrepo.version>
         <!-- oapass/indexer:0.0.18-3.4 -->
         <docker.indexer.version>oapass/indexer@sha256:e51092a9d433219d52207f1ec3f5ea7c652d51f516bcbe9434dae556b921546d</docker.indexer.version>
         <docker.elasticsearch.version>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</docker.elasticsearch.version>
