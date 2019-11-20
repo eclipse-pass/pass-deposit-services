@@ -1,0 +1,47 @@
+<!--
+  ~ Copyright 2019 Johns Hopkins University
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://dspace6-qa.lib.harvard.edu/swordv2/statement/53c55fab-6a3d-4d01-8853-c558f52ee8f2.atom</id>
+  <link href="http://dspace6-qa.lib.harvard.edu/swordv2/statement/53c55fab-6a3d-4d01-8853-c558f52ee8f2.atom" rel="self"/>
+  <title type="text">asfqewr</title>
+  <author>
+    <name>sdfgsdfg</name>
+  </author>
+  <updated>2019-11-14T15:33:03.000Z</updated>
+  <entry>
+    <content type="image/jpeg" src="http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/90faab3c-1ddc-4d1a-8d68-7363d6671ca1/data/loggins.jpg"/>
+    <id>http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/90faab3c-1ddc-4d1a-8d68-7363d6671ca1/data/loggins.jpg</id>
+    <title type="text">Resource http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/90faab3c-1ddc-4d1a-8d68-7363d6671ca1/data/loggins.jpg</title>
+    <summary type="text">Resource Part</summary>
+    <updated>2019-11-14T20:34:16.350Z</updated>
+  </entry>
+  <entry>
+    <content type="text/plain" src="http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/83ab5be2-9926-4a21-83c5-620f7e930765/license.txt"/>
+    <id>http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/83ab5be2-9926-4a21-83c5-620f7e930765/license.txt</id>
+    <title type="text">Resource http://dspace6-qa.lib.harvard.edu/swordv2/edit-media/bitstream/83ab5be2-9926-4a21-83c5-620f7e930765/license.txt</title>
+    <summary type="text">Resource Part</summary>
+    <updated>2019-11-14T20:34:16.350Z</updated>
+  </entry>
+  <entry>
+    <id>https://dspace6-qa.lib.harvard.edu/retrieve/04fe2ea3-046c-432e-a1ba-5e387b3b8d99/http:%2F%2Ffcrepo:8080%2Ffcrepo%2Frest%2Fsubmissions%2F95%2Fc6%2F06%2F8f%2F95c6068f-f79a-45fc-a182-38da146f53e1</id>
+    <title type="text">Original Deposit https://dspace6-qa.lib.harvard.edu/retrieve/04fe2ea3-046c-432e-a1ba-5e387b3b8d99/http:%2F%2Ffcrepo:8080%2Ffcrepo%2Frest%2Fsubmissions%2F95%2Fc6%2F06%2F8f%2F95c6068f-f79a-45fc-a182-38da146f53e1</title>
+    <summary type="text">Original Deposit</summary>
+    <updated>2019-11-14T20:34:16.350Z</updated>
+    <content type="application/octet-stream" src="https://dspace6-qa.lib.harvard.edu/retrieve/04fe2ea3-046c-432e-a1ba-5e387b3b8d99/http:%2F%2Ffcrepo:8080%2Ffcrepo%2Frest%2Fsubmissions%2F95%2Fc6%2F06%2F8f%2F95c6068f-f79a-45fc-a182-38da146f53e1"/>
+    <category term="http://purl.org/net/sword/terms/originalDeposit" scheme="http://purl.org/net/sword/terms/" label="Original Deposit"/>
+  </entry>
+  <category term="http://dspace.org/state/inreview" scheme="http://purl.org/net/sword/terms/state" label="State">The item is undergoing review prior to acceptance to the archive</category>
+</feed>

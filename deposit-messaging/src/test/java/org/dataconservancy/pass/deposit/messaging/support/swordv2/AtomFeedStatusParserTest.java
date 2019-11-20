@@ -61,11 +61,14 @@ public class AtomFeedStatusParserTest {
 
     private AtomFeedStatusResolver underTest;
 
+    private ResourceResolver resourceResolver;
+
     @Before
     public void setUp() throws Exception {
         abderaParser = mock(Parser.class);
         repositoryConfig = mock(RepositoryConfig.class);
-        underTest = new AtomFeedStatusResolver(abderaParser);
+        resourceResolver = mock(ResourceResolver.class);
+        underTest = new AtomFeedStatusResolver(abderaParser, resourceResolver);
     }
 
     // Test cases
