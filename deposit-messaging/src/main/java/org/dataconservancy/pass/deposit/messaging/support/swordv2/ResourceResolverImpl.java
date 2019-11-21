@@ -53,6 +53,8 @@ public class ResourceResolverImpl implements ResourceResolver {
 
     @Override
     public Resource resolve(URI uri, RepositoryConfig repositoryConfig) {
+        LOG.debug("Attempting resolution of SWORD status URI <{}> (followRedirects: {})", uri, followRedirects);
+
         Resource resource = null;
 
         if (uri.getScheme().startsWith("file")) {
