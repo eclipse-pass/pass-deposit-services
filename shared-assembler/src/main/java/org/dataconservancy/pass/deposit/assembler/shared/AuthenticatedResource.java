@@ -71,7 +71,7 @@ public class AuthenticatedResource extends UrlResource {
             if (con instanceof HttpURLConnection) {
                 ((HttpURLConnection) con).disconnect();
             }
-            throw ex;
+            throw new IOException(String.format("Unable to connect or read from to %s", this.url), ex);
         }
     }
 
