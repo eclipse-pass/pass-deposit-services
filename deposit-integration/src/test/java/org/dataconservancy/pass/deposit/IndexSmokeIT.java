@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.dataconservancy.pass.model.Submission.SubmissionStatus.SUBMITTED;
 import static org.junit.Assert.assertTrue;
@@ -69,7 +70,7 @@ public class IndexSmokeIT extends BaseIT {
         // put some objects in pass and query the index for their presence
 
         User user = new User();
-        user.setAffiliation("School of Hard Knocks");
+        user.setAffiliation(Collections.singleton("School of Hard Knocks"));
         user.setFirstName("Mike");
         user.setLastName("Tyson");
         user.setDisplayName("Mike Tyson");
