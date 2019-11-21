@@ -41,6 +41,8 @@ import org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusPro
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolver;
+import org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolverImpl;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.slf4j.Logger;
@@ -355,9 +357,15 @@ public class DepositConfig {
     }
 
     @Bean
-    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser) {
-        return new AtomFeedStatusResolver(abderaParser);
+    public AtomFeedStatusResolver atomFeedStatusParser(Parser abderaParser, ResourceResolver resourceResolver) {
+        return new AtomFeedStatusResolver(abderaParser, resourceResolver);
     }
+
+    @Bean
+    public ResourceResolverImpl resourceResolver(@Value("${pass.deposit.transport.swordv2.followRedirects}") boolean followRedirects) {
+        return new ResourceResolverImpl(followRedirects);
+    }
+
 
     @Bean({"defaultDepositStatusProcessor", "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"})
     public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {

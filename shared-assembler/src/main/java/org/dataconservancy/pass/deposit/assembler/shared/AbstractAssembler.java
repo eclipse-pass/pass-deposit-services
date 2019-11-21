@@ -76,6 +76,8 @@ public abstract class AbstractAssembler implements Assembler {
 
     private String fedoraPassword;
 
+    private boolean followRedirects;
+
     /**
      * Constructs a new assembler that provides {@link MetadataBuilderFactory} and {@link ResourceBuilderFactory} for
      * implementations to create and amend the state of package metadata and resources.

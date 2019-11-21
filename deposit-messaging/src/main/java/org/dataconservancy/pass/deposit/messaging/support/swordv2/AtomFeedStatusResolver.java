@@ -18,9 +18,6 @@ package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
-import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
-import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
@@ -28,16 +25,9 @@ import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptRes
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -55,14 +45,17 @@ import static java.lang.String.format;
  */
 public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusResolver.class);
+    static final String ERR = "Error resolving deposit status URI from SWORD statement <%s>: %s";
 
-    private static final String ERR = "Error resolving deposit status URI from SWORD statement <%s>: %s";
+    private static final Logger LOG = LoggerFactory.getLogger(AtomFeedStatusResolver.class);
 
     private Parser abderaParser;
 
-    public AtomFeedStatusResolver(Parser abderaParser) {
+    private ResourceResolver resourceResolver;
+
+    public AtomFeedStatusResolver(Parser abderaParser, ResourceResolver resourceResolver) {
         this.abderaParser = abderaParser;
+        this.resourceResolver = resourceResolver;
     }
 
     /**
@@ -84,48 +77,7 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
             throw new IllegalArgumentException("Atom statement URI must not be null.");
         }
 
-        Resource resource = null;
-
-        if (atomStatementUri.getScheme().startsWith("file")) {
-            resource = new FileSystemResource(atomStatementUri.getPath());
-        } else if (atomStatementUri.getScheme().startsWith("classpath")) {
-            if (atomStatementUri.getScheme().startsWith("classpath*")) {
-                resource = new ClassPathResource(atomStatementUri.toString().substring("classpath*:".length()));
-            } else {
-                resource = new ClassPathResource(atomStatementUri.toString().substring("classpath:".length()));
-            }
-        } else if (atomStatementUri.getScheme().startsWith("http")) {
-            resource = matchRealm(atomStatementUri.toString(),
-                    repositoryConfig.getTransportConfig().getAuthRealms())
-                        .map(realm -> {
-                            try {
-                                if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
-                                    return new AuthenticatedResource(atomStatementUri.toURL(),
-                                            realm.getUsername(), realm.getPassword());
-                                } else {
-                                    return new UrlResource(atomStatementUri.toURL());
-                                }
-                            } catch (MalformedURLException e) {
-                                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
-                                throw new IllegalArgumentException(msg, e);
-                            }
-                        }).orElseGet(() -> {
-                            LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", atomStatementUri);
-                            try {
-                                return new UrlResource(atomStatementUri.toURL());
-                            } catch (MalformedURLException e) {
-                                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
-                                throw new IllegalArgumentException(msg, e);
-                            }
-                        });
-        } else if (atomStatementUri.getScheme().startsWith("jar")) {
-            try {
-                resource = new UrlResource(atomStatementUri);
-            } catch (MalformedURLException e) {
-                String msg = format(ERR, atomStatementUri, "Statement URI could not be parsed as URL");
-                throw new IllegalArgumentException(msg, e);
-            }
-        }
+        Resource resource = resourceResolver.resolve(atomStatementUri, repositoryConfig);
 
         if (resource == null) {
             throw new IllegalArgumentException(format(ERR, atomStatementUri,
@@ -143,16 +95,4 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
         }
     }
 
-    private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
-        if (authRealms == null || authRealms.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return authRealms
-                .stream()
-                .filter(realm -> realm instanceof BasicAuthRealm)
-                .map(realm -> (BasicAuthRealm) realm)
-                .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
-                .max(Comparator.comparingInt(realm -> realm.getBaseUrl().length()));
-    }
 }

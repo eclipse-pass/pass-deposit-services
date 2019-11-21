@@ -43,6 +43,14 @@ public class AuthenticatedResource extends UrlResource {
 
     private String password;
 
+    /**
+     * Preemptively supplies Basic authentication credentials when the URL is accessed.  Redirects are not followed
+     * when accessing the URL.
+     *
+     * @param url the URL of the resource requiring authentication
+     * @param username the username used to authenticate to the resource, may be empty or {@code null}
+     * @param password the password used to authenticate to the resource, may be empty or {@code null}
+     */
     public AuthenticatedResource(URL url, String username, String password) {
         super(url);
         this.url = url;
