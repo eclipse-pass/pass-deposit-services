@@ -31,6 +31,18 @@ public interface Sword2TransportHints {
     String SWORD_COLLECTION_URL = "deposit.transport.protocol.swordv2.target-collection";
 
     /**
+     * Property identifying a mapping of "hints" to APP Collection URLs.  The value for this property is
+     * a string in the form: "&lt;hint&gt|&lt;collection-url&gt;".  The string may contain multiple hint-to-url
+     * mappings, in which case they will be separated by spaces.  The URLs must be properly encoded so that a
+     * space in a URL does not delimit a hint/url pair.
+     */
+    String SWORD_COLLECTION_HINTS = "deposit.transport.protocol.swordv2.collection-hints";
+
+    String HINT_TUPLE_SEPARATOR = " ";
+
+    String HINT_URL_SEPARATOR = "|";
+
+    /**
      * Property identifying the On-Behalf-Of user
      */
     String SWORD_ON_BEHALF_OF_USER = "deposit.transport.protocol.swordv2.on-behalf-of";
