@@ -22,6 +22,7 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A streamable serialized form of a submission package.
@@ -147,6 +148,13 @@ public interface PackageStream {
          * @return all available checksums
          */
         Collection<Checksum> checksums();
+
+        /**
+         * The {@code Submission.metadata} for this deposit, serialized as a Map.
+         *
+         * @return the Submission metadata blob
+         */
+        Map<String, Object> submissionMeta();
 
     }
 

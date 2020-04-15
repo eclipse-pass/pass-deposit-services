@@ -21,6 +21,8 @@ import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
+import java.util.Map;
+
 /**
  * Allows for various components to contribute to the state of PackageStream.Metadata without the requirement to share
  * knowledge of the underlying {@link PackageStream.Metadata} implementation.
@@ -91,6 +93,13 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     public MetadataBuilder checksum(PackageStream.Checksum checksum) {
         checkState();
         metadata.addChecksum(checksum);
+        return this;
+    }
+
+    @Override
+    public MetadataBuilder submissionMeta(Map<String, Object> meta) {
+        checkState();
+        metadata.setSubmissionMeta(meta);
         return this;
     }
 

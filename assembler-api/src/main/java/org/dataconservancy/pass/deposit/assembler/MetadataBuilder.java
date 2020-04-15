@@ -18,6 +18,8 @@ package org.dataconservancy.pass.deposit.assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 
+import java.util.Map;
+
 /**
  * Allows for various components to contribute to the state of {@link PackageStream.Metadata} without the requirement to
  * share knowledge of the underlying implementation.
@@ -112,6 +114,15 @@ public interface MetadataBuilder {
      * @see PackageStream.Metadata#checksum()
      */
     MetadataBuilder checksum(PackageStream.Checksum checksum);
+
+    /**
+     * Adds the metadata associated with the PASS Submission resource to the PackageStream.Metadata
+     *
+     * @param meta the {@code Submission.metadata} serialized as a map
+     * @return this builder
+     * @see PackageStream.Metadata#submissionMeta()
+     */
+    MetadataBuilder submissionMeta(Map<String, Object> meta);
 
     /**
      * Builds the Metadata object from the state set on this builder.

@@ -22,7 +22,9 @@ import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides metadata for a {@link PackageStream}.  Includes package-private accessors in addition to
@@ -51,6 +53,8 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     private Archive.OPTS archive = Archive.OPTS.TAR;
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
+
+    private Map<String, Object> submissionMeta = new HashMap<>();
 
     public SimpleMetadataImpl() {
 
@@ -119,6 +123,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         return checksums;
     }
 
+    @Override
+    public Map<String, Object> submissionMeta() {
+        return submissionMeta;
+    }
+
     String getName() {
         return name;
     }
@@ -185,5 +194,13 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
 
     void addChecksum(PackageStream.Checksum checksum) {
         checksums.add(checksum);
+    }
+
+    public Map<String, Object> getSubmissionMeta() {
+        return submissionMeta;
+    }
+
+    public void setSubmissionMeta(Map<String, Object> submissionMeta) {
+        this.submissionMeta = submissionMeta;
     }
 }
