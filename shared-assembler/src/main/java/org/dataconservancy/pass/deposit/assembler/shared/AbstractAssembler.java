@@ -105,6 +105,7 @@ public abstract class AbstractAssembler implements Assembler {
     @Override
     public PackageStream assemble(DepositSubmission submission, Map<String, Object> options) {
         MetadataBuilder metadataBuilder = mbf.newInstance();
+        // TODO this is where we can attach Submission.metadata obtained from DepositSubmission
         buildMetadata(metadataBuilder, options);
         metadataBuilder.name(sanitizeFilename(submission.getName()));
 

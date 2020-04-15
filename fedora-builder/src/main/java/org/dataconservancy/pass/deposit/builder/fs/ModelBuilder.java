@@ -89,6 +89,8 @@ abstract class ModelBuilder {
 
     private static final String NLMTA_KEY = "journal-NLMTA-ID";
 
+    private static final String METADATA_BLOB_KEY = "metadata";
+
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
      *

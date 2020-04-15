@@ -185,23 +185,53 @@ public class Sword2TransportSession implements TransportSession {
 
     /**
      * Selects the APP Collection that the SWORD deposit is being submitted to.
+     * <p>
+     * The {@code metadata} property {@link Sword2TransportHints#SWORD_COLLECTION_HINTS} will be consulted when a hint
+     * exists in the {@code packageMetadata}.  If the hint present in {@code packageMetadata} matches a hint supplied
+     * in the {@link Sword2TransportHints#SWORD_COLLECTION_HINTS SWORD collection hints}, then the SWORD collection
+     * for that hint will be used for deposit.
+     * </p>
+     * <p>
+     * If the hint present in {@code packageMetadata} does not match any hint in the SWORD collection hints, or if no
+     * hints are present in the {@code packageMetadata}, then the collection from {@link Sword2TransportHints#SWORD_COLLECTION_URL}
+     * will be used.
+     * </p>
+     * <p>
+     * With this logic in place, if the UI does not provide a hint, deposits will go to the default collection as
+     * configured by the {@code default-collection} parameter in the Deposit Services config (this maintains existing
+     * behavior).  If the UI does provide a hint, and that hint is a key in the {@code collection-hints} Deposit
+     * Service config, then the hint is used to resolve the collection.  Otherwise the the {@code default-collection}
+     * is used.
+     * </p>
+     * <p>
+     * Regardless of how the collection URL is resolved (via hints or declared), the collection URL must be advertised
+     * in the SWORD service document.
+     * </p>
      *
      * @param serviceDoc
-     * @param metadata
+     * @param packageMetadata
+     * @param configurationMetadata
      * @return
      */
     SWORDCollection selectCollection(ServiceDocument serviceDoc, PackageStream.Metadata packageMetadata,
-                                     Map<String, String> metadata) {
-        String collectionUrl = metadata.get(Sword2TransportHints.SWORD_COLLECTION_URL);
+                                     Map<String, String> configurationMetadata) {
+        String collectionUrl = configurationMetadata.get(Sword2TransportHints.SWORD_COLLECTION_URL);
+        String configuredHints = configurationMetadata.get(Sword2TransportHints.SWORD_COLLECTION_HINTS);
 
         if (collectionUrl == null || collectionUrl.trim().length() == 0) {
             throw new RuntimeException("Missing required transport hint '" + Sword2TransportHints
                     .SWORD_COLLECTION_URL + "'");
         }
 
+        if (packageMetadata.submissionMeta().containsKey("hints")) {
+            // TODO process hints and see if one matches a configured hint.  If so, override collectionUrl.
+        }
+
         SWORDCollection collection = serviceDoc.getWorkspaces()
                 .stream()
                 .flatMap(workspace -> workspace.getCollections().stream())
+                // TODO is collectionUrl encoded (fingers crossed)?  Just concerned that a user-encoded
+                //   collection URL in the hints mapping may not match what is returned by the service document
                 .filter(collectionCandidate -> collectionCandidate.getHref().toString().equals(collectionUrl))
                 .findAny()
                 .orElseThrow(() ->
