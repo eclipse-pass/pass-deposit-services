@@ -192,8 +192,8 @@ public class FcrepoModelBuilderIT {
                         author.getName().equals("Raymond J. Playford")));
 
         // Read something out of the submission metadata
-        assertTrue(submission.getSubmissionMeta().has("agreement"));
-        JsonObject agreement = submission.getSubmissionMeta().getAsJsonObject("agreement");
+        assertTrue(submission.getSubmissionMeta().has("agreements"));
+        JsonObject agreement = submission.getSubmissionMeta().getAsJsonObject("agreements");
         assertTrue(agreement.has("JScholarship"));
     }
 

@@ -32,7 +32,7 @@ public interface Sword2TransportHints {
 
     /**
      * Property identifying a mapping of "hints" to APP Collection URLs.  The value for this property is
-     * a string in the form: "&lt;hint&gt|&lt;collection-url&gt;".  The string may contain multiple hint-to-url
+     * a string in the form: "&lt;hint&gt;|&lt;collection-url&gt;".  The string may contain multiple hint-to-url
      * mappings, in which case they will be separated by spaces.  The URLs must be properly encoded so that a
      * space in a URL does not delimit a hint/url pair.
      */
