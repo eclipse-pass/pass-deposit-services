@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.model;
 
+import com.google.gson.JsonObject;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,9 +56,9 @@ public class DepositSubmission {
     private String name;
 
     /**
-     * The PASS Submission.metadata serialized as a Map
+     * The PASS Submission.metadata serialized as a JsonObject
      */
-    private Map<String, Object> submissionMeta;
+    private JsonObject submissionMeta;
 
     public String getId() {
         return id;
@@ -98,11 +100,11 @@ public class DepositSubmission {
         this.name = name;
     }
 
-    public Map<String, Object> getSubmissionMeta() {
+    public JsonObject getSubmissionMeta() {
         return submissionMeta;
     }
 
-    public void setSubmissionMeta(Map<String, Object> submissionMeta) {
+    public void setSubmissionMeta(JsonObject submissionMeta) {
         this.submissionMeta = submissionMeta;
     }
 

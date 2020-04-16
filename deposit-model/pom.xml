@@ -27,4 +27,11 @@
     <artifactId>deposit-model</artifactId>
     <name>Submission Model</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
