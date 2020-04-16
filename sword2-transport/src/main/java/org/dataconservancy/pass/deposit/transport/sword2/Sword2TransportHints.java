@@ -43,6 +43,11 @@ public interface Sword2TransportHints {
     String HINT_URL_SEPARATOR = "|";
 
     /**
+     * The key identifying the submission hints in the Submission.metadata JSON blob
+     */
+    String HINT_KEY = "hints";
+
+    /**
      * Property identifying the On-Behalf-Of user
      */
     String SWORD_ON_BEHALF_OF_USER = "deposit.transport.protocol.swordv2.on-behalf-of";

@@ -16,12 +16,11 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
-
-import java.util.Map;
 
 /**
  * Allows for various components to contribute to the state of PackageStream.Metadata without the requirement to share
@@ -97,7 +96,7 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     }
 
     @Override
-    public MetadataBuilder submissionMeta(Map<String, Object> meta) {
+    public MetadataBuilder submissionMeta(JsonObject meta) {
         checkState();
         metadata.setSubmissionMeta(meta);
         return this;

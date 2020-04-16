@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
@@ -54,7 +55,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
 
     private List<PackageStream.Checksum> checksums = new ArrayList<>(1);
 
-    private Map<String, Object> submissionMeta = new HashMap<>();
+    private JsonObject submissionMeta = null;
 
     public SimpleMetadataImpl() {
 
@@ -124,7 +125,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     }
 
     @Override
-    public Map<String, Object> submissionMeta() {
+    public JsonObject submissionMeta() {
         return submissionMeta;
     }
 
@@ -196,11 +197,11 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
         checksums.add(checksum);
     }
 
-    public Map<String, Object> getSubmissionMeta() {
+    public JsonObject getSubmissionMeta() {
         return submissionMeta;
     }
 
-    public void setSubmissionMeta(Map<String, Object> submissionMeta) {
+    public void setSubmissionMeta(JsonObject submissionMeta) {
         this.submissionMeta = submissionMeta;
     }
 }
