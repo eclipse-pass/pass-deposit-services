@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -22,7 +23,6 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * A streamable serialized form of a submission package.
@@ -154,7 +154,7 @@ public interface PackageStream {
          *
          * @return the Submission metadata blob
          */
-        Map<String, Object> submissionMeta();
+        JsonObject submissionMeta();
 
     }
 

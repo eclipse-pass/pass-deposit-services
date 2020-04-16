@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
@@ -315,8 +316,8 @@ public class PreassembledAssembler implements Assembler {
 
                     // TODO implement
                     @Override
-                    public Map<String, Object> submissionMeta() {
-                        return Collections.emptyMap();
+                    public JsonObject submissionMeta() {
+                        return null;
                     }
                 };
             }

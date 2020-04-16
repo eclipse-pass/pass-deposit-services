@@ -223,7 +223,8 @@ public class Sword2TransportSession implements TransportSession {
                     .SWORD_COLLECTION_URL + "'");
         }
 
-        if (packageMetadata.submissionMeta().containsKey("hints")) {
+        if (packageMetadata.submissionMeta() != null &&
+                packageMetadata.submissionMeta().has(Sword2TransportHints.HINT_KEY)) {
             // TODO process hints and see if one matches a configured hint.  If so, override collectionUrl.
         }
 
