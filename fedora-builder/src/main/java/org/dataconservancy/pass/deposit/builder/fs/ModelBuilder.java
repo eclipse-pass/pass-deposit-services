@@ -306,6 +306,7 @@ abstract class ModelBuilder {
         // Prepare for Metadata
         DepositMetadata metadata = new DepositMetadata();
         submission.setMetadata(metadata);
+        submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
         metadata.setManuscriptMetadata(manuscript);
         DepositMetadata.Article article = new DepositMetadata.Article();
