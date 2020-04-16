@@ -312,6 +312,12 @@ public class PreassembledAssembler implements Assembler {
                     public Collection<Checksum> checksums() {
                         return Collections.singletonList(checksum());
                     }
+
+                    // TODO implement
+                    @Override
+                    public Map<String, Object> submissionMeta() {
+                        return Collections.emptyMap();
+                    }
                 };
             }
         };
