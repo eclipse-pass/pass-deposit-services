@@ -16,6 +16,8 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,6 +35,7 @@ import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.swordapp.client.AuthCredentials;
 import org.swordapp.client.ClientConfiguration;
 import org.swordapp.client.DepositReceipt;
@@ -66,12 +69,15 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class Sword2TransportSessionIT extends BaseIT {
@@ -428,6 +434,97 @@ public class Sword2TransportSessionIT extends BaseIT {
         assertFalse(response.success());
         assertNotNull(response.error());
         assertTrue(response.error() instanceof InvalidCollectionUrl);
+    }
+
+    /**
+     * Perform a deposit when collection hints are provided by the submission, and a matching hint is configured in
+     * deposit services.  The package should be deposited into the collection specified by the configured hint.
+     */
+    @Test
+    public void testDepositWithCollectionHints() throws FileNotFoundException, ProtocolViolationException, SWORDError, SWORDClientException {
+        String submissionMetaStr = "{\n" +
+                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
+                "    \"title\": \"The title of the article\",\n" +
+                "    \"journal-title\": \"A Terrific Journal\",\n" +
+                "    \"hints\": {\n" +
+                "        \"collection-tags\": [\n" +
+                "            \"covid\",\n" +
+                "            \"nobel\"\n" +
+                "        ]\n" +
+                "    }\n" + "}";
+
+        PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
+        JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
+        when(md.submissionMeta()).thenReturn(submissionMeta);
+
+        PackageStream packageStream = preparePackageStream(md, sampleZipPackage);
+
+        swordClient = spy(swordClient);
+        ArgumentCaptor<SWORDCollection> captor = ArgumentCaptor.forClass(SWORDCollection.class);
+
+        Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
+
+        Map<String, String> transportMd = new HashMap<>();
+        String collectionUrl = getSwordCollection(serviceDoc, APPLICATION_ZIP);
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, collectionUrl);
+        String configuredUrl = collectionUrl.replace("/2", "/4");
+        String configuredHints = String.format("%s%s%s", "covid", Sword2TransportHints.HINT_URL_SEPARATOR, configuredUrl);
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_HINTS, configuredHints);
+
+        Sword2DepositReceiptResponse response = (Sword2DepositReceiptResponse)underTest.send(packageStream, transportMd);
+
+        assertNotNull(response);
+        assertTrue(response.success());
+        assertNull(response.error());
+
+        verify(swordClient).deposit(captor.capture(), any(), any());
+
+        assertEquals(configuredUrl, captor.getValue().getHref().toString());
+        assertTrue(configuredUrl.endsWith("/4"));
+    }
+
+    /**
+     * Perform a deposit when collection hints are provided by the submission, but no configured hints match.  The
+     * deposit should go to the default collection url.
+     */
+    @Test
+    public void testDepositWithCollectionHintsNoMatch() throws FileNotFoundException, ProtocolViolationException,
+                                                               SWORDError, SWORDClientException {
+        String submissionMetaStr = "{\n" +
+                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
+                "    \"title\": \"The title of the article\",\n" +
+                "    \"journal-title\": \"A Terrific Journal\",\n" +
+                "    \"hints\": {\n" +
+                "        \"collection-tags\": [\n" +
+                "            \"covid\",\n" +
+                "            \"nobel\"\n" +
+                "        ]\n" +
+                "    }\n" + "}";
+
+
+        PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
+        JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
+        when(md.submissionMeta()).thenReturn(submissionMeta);
+
+        PackageStream packageStream = preparePackageStream(md, sampleZipPackage);
+
+        swordClient = spy(swordClient);
+        ArgumentCaptor<SWORDCollection> captor = ArgumentCaptor.forClass(SWORDCollection.class);
+
+        Sword2TransportSession underTest = new Sword2TransportSession(swordClient, serviceDoc, authCreds);
+
+        Map<String, String> transportMd = new HashMap<>();
+        String defaultCollectionUrl = getSwordCollection(serviceDoc, APPLICATION_ZIP);
+        transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, defaultCollectionUrl);
+        TransportResponse response = underTest.send(packageStream, transportMd);
+
+        assertNotNull(response);
+        assertTrue(response.success());
+        assertNull(response.error());
+
+        verify(swordClient).deposit(captor.capture(), any(), any());
+
+        assertEquals(defaultCollectionUrl, captor.getValue().getHref().toString());
     }
 
     /**

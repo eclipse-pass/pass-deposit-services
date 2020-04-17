@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import com.google.gson.JsonElement;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
@@ -33,6 +34,8 @@ import org.swordapp.client.ServiceDocument;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.*;
 
 /**
  * Encapsulates a session with a SWORDv2 endpoint authenticated using the transport hints supplied on {@link
@@ -215,28 +218,51 @@ public class Sword2TransportSession implements TransportSession {
      */
     SWORDCollection selectCollection(ServiceDocument serviceDoc, PackageStream.Metadata packageMetadata,
                                      Map<String, String> configurationMetadata) {
-        String collectionUrl = configurationMetadata.get(Sword2TransportHints.SWORD_COLLECTION_URL);
-        String configuredHints = configurationMetadata.get(Sword2TransportHints.SWORD_COLLECTION_HINTS);
+        String collectionUrl = configurationMetadata.get(SWORD_COLLECTION_URL);
+        String configuredHints = configurationMetadata.get(SWORD_COLLECTION_HINTS);
 
         if (collectionUrl == null || collectionUrl.trim().length() == 0) {
-            throw new RuntimeException("Missing required transport hint '" + Sword2TransportHints
-                    .SWORD_COLLECTION_URL + "'");
+            throw new RuntimeException("Missing required transport hint '" + SWORD_COLLECTION_URL + "'");
         }
 
+        // If the submission metadata contains hints, check to see if any of them are present in the deposit service
+        // configuration.  If so, update the deposit collection url
+        // TODO what if multiple hints are present and map to multiple collection URLs?  Do we make multiple deposits?
         if (packageMetadata.submissionMeta() != null &&
-                packageMetadata.submissionMeta().has(Sword2TransportHints.HINT_KEY)) {
-            // TODO process hints and see if one matches a configured hint.  If so, override collectionUrl.
+                packageMetadata.submissionMeta().has(HINT_KEY) &&
+                packageMetadata.submissionMeta().getAsJsonObject(HINT_KEY).has(COLLECTIONS_HINT_KEY)) {
+            if (configuredHints != null && configuredHints.trim().length() > 0) {
+                String[] tuples = configuredHints.split(HINT_TUPLE_SEPARATOR);
+                FOUND: for (String tuple : tuples) {
+                    if (tuple.contains(HINT_URL_SEPARATOR)) {
+                        String splitRegex = "\\" + HINT_URL_SEPARATOR;
+                        if (tuple.split(splitRegex).length == 2) {
+                            String configuredHint = tuple.split(splitRegex)[0];
+                            String configuredUrl = tuple.split(splitRegex)[1];
+                            for (JsonElement submissionHint : packageMetadata.submissionMeta().getAsJsonObject(HINT_KEY).getAsJsonArray(COLLECTIONS_HINT_KEY)) {
+                                if (submissionHint.getAsString().equalsIgnoreCase(configuredHint)) {
+                                    collectionUrl = configuredUrl;
+                                    // TODO we find the first match; don't handle the case where multiple hints match
+                                    break FOUND;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        final String cUrl = collectionUrl;
 
         SWORDCollection collection = serviceDoc.getWorkspaces()
                 .stream()
                 .flatMap(workspace -> workspace.getCollections().stream())
                 // TODO is collectionUrl encoded (fingers crossed)?  Just concerned that a user-encoded
                 //   collection URL in the hints mapping may not match what is returned by the service document
-                .filter(collectionCandidate -> collectionCandidate.getHref().toString().equals(collectionUrl))
+                .filter(collectionCandidate -> collectionCandidate.getHref().toString().equals(cUrl))
                 .findAny()
                 .orElseThrow(() ->
-                        new InvalidCollectionUrl("SWORD Collection with URL '" + collectionUrl + "' not found."));
+                        new InvalidCollectionUrl("SWORD Collection with URL '" + cUrl + "' not found."));
 
         return collection;
     }

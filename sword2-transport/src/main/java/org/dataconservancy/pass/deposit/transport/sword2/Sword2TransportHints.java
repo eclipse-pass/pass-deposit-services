@@ -43,9 +43,16 @@ public interface Sword2TransportHints {
     String HINT_URL_SEPARATOR = "|";
 
     /**
-     * The key identifying the submission hints in the Submission.metadata JSON blob
+     * The key identifying the submission hints in the Submission.metadata JSON blob.  The value for this key is a
+     * JSON object.
      */
     String HINT_KEY = "hints";
+
+    /**
+     * The key identifying the collection hints in the Submission.metadata JSON blob (subordinate to {@link #HINT_KEY}).
+     * The value of this key is a JSON array.
+     */
+    String COLLECTIONS_HINT_KEY = "collection-tags";
 
     /**
      * Property identifying the On-Behalf-Of user

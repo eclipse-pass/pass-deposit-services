@@ -167,7 +167,7 @@
 
         <!-- TODO properly tag these images -->
         <docker.postgres.version>oapass/postgres:latest</docker.postgres.version>
-        <docker.dspace.version>oapass/dspace:latest</docker.dspace.version>
+        <docker.dspace.version>oapass/dspace:20200419@sha256:99df12f10846f2a2d62058cf4eef631393d7949a343b233a9e487d54fd82a483</docker.dspace.version>
         <docker.ftp.version>oapass/ftpserver:latest</docker.ftp.version>
 
         <pass.jsonld.context.version>3.5</pass.jsonld.context.version>
