@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.builder.fedora;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.builder.fs.FcrepoModelBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
@@ -119,6 +120,7 @@ public class FcrepoModelBuilderIT {
         assertNotNull(submission.getMetadata().getJournalMetadata());
         assertNotNull(submission.getMetadata().getArticleMetadata());
         assertNotNull(submission.getMetadata().getPersons());
+        assertNotNull(submission.getSubmissionMeta());
 
         // Cannot compare ID strings, as they change when uploading to a Fedora server.
         Publication publication = (Publication)entities.get(submissionEntity.getPublication());
@@ -188,6 +190,11 @@ public class FcrepoModelBuilderIT {
                 .filter(person -> person.getType() == DepositMetadata.PERSON_TYPE.author)
                 .anyMatch(author ->
                         author.getName().equals("Raymond J. Playford")));
+
+        // Read something out of the submission metadata
+        assertTrue(submission.getSubmissionMeta().has("agreements"));
+        JsonObject agreement = submission.getSubmissionMeta().getAsJsonObject("agreements");
+        assertTrue(agreement.has("JScholarship"));
     }
 
     @After

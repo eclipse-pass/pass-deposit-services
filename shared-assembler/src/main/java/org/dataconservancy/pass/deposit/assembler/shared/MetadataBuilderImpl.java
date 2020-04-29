@@ -16,6 +16,7 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
@@ -91,6 +92,13 @@ public class MetadataBuilderImpl implements MetadataBuilder {
     public MetadataBuilder checksum(PackageStream.Checksum checksum) {
         checkState();
         metadata.addChecksum(checksum);
+        return this;
+    }
+
+    @Override
+    public MetadataBuilder submissionMeta(JsonObject meta) {
+        checkState();
+        metadata.setSubmissionMeta(meta);
         return this;
     }
 

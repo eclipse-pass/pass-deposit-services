@@ -89,6 +89,8 @@ abstract class ModelBuilder {
 
     private static final String NLMTA_KEY = "journal-NLMTA-ID";
 
+    private static final String METADATA_BLOB_KEY = "metadata";
+
     /**
      * Creates a DepositMetadata person with the person's context passed as parameters.
      *
@@ -312,6 +314,7 @@ abstract class ModelBuilder {
         // Prepare for Metadata
         DepositMetadata metadata = new DepositMetadata();
         submission.setMetadata(metadata);
+            submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
         metadata.setManuscriptMetadata(manuscript);
         DepositMetadata.Article article = new DepositMetadata.Article();

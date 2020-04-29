@@ -19,8 +19,9 @@ package org.dataconservancy.pass.deposit.messaging.config.repository;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -90,7 +91,11 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
             "        \"default-collection\": \"http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
             "        \"on-behalf-of\": null,\n" +
             "        \"deposit-receipt\": true,\n" +
-            "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
+            "        \"user-agent\": \"pass-deposit/x.y.z\",\n" +
+            "        \"collection-hints\": {\n" +
+            "          \"covid\": \"${dspace.baseuri}/swordv2/collection/${dspace.covid.handle}\",\n" +
+            "          \"nobel\": \"${dspace.baseuri}/swordv2/collection/${dspace.nobel.handle}\"\n" +
+            "        }\n" +
             "      }\n" +
             "    }";
 
@@ -154,6 +159,18 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
     }
 
     @Test
+    public void mapTransportConfigCollectionHints() throws IOException {
+        TransportConfig config = mapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
+
+        assertRoundTrip(config, TransportConfig.class);
+        Map<String, String> hints = ((SwordV2Binding)config.getProtocolBinding()).getCollectionHints();
+        assertTrue(hints.containsKey("covid"));
+        assertTrue(hints.containsKey("nobel"));
+        assertEquals("${dspace.baseuri}/swordv2/collection/${dspace.covid.handle}", hints.get("covid"));
+        assertEquals("${dspace.baseuri}/swordv2/collection/${dspace.nobel.handle}", hints.get("nobel"));
+    }
+
+    @Test
     public void mapTransportConfigFromJavaRoundTrip() throws IOException {
         TransportConfig config = new TransportConfig();
         SwordV2Binding swordV2Binding = new SwordV2Binding();
@@ -170,6 +187,16 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
         swordV2Binding.setDefaultCollectionUrl("http://example.org/collection/1");
         swordV2Binding.setDepositReceipt(true);
         swordV2Binding.setOnBehalfOf("moouser");
+
+        String covid = "https://jscholarship.library.jhu.edu/handle/1774.2/58585";
+        String nobel = "https://jscholarship.library.jhu.edu/handle/1774.2/33532";
+        Map<String, String> hints = new HashMap<String, String>(){
+            {
+                put("covid", covid);
+                put("nobel", nobel);
+            }
+        };
+        swordV2Binding.setCollectionHints(hints);
 
         realm1.setRealmName("Realm 1");
         realm1.setUsername("foo");

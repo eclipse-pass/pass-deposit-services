@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.dataconservancy.pass.deposit</groupId>
         <artifactId>deposit-parent</artifactId>
-        <version>1.0.0-3.4</version>
+        <version>1.0.1-3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>shared-resources</artifactId>

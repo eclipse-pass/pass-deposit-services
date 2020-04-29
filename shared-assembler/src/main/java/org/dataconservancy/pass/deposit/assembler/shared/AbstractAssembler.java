@@ -107,6 +107,7 @@ public abstract class AbstractAssembler implements Assembler {
         MetadataBuilder metadataBuilder = mbf.newInstance();
         buildMetadata(metadataBuilder, options);
         metadataBuilder.name(sanitizeFilename(submission.getName()));
+        metadataBuilder.submissionMeta(submission.getSubmissionMeta());
 
         List<DepositFileResource> custodialResources = resolveCustodialResources(submission.getFiles());
 
