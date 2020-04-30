@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
@@ -311,6 +312,12 @@ public class PreassembledAssembler implements Assembler {
                     @Override
                     public Collection<Checksum> checksums() {
                         return Collections.singletonList(checksum());
+                    }
+
+                    // TODO implement
+                    @Override
+                    public JsonObject submissionMeta() {
+                        return null;
                     }
                 };
             }

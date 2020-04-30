@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
@@ -147,6 +148,13 @@ public interface PackageStream {
          * @return all available checksums
          */
         Collection<Checksum> checksums();
+
+        /**
+         * The {@code Submission.metadata} for this deposit, serialized as a Map.
+         *
+         * @return the Submission metadata blob
+         */
+        JsonObject submissionMeta();
 
     }
 

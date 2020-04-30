@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import com.google.gson.JsonElement;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.TransportResponse;
@@ -33,6 +34,8 @@ import org.swordapp.client.ServiceDocument;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.*;
 
 /**
  * Encapsulates a session with a SWORDv2 endpoint authenticated using the transport hints supplied on {@link
@@ -185,27 +188,81 @@ public class Sword2TransportSession implements TransportSession {
 
     /**
      * Selects the APP Collection that the SWORD deposit is being submitted to.
+     * <p>
+     * The {@code metadata} property {@link Sword2TransportHints#SWORD_COLLECTION_HINTS} will be consulted when a hint
+     * exists in the {@code packageMetadata}.  If the hint present in {@code packageMetadata} matches a hint supplied
+     * in the {@link Sword2TransportHints#SWORD_COLLECTION_HINTS SWORD collection hints}, then the SWORD collection
+     * for that hint will be used for deposit.
+     * </p>
+     * <p>
+     * If the hint present in {@code packageMetadata} does not match any hint in the SWORD collection hints, or if no
+     * hints are present in the {@code packageMetadata}, then the collection from {@link Sword2TransportHints#SWORD_COLLECTION_URL}
+     * will be used.
+     * </p>
+     * <p>
+     * With this logic in place, if the UI does not provide a hint, deposits will go to the default collection as
+     * configured by the {@code default-collection} parameter in the Deposit Services config (this maintains existing
+     * behavior).  If the UI does provide a hint, and that hint is a key in the {@code collection-hints} Deposit
+     * Service config, then the hint is used to resolve the collection.  Otherwise the the {@code default-collection}
+     * is used.
+     * </p>
+     * <p>
+     * Regardless of how the collection URL is resolved (via hints or declared), the collection URL must be advertised
+     * in the SWORD service document.
+     * </p>
      *
      * @param serviceDoc
-     * @param metadata
+     * @param packageMetadata
+     * @param configurationMetadata
      * @return
      */
     SWORDCollection selectCollection(ServiceDocument serviceDoc, PackageStream.Metadata packageMetadata,
-                                     Map<String, String> metadata) {
-        String collectionUrl = metadata.get(Sword2TransportHints.SWORD_COLLECTION_URL);
+                                     Map<String, String> configurationMetadata) {
+        String collectionUrl = configurationMetadata.get(SWORD_COLLECTION_URL);
+        String configuredHints = configurationMetadata.get(SWORD_COLLECTION_HINTS);
 
         if (collectionUrl == null || collectionUrl.trim().length() == 0) {
-            throw new RuntimeException("Missing required transport hint '" + Sword2TransportHints
-                    .SWORD_COLLECTION_URL + "'");
+            throw new RuntimeException("Missing required transport hint '" + SWORD_COLLECTION_URL + "'");
         }
+
+        // If the submission metadata contains hints, check to see if any of them are present in the deposit service
+        // configuration.  If so, update the deposit collection url
+        // TODO what if multiple hints are present and map to multiple collection URLs?  Do we make multiple deposits?
+        if (packageMetadata.submissionMeta() != null &&
+                packageMetadata.submissionMeta().has(HINT_KEY) &&
+                packageMetadata.submissionMeta().getAsJsonObject(HINT_KEY).has(COLLECTIONS_HINT_KEY)) {
+            if (configuredHints != null && configuredHints.trim().length() > 0) {
+                String[] tuples = configuredHints.split(HINT_TUPLE_SEPARATOR);
+                FOUND: for (String tuple : tuples) {
+                    if (tuple.contains(HINT_URL_SEPARATOR)) {
+                        String splitRegex = "\\" + HINT_URL_SEPARATOR;
+                        if (tuple.split(splitRegex).length == 2) {
+                            String configuredHint = tuple.split(splitRegex)[0];
+                            String configuredUrl = tuple.split(splitRegex)[1];
+                            for (JsonElement submissionHint : packageMetadata.submissionMeta().getAsJsonObject(HINT_KEY).getAsJsonArray(COLLECTIONS_HINT_KEY)) {
+                                if (submissionHint.getAsString().equalsIgnoreCase(configuredHint)) {
+                                    collectionUrl = configuredUrl;
+                                    // TODO we find the first match; don't handle the case where multiple hints match
+                                    break FOUND;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        final String cUrl = collectionUrl;
 
         SWORDCollection collection = serviceDoc.getWorkspaces()
                 .stream()
                 .flatMap(workspace -> workspace.getCollections().stream())
-                .filter(collectionCandidate -> collectionCandidate.getHref().toString().equals(collectionUrl))
+                // TODO is collectionUrl encoded (fingers crossed)?  Just concerned that a user-encoded
+                //   collection URL in the hints mapping may not match what is returned by the service document
+                .filter(collectionCandidate -> collectionCandidate.getHref().toString().equals(cUrl))
                 .findAny()
                 .orElseThrow(() ->
-                        new InvalidCollectionUrl("SWORD Collection with URL '" + collectionUrl + "' not found."));
+                        new InvalidCollectionUrl("SWORD Collection with URL '" + cUrl + "' not found."));
 
         return collection;
     }

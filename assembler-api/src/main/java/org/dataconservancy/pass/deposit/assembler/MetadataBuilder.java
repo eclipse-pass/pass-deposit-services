@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 
@@ -112,6 +113,15 @@ public interface MetadataBuilder {
      * @see PackageStream.Metadata#checksum()
      */
     MetadataBuilder checksum(PackageStream.Checksum checksum);
+
+    /**
+     * Adds the metadata associated with the PASS Submission resource to the PackageStream.Metadata
+     *
+     * @param meta the {@code Submission.metadata} serialized as a map
+     * @return this builder
+     * @see PackageStream.Metadata#submissionMeta()
+     */
+    MetadataBuilder submissionMeta(JsonObject meta);
 
     /**
      * Builds the Metadata object from the state set on this builder.

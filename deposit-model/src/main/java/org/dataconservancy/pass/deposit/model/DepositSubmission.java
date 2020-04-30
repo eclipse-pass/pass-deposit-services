@@ -15,10 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.model;
 
+import com.google.gson.JsonObject;
 import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * Encapsulates a submission to the target system, including the manuscript and supplement files, metadata describing
@@ -59,6 +61,11 @@ public class DepositSubmission {
      * Short, human-readable, name of the submission.  Used to generate the file name for the package file.
      */
     private String name;
+
+    /**
+     * The PASS Submission.metadata serialized as a JsonObject
+     */
+    private JsonObject submissionMeta;
 
     public String getId() {
         return id;
@@ -118,33 +125,31 @@ public class DepositSubmission {
         this.submissionDate = submissionDate;
     }
 
+    public JsonObject getSubmissionMeta() {
+        return submissionMeta;
+    }
+
+    public void setSubmissionMeta(JsonObject submissionMeta) {
+        this.submissionMeta = submissionMeta;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         DepositSubmission that = (DepositSubmission) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(submissionDate, that.submissionDate) &&
-                Objects.equals(manifest, that.manifest) &&
-                Objects.equals(metadata, that.metadata) &&
-                Objects.equals(files, that.files) &&
-                Objects.equals(name, that.name);
+        return Objects.equals(id, that.id) && Objects.equals(submissionDate, that.submissionDate) && Objects.equals(manifest, that.manifest) && Objects.equals(metadata, that.metadata) && Objects.equals(files, that.files) && Objects.equals(name, that.name) && Objects.equals(submissionMeta, that.submissionMeta);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, submissionDate, manifest, metadata, files, name);
+        return Objects.hash(id, submissionDate, manifest, metadata, files, name, submissionMeta);
     }
 
     @Override
     public String toString() {
-        return "DepositSubmission{" +
-                "id='" + id + '\'' +
-                ", submissionDate=" + submissionDate +
-                ", manifest=" + manifest +
-                ", metadata=" + metadata +
-                ", files=" + files +
-                ", name='" + name + '\'' +
-                '}';
+        return new StringJoiner("\n  ", DepositSubmission.class.getSimpleName() + "[", "]").add("id='" + id + "'").add("submissionDate=" + submissionDate).add("manifest=" + manifest).add("metadata=" + metadata).add("files=" + files).add("name='" + name + "'").add("submissionMeta=" + submissionMeta).toString();
     }
 }
