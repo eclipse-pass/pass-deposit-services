@@ -137,6 +137,7 @@
         <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback-classic.version>1.2.3</logback-classic.version>
+        <log4j.version>2.15.0</log4j.version>
         <junit.version>4.12</junit.version>
         <spring-framework.version>5.1.4.RELEASE</spring-framework.version>
         <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
@@ -425,6 +426,18 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
 
             <dependency>
