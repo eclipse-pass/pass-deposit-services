@@ -4,6 +4,59 @@ Provides an overview of Deposit Services with respect to developing Deposit Serv
 
 Developing a package provider primarily deals with extending or re-using `Assembler`-related abstract classes and implementations, but it helps to understand the context in which `Assembler`s operate.  This document serves to provide that context.
 
+## Architecture
+
+This is a logical diagram of the Deposit Services software architecture, including notes on which code repositories house the code.
+
+![Deposit Services Software Architecture](architecture-overview.png)
+
+* "Message Processing" is a logical component that encompasses the primary classes responsible for operating on the JMS messages received by Deposit Services.  This includes the `Policy` implementations as well as the `SubmissionProcessor` and `DepositProcessor` classes.
+    * "Message Processing" orchestrates the communication between various components.
+* The Assembler provides a streaming package to be delivered to the downstream repository
+    * Package Providers can be developed independently for each institution.
+    * Even though the Harvard Package Provider is represented as a logically separate component, the code including the Harvard provider is co-located in the JHU Package Providers code repository, since JHU wrote and maintains the code. (See the `dash-parked` [branch](https://github.com/OA-PASS/jhu-package-providers/tree/dash-parked))
+
+### Future work
+The Assembler and Package Providers could be extracted from Deposit Services into a separate Packaging microservice, with its own HTTP API.  There are a number of advantages with this approach.  Aside from simplifying the testing, packaging, and release process of Deposit Services, these advantages include:
+* Ability to export the content of a Submission independent of performing deposit (think of allowing an administrator or end-user to download their content)
+* Ability to evolve the features relating to packaging.  For example, it would be quite clumsy to support an end-user driven mechanism for customizing package metadata with the current software architecture.
+
+## Application Structure
+
+1. Deposit Service is a [Spring Boot application (v2.1.12)](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/html/)
+2. There are a number of interfaces used by Deposit Services.  Some of these interfaces have implementations that are discovered at runtime.  For example, [Package Providers](https://github.com/OA-PASS/deposit-services/blob/master/ASSEMBLER.md#runtime) are discovered at runtime by examining the classpath, aided by Spring Boot `AutoConfiguration`.
+3. Package providers can be added to Deposit Services by adding a package provider and its dependencies to the runtime classpath of the Deposit Services Spring Boot application.
+    1. Each package provider produces an image that contains its jar file and dependencies
+        1. [BagIT](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/Dockerfile) 
+        2. [J10P](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/Dockerfile)
+        3. [PMC](https://github.com/OA-PASS/jhu-package-providers/tree/master/nihms-package-provider)
+        4. [Harvard DASH](https://github.com/OA-PASS/jhu-package-providers/blob/dash-parked/dash-package-provider/Dockerfile) (note this is on the `dash-parked` branch)
+    2. Then each provider's jars and libs are [copied into](https://github.com/OA-PASS/jhu-package-providers/blob/master/provider-integration/src/main/docker/Dockerfile) the Spring Boot application's `BOOT-INF/lib` directory.  This image is released as the package providers image.
+        1. Note that the [final `FROM` inherits](https://github.com/OA-PASS/jhu-package-providers/blob/master/provider-integration/src/main/docker/Dockerfile#L8) from the [core deposit services image](https://github.com/OA-PASS/deposit-services/blob/master/deposit-messaging/Dockerfile)
+    3. Therefore, the package providers image contains the core deposit service code, and all package providers.
+4. pass-docker's [docker-compose.yml](https://github.com/OA-PASS/pass-docker/blob/master/docker-compose.yml#L201-L217) along with the pass-docker deposit-service/Dockerfile marries the configuration with the package providers image.
+## Release Process
+
+The release process for Deposit Services is complex, and documented in the [pass-docker repository](https://github.com/OA-PASS/pass-docker/blob/master/deposit-services/README.md).
+
+Here is some background and highlights:
+1. A release of the [pass-docker Deposit Services](https://github.com/OA-PASS/pass-docker/tree/master/deposit-services) must include Package Providers on the runtime classpath in the image
+2. This means that a release of pass-docker Deposit Services depends on making a release of the Deposit Services [core codebase](https://github.com/OA-PASS/deposit-services) first, followed by releases of the [package providers](https://github.com/OA-PASS/jhu-package-providers), followed by the creation of the pass-docker/deposit Docker image
+   1. The Spring Boot application is deployed in exploded form, _not_ as a self-executable jar.  This allows for package providers to be added to the runtime classpath by using the core deposit services image as the base image in a `FROM` statement (see the [package-providers Dockerfile](https://github.com/OA-PASS/jhu-package-providers/blob/d46525daf40f5b35b1bc494324246d8f137951e4/provider-integration/src/main/docker/Dockerfile) as an example)
+3. A "release" means publishing release versions (no `-SNAPSHOT`) of each Java artifact, and publishing a Docker image
+    1. This must be done for the `deposit-services`and `package-providers` code repositories
+    2. See [here](https://github.com/OA-PASS/pass-docker/tree/master/deposit-services#releasing-images)
+4. Docker images and Java code artifacts for Deposit Services core are built by Maven, _not_ by manually invoking `docker build`.
+5. Docker images and Java code artifacts for Package Providers are built by Maven, _not_ by manually invoking `docker build`.
+    1. TL;DR: running `mvn install` from the [base of the package-providers repo](https://github.com/OA-PASS/jhu-package-providers) should result in all images being built 
+    2. Each Package Provider must have a Docker image built
+        1. [bagit-package-provider](https://github.com/OA-PASS/jhu-package-providers/blob/master/bagit-package-provider/Dockerfile)
+        2. [jscholarship-package-provider](https://github.com/OA-PASS/jhu-package-providers/blob/master/jscholarship-package-provider/Dockerfile)
+        3. [nihms-package-provider](https://github.com/OA-PASS/jhu-package-providers/blob/master/nihms-package-provider/Dockerfile)
+    4. Then all the Package Providers are collapsed into a single package provider [uber-image](https://github.com/OA-PASS/jhu-package-providers/blob/d46525daf40f5b35b1bc494324246d8f137951e4/provider-integration/src/main/docker/Dockerfile)
+6. Finally, the Docker image in `pass-docker/deposit-services` can be built and deployed.
+   1. Set the correct values for the build arguments in [pass-docker/docker-compose.yml](https://github.com/OA-PASS/pass-docker/blob/90557db2bc774ec824b700f9b0ff9b54ee687325/docker-compose.yml#L201)
+
 ## Model
 
 Overview of model entities relevant to Deposit Services.
