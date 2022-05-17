@@ -1,4 +1,4 @@
-name: Run Automated Tests
+name: Run Unit Tests
 on:
   workflow_call
 

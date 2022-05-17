@@ -13,5 +13,5 @@ jobs:
       - run: echo "This job was triggered by a ${{ github.event_name }} event and is running on a ${{ runner.os }} server"
 
   call-tests-unit:
-    name: Run Automated Tests
+    name: Run Unit Tests
     uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-unit.yml@main
