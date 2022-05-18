@@ -16,22 +16,6 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.swordapp.client.AuthCredentials;
-import org.swordapp.client.ProtocolViolationException;
-import org.swordapp.client.SWORDClient;
-import org.swordapp.client.SWORDClientException;
-import org.swordapp.client.ServiceDocument;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
@@ -46,6 +30,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.swordapp.client.AuthCredentials;
+import org.swordapp.client.ProtocolViolationException;
+import org.swordapp.client.SWORDClient;
+import org.swordapp.client.SWORDClientException;
+import org.swordapp.client.ServiceDocument;
 
 public class Sword2TransportTest {
 
@@ -63,17 +63,17 @@ public class Sword2TransportTest {
     private static final String ON_BEHALF_OF = "another_user";
 
     private static final Map<String, String> TRANSPORT_HINTS = Collections.unmodifiableMap(
-            new HashMap<String, String>() {
-                {
-                    put(SWORD_COLLECTION_URL, COLLECTION_URL);
-                    put(SWORD_ON_BEHALF_OF_USER, ON_BEHALF_OF);
-                    put(SWORD_SERVICE_DOC_URL, SERVICE_DOC_URL);
-                    put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
-                    put(TRANSPORT_USERNAME, USERNAME);
-                    put(TRANSPORT_PASSWORD, PASSWORD);
-                    put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.SWORDv2.name());
-                }
-            });
+        new HashMap<String, String>() {
+            {
+                put(SWORD_COLLECTION_URL, COLLECTION_URL);
+                put(SWORD_ON_BEHALF_OF_USER, ON_BEHALF_OF);
+                put(SWORD_SERVICE_DOC_URL, SERVICE_DOC_URL);
+                put(TRANSPORT_AUTHMODE, Transport.AUTHMODE.userpass.name());
+                put(TRANSPORT_USERNAME, USERNAME);
+                put(TRANSPORT_PASSWORD, PASSWORD);
+                put(TRANSPORT_PROTOCOL, Transport.PROTOCOL.SWORDv2.name());
+            }
+        });
 
     private SWORDClient swordClient;
 
@@ -175,19 +175,19 @@ public class Sword2TransportTest {
      */
     private static Map<String, String> removeKey(String key, Map<String, String> map) {
         return map.entrySet()
-                .stream()
-                .filter((entry) -> !entry.getKey().equals(key))
-                .collect(
-                        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                  .stream()
+                  .filter((entry) -> !entry.getKey().equals(key))
+                  .collect(
+                      Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
      * Returns a new map that replaces the supplied {@code key} in {@code map}.  If the {@code key} does not exist
      * in {@code map}, it is added in the returned {@code Map}.
      *
-     * @param key a key that may occur in {@code map}, whose value is replaced in the returned {@code Map}
+     * @param key      a key that may occur in {@code map}, whose value is replaced in the returned {@code Map}
      * @param newValue the new value of {@code key}
-     * @param map a map that may contain the supplied {@code key}
+     * @param map      a map that may contain the supplied {@code key}
      * @return a new {@code Map} that contains {@code key} mapped to {@code newValue}
      */
     private static Map<String, String> replaceKey(String key, String newValue, Map<String, String> map) {

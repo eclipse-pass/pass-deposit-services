@@ -15,21 +15,20 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
 public class SimpleAssembler extends AbstractAssembler {
-
 
     public SimpleAssembler(MetadataBuilderFactory mbf, ResourceBuilderFactory rbf) {
         super(mbf, rbf);

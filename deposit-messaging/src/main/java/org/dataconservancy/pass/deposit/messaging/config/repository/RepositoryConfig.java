@@ -73,19 +73,25 @@ public class RepositoryConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         RepositoryConfig that = (RepositoryConfig) o;
 
-        if (repositoryKey != null ? !repositoryKey.equals(that.repositoryKey) : that.repositoryKey != null)
+        if (repositoryKey != null ? !repositoryKey.equals(that.repositoryKey) : that.repositoryKey != null) {
             return false;
-        if (repositoryDepositConfig != null ? !repositoryDepositConfig.equals(that.repositoryDepositConfig) : that.repositoryDepositConfig != null)
+        }
+        if (repositoryDepositConfig != null ? !repositoryDepositConfig.equals(
+            that.repositoryDepositConfig) : that.repositoryDepositConfig != null) {
             return false;
-        if (transportConfig != null ? !transportConfig.equals(that.transportConfig) : that.transportConfig != null)
+        }
+        if (transportConfig != null ? !transportConfig.equals(that.transportConfig) : that.transportConfig != null) {
             return false;
+        }
         return assemblerConfig != null ? assemblerConfig.equals(that.assemblerConfig) : that.assemblerConfig == null;
     }
 
@@ -101,8 +107,8 @@ public class RepositoryConfig {
     @Override
     public String toString() {
         return "RepositoryConfig{" + "repositoryKey='" + repositoryKey + '\'' + ", repositoryDepositConfig=" +
-                repositoryDepositConfig + ", transportConfig=" + transportConfig +
-                ", assemblerConfig=" + assemblerConfig + '}';
+               repositoryDepositConfig + ", transportConfig=" + transportConfig +
+               ", assemblerConfig=" + assemblerConfig + '}';
     }
 
 }

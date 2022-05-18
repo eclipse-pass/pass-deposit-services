@@ -25,17 +25,15 @@ public class SharedResourceUtilTest {
 
     @Test
     public void findByFullResourceName() throws Exception {
-        SharedResourceUtil.findStreamByName
-                ("org/dataconservancy/pass/deposit/messaging/support/swordv2/AtomStatusParser-archived.xml");
+        SharedResourceUtil.findStreamByName("org/dataconservancy/pass/deposit/messaging/support" +
+                                            "/swordv2/AtomStatusParser-archived" + ".xml");
     }
 
     @Test
     public void findByFullResourceNameWithClass() throws Exception {
-        SharedResourceUtil.findStreamByName
-                ("org/dataconservancy/pass/deposit/messaging/support/swordv2/AtomStatusParser-archived.xml",
-                        AtomResources.class);
+        SharedResourceUtil.findStreamByName("org/dataconservancy/pass/deposit/messaging/support" +
+                                            "/swordv2/AtomStatusParser-archived" + ".xml", AtomResources.class);
     }
-
 
     @Test(expected = AssertionError.class)
     public void findByResourceName() throws Exception {

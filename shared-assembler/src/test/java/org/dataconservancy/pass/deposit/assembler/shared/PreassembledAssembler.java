@@ -15,14 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import com.google.gson.JsonObject;
-import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.springframework.stereotype.Component;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +23,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+
+import com.google.gson.JsonObject;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.stereotype.Component;
 
 /**
  * Used in tests to bypass the entire assembly of a package.  Instead, supply a pre-built package along with a
@@ -221,6 +221,8 @@ public class PreassembledAssembler implements Assembler {
                                 return "application/gzip";
                             case BZIP2:
                                 return "application/bzip2";
+                            default:
+                                break;
                         }
 
                         switch (archive()) {
@@ -228,6 +230,8 @@ public class PreassembledAssembler implements Assembler {
                                 return "application/zip";
                             case TAR:
                                 return "application/tar";
+                            default:
+                                break;
                         }
 
                         return null;
@@ -269,9 +273,8 @@ public class PreassembledAssembler implements Assembler {
                             return Compression.OPTS.ZIP;
                         }
 
-
                         if (packageFile.getName().endsWith(".bz2") || packageFile.getName().endsWith("bzip2")
-                                || packageFile.getName().endsWith(".bzip")) {
+                            || packageFile.getName().endsWith(".bzip")) {
                             return Compression.OPTS.BZIP2;
                         }
 

@@ -29,7 +29,8 @@ public class IntermediateSubmissionStatusPolicy implements Policy<Submission.Agg
     private StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator;
 
     @Autowired
-    public IntermediateSubmissionStatusPolicy(StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
+    public IntermediateSubmissionStatusPolicy(
+        StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
         this.submissionStatusEvaluator = submissionStatusEvaluator;
     }
 

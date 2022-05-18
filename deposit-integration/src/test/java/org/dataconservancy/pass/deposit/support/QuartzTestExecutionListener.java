@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.support;
 
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -23,9 +26,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
-
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
 
 /**
  * Conditionally disables Quartz jobs prior to running an integration test, and unconditionally stops Quartz jobs after
@@ -55,6 +55,7 @@ import static java.lang.System.identityHashCode;
  * because it is automatically configured in {@code META-INF/spring.factories}; that is, it is considered a
  * <em>default</em> {@code TestExecutionListener}.
  * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
@@ -81,11 +82,11 @@ public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
         if (!quartzScheduler.isRunning()) {
             if (isEnabled) {
                 LOG.debug("Starting {} ({}): the scheduler is not running, and it is enabled ({}={})",
-                        classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
-                    quartzScheduler.start();
+                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+                quartzScheduler.start();
             } else {
                 LOG.debug("{} ({}) taking no action: the scheduler is not running, and it is disabled ({}={})",
-                        classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+                          classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
             }
 
             return;
@@ -93,11 +94,11 @@ public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
 
         if (isDisabled) {
             LOG.debug("Stopping {} ({}): the scheduler is running, and it is disabled ({}={})",
-                    classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
             quartzScheduler.stop();
         } else {
             LOG.debug("{} ({}) taking no action: the scheduler is running, and it is enabled ({}={})",
-                    classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
+                      classString(quartzScheduler), classString(appCtx), DISABLED, env.getProperty(DISABLED));
         }
     }
 
@@ -114,7 +115,7 @@ public class QuartzTestExecutionListener extends AbstractTestExecutionListener {
 
         if (quartzScheduler.isRunning()) {
             LOG.debug("Stopping the {} ({}) so the running jobs do not act on future tests.",
-                    classString(quartzScheduler), classString(appCtx));
+                      classString(quartzScheduler), classString(appCtx));
             quartzScheduler.stop();
         }
     }

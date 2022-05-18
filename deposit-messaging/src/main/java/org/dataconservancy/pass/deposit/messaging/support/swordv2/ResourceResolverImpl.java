@@ -15,16 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
-import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
-import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import static java.lang.String.format;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver.ERR;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -35,8 +27,16 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 
-import static java.lang.String.format;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusResolver.ERR;
+import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
+import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -67,33 +67,33 @@ public class ResourceResolverImpl implements ResourceResolver {
             }
         } else if (uri.getScheme().startsWith("http")) {
             resource = matchRealm(uri.toString(),
-                    repositoryConfig.getTransportConfig().getAuthRealms())
-                    .map(realm -> {
-                        try {
-                            if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
-                                if (followRedirects) {
-                                    return new AuthenticatedResource(isRedirect(uri.toURL()).orElse(uri.toURL()),
-                                            realm.getUsername(), realm.getPassword());
-                                } else {
-                                    return new AuthenticatedResource(uri.toURL(),
-                                            realm.getUsername(), realm.getPassword());
-                                }
+                                  repositoryConfig.getTransportConfig().getAuthRealms())
+                .map(realm -> {
+                    try {
+                        if (realm.getUsername() != null && realm.getUsername().trim().length() > 0) {
+                            if (followRedirects) {
+                                return new AuthenticatedResource(isRedirect(uri.toURL()).orElse(uri.toURL()),
+                                                                 realm.getUsername(), realm.getPassword());
                             } else {
-                                return new UrlResource(uri.toURL());
+                                return new AuthenticatedResource(uri.toURL(),
+                                                                 realm.getUsername(), realm.getPassword());
                             }
-                        } catch (MalformedURLException e) {
-                            String msg = format(ERR, uri, "Statement URI could not be parsed as URL");
-                            throw new IllegalArgumentException(msg, e);
-                        }
-                    }).orElseGet(() -> {
-                        LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", uri);
-                        try {
+                        } else {
                             return new UrlResource(uri.toURL());
-                        } catch (MalformedURLException e) {
-                            String msg = format(ERR, uri, "Statement URI could not be parsed as URL");
-                            throw new IllegalArgumentException(msg, e);
                         }
-                    });
+                    } catch (MalformedURLException e) {
+                        String msg = format(ERR, uri, "Statement URI could not be parsed as URL");
+                        throw new IllegalArgumentException(msg, e);
+                    }
+                }).orElseGet(() -> {
+                    LOG.warn("Null AuthRealm used for Atom Statement URI '{}'", uri);
+                    try {
+                        return new UrlResource(uri.toURL());
+                    } catch (MalformedURLException e) {
+                        String msg = format(ERR, uri, "Statement URI could not be parsed as URL");
+                        throw new IllegalArgumentException(msg, e);
+                    }
+                });
         } else if (uri.getScheme().startsWith("jar")) {
             try {
                 resource = new UrlResource(uri);
@@ -113,11 +113,11 @@ public class ResourceResolverImpl implements ResourceResolver {
         }
 
         return authRealms
-                .stream()
-                .filter(realm -> realm instanceof BasicAuthRealm)
-                .map(realm -> (BasicAuthRealm) realm)
-                .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
-                .max(Comparator.comparingInt(realm -> realm.getBaseUrl().length()));
+            .stream()
+            .filter(realm -> realm instanceof BasicAuthRealm)
+            .map(realm -> (BasicAuthRealm) realm)
+            .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
+            .max(Comparator.comparingInt(realm -> realm.getBaseUrl().length()));
     }
 
     /**
@@ -141,7 +141,7 @@ public class ResourceResolverImpl implements ResourceResolver {
 
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection)original.openConnection();
+            conn = (HttpURLConnection) original.openConnection();
         } catch (IOException e) {
             LOG.warn("Unable to determine if {} would be redirected, connection could not be opened.", original, e);
             return Optional.empty();
@@ -151,9 +151,10 @@ public class ResourceResolverImpl implements ResourceResolver {
             conn.setRequestMethod("HEAD");
             int code = conn.getResponseCode();
             if (code >= 300 && code <= 307 && code != 306 &&
-                    code != HttpURLConnection.HTTP_NOT_MODIFIED) {
+                code != HttpURLConnection.HTTP_NOT_MODIFIED) {
                 URL location = URI.create(conn.getHeaderField("Location")).toURL();
-                LOG.debug("{} will redirect {} to {}", AtomFeedStatusResolver.class.getSimpleName(), original, location);
+                LOG.debug("{} will redirect {} to {}", AtomFeedStatusResolver.class.getSimpleName(), original,
+                          location);
                 return Optional.of(location);
             }
         } catch (IOException e) {

@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import org.swordapp.client.SWORDClient;
-
 import java.util.Map;
+
+import org.swordapp.client.SWORDClient;
 
 /**
  * Creates, and optionally configures, {@link SWORDClient} instances for use.

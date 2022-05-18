@@ -16,9 +16,9 @@
 
 package org.dataconservancy.pass.deposit.transport;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-
 import java.util.Map;
+
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
  * Represents an open connection, or the promise of a successful connection, with a service or system that will accept
@@ -43,7 +43,7 @@ public interface TransportSession extends AutoCloseable {
      * </p>
      *
      * @param packageStream the package and package metadata
-     * @param metadata transport-related metadata, or any "extra" package metadata
+     * @param metadata      transport-related metadata, or any "extra" package metadata
      * @return a response indicating success or failure of the transfer
      */
     TransportResponse send(PackageStream packageStream, Map<String, String> metadata);

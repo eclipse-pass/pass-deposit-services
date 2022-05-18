@@ -14,37 +14,38 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.dataconservancy.pass.deposit</groupId>
-        <artifactId>deposit-parent</artifactId>
-        <version>1.1.0-3.5-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.dataconservancy.pass.deposit</groupId>
+    <artifactId>deposit-parent</artifactId>
+    <version>1.1.0-3.5-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>transport-api</artifactId>
-    <name>Transport API</name>
+  <artifactId>transport-api</artifactId>
+  <name>Transport API</name>
 
-    <dependencies>
+  <dependencies>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>assembler-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>assembler-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass</groupId>
-            <artifactId>pass-model</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass</groupId>
+      <artifactId>pass-model</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
 
-    </dependencies>
+  </dependencies>
 
 </project>

@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalDepositStatus;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.policy.Policy;
 import org.dataconservancy.pass.model.Deposit;
@@ -27,13 +34,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalDepositStatus;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests insuring that the Suppliers created by {@link DepositMessagingTestUtil} are congruent with the concrete

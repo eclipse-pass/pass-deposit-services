@@ -16,6 +16,15 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.MetadataBuilder;
@@ -32,25 +41,17 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.web.util.UriUtils;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.buildMetadata;
-
 /**
  * Abstract assembler implementation, which provides an implementation of {@link Assembler#assemble(
- * DepositSubmission, Map)} and {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link
+ *DepositSubmission, Map)} and {@link #resolveCustodialResources(List)}.  Sub-classes are expected to implement {@link
  * #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)}.
  */
 public abstract class AbstractAssembler implements Assembler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractAssembler.class);
 
-    private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to a Spring Resource type.";
+    private static final String ERR_MAPPING_LOCATION = "Unable to resolve the location of a submitted file ('%s') to " +
+                                                       "a Spring Resource type.";
 
     private static final String FILE_PREFIX = "file:";
 
@@ -92,7 +93,8 @@ public abstract class AbstractAssembler implements Assembler {
 
     /**
      * This abstract implementation will resolve the custodial content of the package as a {@code List} of
-     * {@link DepositFileResource}s, then invoke {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)
+     * {@link DepositFileResource}s, then invoke
+     * {@link #createPackageStream(DepositSubmission, List, MetadataBuilder, ResourceBuilderFactory, Map)
      * createPackageStream(...)}, which accepts the {@code DepositFileResource}s for inclusion in the returned {@link
      * PackageStream}.
      * <p>
@@ -101,7 +103,7 @@ public abstract class AbstractAssembler implements Assembler {
      * </p>
      *
      * @param submission the custodial content to be streamed by the returned {@code PackageStream}
-     * @param options the options used by subclasses when creating the package
+     * @param options    the options used by subclasses when creating the package
      * @return a PackageStream ready to be {@link PackageStream#open() opened}
      */
     @Override
@@ -131,14 +133,15 @@ public abstract class AbstractAssembler implements Assembler {
      * package-specific metadata are <em>not</em> included as {@code custodialResources}.
      * </p>
      *
-     * @param submission the submission of content and metadata, typically derived from the {@link SubmissionBuilder
-     *                   submission builder API}
+     * @param submission         the submission of content and metadata, typically derived from the
+     * {@link SubmissionBuilder
+     *                           submission builder API}
      * @param custodialResources the custodial content to be included in the returned {@code PackageStream}
-     * @param mdb the interface for adding metadata describing the {@code PackageStream}
-     * @param rbf the interface for adding metadata for individual resources in the package stream
-     * @param options the options used by implementations when building the {@code PackageStream}
+     * @param mdb                the interface for adding metadata describing the {@code PackageStream}
+     * @param rbf                the interface for adding metadata for individual resources in the package stream
+     * @param options            the options used by implementations when building the {@code PackageStream}
      * @return the {@code PackageStream} including the custodial content and implementation-specific metadata, ready to
-     *         be {@link PackageStream#open() opened} by the caller
+     * be {@link PackageStream#open() opened} by the caller
      */
     protected abstract PackageStream createPackageStream(DepositSubmission submission,
                                                          List<DepositFileResource> custodialResources,
@@ -166,73 +169,78 @@ public abstract class AbstractAssembler implements Assembler {
      *
      * @param manifest a {@code List} of the custodial content to be assembled into a package
      * @return a Spring {@code DepositFileResource} for each entry in the manifest; entries in the returned {@code List}
-     *         are expected to {@link DepositFileResource#getInputStream() resolve} to byte streams
+     * are expected to {@link DepositFileResource#getInputStream() resolve} to byte streams
      */
     protected List<DepositFileResource> resolveCustodialResources(List<DepositFile> manifest) {
         // Locate byte streams containing uploaded manuscript and any supplement data
         // essentially, the custodial content of the package (i.e. excluding package-specific
         // metadata such as bagit tag files, or mets xml files)
         return manifest
-                .stream()
-                .map(DepositFileResource::new)
-                .peek(dfr -> {
+            .stream()
+            .map(DepositFileResource::new)
+            .peek(dfr -> {
+                try {
+                    LOG.trace("Processing DepositFileResource:" +
+                              "\n\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'",
+                              "resource", dfr.getResource(),
+                              "resource.URI", dfr.getResource() != null ? dfr.getResource().getURI() : null,
+                              "depositFile", dfr.getDepositFile(),
+                              "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
+                              "depositFile.label",
+                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
+                              "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
+                              "depositFile.location",
+                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
+                } catch (IOException e) {
+                    LOG.trace("Caught exception processing DepositFileResource:" +
+                              "\n\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'" +
+                              "\n\t\t{}: '{}'",
+                              "resource", dfr.getResource(),
+                              "resource.URI", dfr.getResource() != null ? "Error getting URI: " + e.getMessage() : null,
+                              "depositFile", dfr.getDepositFile(),
+                              "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
+                              "depositFile.label",
+                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
+                              "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
+                              "depositFile.location",
+                              dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null, e);
+                }
+            })
+            .peek(dfr -> {
+                String location = dfr.getDepositFile().getLocation();
+                Resource delegateResource = null;
+
+                if (location.startsWith(FILE_PREFIX)) {
                     try {
-                        LOG.trace("Processing DepositFileResource:" +
-                                "\n\t{}: '{}'" +
-                                "\n\t\t{}: '{}'" +
-                                "\n\t{}: '{}'" +
-                                "\n\t\t{}: '{}'" +
-                                "\n\t\t{}: '{}'" +
-                                "\n\t\t{}: '{}'" +
-                                "\n\t\t{}: '{}'",
-                                "resource", dfr.getResource(),
-                                "resource.URI", dfr.getResource() != null ? dfr.getResource().getURI() : null,
-                                "depositFile", dfr.getDepositFile(),
-                                "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
-                                "depositFile.label", dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
-                                "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
-                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null);
-                    } catch (IOException e) {
-                        LOG.trace("Caught exception processing DepositFileResource:" +
-                                        "\n\t{}: '{}'" +
-                                        "\n\t\t{}: '{}'" +
-                                        "\n\t{}: '{}'" +
-                                        "\n\t\t{}: '{}'" +
-                                        "\n\t\t{}: '{}'" +
-                                        "\n\t\t{}: '{}'" +
-                                        "\n\t\t{}: '{}'",
-                                "resource", dfr.getResource(),
-                                "resource.URI", dfr.getResource() != null ? "Error getting URI: " + e.getMessage() : null,
-                                "depositFile", dfr.getDepositFile(),
-                                "depositFile.name", dfr.getDepositFile() != null ? dfr.getDepositFile().getName() : null,
-                                "depositFile.label", dfr.getDepositFile() != null ? dfr.getDepositFile().getLabel() : null,
-                                "depositFile.type", dfr.getDepositFile() != null ? dfr.getDepositFile().getType() : null,
-                                "depositFile.location", dfr.getDepositFile() != null ? dfr.getDepositFile().getLocation() : null, e);
+                        delegateResource = new UrlResource(location);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException("Unable to create URL resource for file location '" + location
+                                                   + "': " + e.getMessage(), e);
                     }
-                })
-                .peek(dfr -> {
-                    String location = dfr.getDepositFile().getLocation();
-                    Resource delegateResource = null;
+                } else if (location.startsWith(CLASSPATH_PREFIX) ||
+                           location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
+                    if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
+                        delegateResource = new ClassPathResource(
+                            location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
+                    } else {
 
-                    if (location.startsWith(FILE_PREFIX)) {
-                        try {
-                            delegateResource = new UrlResource(location);
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException("Unable to create URL resource for file location '" + location
-                                    + "': " + e.getMessage(), e);
-                        }
-                    } else if (location.startsWith(CLASSPATH_PREFIX) ||
-                            location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
-                        if (location.startsWith(WILDCARD_CLASSPATH_PREFIX)) {
-                            delegateResource = new ClassPathResource(location.substring(WILDCARD_CLASSPATH_PREFIX.length()));
-                        } else {
-
-                            delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
-                        }
-                    } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
-                        delegateResource = new EncodingClassPathResource(
-                                location.substring(ENCODED_CLASSPATH_PREFIX.length()));
-                    } else
+                        delegateResource = new ClassPathResource(location.substring(CLASSPATH_PREFIX.length()));
+                    }
+                } else if (location.startsWith(ENCODED_CLASSPATH_PREFIX)) {
+                    delegateResource = new EncodingClassPathResource(
+                        location.substring(ENCODED_CLASSPATH_PREFIX.length()));
+                } else
 
                     // Defend against callers that have not specified Fedora auth creds, or repositories that
                     // do not require authentication
@@ -241,13 +249,14 @@ public abstract class AbstractAssembler implements Assembler {
                         if (fedoraUser != null) {
                             try {
                                 LOG.trace("Returning AuthenticatedResource for {}", location);
-                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser, fedoraPassword);
+                                delegateResource = new AuthenticatedResource(new URL(location), fedoraUser,
+                                                                             fedoraPassword);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
                         }
                     } else if (location.startsWith(HTTP_PREFIX) || location.startsWith(HTTPS_PREFIX) ||
-                            location.startsWith(JAR_PREFIX)) {
+                               location.startsWith(JAR_PREFIX)) {
                         try {
                             delegateResource = new UrlResource(location);
                         } catch (MalformedURLException e) {
@@ -258,14 +267,14 @@ public abstract class AbstractAssembler implements Assembler {
                         delegateResource = new FileSystemResource(location);
                     }
 
-                    if (delegateResource == null) {
-                        throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
-                    }
+                if (delegateResource == null) {
+                    throw new RuntimeException(String.format(ERR_MAPPING_LOCATION, location));
+                }
 
-                    dfr.setResource(delegateResource);
+                dfr.setResource(delegateResource);
 
-                })
-                .collect(Collectors.toList());
+            })
+            .collect(Collectors.toList());
     }
 
     /**

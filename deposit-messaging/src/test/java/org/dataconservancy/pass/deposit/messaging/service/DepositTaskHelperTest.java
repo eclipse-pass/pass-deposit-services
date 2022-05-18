@@ -15,6 +15,27 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomDepositStatusExcept;
+import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
+import static org.hamcrest.core.Is.isA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
@@ -34,36 +55,12 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.springframework.core.task.TaskExecutor;
-
-import java.net.URI;
-import java.util.UUID;
-
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomDepositStatusExcept;
-import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
-import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -108,7 +105,7 @@ public class DepositTaskHelperTest {
         repositories = mock(Repositories.class);
 
         underTest = new DepositTaskHelper(passClient, taskExecutor, intermediateDepositStatusPolicy,
-                terminalDepositStatusPolicy, cri, repositories);
+                                          terminalDepositStatusPolicy, cri, repositories);
 
         s = mock(Submission.class);
         ds = mock(DepositSubmission.class);
@@ -158,7 +155,8 @@ public class DepositTaskHelperTest {
         Repositories repositories = newRepositoriesWithConfigFor(key);
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for key '" + key + "'"));
+                         .orElseThrow(
+                             () -> new RuntimeException("Missing expected repository config for key '" + key + "'"));
     }
 
     @Test
@@ -168,7 +166,8 @@ public class DepositTaskHelperTest {
         Repositories repositories = newRepositoriesWithConfigFor(uri);
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for uri '" + uri + "'"));
+                         .orElseThrow(
+                             () -> new RuntimeException("Missing expected repository config for uri '" + uri + "'"));
     }
 
     @Test
@@ -179,7 +178,8 @@ public class DepositTaskHelperTest {
         Repositories repositories = newRepositoriesWithConfigFor(path);
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '" + path + "'"));
+                         .orElseThrow(
+                             () -> new RuntimeException("Missing expected repository config for path '" + path + "'"));
     }
 
     @Test
@@ -189,17 +189,20 @@ public class DepositTaskHelperTest {
         Repositories repositories = newRepositoriesWithConfigFor("a-repository");
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path 'a-repository'"));
+                         .orElseThrow(
+                             () -> new RuntimeException("Missing expected repository config for path 'a-repository'"));
 
         repositories = newRepositoriesWithConfigFor("/a-repository");
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '/a-repository'"));
+                         .orElseThrow(
+                             () -> new RuntimeException("Missing expected repository config for path '/a-repository'"));
 
         repositories = newRepositoriesWithConfigFor("/fcrepo/repositories/a-repository");
 
         DepositTaskHelper.lookupConfig(repo, repositories)
-                .orElseThrow(() -> new RuntimeException("Missing expected repository config for path '/fcrepo/repositories/a-repository'"));
+                         .orElseThrow(() -> new RuntimeException(
+                             "Missing expected repository config for path '/fcrepo/repositories/a-repository'"));
     }
 
     /**
@@ -219,8 +222,8 @@ public class DepositTaskHelperTest {
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
-                // this doesn't really matter since the status policy is mocked to always return true
-                randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            // this doesn't really matter since the status policy is mocked to always return true
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(d.getDepositStatusRef()).thenReturn(randomUri().toString());
         when(d.getRepository()).thenReturn(repoUri);
         when(d.getRepositoryCopy()).thenReturn(repoCopyUri);
@@ -257,8 +260,8 @@ public class DepositTaskHelperTest {
     public void depositCriFuncPreconditionFailDepositStatusRef() {
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
-                // this doesn't really matter since the status policy is mocked to always return true
-                randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            // this doesn't really matter since the status policy is mocked to always return true
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
 
         // don't need any other mocking, because null is returned by default for the status uri
         // use Mockito.verify to insure this
@@ -283,8 +286,8 @@ public class DepositTaskHelperTest {
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
-                // this doesn't really matter since the status policy is mocked to always return true
-                randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            // this doesn't really matter since the status policy is mocked to always return true
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
 
         assertFalse(DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient).test(d));
@@ -314,8 +317,8 @@ public class DepositTaskHelperTest {
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
-                // this doesn't really matter since the status policy is mocked to always return true
-                randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            // this doesn't really matter since the status policy is mocked to always return true
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
         when(d.getRepository()).thenReturn(repoUri);
 
@@ -350,8 +353,8 @@ public class DepositTaskHelperTest {
 
         when(intermediateDepositStatusPolicy.test(any())).thenReturn(true);
         when(d.getDepositStatus()).thenReturn(
-                // this doesn't really matter since the status policy is mocked to always return true
-                randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
+            // this doesn't really matter since the status policy is mocked to always return true
+            randomDepositStatusExcept(DepositStatus.ACCEPTED, DepositStatus.REJECTED));
         when(d.getDepositStatusRef()).thenReturn(statusRef.toString());
         when(d.getRepository()).thenReturn(repoUri);
         when(d.getRepositoryCopy()).thenReturn(repoCopyUri);

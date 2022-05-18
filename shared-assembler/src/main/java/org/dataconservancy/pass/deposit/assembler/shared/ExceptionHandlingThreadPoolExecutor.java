@@ -32,7 +32,8 @@ public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
 
     private BiConsumer<Runnable, Throwable> exceptionHandler;
 
-    public ExceptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    public ExceptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
+                                               BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
 
@@ -43,12 +44,14 @@ public class ExceptionHandlingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     public ExceptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
-                                               TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+                                               TimeUnit unit, BlockingQueue<Runnable> workQueue,
+                                               RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
     }
 
     public ExceptionHandlingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
-                                               TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+                                               TimeUnit unit, BlockingQueue<Runnable> workQueue,
+                                               ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 

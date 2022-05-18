@@ -19,6 +19,7 @@
  *
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html">SWORDv2 Profile</a>
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORDv2 Profile §11</a>
- * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
+ * @see
+ * <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;

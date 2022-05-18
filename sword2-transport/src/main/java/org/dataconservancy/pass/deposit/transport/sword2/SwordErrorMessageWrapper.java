@@ -62,7 +62,7 @@ class SwordErrorMessageWrapper extends Exception {
      * {@code SWORDError} is available via {@link #getCause()} or {@link #getSwordError()}.
      *
      * @param message the message to be returned by {@link Throwable#getMessage()}
-     * @param cause the {@code SWORDError} to be wrapped
+     * @param cause   the {@code SWORDError} to be wrapped
      */
     SwordErrorMessageWrapper(String message, Throwable cause) {
         super(message, cause);
@@ -79,20 +79,20 @@ class SwordErrorMessageWrapper extends Exception {
             throw new IllegalArgumentException("Cause must be an instance of SWORDError");
         }
 
-        this.wrapped = (SWORDError)cause;
+        this.wrapped = (SWORDError) cause;
     }
 
     /**
      * Use the supplied {@code message} as this {@link Throwable#getMessage() Throwable's message}.  The wrapped
      * {@code SWORDError} is available via {@link #getCause()} or {@link #getSwordError()}.
      *
-     * @param message the message to be returned by {@link Throwable#getMessage()}
-     * @param cause the {@code SWORDError} to be wrapped
+     * @param message            the message to be returned by {@link Throwable#getMessage()}
+     * @param cause              the {@code SWORDError} to be wrapped
      * @param enableSuppression
      * @param writableStackTrace
      */
     SwordErrorMessageWrapper(String message, Throwable cause, boolean enableSuppression,
-                                    boolean writableStackTrace) {
+                             boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         if (message == null) {
             throw new IllegalArgumentException("Exception message must not be null.");
@@ -106,7 +106,7 @@ class SwordErrorMessageWrapper extends Exception {
             throw new IllegalArgumentException("Cause must be an instance of SWORDError");
         }
 
-        this.wrapped = (SWORDError)cause;
+        this.wrapped = (SWORDError) cause;
     }
 
     SWORDError getSwordError() {

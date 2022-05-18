@@ -15,12 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.model;
 
-import com.google.gson.JsonObject;
-import org.joda.time.DateTime;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+
+import com.google.gson.JsonObject;
+import org.joda.time.DateTime;
 
 /**
  * Encapsulates a submission to the target system, including the manuscript and supplement files, metadata describing
@@ -135,12 +135,17 @@ public class DepositSubmission {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         DepositSubmission that = (DepositSubmission) o;
-        return Objects.equals(id, that.id) && Objects.equals(submissionDate, that.submissionDate) && Objects.equals(manifest, that.manifest) && Objects.equals(metadata, that.metadata) && Objects.equals(files, that.files) && Objects.equals(name, that.name) && Objects.equals(submissionMeta, that.submissionMeta);
+        return Objects.equals(id, that.id) && Objects.equals(submissionDate, that.submissionDate)
+               && Objects.equals(manifest, that.manifest) && Objects.equals(metadata, that.metadata)
+               && Objects.equals(files, that.files) && Objects.equals(name, that.name)
+               && Objects.equals(submissionMeta, that.submissionMeta);
     }
 
     @Override
@@ -150,6 +155,11 @@ public class DepositSubmission {
 
     @Override
     public String toString() {
-        return new StringJoiner("\n  ", DepositSubmission.class.getSimpleName() + "[", "]").add("id='" + id + "'").add("submissionDate=" + submissionDate).add("manifest=" + manifest).add("metadata=" + metadata).add("files=" + files).add("name='" + name + "'").add("submissionMeta=" + submissionMeta).toString();
+        return new StringJoiner("\n  ", DepositSubmission.class.getSimpleName()
+            + "[", "]").add("id='" + id + "'").add("submissionDate="
+            + submissionDate).add("manifest=" + manifest).add("metadata=" + metadata)
+            .add("files=" + files)
+            .add("name='" + name + "'")
+            .add("submissionMeta=" + submissionMeta).toString();
     }
 }

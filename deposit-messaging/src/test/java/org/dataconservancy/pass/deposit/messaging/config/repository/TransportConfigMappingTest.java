@@ -16,88 +16,96 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
     private static final String MINIMAL_SWORD_TRANSPORT_CONFIG = "" +
-            "{\n" +
-            "      \"protocol-binding\": {\n" +
-            "        \"protocol\": \"SWORDv2\"\n" +
-            "      }\n" +
-            "\n" +
-            "    }";
+                                                                 "{\n" +
+                                                                 "      \"protocol-binding\": {\n" +
+                                                                 "        \"protocol\": \"SWORDv2\"\n" +
+                                                                 "      }\n" +
+                                                                 "\n" +
+                                                                 "    }";
 
     private static final String MINIMAL_FTP_TRANSPORT_CONFIG = "" +
-            "{\n" +
-            "      \"protocol-binding\": {\n" +
-            "        \"protocol\": \"ftp\"\n" +
-            "      }\n" +
-            "\n" +
-            "    }";
+                                                               "{\n" +
+                                                               "      \"protocol-binding\": {\n" +
+                                                               "        \"protocol\": \"ftp\"\n" +
+                                                               "      }\n" +
+                                                               "\n" +
+                                                               "    }";
 
     private static final String MULTIPLE_REALMS_TRANSPORT_CONFIG = "" +
-            "{\n" +
-            "\n" +
-            "      \"auth-realms\": [\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://jscholarship.library.jhu.edu/\"\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://dspace-prod.mse.jhu.edu:8080/\"\n" +
-            "        }\n" +
-            "      ]\n" +
-            "}\n";
+                                                                   "{\n" +
+                                                                   "\n" +
+                                                                   "      \"auth-realms\": [\n" +
+                                                                   "        {\n" +
+                                                                   "          \"mech\": \"basic\",\n" +
+                                                                   "          \"username\": \"user\",\n" +
+                                                                   "          \"password\": \"pass\",\n" +
+                                                                   "          \"url\": \"https://jscholarship.library" +
+                                                                   ".jhu.edu/\"\n" +
+                                                                   "        },\n" +
+                                                                   "        {\n" +
+                                                                   "          \"mech\": \"basic\",\n" +
+                                                                   "          \"username\": \"user\",\n" +
+                                                                   "          \"password\": \"pass\",\n" +
+                                                                   "          \"url\": \"https://dspace-prod.mse.jhu" +
+                                                                   ".edu:8080/\"\n" +
+                                                                   "        }\n" +
+                                                                   "      ]\n" +
+                                                                   "}\n";
 
     private static final String TRANSPORT_CONFIG_JSON = "" +
-            "{\n" +
-            "\n" +
-            "      \"auth-realms\": [\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://jscholarship.library.jhu.edu/\"\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://dspace-prod.mse.jhu.edu:8080/\"\n" +
-            "        }\n" +
-            "      ],\n" +
-            "\n" +
-            "      \"protocol-binding\": {\n" +
-            "        \"protocol\": \"SWORDv2\",\n" +
-            "        \"username\": \"sworduser\",\n" +
-            "        \"password\": \"swordpass\",\n" +
-            "        \"service-doc\": \"http://${dspace.host}:${dspace.port}/swordv2/servicedocument\",\n" +
-            "        \"default-collection\": \"http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
-            "        \"on-behalf-of\": null,\n" +
-            "        \"deposit-receipt\": true,\n" +
-            "        \"user-agent\": \"pass-deposit/x.y.z\",\n" +
-            "        \"collection-hints\": {\n" +
-            "          \"covid\": \"${dspace.baseuri}/swordv2/collection/${dspace.covid.handle}\",\n" +
-            "          \"nobel\": \"${dspace.baseuri}/swordv2/collection/${dspace.nobel.handle}\"\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }";
+                                                        "{\n" +
+                                                        "\n" +
+                                                        "      \"auth-realms\": [\n" +
+                                                        "        {\n" +
+                                                        "          \"mech\": \"basic\",\n" +
+                                                        "          \"username\": \"user\",\n" +
+                                                        "          \"password\": \"pass\",\n" +
+                                                        "          \"url\": \"https://jscholarship.library.jhu" +
+                                                        ".edu/\"\n" +
+                                                        "        },\n" +
+                                                        "        {\n" +
+                                                        "          \"mech\": \"basic\",\n" +
+                                                        "          \"username\": \"user\",\n" +
+                                                        "          \"password\": \"pass\",\n" +
+                                                        "          \"url\": \"https://dspace-prod.mse.jhu" +
+                                                        ".edu:8080/\"\n" +
+                                                        "        }\n" +
+                                                        "      ],\n" +
+                                                        "\n" +
+                                                        "      \"protocol-binding\": {\n" +
+                                                        "        \"protocol\": \"SWORDv2\",\n" +
+                                                        "        \"username\": \"sworduser\",\n" +
+                                                        "        \"password\": \"swordpass\",\n" +
+                                                        "        \"service-doc\": \"http://${dspace.host}:${dspace" +
+                                                        ".port}/swordv2/servicedocument\",\n" +
+                                                        "        \"default-collection\": \"http://${dspace" +
+                                                        ".host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
+                                                        "        \"on-behalf-of\": null,\n" +
+                                                        "        \"deposit-receipt\": true,\n" +
+                                                        "        \"user-agent\": \"pass-deposit/x.y.z\",\n" +
+                                                        "        \"collection-hints\": {\n" +
+                                                        "          \"covid\": \"${dspace" +
+                                                        ".baseuri}/swordv2/collection/${dspace.covid.handle}\",\n" +
+                                                        "          \"nobel\": \"${dspace" +
+                                                        ".baseuri}/swordv2/collection/${dspace.nobel.handle}\"\n" +
+                                                        "        }\n" +
+                                                        "      }\n" +
+                                                        "    }";
 
     @Test
     public void mapMinimalSwordTransportConfig() throws IOException {
@@ -163,7 +171,7 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
         TransportConfig config = mapper.readValue(TRANSPORT_CONFIG_JSON, TransportConfig.class);
 
         assertRoundTrip(config, TransportConfig.class);
-        Map<String, String> hints = ((SwordV2Binding)config.getProtocolBinding()).getCollectionHints();
+        Map<String, String> hints = ((SwordV2Binding) config.getProtocolBinding()).getCollectionHints();
         assertTrue(hints.containsKey("covid"));
         assertTrue(hints.containsKey("nobel"));
         assertEquals("${dspace.baseuri}/swordv2/collection/${dspace.covid.handle}", hints.get("covid"));
@@ -190,7 +198,7 @@ public class TransportConfigMappingTest extends AbstractJacksonMappingTest {
 
         String covid = "https://jscholarship.library.jhu.edu/handle/1774.2/58585";
         String nobel = "https://jscholarship.library.jhu.edu/handle/1774.2/33532";
-        Map<String, String> hints = new HashMap<String, String>(){
+        Map<String, String> hints = new HashMap<String, String>() {
             {
                 put("covid", covid);
                 put("nobel", nobel);

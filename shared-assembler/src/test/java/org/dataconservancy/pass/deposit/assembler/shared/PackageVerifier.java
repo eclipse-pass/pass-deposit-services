@@ -15,12 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.io.DirectoryWalker;
-import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.model.DepositFile;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -32,9 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.DirectoryWalker;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates re-usable logic for verifying an exploded package on the filesystem.
@@ -46,10 +46,10 @@ public interface PackageVerifier {
     Logger LOG = LoggerFactory.getLogger(PackageVerifier.class);
 
     String DOUBLE_CHECK_MSG = "Double-check the custodial FileFilter supplied to this method, and manually examine " +
-            "the package directory for any discrepancies.";
+                              "the package directory for any discrepancies.";
 
     String DOUBLE_CHECK_MAPPER_MSG = "Double-check the 'custodialFilter' and 'packageFileMapper' supplied to this " +
-            "method, and manually examine the package directory for any discrepancies";
+                                     "method, and manually examine the package directory for any discrepancies";
 
     /**
      * This is the primary method implemented by subclasses to verify that their {@link Assembler} created a proper
@@ -66,16 +66,17 @@ public interface PackageVerifier {
      * present and contains the correct content.
      * </p>
      *
-     * @param submission the submission containing custodial content that is contained in the package
+     * @param submission      the submission containing custodial content that is contained in the package
      * @param explodedPackage the exploded version of the package, including a reference to the original archive file
-     * @param options the options used when creating the package
+     * @param options         the options used when creating the package
      * @throws Exception if there are any errors verifying the exploded package
      */
     void verify(DepositSubmission submission, ExplodedPackage explodedPackage, Map<String, Object> options)
-            throws Exception;
+        throws Exception;
 
     /**
-     * Typically invoked by subclasses from their implementation of {@link #verify(DepositSubmission, ExplodedPackage, Map)}.  This
+     * Typically invoked by subclasses from their implementation of
+     * {@link #verify(DepositSubmission, ExplodedPackage, Map)}.  This
      * implementation insures that every file present in the submission is present in the extracted package, and that
      * every custodial file in the extracted package is present in the submission.
      * <p>
@@ -85,12 +86,12 @@ public interface PackageVerifier {
      * content.
      * </p>
      *
-     * @param submission the submission containing the custodial content packaged by this test
-     * @param packageDir the base directory of the exploded package created by this test
-     * @param custodialFilter identifies custodial files in the package (distinct from supplemental or
-     *         non-custodial content)
+     * @param submission        the submission containing the custodial content packaged by this test
+     * @param packageDir        the base directory of the exploded package created by this test
+     * @param custodialFilter   identifies custodial files in the package (distinct from supplemental or
+     *                          non-custodial content)
      * @param packageFileMapper maps the custodial file in the package back to the DepositFile in the
-     *         submission
+     *                          submission
      */
     default void verifyCustodialFiles(DepositSubmission submission, File packageDir, FileFilter custodialFilter,
                                       BiFunction<File, File, DepositFile> packageFileMapper) throws Exception {
@@ -131,11 +132,11 @@ public interface PackageVerifier {
         // Assert the expected number of *custodial* files in the extracted package equals the number of files actually
         // packaged
         assertTrue("No custodial files were detected in the package directory " + packageDir + ".  " +
-                DOUBLE_CHECK_MSG, custodialFiles.size() > 0);
+                   DOUBLE_CHECK_MSG, custodialFiles.size() > 0);
         assertEquals("The number of files in the submission (" + submission.getFiles().size() + ") does not " +
-                "equal the number of custodial files (" + custodialFiles.size() + ") found in the package " +
-                "directory " + packageDir + ".  " + DOUBLE_CHECK_MSG, submission.getFiles().size(),
-                custodialFiles.size());
+                     "equal the number of custodial files (" + custodialFiles.size() + ") found in the package " +
+                     "directory " + packageDir + ".  " + DOUBLE_CHECK_MSG, submission.getFiles().size(),
+                     custodialFiles.size());
 
         // Sanity check the size and contents of the depositFileMap.  Every DepositFile in the DepositSubmission should
         // be present in the map, and every DepositFile in the map should be present in the DepositSubmission.
@@ -145,30 +146,34 @@ public interface PackageVerifier {
 
         // Assert each custodial file in the DepositSubmission is present on the filesystem
         submission.getFiles().forEach(depositFile -> assertTrue("The custodial file from the submission (" +
-                depositFile.getName() + ") was not found in the exploded package under " + packageDir + ".  " +
-                DOUBLE_CHECK_MAPPER_MSG, lookup(depositFile, custodialMap).exists()));
+                                                                depositFile.getName() + ") was not found in the " +
+                                                                "exploded package under " + packageDir + ".  " +
+                                                                DOUBLE_CHECK_MAPPER_MSG,
+                                                                lookup(depositFile, custodialMap).exists()));
 
         // Each custodial file on the filesystem is present in the DepositSubmission
         custodialFiles.forEach(file -> assertTrue("A custodial file found inside the package ( " + file +
-                ") is not present in the submission.", custodialMap.containsKey(file)));
+                                                  ") is not present in the submission.",
+                                                  custodialMap.containsKey(file)));
     }
 
     /**
      * Retrieves the corresponding File on the filesystem for the supplied DepositFile.
      *
-     * @param df the DepositFile being looked up
+     * @param df  the DepositFile being looked up
      * @param map one-to-one map of DepositFiles to their corresponding location on the filesystem
      * @return the File corresponding to the DepositFile, never {@code null}
      * @throws RuntimeException if the corresponding File is not found
      */
     static File lookup(DepositFile df, Map<File, DepositFile> map) {
         Map.Entry<File, DepositFile> mapping = map
-                .entrySet()
-                .stream()
-                .filter((entry) -> entry.getValue() == df)
-                .findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing expected DepositFile " + df + " from the deposit file map."));
+            .entrySet()
+            .stream()
+            .filter((entry) -> entry.getValue() == df)
+            .findAny()
+            .orElseThrow(() ->
+                             new RuntimeException(
+                                 "Missing expected DepositFile " + df + " from the deposit file map."));
 
         return mapping.getKey();
     }

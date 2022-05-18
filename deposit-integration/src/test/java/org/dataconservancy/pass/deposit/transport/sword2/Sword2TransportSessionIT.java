@@ -16,52 +16,6 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
-import org.apache.abdera.model.Element;
-import org.apache.abdera.model.Link;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.input.BrokenInputStream;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.nihms.integration.BaseIT;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.swordapp.client.AuthCredentials;
-import org.swordapp.client.ClientConfiguration;
-import org.swordapp.client.DepositReceipt;
-import org.swordapp.client.ProtocolViolationException;
-import org.swordapp.client.SWORDClient;
-import org.swordapp.client.SWORDClientException;
-import org.swordapp.client.SWORDCollection;
-import org.swordapp.client.SWORDError;
-import org.swordapp.client.ServiceDocument;
-import org.swordapp.client.SwordIdentifier;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.security.MessageDigest;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 import static java.util.Base64.getEncoder;
@@ -79,6 +33,52 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.security.MessageDigest;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import org.apache.abdera.model.Element;
+import org.apache.abdera.model.Link;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.BrokenInputStream;
+import org.dataconservancy.nihms.integration.BaseIT;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.swordapp.client.AuthCredentials;
+import org.swordapp.client.ClientConfiguration;
+import org.swordapp.client.DepositReceipt;
+import org.swordapp.client.ProtocolViolationException;
+import org.swordapp.client.SWORDClient;
+import org.swordapp.client.SWORDClientException;
+import org.swordapp.client.SWORDCollection;
+import org.swordapp.client.SWORDError;
+import org.swordapp.client.ServiceDocument;
+import org.swordapp.client.SwordIdentifier;
 
 public class Sword2TransportSessionIT extends BaseIT {
 
@@ -173,7 +173,7 @@ public class Sword2TransportSessionIT extends BaseIT {
      * by defining a value or {@link #SWORD_COLLECTION_PROPERTY}.
      */
     private static final String DEFAULT_SWORD_COLLECTION_URL = formatSwordUrl(
-            "http://%s:8181/swordv2/collection/123456789/2");
+        "http://%s:8181/swordv2/collection/123456789/2");
 
     /**
      * Configured SWORD client
@@ -214,12 +214,12 @@ public class Sword2TransportSessionIT extends BaseIT {
         sampleZipPackage = new File(this.getClass().getResource(SIMPLE_ZIP_PACKAGE_RESOURCE).getPath());
         assertNotNull(sampleZipPackage);
         assertTrue("Missing sample package; cannot resolve '" + SIMPLE_ZIP_PACKAGE_RESOURCE +
-                        "' as a class path resource.", sampleZipPackage.exists());
+                   "' as a class path resource.", sampleZipPackage.exists());
 
         dspaceMetsPackage = new File(this.getClass().getResource(METS_PACKAGE_RESOURCE).getPath());
         assertNotNull(dspaceMetsPackage);
         assertTrue("Missing sample package; cannot resolve '" + METS_PACKAGE_RESOURCE +
-                "' as a class path resource.", dspaceMetsPackage.exists());
+                   "' as a class path resource.", dspaceMetsPackage.exists());
 
         ClientConfiguration swordConfig = new ClientConfiguration();
         swordConfig.setReturnDepositReceipt(true);
@@ -249,10 +249,10 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                getSwordCollection(serviceDoc, APPLICATION_ZIP));
+                        getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         Sword2DepositReceiptResponse response = (Sword2DepositReceiptResponse)
-                underTest.send(packageStream, transportMd);
+            underTest.send(packageStream, transportMd);
         assertNotNull(response);
         assertTrue(response.success());
         assertNotNull(response.getReceipt());
@@ -271,17 +271,17 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                getSwordCollection(serviceDoc, APPLICATION_ZIP));
+                        getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
         assertNotNull(response);
         assertTrue("Expected a successful response, but it errored with: " + asString(response.error()),
-                response.success());
+                   response.success());
         assertTrue(response instanceof Sword2DepositReceiptResponse);
 
-        assertNotNull(((Sword2DepositReceiptResponse)response).getReceipt());
+        assertNotNull(((Sword2DepositReceiptResponse) response).getReceipt());
 
-        DepositReceipt receipt = ((Sword2DepositReceiptResponse)response).getReceipt();
+        DepositReceipt receipt = ((Sword2DepositReceiptResponse) response).getReceipt();
 
         String desc = null;
         try {
@@ -312,13 +312,17 @@ public class Sword2TransportSessionIT extends BaseIT {
         System.err.println(">>>> Verbose description: " + desc);
         System.err.println(">>>> Treatment: " + treatement);
         System.err.println(">>>> DC fields: ");
-        dc.forEach(e -> System.err.println("    " + String.format("{%s}%s: %s", e.getQName().getNamespaceURI(), e.getQName().getLocalPart(), e.getText())));
+        dc.forEach(e -> System.err.println(
+            "    " + String.format("{%s}%s: %s", e.getQName().getNamespaceURI(), e.getQName().getLocalPart(),
+                                   e.getText())));
 
         // Retrieve all the URLs we can.
         OkHttpClient okHttp = newOkHttpClient(authCreds);
 
-        Stream<String> toRetrieve = Stream.of(receipt.getLocation(), content.getHref(), atomStatement.getHref(), receipt.getOREStatementLink()
-                .getHref(), receipt.getEntry().getAlternateLink().getHref().toString());
+        Stream<String> toRetrieve = Stream.of(receipt.getLocation(), content.getHref(), atomStatement.getHref(),
+                                              receipt.getOREStatementLink()
+                                                     .getHref(),
+                                              receipt.getEntry().getAlternateLink().getHref().toString());
 
         toRetrieve.forEach(url -> {
             LOG.debug("Retrieving '{}' ...", url);
@@ -329,7 +333,9 @@ public class Sword2TransportSessionIT extends BaseIT {
                 ResponseBody body = res.body();
                 String bodyString = body == null ? "Response body was null " : body.string();
 
-                assertTrue("Unexpected response code '" + code + "' when GETting '" + url + "': " + message + "\n" + bodyString, 199 < code  && code < 300);
+                assertTrue(
+                    "Unexpected response code '" + code + "' when GETting '" + url + "': " + message + "\n" + bodyString,
+                    199 < code && code < 300);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("{}", (body == null ? "Response body was null" : bodyString));
                 }
@@ -378,7 +384,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                getSwordCollection(serviceDoc, APPLICATION_ZIP));
+                        getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -403,7 +409,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         Map<String, String> transportMd = new HashMap<>();
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL,
-                getSwordCollection(serviceDoc, APPLICATION_ZIP));
+                        getSwordCollection(serviceDoc, APPLICATION_ZIP));
 
         TransportResponse response = underTest.send(packageStream, transportMd);
 
@@ -441,17 +447,19 @@ public class Sword2TransportSessionIT extends BaseIT {
      * deposit services.  The package should be deposited into the collection specified by the configured hint.
      */
     @Test
-    public void testDepositWithCollectionHints() throws FileNotFoundException, ProtocolViolationException, SWORDError, SWORDClientException {
+    public void testDepositWithCollectionHints()
+        throws FileNotFoundException, ProtocolViolationException, SWORDError, SWORDClientException {
         String submissionMetaStr = "{\n" +
-                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
-                "    \"title\": \"The title of the article\",\n" +
-                "    \"journal-title\": \"A Terrific Journal\",\n" +
-                "    \"hints\": {\n" +
-                "        \"collection-tags\": [\n" +
-                "            \"covid\",\n" +
-                "            \"nobel\"\n" +
-                "        ]\n" +
-                "    }\n" + "}";
+                                   "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\"," +
+                                   "\n" +
+                                   "    \"title\": \"The title of the article\",\n" +
+                                   "    \"journal-title\": \"A Terrific Journal\",\n" +
+                                   "    \"hints\": {\n" +
+                                   "        \"collection-tags\": [\n" +
+                                   "            \"covid\",\n" +
+                                   "            \"nobel\"\n" +
+                                   "        ]\n" +
+                                   "    }\n" + "}";
 
         PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
         JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
@@ -468,10 +476,12 @@ public class Sword2TransportSessionIT extends BaseIT {
         String collectionUrl = getSwordCollection(serviceDoc, APPLICATION_ZIP);
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_URL, collectionUrl);
         String configuredUrl = collectionUrl.replace("/2", "/4");
-        String configuredHints = String.format("%s%s%s", "covid", Sword2TransportHints.HINT_URL_SEPARATOR, configuredUrl);
+        String configuredHints = String.format("%s%s%s", "covid", Sword2TransportHints.HINT_URL_SEPARATOR,
+                                               configuredUrl);
         transportMd.put(Sword2TransportHints.SWORD_COLLECTION_HINTS, configuredHints);
 
-        Sword2DepositReceiptResponse response = (Sword2DepositReceiptResponse)underTest.send(packageStream, transportMd);
+        Sword2DepositReceiptResponse response = (Sword2DepositReceiptResponse) underTest.send(packageStream,
+                                                                                              transportMd);
 
         assertNotNull(response);
         assertTrue(response.success());
@@ -489,17 +499,18 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     @Test
     public void testDepositWithCollectionHintsNoMatch() throws FileNotFoundException, ProtocolViolationException,
-                                                               SWORDError, SWORDClientException {
+        SWORDError, SWORDClientException {
         String submissionMetaStr = "{\n" +
-                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
-                "    \"title\": \"The title of the article\",\n" +
-                "    \"journal-title\": \"A Terrific Journal\",\n" +
-                "    \"hints\": {\n" +
-                "        \"collection-tags\": [\n" +
-                "            \"covid\",\n" +
-                "            \"nobel\"\n" +
-                "        ]\n" +
-                "    }\n" + "}";
+                                   "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\"," +
+                                   "\n" +
+                                   "    \"title\": \"The title of the article\",\n" +
+                                   "    \"journal-title\": \"A Terrific Journal\",\n" +
+                                   "    \"hints\": {\n" +
+                                   "        \"collection-tags\": [\n" +
+                                   "            \"covid\",\n" +
+                                   "            \"nobel\"\n" +
+                                   "        ]\n" +
+                                   "    }\n" + "}";
 
 
         PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
@@ -562,7 +573,7 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     @Test
     public void testGenericException() throws FileNotFoundException, ProtocolViolationException, SWORDError,
-                                              SWORDClientException {
+        SWORDClientException {
         PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
         PackageStream packageStream = preparePackageStream(md, sampleZipPackage);
 
@@ -593,7 +604,7 @@ public class Sword2TransportSessionIT extends BaseIT {
      * @throws FileNotFoundException
      */
     private static PackageStream preparePackageStream(PackageStream.Metadata md, File packageFile)
-            throws FileNotFoundException {
+        throws FileNotFoundException {
         PackageStream packageStream = mock(PackageStream.class);
 
         when(packageStream.open()).thenReturn(new FileInputStream(packageFile));
@@ -649,7 +660,7 @@ public class Sword2TransportSessionIT extends BaseIT {
                     hex = DigestUtils.md5Hex(new FileInputStream(packageFile));
                 } catch (IOException e) {
                     throw new RuntimeException("Error calculating the MD5 checksum for '" +
-                            packageFile.getPath() + "'");
+                                               packageFile.getPath() + "'");
                 }
                 return hex;
             }
@@ -675,7 +686,8 @@ public class Sword2TransportSessionIT extends BaseIT {
         try {
             serviceDoc = swordClient.getServiceDocument(serviceDocEndpoint, authCreds);
             assertNotNull("SWORD Service Document obtained from '" + serviceDocEndpoint + "' (auth creds: " +
-                    "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "' (on-behalf-of: '" + authCreds.getOnBehalfOf() + "') was null.", serviceDoc);
+                          "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "' (on-behalf-of: '" + authCreds.getOnBehalfOf() + "') was null.",
+                          serviceDoc);
         } catch (Exception e) {
             String msg = String.format("Failed to connect to %s: %s", serviceDocEndpoint, e.getMessage());
             LOG.error(msg, e);
@@ -692,7 +704,7 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     private static String getAdminUser() {
         return System.getProperty(DSPACE_AUTH_PROPERTY,
-                "dspace-admin@oapass.org").split(":")[0];
+                                  "dspace-admin@oapass.org").split(":")[0];
     }
 
     /**
@@ -744,7 +756,7 @@ public class Sword2TransportSessionIT extends BaseIT {
         Collection<SWORDCollection> collections = serviceDoc.getCollectionsThatAccept(packaging);
         if (collections.isEmpty()) {
             fail(String.format("Unable to discover a collection from %s that supports packaging %s",
-                    serviceDoc.getService().getBaseUri(), packaging));
+                               serviceDoc.getService().getBaseUri(), packaging));
         }
 
         return collections.iterator().next().getHref().toASCIIString();
@@ -759,7 +771,8 @@ public class Sword2TransportSessionIT extends BaseIT {
      */
     private static String formatSwordUrl(String format) {
         return String.format(format,
-                System.getProperty(DOCKER_HOST_PROPERTY, "localhost"), System.getProperty(DSPACE_PORT_PROPERTY, "8181"));
+                             System.getProperty(DOCKER_HOST_PROPERTY, "localhost"),
+                             System.getProperty(DSPACE_PORT_PROPERTY, "8181"));
     }
 
     /**
@@ -794,8 +807,8 @@ public class Sword2TransportSessionIT extends BaseIT {
                 Request.Builder reqBuilder = request.newBuilder();
                 byte[] bytes = String.format("%s:%s", authCreds.getUsername(), authCreds.getPassword()).getBytes();
                 return chain.proceed(reqBuilder
-                        .addHeader("Authorization",
-                                "Basic " + getEncoder().encodeToString(bytes)).build());
+                                         .addHeader("Authorization",
+                                                    "Basic " + getEncoder().encodeToString(bytes)).build());
             });
         }
 
@@ -815,7 +828,7 @@ public class Sword2TransportSessionIT extends BaseIT {
 
         OkHttpClient client = builder.build();
         LOG.trace("{}:{} built OkHttpClient {}:{}", builderName, builderHashcode,
-                client.getClass().getSimpleName(), toHexString(identityHashCode(client.getClass())));
+                  client.getClass().getSimpleName(), toHexString(identityHashCode(client.getClass())));
 
         return client;
     }

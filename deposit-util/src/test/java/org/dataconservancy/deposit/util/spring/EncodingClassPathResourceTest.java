@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.deposit.util.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.InputStream;
+import java.security.MessageDigest;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.MessageDigestCalculatingInputStream;
@@ -22,13 +29,6 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.security.MessageDigest;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * These tests show that the {@link EncodingClassPathResource} can properly resolve class path resources that contain
@@ -136,7 +136,8 @@ public class EncodingClassPathResourceTest {
 
         String resourcePath = String.format("/%s", PERCENT_RESOURCE_DOUBLE_ENCODED);
         EncodingClassPathResource underTest = new EncodingClassPathResource(resourcePath);
-        verifyResource(underTest, resourcePath.substring(1), PERCENT_RESOURCE_DOUBLE_ENCODED, PERCENT_RESOURCE_CHECKSUM);
+        verifyResource(underTest, resourcePath.substring(1), PERCENT_RESOURCE_DOUBLE_ENCODED,
+                       PERCENT_RESOURCE_CHECKSUM);
     }
 
     /**
@@ -155,8 +156,8 @@ public class EncodingClassPathResourceTest {
         // We *should* encode this before constructing the EncodingClassPathResource, but let's see what happens
 
         String resourcePath = String.format("%s/%s",
-                EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
-                SPACE_RESOURCE);
+                                            EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
+                                            SPACE_RESOURCE);
         EncodingClassPathResource underTest = new EncodingClassPathResource(resourcePath);
         verifyResource(underTest, resourcePath, "ilford%20panf.pdf", SPACE_RESOURCE_CHECKSUM);
     }
@@ -174,8 +175,8 @@ public class EncodingClassPathResourceTest {
         // Encode the resource path when constructing EncodingClassPathResource
 
         String resourcePath = String.format("%s/%s",
-                EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
-                PERCENT_RESOURCE);
+                                            EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
+                                            PERCENT_RESOURCE);
         EncodingClassPathResource underTest = new EncodingClassPathResource(resourcePath);
         verifyResource(underTest, resourcePath, PERCENT_RESOURCE, SPACE_RESOURCE_CHECKSUM);
     }
@@ -192,8 +193,8 @@ public class EncodingClassPathResourceTest {
         // characters in the resource name
 
         String resourcePath = String.format("%s/%s",
-                EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
-                UNDERBAR_RESOURCE);
+                                            EncodingClassPathResource.class.getPackage().getName().replace(".", "/"),
+                                            UNDERBAR_RESOURCE);
         EncodingClassPathResource underTest = new EncodingClassPathResource(resourcePath);
         verifyResource(underTest, resourcePath, UNDERBAR_RESOURCE, UNDERBAR_RESOURCE_CHECKSUM);
     }
@@ -209,7 +210,8 @@ public class EncodingClassPathResourceTest {
 
         String resourcePath = String.format("/%s", PERCENT_RESOURCE_DOUBLE_ENCODED);
         EncodingClassPathResource underTest = new EncodingClassPathResource(resourcePath);
-        verifyResource(underTest, resourcePath.substring(1), PERCENT_RESOURCE_DOUBLE_ENCODED, PERCENT_RESOURCE_CHECKSUM);
+        verifyResource(underTest, resourcePath.substring(1), PERCENT_RESOURCE_DOUBLE_ENCODED,
+                       PERCENT_RESOURCE_CHECKSUM);
     }
 
     private static void verifyResource(EncodingClassPathResource underTest, String expectedPath,

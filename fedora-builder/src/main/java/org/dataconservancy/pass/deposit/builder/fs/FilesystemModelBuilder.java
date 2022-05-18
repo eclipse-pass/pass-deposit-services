@@ -16,14 +16,6 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.StreamingSubmissionBuilder;
-import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,6 +25,13 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.StreamingSubmissionBuilder;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Submission;
 
 /**
  * Builds an instance of the Deposit Services model (i.e. a {@link DepositSubmission} from a file on a locally mounted
@@ -76,7 +75,7 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
         this.useFedora = useFedora;
         if (useFedora) {
             LOG.info("{} will build DepositSubmission objects using Fedora resources instead of local resources",
-                    this.getClass().getSimpleName());
+                     this.getClass().getSimpleName());
         }
     }
 
@@ -108,12 +107,12 @@ public class FilesystemModelBuilder extends ModelBuilder implements SubmissionBu
             if (resource.getScheme() == null) {
                 is = new FileInputStream(formDataUrl);
             } else if (resource.getScheme().startsWith("http") ||
-                    resource.getScheme().startsWith("file") ||
-                    resource.getScheme().startsWith("jar")) {
+                       resource.getScheme().startsWith("file") ||
+                       resource.getScheme().startsWith("jar")) {
                 is = resource.toURL().openStream();
             } else {
                 throw new InvalidModel(String.format("Unknown scheme '%s' for URL '%s'",
-                        resource.getScheme(), formDataUrl));
+                                                     resource.getScheme(), formDataUrl));
             }
 
             return build(is, Collections.emptyMap());

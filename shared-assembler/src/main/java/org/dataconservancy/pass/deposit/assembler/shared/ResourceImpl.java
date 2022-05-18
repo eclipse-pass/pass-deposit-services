@@ -15,11 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
  * Default implementation of a Package resource.
@@ -104,6 +104,6 @@ class ResourceImpl implements PackageStream.Resource {
     @Override
     public String toString() {
         return "ResourceImpl{" + "sizeBytes=" + sizeBytes + ", mimeType='" + mimeType + '\'' + ", name='" + name +
-                '\'' + ", checksums=" + checksums + '}';
+               '\'' + ", checksums=" + checksums + '}';
     }
 }

@@ -15,16 +15,16 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Re-throws the {@code Throwable} set by {@link #setWriterEx(Throwable)} when any {@code public} or {@code protected}
@@ -89,7 +89,7 @@ public class ExHandingPipedInputStream extends PipedInputStream {
     public void close() throws IOException {
         // Close the stream, regardless of whether or not there is an exception waiting for us
         STREAMING_IO_LOG.debug("{}@{} close() invoked: ", this.getClass().getSimpleName(),
-                toHexString(identityHashCode(this)), new Exception("close() invoked"));
+                               toHexString(identityHashCode(this)), new Exception("close() invoked"));
         try {
             super.close();
         } finally {
@@ -130,6 +130,6 @@ public class ExHandingPipedInputStream extends PipedInputStream {
         }
 
         throw new IOException("The writing side of this PipedInputStream encountered an exception: " +
-                writerEx.getMessage(), writerEx);
+                              writerEx.getMessage(), writerEx);
     }
 }

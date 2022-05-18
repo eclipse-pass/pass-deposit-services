@@ -16,14 +16,15 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class AbstractAssemblerTest {
 
     /**
-     * Insures that that {@link AbstractAssembler#sanitizeFilename(String)} filters out non alphanumeric characters, and non
+     * Insures that that {@link AbstractAssembler#sanitizeFilename(String)} filters out non alphanumeric characters,
+     * and non
      * latin-1 characters.
      */
     @Test

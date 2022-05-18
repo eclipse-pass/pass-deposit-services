@@ -15,19 +15,19 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import static java.lang.String.format;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.TAR;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.ZIP;
+
+import java.io.OutputStream;
+import java.util.Map;
+
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-
-import java.io.OutputStream;
-import java.util.Map;
-
-import static java.lang.String.format;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.TAR;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive.OPTS.ZIP;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -38,7 +38,7 @@ public class DefaultArchiveOutputStreamFactory implements ArchiveOutputStreamFac
     protected static final String ERR_CREATING_ARCHIVE_STREAM = "Error creating a %s archive output stream: %s";
 
     protected static final String ERR_NO_ARCHIVE_FORMAT = "No supported archive format was specified in the metadata " +
-            "builder";
+                                                          "builder";
 
     protected Map<String, Object> packageOptions;
 

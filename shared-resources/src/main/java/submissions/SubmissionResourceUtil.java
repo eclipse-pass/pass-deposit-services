@@ -15,15 +15,11 @@
  */
 package submissions;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import resources.SharedResourceUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,11 +37,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import resources.SharedResourceUtil;
 
 /**
  * A specialized class used to look up <em>local</em> JSON representations of submission graphs.  Local means that
@@ -53,7 +53,8 @@ import static org.junit.Assert.assertTrue;
  * the URIs identifying the PASS entities in the graph are opaque.
  * <p>
  * JSON representations for multiple submission graphs reside under the {@code submissions/} resource path, one file per
- * graph.  Each graph is rooted in a <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission</a>
+ * graph.  Each graph is rooted in a
+ * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission</a>
  * object, and contains JSON representations of the resources linked by the Submission (e.g. Repositories, Funders,
  * Grants, Files, Publications, etc).  Each submission graph is identified by the URI of the Submission that roots the
  * graph.
@@ -74,7 +75,8 @@ import static org.junit.Assert.assertTrue;
  * <h3>Minimal example Submission graph</h3>
  * Replicated below is a sample submission graph.  The URI of the submission is {@code fake:submission10}, which is the
  * same URI a developer would use to identify the graph.  Note the JSON objects contained in the graph each have opaque
- * identifiers, and the objects are properly linked to each other according to the <a href="https://github.com/OA-PASS/pass-data-model">PASS data model</a>.
+ * identifiers, and the objects are properly linked to each other according to the
+ * <a href="https://github.com/OA-PASS/pass-data-model">PASS data model</a>.
  * To retrieve this graph could invoke a couple different methods depending on the need:
  * <dl>
  *     <dt>{@link #lookupStream(URI)}</dt>
@@ -203,19 +205,23 @@ import static org.junit.Assert.assertTrue;
  */
 public class SubmissionResourceUtil {
 
+    private SubmissionResourceUtil () {
+        //never called
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(SubmissionResourceUtil.class);
 
     /**
      * Used to filter a {@code Stream<JsonNode>} for Submission JSON objects
      */
     public static final Predicate<JsonNode> SUBMISSION_TYPE_FILTER = node ->
-            node.has("@type") && node.get("@type").asText().equals("Submission");
+        node.has("@type") && node.get("@type").asText().equals("Submission");
 
     /**
      * Used to filter a {@code Stream<JsonNode>} for Repository JSON objects
      */
     public static final Predicate<JsonNode> REPOSITORY_TYPE_FILTER = node ->
-            node.has("@type") && node.get("@type").asText().equals("Repository");
+        node.has("@type") && node.get("@type").asText().equals("Repository");
 
     /**
      * Answers a {@code Collection} of Submission URIs that are available for use in testing. <p> URIs returned by this
@@ -230,7 +236,8 @@ public class SubmissionResourceUtil {
         FastClasspathScanner scanner = new FastClasspathScanner(SubmissionResourceUtil.class.getPackage().getName());
         scanner.matchFilenamePattern(".*.json", (classpathElement, relativePath, in, length) -> {
             LOG.trace("Processing match '{}', '{}'", classpathElement, relativePath);
-            SharedResourceUtil.ElementPathPair pathPair = new SharedResourceUtil.ElementPathPair(classpathElement, relativePath);
+            SharedResourceUtil.ElementPathPair pathPair = new SharedResourceUtil.ElementPathPair(classpathElement,
+                                                                                                 relativePath);
             if (seen.contains(pathPair)) {
                 // We have already scanned classpath element/path pair; it probably appears on the classpath twice.
                 return;
@@ -247,7 +254,8 @@ public class SubmissionResourceUtil {
 
             if (submissionUris.contains(submissionUri)) {
                 throw new IllegalArgumentException("Each test submission resource must have a unique submission " +
-                        "URI.  Found duplicate uri '" + submissionUri + "' in test resource '" + relativePath + "'");
+                                                   "URI.  Found duplicate uri '" + submissionUri + "' in test " +
+                                                   "resource '" + relativePath + "'");
             }
 
             submissionUris.add(submissionUri);
@@ -302,7 +310,7 @@ public class SubmissionResourceUtil {
             URI candidateUri = URI.create(submissionNode.get("@id").asText());
             if (submissionUri.equals(candidateUri)) {
                 assertNull("Found duplicate submission URI '" + submissionUri + "' in test resource '" + cpElt + "', " +
-                        "'" + relativePath + "'", submissionResource.get());
+                           "'" + relativePath + "'", submissionResource.get());
                 submissionResource.set(ClasspathUtils.getClasspathResourceURL(cpElt, relativePath));
             }
         });
@@ -310,7 +318,7 @@ public class SubmissionResourceUtil {
         scanner.scan();
 
         assertNotNull("Unable to find a JSON submission resource containing submission uri '" + submissionUri + "'",
-                submissionResource.get());
+                      submissionResource.get());
 
         try {
             return submissionResource.get().toURI();
@@ -365,7 +373,7 @@ public class SubmissionResourceUtil {
         List<JsonNode> submissionNodes = nodeStream.filter(SUBMISSION_TYPE_FILTER).collect(Collectors.toList());
 
         assertEquals("Exactly one Submission node must be found in the test submission resource, " + "but found: " +
-                submissionNodes.size(), 1, submissionNodes.size());
+                     submissionNodes.size(), 1, submissionNodes.size());
 
         JsonNode submissionNode = submissionNodes.get(0);
         assertTrue("Submission node must have a value for '@id'", submissionNode.has("@id"));
@@ -391,7 +399,8 @@ public class SubmissionResourceUtil {
 
         if (jsonStream == null) {
             throw new RuntimeException("Unable to resolve PASS entities for name: '" + name + "', " + "variation: '"
-                    + variation + "'; resource '" + jsonResource + "' is missing or cannot be read.");
+                                       + variation + "'; resource '" + jsonResource + "' is missing or cannot be read" +
+                                       ".");
         }
         return jsonStream;
     }

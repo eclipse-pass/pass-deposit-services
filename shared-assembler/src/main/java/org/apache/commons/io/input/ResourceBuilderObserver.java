@@ -15,9 +15,9 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
-
 import java.io.IOException;
+
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 
 /**
  * Abstract class that supplies a member {@link ResourceBuilder} on construction.  Sub-classes are expected to update

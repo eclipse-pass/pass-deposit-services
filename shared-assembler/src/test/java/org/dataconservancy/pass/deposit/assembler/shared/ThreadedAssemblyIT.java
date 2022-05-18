@@ -15,25 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.io.FileUtils;
-import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
-import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
-import resources.SharedSubmissionUtil;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Math.floorDiv;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.savePackage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -50,14 +39,25 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Math.floorDiv;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.savePackage;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.FileUtils;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import resources.SharedSubmissionUtil;
 
 /**
  * Invokes a single instance of an {@link Assembler} by multiple threads, insuring that the {@code Assembler} does not
@@ -114,11 +114,12 @@ public abstract class ThreadedAssemblyIT {
     private static final AtomicInteger IT_THREAD = new AtomicInteger(0);
 
     private static final String DOUBLE_CHECK_MSG = "Double-check the custodial FileFilter supplied to this method, " +
-            "and manually examine the package directory for any discrepancies.";
+                                                   "and manually examine the package directory for any discrepancies.";
 
     private static final String DOUBLE_CHECK_MAPPER_MSG = "Double-check the 'custodialFilter' and " +
-            "'packageFileMapper' supplied to this method, and manually examine the package directory for any " +
-            "discrepancies";
+                                                          "'packageFileMapper' supplied to this method, and manually " +
+                                                          "examine the package directory for any " +
+                                                          "discrepancies";
 
     /**
      * Logger
@@ -173,7 +174,8 @@ public abstract class ThreadedAssemblyIT {
     public static void setUpExecutorService() {
         ThreadFactory itTf = r -> new Thread(r, "ThreadedAssemblyITPool-" + IT_THREAD.getAndIncrement());
         itExecutorService = new ThreadPoolExecutor(floorDiv(NO_THREADS, 2), NO_THREADS, 10,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(NO_THREADS, 2)), itTf);
+                                                   TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(NO_THREADS, 2)),
+                                                   itTf);
     }
 
     /**
@@ -222,9 +224,9 @@ public abstract class ThreadedAssemblyIT {
 
         assertTrue("PackageOptions map must contain Archive.KEY", packageOptions.containsKey(Archive.KEY));
         assertTrue("PackageOptions map must contain Compression.KEY",
-                packageOptions.containsKey(Compression.KEY));
+                   packageOptions.containsKey(Compression.KEY));
         assertFalse("PackageOptions map must contain a valid Archive option " +
-                        "(Archive.OPTS.NONE is not supported)", packageOptions.containsValue(Archive.OPTS.NONE));
+                    "(Archive.OPTS.NONE is not supported)", packageOptions.containsValue(Archive.OPTS.NONE));
 
         Map<DepositSubmission, Future<PackageStream>> results = new HashMap<>();
         Map<DepositSubmission, File> packages = new HashMap<>();
@@ -273,8 +275,8 @@ public abstract class ThreadedAssemblyIT {
             LOG.info(".");
             File dir;
             try {
-                dir = openArchive(packageFile, (Archive.OPTS)packageOptions.get(Archive.KEY),
-                        (Compression.OPTS)packageOptions.get(Compression.KEY));
+                dir = openArchive(packageFile, (Archive.OPTS) packageOptions.get(Archive.KEY),
+                                  (Compression.OPTS) packageOptions.get(Compression.KEY));
                 LOG.info("Extracted package {} to {}", packageFile, dir);
                 // Have subclass verify the content in the extracted package directory
                 verifier.verify(submission, new ExplodedPackage(packageFile, dir), packageOptions);

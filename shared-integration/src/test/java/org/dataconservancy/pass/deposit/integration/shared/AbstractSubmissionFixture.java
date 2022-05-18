@@ -15,6 +15,26 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared;
 
+import static okhttp3.Credentials.basic;
+import static okhttp3.RequestBody.create;
+import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getDepositUris;
+import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,27 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static okhttp3.Credentials.basic;
-import static okhttp3.RequestBody.create;
-import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getDepositUris;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Provides convenience methods for depositing Submission graphs in Fedora.  <strong>N.B.</strong> this test fixture
@@ -78,6 +77,7 @@ import static org.junit.Assert.assertTrue;
  *      <li>{@link #okHttp} always supplied by {@link #setUpOkHttp()} (this client must have an {@code Interceptor}
  *          configured for authenticating to Fedora)</li>
  *  </ul>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public abstract class AbstractSubmissionFixture {
@@ -90,11 +90,11 @@ public abstract class AbstractSubmissionFixture {
     private static final String MERGE_PATCH = "application/merge-patch+json";
 
     private static final String SUBMIT_TRUE_PATCH = "" +
-            "{\n" + "   \"@id\": \"%s\",\n" +
-            "   \"@context\": \"%s\",\n" +
-            "   \"submitted\": \"true\",\n" +
-            "   \"submissionStatus\": \"submitted\"\n" +
-            "}";
+                                                    "{\n" + "   \"@id\": \"%s\",\n" +
+                                                    "   \"@context\": \"%s\",\n" +
+                                                    "   \"submitted\": \"true\",\n" +
+                                                    "   \"submissionStatus\": \"submitted\"\n" +
+                                                    "}";
 
     private static final long TRAVIS_CONDITION_TIMEOUT_MS = 180 * 1000;
 
@@ -155,14 +155,14 @@ public abstract class AbstractSubmissionFixture {
 
         // verify state of the initial Submission
         assertEquals("Submission must have a Submission.source = Submission.Source.PASS",
-                Submission.Source.PASS, submission.getSource());
+                     Submission.Source.PASS, submission.getSource());
         assertEquals("Submission must have a Submission.aggregatedDepositStatus = " +
-                        "Submission.AggregatedDepositStatus.NOT_STARTED",
-                NOT_STARTED, submission.getAggregatedDepositStatus());
+                     "Submission.AggregatedDepositStatus.NOT_STARTED",
+                     NOT_STARTED, submission.getAggregatedDepositStatus());
 
         // no Deposits pointing to the Submission
         assertTrue("Unexpected incoming links to " + submissionUri,
-                getDepositUris(submission, passClient).isEmpty());
+                   getDepositUris(submission, passClient).isEmpty());
 
         return uriMap;
     }
@@ -177,25 +177,25 @@ public abstract class AbstractSubmissionFixture {
      * @param entities a map of entities that comprise a graph rooted in the {@code Submission}
      * @return the {@code Submission}
      * @throws AssertionError if zero or more than one {@code Submission} is contained in the supplied entity {@code
-     *         Map}
+     *                        Map}
      */
     public static Submission findSubmission(Map<URI, PassEntity> entities) {
         Predicate<PassEntity> submissionFilter = (entity) -> entity instanceof Submission;
 
         long count = entities
-                .values()
-                .stream()
-                .filter(submissionFilter)
-                .count();
+            .values()
+            .stream()
+            .filter(submissionFilter)
+            .count();
 
         assertEquals("Found " + count + " Submission resources, expected exactly 1", count, 1);
 
         return (Submission) entities
-                .values()
-                .stream()
-                .filter(submissionFilter)
-                .findAny()
-                .get();
+            .values()
+            .stream()
+            .filter(submissionFilter)
+            .findAny()
+            .get();
     }
 
     /**
@@ -220,16 +220,16 @@ public abstract class AbstractSubmissionFixture {
         String body = String.format(SUBMIT_TRUE_PATCH, submissionUri, contextUri);
 
         Request post = new Request.Builder()
-                .addHeader("Content-Type", MERGE_PATCH)
-                .method("PATCH", create(MediaType.parse(MERGE_PATCH), body))
-                .url(submissionUri.toString())
-                .build();
+            .addHeader("Content-Type", MERGE_PATCH)
+            .method("PATCH", create(MediaType.parse(MERGE_PATCH), body))
+            .url(submissionUri.toString())
+            .build();
 
         try (Response response = okHttp.newCall(post).execute()) {
             int expected = 204;
             assertEquals("Triggering 'submitted' flag to 'true' for " + submissionUri + " failed.  " +
-                    "Expected " + expected + ", got " + response.code() + " (" + response.message() + ")",
-                    expected, response.code());
+                         "Expected " + expected + ", got " + response.code() + " (" + response.message() + ")",
+                         expected, response.code());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -242,11 +242,11 @@ public abstract class AbstractSubmissionFixture {
      * @param submissionUri the URI of the Submission
      * @param expectedCount the number of Deposit resources expected for the Submission (normally equal to the number of
      *                      Repository resources present on the Submission)
-     * @param filter filters for Deposit resources with a desired state (e.g., a certain deposit status)
+     * @param filter        filters for Deposit resources with a desired state (e.g., a certain deposit status)
      * @return the Condition
      */
     public Condition<Set<Deposit>> depositsForSubmission(URI submissionUri, int expectedCount,
-                                                        BiPredicate<Deposit, Repository> filter) {
+                                                         BiPredicate<Deposit, Repository> filter) {
         Callable<Set<Deposit>> deposits = () -> {
             Set<URI> depositUris = passClient.findAllByAttributes(Deposit.class, new HashMap<String, Object>() {
                 {
@@ -255,10 +255,11 @@ public abstract class AbstractSubmissionFixture {
             });
 
             return depositUris.stream()
-                    .map(uri -> passClient.readResource(uri, Deposit.class))
-                    .filter(deposit ->
-                            filter.test(deposit, passClient.readResource(deposit.getRepository(), Repository.class)))
-                    .collect(Collectors.toSet());
+                              .map(uri -> passClient.readResource(uri, Deposit.class))
+                              .filter(deposit ->
+                                          filter.test(deposit, passClient.readResource(deposit.getRepository(),
+                                                                                       Repository.class)))
+                              .collect(Collectors.toSet());
         };
 
         Function<Set<Deposit>, Boolean> verification = (depositSet) -> depositSet.size() == expectedCount;
@@ -288,14 +289,15 @@ public abstract class AbstractSubmissionFixture {
      */
     public Repository repositoryForName(Submission submission, String repositoryName) {
         return submission
-                .getRepositories()
-                .stream()
-                .map(uri -> passClient.readResource(uri, Repository.class))
-                .filter(repo -> repositoryName.equals(repo.getName()))
-                .findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing Repository with name " + repositoryName + " for Submission " +
-                                submission.getId()));
+            .getRepositories()
+            .stream()
+            .map(uri -> passClient.readResource(uri, Repository.class))
+            .filter(repo -> repositoryName.equals(repo.getName()))
+            .findAny()
+            .orElseThrow(() ->
+                             new RuntimeException(
+                                 "Missing Repository with name " + repositoryName + " for Submission " +
+                                 submission.getId()));
     }
 
     /**
@@ -310,13 +312,14 @@ public abstract class AbstractSubmissionFixture {
     public Deposit depositForRepositoryUri(Submission submission, URI repositoryUri) {
         Collection<URI> depositUris = getDepositUris(submission, passClient);
         return depositUris
-                .stream()
-                .map(uri -> passClient.readResource(uri, Deposit.class))
-                .filter(deposit -> repositoryUri.equals(deposit.getRepository()))
-                .findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing Deposit for Repository " + repositoryUri + " on Submission " +
-                                submission.getId()));
+            .stream()
+            .map(uri -> passClient.readResource(uri, Deposit.class))
+            .filter(deposit -> repositoryUri.equals(deposit.getRepository()))
+            .findAny()
+            .orElseThrow(() ->
+                             new RuntimeException(
+                                 "Missing Deposit for Repository " + repositoryUri + " on Submission " +
+                                 submission.getId()));
     }
 
     /**
@@ -326,7 +329,7 @@ public abstract class AbstractSubmissionFixture {
      */
     public static boolean travis() {
         if (System.getenv("TRAVIS") != null &&
-                System.getenv("TRAVIS").equalsIgnoreCase("true")) {
+            System.getenv("TRAVIS").equalsIgnoreCase("true")) {
             return true;
         }
 
@@ -358,10 +361,10 @@ public abstract class AbstractSubmissionFixture {
                 return null;
             }
             return response
-                    .request()
-                    .newBuilder()
-                    .header("Authorization", basic(fcrepoUser, fcrepoPass))
-                    .build();
+                .request()
+                .newBuilder()
+                .header("Authorization", basic(fcrepoUser, fcrepoPass))
+                .build();
         });
 
         return builder.build();

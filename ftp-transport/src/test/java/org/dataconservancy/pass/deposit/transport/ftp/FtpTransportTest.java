@@ -15,18 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
@@ -43,6 +31,18 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -120,12 +120,12 @@ public class FtpTransportTest {
         when(ftpClient.sendNoOp()).thenReturn(true);
         when(ftpClient.login(anyString(), anyString())).thenReturn(false);
         when(ftpClient.getReplyCode())
-                .thenReturn(200)
-                .thenReturn(530);
+            .thenReturn(200)
+            .thenReturn(530);
 
         when(ftpClient.getReplyString())
-                .thenReturn("OK")
-                .thenReturn("Login authentication failed");
+            .thenReturn("OK")
+            .thenReturn("Login authentication failed");
 
         try {
             transport.open(expectedHints);

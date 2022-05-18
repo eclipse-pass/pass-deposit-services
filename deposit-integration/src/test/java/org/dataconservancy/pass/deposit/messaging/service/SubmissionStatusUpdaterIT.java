@@ -15,6 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static submissions.SubmissionResourceUtil.lookupStream;
+
+import java.net.URI;
+import java.util.Objects;
+import java.util.Set;
+
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFixture;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
@@ -34,16 +42,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import submissions.SubmissionResourceUtil;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Objects;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -70,33 +68,36 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionFixture {
 
         // finds the Submission in the index, then returns the resource
         Condition<Submission> refreshSubmission = new Condition<>(
-                () -> {
-                    URI u = passClient.findByAttribute(Submission.class, "@id", submission.getId());
-                    if (u != null) {
-                        return passClient.readResource(u, Submission.class);
-                    }
-                    return null;
-                },
-                "Refresh Submission resource " + submission.getId());
+            () -> {
+                URI u = passClient.findByAttribute(Submission.class, "@id", submission.getId());
+                if (u != null) {
+                    return passClient.readResource(u, Submission.class);
+                }
+                return null;
+            },
+            "Refresh Submission resource " + submission.getId());
 
         // finds all the deposits for the submission - there should be one deposit per repository
         Condition<Set<Deposit>> refreshDeposits = depositsForSubmission(
-                            submission.getId(),
-                            submission.getRepositories().size(),
-                            (deposit, repository) -> true);
+            submission.getId(),
+            submission.getRepositories().size(),
+            (deposit, repository) -> true);
 
         // trigger the submission as if it had been submitted by the PASS UI
         triggerSubmission(submission.getId());
 
         // wait for the deposit to succeed
         assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                deposits.size() == submission.getRepositories().size()));
+                                                      deposits.size() == submission.getRepositories().size()));
         assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                deposits.stream().allMatch(d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
+                                                      deposits.stream().allMatch(
+                                                          d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
         assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                deposits.stream().allMatch(d ->
-                        passClient.readResource(d.getRepositoryCopy(), RepositoryCopy.class)
-                                .getCopyStatus() == CopyStatus.COMPLETE)));
+                                                      deposits.stream().allMatch(d ->
+                                                                                     passClient.readResource(
+                                                                                                   d.getRepositoryCopy(),
+                                                                                                   RepositoryCopy.class)
+                                                                                               .getCopyStatus() == CopyStatus.COMPLETE)));
 
         // insure the Submission is indexed, as the SubmissionStatusUpdater.doUpdate(...) depends on it being indexed
 

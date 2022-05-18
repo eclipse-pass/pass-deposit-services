@@ -15,6 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.client.AbderaClient;
@@ -31,10 +35,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Insures that the Apache {@code AbderaClient} can connect to https URLs, specifically the ability to trust the root
@@ -60,7 +60,8 @@ import static org.junit.Assert.assertTrue;
  * contacts the production endpoint, and because it requires username and password authentication, this test is
  * {@code @Ignore}ed by default, and must be executed manually on the command line:
  * </p>
- * <pre>$ mvn clean verify -Dit.test=AbderaClientHttpsIT -Dftp.skip -Ddspace.skip -Dpostgres.skip -Dfcrepo.skip -Dsword.user=<username> -Dsword.pass=<password></pre>
+ * <pre>$ mvn clean verify -Dit.test=AbderaClientHttpsIT -Dftp.skip -Ddspace.skip -Dpostgres.skip -Dfcrepo.skip
+ * -Dsword.user=<username> -Dsword.pass=<password></pre>
  * </p>
  * <p>
  * Future implementations of this test should probably use a lower-level library to verify SSL/TLS connectivity without
@@ -91,7 +92,7 @@ public class AbderaClientHttpsIT {
     @Before
     public void setUp() throws Exception {
         assertTrue("Expected the SWORD service document URL to begin with 'https://'!",
-                httpsSwordServiceDocUrl.startsWith("https://"));
+                   httpsSwordServiceDocUrl.startsWith("https://"));
 
         assertNotNull("Expected a value for the 'sword.user' property, but was 'null'", swordUser);
         assertNotNull("Expected a value for the 'sword.pass' property, but was 'null'", swordPass);
@@ -106,7 +107,7 @@ public class AbderaClientHttpsIT {
         assertNotNull("Expected a non-null ClientResponse!", res);
         String msg = "Received unexpected response code %s retrieving %s: %s";
         assertEquals(String.format(msg, res.getStatus(), httpsSwordServiceDocUrl, res.getStatusText()),
-                200, res.getStatus());
+                     200, res.getStatus());
         Document<Feed> serviceDoc = res.getDocument();
         assertNotNull("Expected a non-null service document!", serviceDoc);
         assertEquals(httpsSwordServiceDocUrl, serviceDoc.getBaseUri().toString());

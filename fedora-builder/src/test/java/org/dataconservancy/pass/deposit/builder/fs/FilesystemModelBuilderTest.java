@@ -16,28 +16,13 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
-import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.model.DepositFile;
-import org.dataconservancy.pass.deposit.model.DepositFileType;
-import org.dataconservancy.pass.deposit.model.DepositMetadata;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-
-import org.dataconservancy.pass.deposit.model.JournalPublicationType;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.junit.Before;
-import org.junit.Test;
-import submissions.SubmissionResourceUtil;
-
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static submissions.SubmissionResourceUtil.lookupStream;
 
 import java.io.InputStream;
@@ -48,6 +33,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositFileType;
+import org.dataconservancy.pass.deposit.model.DepositMetadata;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.deposit.model.JournalPublicationType;
+import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Submission;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.junit.Before;
+import org.junit.Test;
+import submissions.SubmissionResourceUtil;
 
 public class FilesystemModelBuilderTest {
 
@@ -56,15 +54,16 @@ public class FilesystemModelBuilderTest {
     private static final String EXPECTED_PUB_DATE = "2018-09-12";
 
     private static final DateTime EXPECTED_SUBMITTED_DATE =
-            DateTime.parse("2017-06-02T00:00:00.000Z", DateTimeFormat.forPattern("YYYY-M-d'T'H':'m':'s'.'SSSZ").withZoneUTC());
+        DateTime.parse("2017-06-02T00:00:00.000Z",
+                       DateTimeFormat.forPattern("YYYY-M-d'T'H':'m':'s'.'SSSZ").withZoneUTC());
 
     private static final Map<String, JournalPublicationType> EXPECTED_ISSN_PUBTYPES =
-            new HashMap<String, JournalPublicationType>() {
-                {
-                    put("2042-6496", JournalPublicationType.PPUB);
-                    put("2042-650X", JournalPublicationType.OPUB);
-                }
-            };
+        new HashMap<String, JournalPublicationType>() {
+            {
+                put("2042-6496", JournalPublicationType.PPUB);
+                put("2042-650X", JournalPublicationType.OPUB);
+            }
+        };
 
     private static final String EXPECTED_DOI = "10.1039/c7fo01251a";
 
@@ -103,8 +102,8 @@ public class FilesystemModelBuilderTest {
     private SubmissionResourceUtil submissionUtil;
 
     @Before
-    public void setup() throws Exception{
-        submissionUtil = new SubmissionResourceUtil();
+    public void setup() throws Exception {
+        //submissionUtil = new SubmissionResourceUtil();
 
         submission = underTest.build(lookupStream(SAMPLE_SUBMISSION_RESOURCE), emptyMap());
     }
@@ -115,7 +114,7 @@ public class FilesystemModelBuilderTest {
         Submission submissionEntity = null;
         HashMap<URI, PassEntity> entities = new HashMap<>();
 
-        try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)){
+        try (InputStream is = lookupStream(SAMPLE_SUBMISSION_RESOURCE)) {
             PassJsonFedoraAdapter reader = new PassJsonFedoraAdapter();
             submissionEntity = reader.jsonToPass(is, entities);
         }
@@ -153,14 +152,17 @@ public class FilesystemModelBuilderTest {
         assertNull(manuscriptMetadata.getManuscriptUrl());
 
         List<DepositMetadata.Person> persons = submission.getMetadata().getPersons();
-        assertEquals(EXPECTED_SUBMITER_COUNT,persons.stream()
-                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.submitter).count());
-        assertEquals(EXPECTED_PI_COUNT,persons.stream()
-                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.pi).count());
-        assertEquals(EXPECTED_CO_PI_COUNT,persons.stream()
-                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.copi).count());
-        assertEquals(EXPECTED_AUTHOR_COUNT,persons.stream()
-                .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author).count());
+        assertEquals(EXPECTED_SUBMITER_COUNT, persons.stream()
+                                                     .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.submitter)
+                                                     .count());
+        assertEquals(EXPECTED_PI_COUNT, persons.stream()
+                                               .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.pi).count());
+        assertEquals(EXPECTED_CO_PI_COUNT, persons.stream()
+                                                  .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.copi)
+                                                  .count());
+        assertEquals(EXPECTED_AUTHOR_COUNT, persons.stream()
+                                                   .filter(p -> p.getType() == DepositMetadata.PERSON_TYPE.author)
+                                                   .count());
     }
 
     @Test
@@ -248,7 +250,7 @@ public class FilesystemModelBuilderTest {
 
         assertEquals(1, submission.getMetadata().getJournalMetadata().getIssnPubTypes().size());
         assertEquals(JournalPublicationType.OPUB,
-                submission.getMetadata().getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+                     submission.getMetadata().getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
     }
 
     /**
@@ -263,7 +265,7 @@ public class FilesystemModelBuilderTest {
      */
     @Test
     public void processMetadataIncompleteIssn() throws InvalidModel {
-        /* Testing an "issns" array like:        
+        /* Testing an "issns" array like:
         "issns": [
             {
               "pubType": "Print"
@@ -302,13 +304,14 @@ public class FilesystemModelBuilderTest {
             }
           ]
          */
-        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\" } ] }";
+        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\"" +
+                       " } ] }";
         DepositMetadata depositMetadata = new DepositMetadata();
 
         underTest.processMetadata(depositMetadata, issns);
         assertEquals(1, depositMetadata.getJournalMetadata().getIssnPubTypes().size());
         assertEquals(JournalPublicationType.parseTypeDescription("Online"),
-                depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+                     depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
     }
 
     /**
@@ -333,13 +336,14 @@ public class FilesystemModelBuilderTest {
             }
           ]
          */
-        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\" } ] }";
+        String issns = "{ \"issns\": [ { \"pubType\": \"Print\" }, { \"issn\": \"2042-650X\", \"pubType\": \"Online\"" +
+                       " } ] }";
         DepositMetadata depositMetadata = new DepositMetadata();
 
         underTest.processMetadata(depositMetadata, issns);
         assertEquals(1, depositMetadata.getJournalMetadata().getIssnPubTypes().size());
         assertEquals(JournalPublicationType.parseTypeDescription("Online"),
-                depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
+                     depositMetadata.getJournalMetadata().getIssnPubTypes().get("2042-650X").pubType);
     }
 
     /**
@@ -375,7 +379,8 @@ public class FilesystemModelBuilderTest {
         } catch (Exception e) {
             // expected
         }
-        String issns = "{ \"title\": \"foo\", \"issns\": [ { \"issn\": \"2042-650X\", \"pubType\": \"" + UNKNOWN_TYPE + "\" } ] }";
+        String issns =
+            "{ \"title\": \"foo\", \"issns\": [ { \"issn\": \"2042-650X\", \"pubType\": \"" + UNKNOWN_TYPE + "\" } ] }";
         DepositMetadata depositMetadata = new DepositMetadata();
 
         underTest.processMetadata(depositMetadata, issns);

@@ -18,9 +18,8 @@ package org.dataconservancy.pass.deposit.messaging.runner;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.dataconservancy.pass.deposit.messaging.config.quartz.QuartzConfig;
-import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.dataconservancy.deposit.util.async.Condition;
+import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -58,7 +57,7 @@ public class ListenerRunner implements ApplicationContextAware {
             boolean status = fcrepoUp.awaitAndVerify(TEN_MINUTES, (code) -> code == 200);
             if (!status) {
                 LOG.error("Unable to reach the Fedora server at '{}': exiting.  " +
-                        "Any exceptions thrown after this message can be ignored.", fcrepoBaseUrl);
+                          "Any exceptions thrown after this message can be ignored.", fcrepoBaseUrl);
                 SpringApplication.exit(appCtx, () -> 1);
             }
 

@@ -16,15 +16,15 @@
 
 package org.dataconservancy.nihms.integration;
 
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseIT {
 
@@ -35,7 +35,7 @@ public abstract class BaseIT {
     @Before
     public void verifyDockerHostProperty() throws Exception {
         assertNotNull("Expected required system property 'docker.host.address' to be set.",
-                System.getProperty("docker.host.address"));
+                      System.getProperty("docker.host.address"));
     }
 
     public static <T> void attemptAndVerify(int times, Callable<T> callable, Function<T, Boolean> verification) {

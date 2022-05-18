@@ -15,7 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFixture;
+import static org.hamcrest.CoreMatchers.isA;
+import static submissions.SubmissionResourceUtil.lookupStream;
+
+import java.net.URI;
+
 import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DrainQueueConfig;
@@ -27,13 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import submissions.SubmissionResourceUtil;
-
-import java.io.InputStream;
-import java.net.URI;
-
-import static org.hamcrest.CoreMatchers.isA;
-import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

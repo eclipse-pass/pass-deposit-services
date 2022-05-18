@@ -15,17 +15,16 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints;
-import org.junit.Before;
-import org.junit.Test;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_TUPLE_SEPARATOR;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_URL_SEPARATOR;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_TUPLE_SEPARATOR;
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_URL_SEPARATOR;
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -43,7 +42,7 @@ public class SwordV2BindingTest {
     public void hintsToPropertyString() {
         String covid = "https://jscholarship.library.jhu.edu/handle/1774.2/58585";
         String nobel = "https://jscholarship.library.jhu.edu/handle/1774.2/33532";
-        Map<String, String> hints = new HashMap<String, String>(){
+        Map<String, String> hints = new HashMap<String, String>() {
             {
                 put("covid", covid);
                 put("nobel", nobel);
@@ -51,7 +50,7 @@ public class SwordV2BindingTest {
         };
 
         String expected = "covid" + HINT_URL_SEPARATOR + covid + HINT_TUPLE_SEPARATOR +
-                "nobel" + HINT_URL_SEPARATOR + nobel;
+                          "nobel" + HINT_URL_SEPARATOR + nobel;
 
         assertEquals(expected, underTest.hintsToPropertyString(hints));
         assertEquals(2, underTest.hintsToPropertyString(hints).split(" ").length);
@@ -61,7 +60,7 @@ public class SwordV2BindingTest {
     public void hintsToPropertyStringTrailingOrLeadingSpace() {
         String leading = " https://jscholarship.library.jhu.edu/handle/1774.2/58585";
         String trailing = "https://jscholarship.library.jhu.edu/handle/1774.2/33532 ";
-        Map<String, String> hints = new HashMap<String, String>(){
+        Map<String, String> hints = new HashMap<String, String>() {
             {
                 put("covid", leading);
                 put("nobel", trailing);
@@ -69,7 +68,7 @@ public class SwordV2BindingTest {
         };
 
         String expected = "covid" + HINT_URL_SEPARATOR + leading.trim() + HINT_TUPLE_SEPARATOR +
-                "nobel" + HINT_URL_SEPARATOR + trailing.trim();
+                          "nobel" + HINT_URL_SEPARATOR + trailing.trim();
 
         assertEquals(expected, underTest.hintsToPropertyString(hints));
         assertEquals(2, underTest.hintsToPropertyString(hints).split(" ").length);
@@ -78,7 +77,7 @@ public class SwordV2BindingTest {
     @Test
     public void hintsToPropertyStringEncodedSpace() {
         String encodedSpace = "https://jscholarship.library.jhu.edu/handle/1774.2/58585?moo=%20cow%20";
-        Map<String, String> hints = new HashMap<String, String>(){
+        Map<String, String> hints = new HashMap<String, String>() {
             {
                 put("covid", encodedSpace);
             }

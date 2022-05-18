@@ -15,6 +15,20 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import static java.util.Collections.singletonList;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_TUPLE_SEPARATOR;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_URL_SEPARATOR;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_HINTS;
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.abdera.i18n.iri.IRI;
@@ -26,20 +40,6 @@ import org.swordapp.client.SWORDClient;
 import org.swordapp.client.SWORDCollection;
 import org.swordapp.client.SWORDWorkspace;
 import org.swordapp.client.ServiceDocument;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Collections.singletonList;
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_TUPLE_SEPARATOR;
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.HINT_URL_SEPARATOR;
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_HINTS;
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_COLLECTION_URL;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -94,15 +94,16 @@ public class Sword2TransportSessionTest {
 
         // Set up the metadata coming in with the Submission, and attach it to the package metadata
         String submissionMetaStr = "{\n" +
-                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
-                "    \"title\": \"The title of the article\",\n" +
-                "    \"journal-title\": \"A Terrific Journal\",\n" +
-                "    \"hints\": {\n" +
-                "        \"collection-tags\": [\n" +
-                "            \"covid\",\n" +
-                "            \"nobel\"\n" +
-                "        ]\n" +
-                "    }\n" + "}";
+                                   "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\"," +
+                                   "\n" +
+                                   "    \"title\": \"The title of the article\",\n" +
+                                   "    \"journal-title\": \"A Terrific Journal\",\n" +
+                                   "    \"hints\": {\n" +
+                                   "        \"collection-tags\": [\n" +
+                                   "            \"covid\",\n" +
+                                   "            \"nobel\"\n" +
+                                   "        ]\n" +
+                                   "    }\n" + "}";
 
         JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);
@@ -123,7 +124,8 @@ public class Sword2TransportSessionTest {
      */
     @Test
     public void testDepositWithMultipleConfiguredCollectionHintsOnlyFirstMatches() {
-        // Metadata mapping used to configure the transport (the default SWORD collection url and configured hints mapping)
+        // Metadata mapping used to configure the transport (the default SWORD collection url and configured hints
+        // mapping)
         Map<String, String> transportMd = new HashMap<>();
 
         // Set up a default collection URL, used in case no configured hints match any of the hints supplied in the
@@ -135,27 +137,28 @@ public class Sword2TransportSessionTest {
         String configuredUrlOne = "http://covid.collection/baz";
         String configuredUrlTwo = "http://nobellaureates.collection/biz";
         String configuredHints = String.format("%s%s%s%s%s%s%s", "covid", HINT_URL_SEPARATOR, configuredUrlOne,
-                HINT_TUPLE_SEPARATOR, "nobel", HINT_URL_SEPARATOR, configuredUrlTwo);
+                                               HINT_TUPLE_SEPARATOR, "nobel", HINT_URL_SEPARATOR, configuredUrlTwo);
         transportMd.put(SWORD_COLLECTION_HINTS, configuredHints);
 
         // Set up the metadata coming in with the Submission, and attach it to the package metadata
         String submissionMetaStr = "{\n" +
-                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
-                "    \"title\": \"The title of the article\",\n" +
-                "    \"journal-title\": \"A Terrific Journal\",\n" +
-                "    \"hints\": {\n" +
-                "        \"collection-tags\": [\n" +
-                "            \"covid\",\n" +
-                "            \"nobel\"\n" +
-                "        ]\n" +
-                "    }\n" + "}";
+                                   "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\"," +
+                                   "\n" +
+                                   "    \"title\": \"The title of the article\",\n" +
+                                   "    \"journal-title\": \"A Terrific Journal\",\n" +
+                                   "    \"hints\": {\n" +
+                                   "        \"collection-tags\": [\n" +
+                                   "            \"covid\",\n" +
+                                   "            \"nobel\"\n" +
+                                   "        ]\n" +
+                                   "    }\n" + "}";
 
         JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);
 
         // Decorate the serviceDoc with SWORDCollections to answer to, being careful use it in our test methods below
         ServiceDocument doc = swordServiceDocument(serviceDoc,
-                defaultCollectionUrl, configuredUrlOne, configuredUrlTwo);
+                                                   defaultCollectionUrl, configuredUrlOne, configuredUrlTwo);
 
         Sword2TransportSession underTest = new Sword2TransportSession(mock(SWORDClient.class), doc, authCreds);
 
@@ -169,7 +172,8 @@ public class Sword2TransportSessionTest {
      */
     @Test
     public void testDepositWithNoConfiguredHints() {
-        // Metadata mapping used to configure the transport (the default SWORD collection url and configured hints mapping)
+        // Metadata mapping used to configure the transport (the default SWORD collection url and configured hints
+        // mapping)
         Map<String, String> transportMd = new HashMap<>();
 
         // Set up a default collection URL, used in case no configured hints match any of the hints supplied in the
@@ -181,15 +185,16 @@ public class Sword2TransportSessionTest {
 
         // Set up the metadata coming in with the Submission, and attach it to the package metadata
         String submissionMetaStr = "{\n" +
-                "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\",\n" +
-                "    \"title\": \"The title of the article\",\n" +
-                "    \"journal-title\": \"A Terrific Journal\",\n" +
-                "    \"hints\": {\n" +
-                "        \"collection-tags\": [\n" +
-                "            \"covid\",\n" +
-                "            \"nobel\"\n" +
-                "        ]\n" +
-                "    }\n" + "}";
+                                   "    \"$schema\": \"https://oa-pass.github.io/metadata-schemas/jhu/global.json\"," +
+                                   "\n" +
+                                   "    \"title\": \"The title of the article\",\n" +
+                                   "    \"journal-title\": \"A Terrific Journal\",\n" +
+                                   "    \"hints\": {\n" +
+                                   "        \"collection-tags\": [\n" +
+                                   "            \"covid\",\n" +
+                                   "            \"nobel\"\n" +
+                                   "        ]\n" +
+                                   "    }\n" + "}";
 
         JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
         when(packageMd.submissionMeta()).thenReturn(submissionMeta);

@@ -15,9 +15,8 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.apache.commons.io.IOUtils;
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.springframework.messaging.Message;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -25,20 +24,22 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.commons.io.IOUtils;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
+import org.springframework.messaging.Message;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class PolicyTestUtil {
-    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType) throws IOException {
+    static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType)
+        throws IOException {
         return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType, String
-            messageBodyResource) throws IOException {
+        messageBodyResource) throws IOException {
         DepositUtil.MessageContext mc = mock(DepositUtil.MessageContext.class);
 
         when(mc.eventType()).thenReturn(eventType);
@@ -55,8 +56,8 @@ public class PolicyTestUtil {
         when(mc.message()).thenReturn(message);
 
         when(message.getPayload()).thenReturn(
-                IOUtils.toString(
-                        SubmissionMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
+            IOUtils.toString(
+                SubmissionMessagePolicyTest.class.getResourceAsStream(messageBodyResource), "UTF-8"));
 
         return mc;
     }

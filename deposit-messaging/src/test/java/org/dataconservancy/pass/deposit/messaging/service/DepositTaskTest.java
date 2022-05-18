@@ -15,33 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.apache.abdera.i18n.iri.IRI;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.assembler.Assembler;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.support.messaging.cri.DefaultConflictHandler;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.swordapp.client.DepositReceipt;
-import org.swordapp.client.SWORDClientException;
-import org.swordapp.client.SwordIdentifier;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
 import static org.junit.Assert.assertEquals;
@@ -51,6 +24,32 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.abdera.i18n.iri.IRI;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.assembler.Assembler;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Repository;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalPath;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.DefaultConflictHandler;
+import org.junit.Before;
+import org.junit.Test;
+import org.swordapp.client.DepositReceipt;
+import org.swordapp.client.SWORDClientException;
+import org.swordapp.client.SwordIdentifier;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -171,7 +170,8 @@ public class DepositTaskTest {
      * @param depositContext
      * @return
      */
-    private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext, TransportResponse tr, PassClient passClient) {
+    private static Deposit depositContext(DepositUtil.DepositWorkerContext depositContext, TransportResponse tr,
+                                          PassClient passClient) {
         Repository r = new Repository();
         r.setId(randomUri());
         depositContext.repository(r);

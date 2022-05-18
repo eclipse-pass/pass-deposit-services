@@ -15,12 +15,7 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
-import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
-import org.dataconservancy.pass.model.Grant;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Character.toUpperCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,7 +41,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static java.lang.Character.toUpperCase;
+import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
+import org.dataconservancy.pass.model.Grant;
+import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Submission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates a collection of {@link PassEntity} objects, loosely modeled as a graph rooted with a {@link Submission}.
@@ -119,7 +119,8 @@ public class SubmissionGraph {
         Objects.requireNonNull(entities, "Entities must not be null!");
         this.entities = entities;
         this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Entities are missing expected Submission entity."));
+                                               .orElseThrow(() -> new IllegalArgumentException(
+                                                   "Entities are missing expected Submission entity."));
     }
 
     /**
@@ -178,8 +179,8 @@ public class SubmissionGraph {
      * Apply the supplied consumer to entities of the graph matching the supplied {@code Class}.
      *
      * @param clazz the {@code Class} matching entities of the graph
-     * @param c the consumer which will be supplied the {@code Submission} at the root of the graph as well as the
-     *          entity matched by the {@code Predicate}
+     * @param c     the consumer which will be supplied the {@code Submission} at the root of the graph as well as the
+     *              entity matched by the {@code Predicate}
      * @return this graph
      */
     public SubmissionGraph walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
@@ -191,7 +192,7 @@ public class SubmissionGraph {
      * Adds an entity to the graph.
      *
      * @param passEntity the entity
-     * @param <T> the type of the entity
+     * @param <T>        the type of the entity
      */
     private <T extends PassEntity> void add(T passEntity) {
         entities.put(passEntity.getId(), passEntity);
@@ -250,7 +251,7 @@ public class SubmissionGraph {
      *     <li>If a {@code URI} is equal to the {@code URI} of the removed entity, the field is nulled out</li>
      * </ul>
      *
-     * @param u the URI of the entity being removed
+     * @param u        the URI of the entity being removed
      * @param entities the members of the graph
      */
     private static void removeEntity(URI u, ConcurrentHashMap<URI, PassEntity> entities) {
@@ -261,47 +262,47 @@ public class SubmissionGraph {
 
         entities.values().forEach(entity -> {
             Arrays.stream(entity.getClass().getDeclaredFields())
-                    .filter(field -> URI.class.isAssignableFrom(field.getType())
-                            || Collection.class.isAssignableFrom(field.getType())
-                            || Map.class.isAssignableFrom(field.getType()))
-                    .peek(field -> field.setAccessible(true))
-                    .forEach(field -> {
-                        try {
-                            if (Collection.class.isAssignableFrom(field.getType())) {
-                                ((Collection) field.get(entity)).remove(u);
-                            } else if (Map.class.isAssignableFrom(field.getType())) {
-                                Map map = ((Map) field.get(entity));
-                                if (map.containsKey(u)) {
-                                    map.remove(u);
-                                }
-                                if (map.containsValue(u)) {
-                                    AtomicReference key = new AtomicReference();
-                                    map.forEach((k, v) -> {
-                                        if (u.equals(v)) {
-                                            key.set(k);
-                                        }
-                                    });
+                  .filter(field -> URI.class.isAssignableFrom(field.getType())
+                                   || Collection.class.isAssignableFrom(field.getType())
+                                   || Map.class.isAssignableFrom(field.getType()))
+                  .peek(field -> field.setAccessible(true))
+                  .forEach(field -> {
+                      try {
+                          if (Collection.class.isAssignableFrom(field.getType())) {
+                              ((Collection) field.get(entity)).remove(u);
+                          } else if (Map.class.isAssignableFrom(field.getType())) {
+                              Map map = ((Map) field.get(entity));
+                              if (map.containsKey(u)) {
+                                  map.remove(u);
+                              }
+                              if (map.containsValue(u)) {
+                                  AtomicReference key = new AtomicReference();
+                                  map.forEach((k, v) -> {
+                                      if (u.equals(v)) {
+                                          key.set(k);
+                                      }
+                                  });
 
-                                    map.remove(key.get());
-                                }
-                            } else {
-                                if (u.equals(field.get(entity))) {
-                                    field.set(entity, null);
-                                }
-                            }
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                                  map.remove(key.get());
+                              }
+                          } else {
+                              if (u.equals(field.get(entity))) {
+                                  field.set(entity, null);
+                              }
+                          }
+                      } catch (IllegalAccessException e) {
+                          throw new RuntimeException(e);
+                      }
+                  });
         });
     }
 
     /**
      * Type-safe method for obtaining a member from the graph.
      *
-     * @param u the URI of the entity to retrieve
+     * @param u    the URI of the entity to retrieve
      * @param type the type of the object identified by the URI
-     * @param <T> the type of the object
+     * @param <T>  the type of the object
      * @return the member of the graph, or {@code null} if the member was not found
      */
     public <T extends PassEntity> T get(URI u, Class<T> type) {
@@ -333,8 +334,8 @@ public class SubmissionGraph {
     /**
      * Links the id of source entity to the target using the supplied field of the target
      *
-     * @param target the target of the link
-     * @param source the source of the link
+     * @param target      the target of the link
+     * @param source      the source of the link
      * @param targetField the field on the target
      */
     private static void linkUsingField(PassEntity target, PassEntity source, String targetField) {
@@ -350,25 +351,27 @@ public class SubmissionGraph {
             try {
                 getter = target.getClass().getMethod("get" + targetField);
                 if (Collection.class.isAssignableFrom(getter.getReturnType())) {
-                    ((Collection)getter.invoke(target)).add(source.getId());
+                    ((Collection) getter.invoke(target)).add(source.getId());
                     return;
                 }
-                throw new RuntimeException(String.format("No such method set%s on %s", targetField, target.getClass().getSimpleName()));
+                throw new RuntimeException(
+                    String.format("No such method set%s on %s", targetField, target.getClass().getSimpleName()));
             } catch (NoSuchMethodException ex) {
-                throw new RuntimeException(String.format("No such method get%s on %s", targetField, target.getClass().getSimpleName()));
+                throw new RuntimeException(
+                    String.format("No such method get%s on %s", targetField, target.getClass().getSimpleName()));
             } catch (IllegalAccessException ex) {
                 throw new RuntimeException(String.format("Error accessing get%s on %s: %s", targetField,
-                        target.getClass().getSimpleName(), e.getMessage()), e);
+                                                         target.getClass().getSimpleName(), e.getMessage()), e);
             } catch (InvocationTargetException ex) {
                 throw new RuntimeException(String.format("Error invoking get%s on %s: %s", targetField,
-                        target.getClass().getSimpleName(), e.getMessage()), e);
+                                                         target.getClass().getSimpleName(), e.getMessage()), e);
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(String.format("Error accessing set%s on %s: %s", targetField,
-                    target.getClass().getSimpleName(), e.getMessage()), e);
+                                                     target.getClass().getSimpleName(), e.getMessage()), e);
         } catch (InvocationTargetException e) {
             throw new RuntimeException(String.format("Error invoking get%s on %s: %s", targetField,
-                    target.getClass().getSimpleName(), e.getMessage()), e);
+                                                     target.getClass().getSimpleName(), e.getMessage()), e);
         }
     }
 
@@ -377,7 +380,7 @@ public class SubmissionGraph {
      *
      * @param target the target of the link
      * @param source the source of the link
-     * @param rel the relationship
+     * @param rel    the relationship
      */
     private static void linkUsingRel(PassEntity target, PassEntity source, Rel rel) {
         switch (rel) {
@@ -444,7 +447,7 @@ public class SubmissionGraph {
          * The stream must have exactly one Submission.
          * </p>
          *
-         * @param in an InputStream of PASS entities encoded as JSON
+         * @param in      an InputStream of PASS entities encoded as JSON
          * @param adapter deserializes the stream into PassEntity instances
          * @return the GraphBuilder populated by members deserialized from the sream
          */
@@ -487,7 +490,8 @@ public class SubmissionGraph {
         private GraphBuilder(ConcurrentHashMap<URI, PassEntity> entities) {
             Objects.requireNonNull(entities, "Entities must not be null!");
             this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
-                    .orElseThrow(() -> new IllegalArgumentException("Entities is missing a required Submission entity."));
+                                                   .orElseThrow(() -> new IllegalArgumentException(
+                                                       "Entities is missing a required Submission entity."));
             this.entities = entities;
             this.linkInstructions = new ArrayList<>();
         }
@@ -558,11 +562,12 @@ public class SubmissionGraph {
             while (iterator.hasNext()) {
                 LinkInstruction li = iterator.next();
                 LOG.trace("  Processing LinkInstruction {}@{}", li.getClass().getSimpleName(),
-                        Integer.toHexString(System.identityHashCode(li)));
+                          Integer.toHexString(System.identityHashCode(li)));
                 PassEntity source = null;
                 if (li.sourcePredicate != null) {
                     source =
-                            entities.values().stream().filter(li.sourcePredicate).findAny().orElseThrow(() -> new RuntimeException("Missing source entity"));
+                        entities.values().stream().filter(li.sourcePredicate).findAny()
+                                .orElseThrow(() -> new RuntimeException("Missing source entity"));
                 } else {
                     source = li.source;
                 }
@@ -570,13 +575,14 @@ public class SubmissionGraph {
                 PassEntity target = null;
                 if (li.targetPredicate != null) {
                     target =
-                            entities.values().stream().filter(li.targetPredicate).findAny().orElseThrow(() -> new RuntimeException("Missing target entity"));
+                        entities.values().stream().filter(li.targetPredicate).findAny()
+                                .orElseThrow(() -> new RuntimeException("Missing target entity"));
                 } else {
                     target = li.target;
                 }
 
                 LOG.trace("    Linking {} ({}) to {} ({}) using {}", target.getClass().getSimpleName(),
-                        target.getId(), source.getClass().getSimpleName(), source.getId(), li.rel);
+                          target.getId(), source.getClass().getSimpleName(), source.getId(), li.rel);
 
                 try {
                     linkUsingRel(target, source, Rel.valueOf(li.rel));
@@ -596,7 +602,7 @@ public class SubmissionGraph {
          * variants are invoked.
          *
          * @param type the type of entity being added to the graph
-         * @param <T> the class type
+         * @param <T>  the class type
          * @return an EntityBuilder use to supply the state of the entity
          */
         public <T extends PassEntity> EntityBuilder<T> addEntity(Class<T> type) {
@@ -668,7 +674,7 @@ public class SubmissionGraph {
          * Walk the graph, and apply the consumer to any entity who is an instance of the supplied class.
          *
          * @param clazz the class that selects the entities to operate on
-         * @param c the consumer to apply to the entity
+         * @param c     the consumer to apply to the entity
          * @return this GraphBuilder
          */
         public GraphBuilder walk(Class<? extends PassEntity> clazz, BiConsumer<Submission, PassEntity> c) {
@@ -705,8 +711,8 @@ public class SubmissionGraph {
         /**
          * Constructs a builder.
          *
-         * @param s supplies a new instance of the entity to be built
-         * @param entities the entities that are members of the graph
+         * @param s                supplies a new instance of the entity to be built
+         * @param entities         the entities that are members of the graph
          * @param linkInstructions the link instructions that will be applied when the graph is built
          */
         private EntityBuilder(Supplier<T> s, Map<URI, PassEntity> entities, List<LinkInstruction> linkInstructions) {
@@ -717,14 +723,15 @@ public class SubmissionGraph {
             this.entities = entities;
             this.linkInstructions = linkInstructions;
             this.submission = (Submission) entities.values().stream().filter(SUBMISSION).findAny()
-                    .orElseThrow(() -> new RuntimeException("Supplied graph is missing a Submission entity."));
+                                                   .orElseThrow(() -> new RuntimeException(
+                                                       "Supplied graph is missing a Submission entity."));
         }
 
         /**
          * Set the supplied field to a value on this entity.
          *
          * @param fieldName the name of the field
-         * @param value the value to set
+         * @param value     the value to set
          * @return this EntityBuilder
          */
         public EntityBuilder<T> set(String fieldName, String value) {
@@ -735,8 +742,8 @@ public class SubmissionGraph {
          * Adds a member to a Collection maintained by the entity
          *
          * @param fieldName the name of the field which must be a Collection
-         * @param value the value to add to the Collection
-         * @param <U> the type of the Collection
+         * @param value     the value to add to the Collection
+         * @param <U>       the type of the Collection
          * @return this EntityBuilder
          */
         public <U> EntityBuilder<T> add(String fieldName, U value) {
@@ -753,7 +760,7 @@ public class SubmissionGraph {
             try {
                 Object obj = getter.invoke(toBuild);
                 if (obj instanceof Collection) {
-                    ((Collection)obj).add(value);
+                    ((Collection) obj).add(value);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -767,8 +774,8 @@ public class SubmissionGraph {
          *
          * @param fieldName the name of the field in this entity
          * @param fieldType the type of the field
-         * @param value the value of the field
-         * @param <U> the type of the value of the field
+         * @param value     the value of the field
+         * @param <U>       the type of the value of the field
          * @return this EntityBuilder
          */
         public <U> EntityBuilder<T> set(String fieldName, Class<U> fieldType, U value) {
@@ -779,7 +786,8 @@ public class SubmissionGraph {
             try {
                 setter = toBuild.getClass().getMethod("set" + fieldName, fieldType);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException(String.format("No such method set%s on %s", fieldName, toBuild.getClass().getSimpleName()));
+                throw new RuntimeException(
+                    String.format("No such method set%s on %s", fieldName, toBuild.getClass().getSimpleName()));
             }
 
             try {
@@ -795,7 +803,7 @@ public class SubmissionGraph {
          * Link this entity to the entity identified by the predicate as a source.
          *
          * @param targetPredicate the predicate identifying the target entity
-         * @param rel the relationship between this entity and the target
+         * @param rel             the relationship between this entity and the target
          * @return this EntityBuilder
          */
         public EntityBuilder<T> linkFrom(Predicate<PassEntity> targetPredicate, String rel) {
@@ -807,7 +815,7 @@ public class SubmissionGraph {
          * Link this entity to the supplied entity as a source.
          *
          * @param targetEntity the target entity
-         * @param rel the relationship between this entity and the target
+         * @param rel          the relationship between this entity and the target
          * @return this EntityBuilder
          */
         public EntityBuilder<T> linkFrom(PassEntity targetEntity, String rel) {
@@ -819,7 +827,7 @@ public class SubmissionGraph {
          * Link this entity to the entity identified by the source predicate as a target.
          *
          * @param sourcePredicate the predicate identifying the source entity
-         * @param rel the relationship between the source and this entity
+         * @param rel             the relationship between the source and this entity
          * @return this EntityBuilder
          */
         public EntityBuilder<T> linkTo(Predicate<PassEntity> sourcePredicate, String rel) {
@@ -831,7 +839,7 @@ public class SubmissionGraph {
          * Link this entity to the supplied entity as a target.
          *
          * @param sourceEntity the source entity
-         * @param rel the relationship between the source and this entity
+         * @param rel          the relationship between the source and this entity
          * @return this EntityBuilder
          */
         public EntityBuilder<T> linkTo(PassEntity sourceEntity, String rel) {
@@ -889,7 +897,7 @@ public class SubmissionGraph {
     private static String upperCase(String fieldName) {
         if (Character.isLowerCase(fieldName.charAt(0))) {
             fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
-                    fieldName.length());
+                                                                                                     fieldName.length());
         }
         return fieldName;
     }
@@ -947,15 +955,16 @@ public class SubmissionGraph {
          * PassEntity} has a field with the specified value.
          *
          * @param fieldName the field name
-         * @param value the value of the field that must be matched in order for this {@code Predicate} to return
-         *              {@code true}
+         * @param value     the value of the field that must be matched in order for this {@code Predicate} to return
+         *                  {@code true}
          * @return a {@code Predicate} capable of evaluating PassEntities who have a field with the supplied value
          */
         static Predicate<PassEntity> entityHaving(String fieldName, String value) {
             Predicate<PassEntity> withPredicate = (entity -> {
                 String field;
                 if (Character.isLowerCase(fieldName.charAt(0))) {
-                    field = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1, fieldName.length());
+                    field = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
+                                                                                                         fieldName.length());
                 } else {
                     field = fieldName;
                 }
@@ -971,10 +980,10 @@ public class SubmissionGraph {
                     return false;
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(String.format("Error accessing get%s on %s: %s", field,
-                            entity.getClass().getSimpleName(), e.getMessage()), e);
+                                                             entity.getClass().getSimpleName(), e.getMessage()), e);
                 } catch (InvocationTargetException e) {
                     throw new RuntimeException(String.format("Error invoking get%s on %s: %s", field,
-                            entity.getClass().getSimpleName(), e.getMessage()), e);
+                                                             entity.getClass().getSimpleName(), e.getMessage()), e);
                 }
             });
 

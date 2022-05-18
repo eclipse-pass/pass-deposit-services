@@ -23,17 +23,22 @@
   </author>
   <updated>2018-05-04T14:22:25.000Z</updated>
 
-  <category term="http://dspace.org/state/withdrawn" scheme="http://purl.org/net/sword/terms/state" label="State">The item has been withdrawn</category>
+  <category term="http://dspace.org/state/withdrawn" scheme="http://purl.org/net/sword/terms/state" label="State">The
+    item has been withdrawn
+  </category>
 
   <!--
     Other <entry> elements elided
   -->
   <entry>
     <id>http://192.168.99.100:8181/xmlui/bitstream/123456789/3/6/dspace-mets-01.zip</id>
-    <title type="text">Original Deposit http://192.168.99.100:8181/xmlui/bitstream/123456789/3/6/dspace-mets-01.zip</title>
+    <title type="text">Original Deposit http://192.168.99.100:8181/xmlui/bitstream/123456789/3/6/dspace-mets-01.zip
+    </title>
     <summary type="text">Original Deposit</summary>
     <updated>2018-05-04T14:24:27.370Z</updated>
-    <content type="application/octet-stream" src="http://192.168.99.100:8181/xmlui/bitstream/123456789/3/6/dspace-mets-01.zip"/>
-    <category term="http://purl.org/net/sword/terms/originalDeposit" scheme="http://purl.org/net/sword/terms/" label="Original Deposit"/>
+    <content type="application/octet-stream"
+             src="http://192.168.99.100:8181/xmlui/bitstream/123456789/3/6/dspace-mets-01.zip"/>
+    <category term="http://purl.org/net/sword/terms/originalDeposit" scheme="http://purl.org/net/sword/terms/"
+              label="Original Deposit"/>
   </entry>
 </feed>

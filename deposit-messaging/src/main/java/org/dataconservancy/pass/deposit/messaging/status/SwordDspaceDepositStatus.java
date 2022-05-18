@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.support.messaging.constants.Constants;
-
 import java.net.URI;
 import java.util.stream.Stream;
+
+import org.dataconservancy.pass.support.messaging.constants.Constants;
 
 /**
  * Possible states of a deposit to DSpace via SWORD.
@@ -71,6 +71,6 @@ public enum SwordDspaceDepositStatus {
      */
     public static SwordDspaceDepositStatus parseUri(String uri) {
         return Stream.of(values()).filter(value -> value.asUri().toString().equals(uri)).findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown deposit status '" + uri + "'"));
+                     .orElseThrow(() -> new IllegalArgumentException("Unknown deposit status '" + uri + "'"));
     }
 }

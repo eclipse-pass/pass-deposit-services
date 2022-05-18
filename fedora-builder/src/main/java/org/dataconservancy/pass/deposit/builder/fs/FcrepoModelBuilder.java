@@ -16,15 +16,15 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.model.PassEntity;
 import org.dataconservancy.pass.model.Submission;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 
 /**
  * Builds a submission from a file on a locally mounted filesystem.

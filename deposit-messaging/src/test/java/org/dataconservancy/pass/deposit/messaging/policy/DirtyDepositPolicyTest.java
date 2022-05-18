@@ -15,12 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import org.dataconservancy.pass.model.Deposit;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -35,6 +36,6 @@ public class DirtyDepositPolicyTest {
     @Test
     public void testNonNullStatus() throws Exception {
         Stream.of(Deposit.DepositStatus.values()).forEach(status ->
-                assertFalse(new DirtyDepositPolicy().test(status)));
+                                                              assertFalse(new DirtyDepositPolicy().test(status)));
     }
 }

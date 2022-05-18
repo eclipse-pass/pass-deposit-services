@@ -19,7 +19,9 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 /**
  * Responsible for creating an instance of a {@link DepositSubmission submission}.  Knowledgeable of the
- * view model (i.e. the model used by the forms collecting submission information), the {@link org.dataconservancy.pass.deposit.model submission model}, and the required metadata needed for building a submission.
+ * view model (i.e. the model used by the forms collecting submission information), the
+ * {@link org.dataconservancy.pass.deposit.model submission model}, and the required metadata needed for building a
+ * submission.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */

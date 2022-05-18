@@ -16,42 +16,13 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
-import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
-import org.dataconservancy.pass.deposit.model.DepositFile;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.Submission;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.springframework.core.task.TaskRejectedException;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomAggregatedDepositStatusExcept;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
-import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.*;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.critical;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.postCondition;
+import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.CriFunc.preCondition;
 import static org.dataconservancy.pass.deposit.messaging.service.SubmissionProcessor.getLookupKeys;
 import static org.dataconservancy.pass.model.Deposit.DepositStatus.FAILED;
 import static org.dataconservancy.pass.model.Repository.IntegrationType.WEB_LINK;
@@ -79,6 +50,37 @@ import static submissions.SubmissionResourceUtil.asJson;
 import static submissions.SubmissionResourceUtil.asStream;
 import static submissions.SubmissionResourceUtil.lookupUri;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Repository;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.core.task.TaskRejectedException;
+
 public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
     @Rule
@@ -91,7 +93,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, depositTaskHelper, cri);
+                                            submissionPolicy, depositTaskHelper, cri);
     }
 
     /**
@@ -99,8 +101,10 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
      * <ol>
      *     <li>Updates the aggregated deposit status of the Submission to IN-PROGRESS</li>
      *     <li>Builds a DepositSubmission from the Submission</li>
-     *     <li>Creates a Deposit resource in the Fedora repository for each Repository associated with the Submission</li>
-     *     <li>Resolves the Packager (used to perform the transfer of custodial content to a downstream repository) for each Repository</li>
+     *     <li>Creates a Deposit resource in the Fedora repository for each Repository associated with the
+     *     Submission</li>
+     *     <li>Resolves the Packager (used to perform the transfer of custodial content to a downstream repository)
+     *     for each Repository</li>
      *     <li>Composes and submits a DepositTask to the queue for each Deposit</li>
      * </ol>
      * The issue with this test is that it doesn't test the CRI in SubmissionProcessor that updates the status of the
@@ -147,30 +151,39 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         // sets the correct state on newly created Deposits.
 
         List<Repository> createdRepositories = repositoryIds.stream().map(repoUri -> {
-                    Repository r = new Repository();
-                    r.setId(repoUri);
-                    r.setName("Repository for " + repoUri);
-                    return r;
-                }).
-                peek(repo -> {
-                    when(passClient.readResource(repo.getId(), Repository.class)).thenReturn(repo);
+                                                                Repository r = new Repository();
+                                                                r.setId(repoUri);
+                                                                r.setName("Repository for " + repoUri);
+                                                                return r;
+                                                            }).
+                                                            peek(repo -> {
+                                                                when(passClient.readResource(repo.getId(),
+                                                                                             Repository.class)).thenReturn(
+                                                                    repo);
 
-                    when(passClient.createAndReadResource(
-                            argThat((deposit) -> deposit != null && deposit.getRepository().equals(repo.getId())),
-                            eq(Deposit.class))).then(inv -> {
-                        // Assert that the Deposit being created carries the correct state
-                        Deposit deposit = inv.getArgument(0);
-                        assertNotNull(deposit);
-                        assertEquals(repo.getId().toString(), deposit.getRepository().toString());
-                        assertEquals(submissionUri.toString(), deposit.getSubmission().toString());
-                        assertNull(deposit.getDepositStatus());
-                        return deposit;
-                    });
+                                                                when(passClient.createAndReadResource(
+                                                                    argThat(
+                                                                        (deposit) -> deposit != null && deposit.getRepository()
+                                                                                                               .equals(
+                                                                                                                   repo.getId())),
+                                                                    eq(Deposit.class))).then(inv -> {
+                                                                    // Assert that the Deposit being created carries
+                                                                    // the correct state
+                                                                    Deposit deposit = inv.getArgument(0);
+                                                                    assertNotNull(deposit);
+                                                                    assertEquals(repo.getId().toString(),
+                                                                                 deposit.getRepository().toString());
+                                                                    assertEquals(submissionUri.toString(),
+                                                                                 deposit.getSubmission().toString());
+                                                                    assertNull(deposit.getDepositStatus());
+                                                                    return deposit;
+                                                                });
 
-                    // Packagers are looked up by name of the repository
+                                                                // Packagers are looked up by name of the repository
 
-                    when(packagerRegistry.get(repo.getName())).thenReturn(mock(Packager.class));
-                }).collect(Collectors.toList());
+                                                                when(packagerRegistry.get(repo.getName())).thenReturn(
+                                                                    mock(Packager.class));
+                                                            }).collect(Collectors.toList());
 
 
         underTest.accept(submission);
@@ -183,7 +196,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Verify we created a Deposit for each Repository
         verify(passClient, times(submission.getRepositories().size()))
-                .createAndReadResource(any(Deposit.class), eq(Deposit.class));
+            .createAndReadResource(any(Deposit.class), eq(Deposit.class));
 
         // Verify that each Repository was read from the Fedora repository, and that a Packager for each Repository was
         // resolved from the PackagerRegistry
@@ -207,7 +220,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         // Mock a DepositTaskHelper for this test.
         DepositTaskHelper mockHelper = mock(DepositTaskHelper.class);
         underTest = new SubmissionProcessor(passClient, jsonParser, submissionBuilder, packagerRegistry,
-                submissionPolicy, mockHelper, cri);
+                                            submissionPolicy, mockHelper, cri);
 
         // Boilerplate to build a sample Submission and mock the PassClient to return the Submission and Repository
         // resources when asked.
@@ -217,34 +230,37 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         URI submissionUri = URI.create("fake:submission1");
 
         Map<URI, Submission> submissionMap =
-                asStream(asJson(submissionUri)).filter(node -> node.has("@id") && node.has("@type") && node.get(
-                        "@type").asText().equals("Submission")).collect(Collectors.toMap(node -> URI.create(node.get(
-                                "@id").asText()), node -> {
-            try {
-                return adapter.toModel(toInputStream(node.toString(), UTF_8), Submission.class);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }));
+            asStream(asJson(submissionUri)).filter(node -> node.has("@id") && node.has("@type") && node.get(
+                "@type").asText().equals("Submission")).collect(Collectors.toMap(node -> URI.create(node.get(
+                "@id").asText()), node -> {
+                try {
+                    return adapter.toModel(toInputStream(node.toString(), UTF_8), Submission.class);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }));
 
         Map<URI, Repository> repoMap = asStream(asJson(submissionUri)).filter(node -> node.has("@id") && node.has(
-                "@type") && node.get("@type").asText().equals("Repository")).collect(Collectors.toMap(node -> URI.create(node.get("@id").asText()), node -> {
-            try {
-                return adapter.toModel(toInputStream(node.toString(), UTF_8), Repository.class);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }));
+            "@type") && node.get("@type").asText().equals("Repository")).collect(
+            Collectors.toMap(node -> URI.create(node.get("@id").asText()), node -> {
+                try {
+                    return adapter.toModel(toInputStream(node.toString(), UTF_8), Repository.class);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }));
 
-        when(passClient.readResource(any(URI.class), eq(Submission.class))).then(inv -> submissionMap.get(inv.getArgument(0)));
+        when(passClient.readResource(any(URI.class), eq(Submission.class))).then(
+            inv -> submissionMap.get(inv.getArgument(0)));
 
-        when(passClient.readResource(any(URI.class), eq(Repository.class))).then(inv -> repoMap.get(inv.getArgument(0)));
+        when(passClient.readResource(any(URI.class), eq(Repository.class))).then(
+            inv -> repoMap.get(inv.getArgument(0)));
 
         // Mock a successful CRI
         when(cri.performCritical(eq(submissionUri), eq(Submission.class), any(Predicate.class),
-                any(BiPredicate.class), any(Function.class))).thenAnswer(inv -> {
+                                 any(BiPredicate.class), any(Function.class))).thenAnswer(inv -> {
             return new CriticalResult<>(builder.build(lookupUri(submissionUri).toString()),
-                    submissionMap.get(submissionUri), true);
+                                        submissionMap.get(submissionUri), true);
         });
 
         // Mock a Package registry lookup
@@ -256,7 +272,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
             capturedRepos.add(inv.getArgument(2));
             return null;
         }).when(mockHelper).submitDeposit(eq(submissionMap.get(submissionUri)), any(DepositSubmission.class),
-                any(Repository.class), eq(null), any(Packager.class));
+                                          any(Repository.class), eq(null), any(Packager.class));
 
         // Total count of Repository resources attached to the Submission
         int allRepos = submissionMap.get(submissionUri).getRepositories().size();
@@ -264,14 +280,14 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         // Verify that we start with at least one repository that has an integration type of web-link attached
         // to the Submission.  The SubmissionProcessor should filter those repositories, and not invoke the
         // DepositTaskHelper for those [Deposit, Submission, Repository] tuples
-        int weblinkRepos = (int)submissionMap.get(submissionUri)
-                .getRepositories()
-                .stream()
-                .map(repoMap::get)
-                .filter(repo -> WEB_LINK == repo.getIntegrationType())
-                .count();
+        int weblinkRepos = (int) submissionMap.get(submissionUri)
+                                              .getRepositories()
+                                              .stream()
+                                              .map(repoMap::get)
+                                              .filter(repo -> WEB_LINK == repo.getIntegrationType())
+                                              .count();
         assertTrue("Expected at least one repository with integration type " + WEB_LINK,
-                weblinkRepos > 0);
+                   weblinkRepos > 0);
 
 
         // Invoke the SubmissionProcessor
@@ -279,12 +295,12 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
 
         // Verify the DepositTaskHelper was called once for each *non-web-link* Repository
         verify(mockHelper, times(allRepos - weblinkRepos))
-                .submitDeposit(
-                        eq(submissionMap.get(submissionUri)),
-                        any(DepositSubmission.class),
-                        any(Repository.class),
-                        eq(null),
-                        any(Packager.class));
+            .submitDeposit(
+                eq(submissionMap.get(submissionUri)),
+                any(DepositSubmission.class),
+                any(Repository.class),
+                eq(null),
+                any(Packager.class));
 
         assertEquals(allRepos - weblinkRepos, capturedRepos.size());
 
@@ -466,11 +482,11 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         }).peek(repo -> {
             when(passClient.readResource(repo.getId(), Repository.class)).thenReturn(repo);
             when(passClient.createAndReadResource(any(Deposit.class), eq(Deposit.class)))
-                    .then(inv -> {
-                        assertEquals(null, ((Deposit)inv.getArgument(0)).getDepositStatus());
-                        ((Deposit) inv.getArgument(0)).setId(URI.create("http://deposit.uri"));
-                        return inv.getArgument(0);
-                    });
+                .then(inv -> {
+                    assertEquals(null, ((Deposit) inv.getArgument(0)).getDepositStatus());
+                    ((Deposit) inv.getArgument(0)).setId(URI.create("http://deposit.uri"));
+                    return inv.getArgument(0);
+                });
 
             when(packagerRegistry.get(repo.getName())).thenReturn(mock(Packager.class));
 
@@ -523,11 +539,11 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         }).peek(repo -> {
             when(passClient.readResource(repo.getId(), Repository.class)).thenReturn(repo);
             when(passClient.createAndReadResource(any(Deposit.class), eq(Deposit.class)))
-                    .then(inv -> {
-                        assertEquals(FAILED, ((Deposit)inv.getArgument(0)).getDepositStatus());
-                        ((Deposit) inv.getArgument(0)).setId(URI.create("http://deposit.uri"));
-                        return inv.getArgument(0);
-                    });
+                .then(inv -> {
+                    assertEquals(FAILED, ((Deposit) inv.getArgument(0)).getDepositStatus());
+                    ((Deposit) inv.getArgument(0)).setId(URI.create("http://deposit.uri"));
+                    return inv.getArgument(0);
+                });
 
             // Packagers are looked up by name of the repository
             // Return 'null' to mock an error in resolving the Packager
@@ -544,7 +560,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         verify(passClient).createAndReadResource(any(Deposit.class), eq(Deposit.class));
         verifyZeroInteractions(taskExecutor);
     }
-    
+
     /* Assure the right repo keys are used for lookup */
     @Test
     public void lookupTest() {
@@ -552,9 +568,9 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         repo.setId(URI.create("http://example.org/a/b/c"));
         repo.setName("The name");
         repo.setRepositoryKey("the key");
-        
+
         Collection<String> keys = getLookupKeys(repo);
-        
+
         assertTrue(keys.contains(repo.getId().toString()));
         assertTrue(keys.contains(repo.getName()));
         assertTrue(keys.contains(repo.getRepositoryKey()));
@@ -562,14 +578,14 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         assertTrue(keys.contains("b/c"));
         assertTrue(keys.contains("c"));
     }
-    
+
     /* Just to make sure things don't blow up with null values */
     @Test
     public void lookupNullsTest() {
         Repository repo = new Repository();
-        
+
         Collection<String> keys = getLookupKeys(repo);
-        
+
         assertTrue(keys.isEmpty());
     }
 
@@ -632,7 +648,7 @@ public class SubmissionProcessorTest extends AbstractSubmissionProcessorTest {
         DepositSubmission ds = mock(DepositSubmission.class);
 
         when(s.getAggregatedDepositStatus()).thenReturn(
-                randomAggregatedDepositStatusExcept(AggregatedDepositStatus.IN_PROGRESS));
+            randomAggregatedDepositStatusExcept(AggregatedDepositStatus.IN_PROGRESS));
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("expected status 'in-progress'");
 

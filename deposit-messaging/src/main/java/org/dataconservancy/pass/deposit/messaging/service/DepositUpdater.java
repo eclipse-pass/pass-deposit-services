@@ -16,16 +16,16 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.Set;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.Set;
 
 @Component
 public class DepositUpdater {
@@ -50,21 +50,21 @@ public class DepositUpdater {
 
     void doUpdate(Collection<URI> depositUris) {
         depositUris.forEach(depositUri ->
-                {
-                    try {
-                        depositHelper.processDepositStatus(depositUri);
-                    } catch (Exception e) {
-                        LOG.warn("Failed to update {}: {}", depositUri, e.getMessage(), e);
-                    }
-                }
-        );
+                            {
+                                try {
+                                    depositHelper.processDepositStatus(depositUri);
+                                } catch (Exception e) {
+                                    LOG.warn("Failed to update {}: {}", depositUri, e.getMessage(), e);
+                                }
+                            }
+                           );
     }
 
     private static Collection<URI> depositUrisToUpdate(PassClient passClient) {
         Set<URI> depositUris = passClient.findAllByAttribute(
-                Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.FAILED.toString());
+            Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.FAILED.toString());
         depositUris.addAll(passClient.findAllByAttribute(
-                Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.SUBMITTED.toString()));
+            Deposit.class, STATUS_ATTRIBUTE, Deposit.DepositStatus.SUBMITTED.toString()));
         return depositUris;
     }
 

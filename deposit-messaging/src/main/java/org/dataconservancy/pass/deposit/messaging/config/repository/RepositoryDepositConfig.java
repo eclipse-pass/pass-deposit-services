@@ -46,16 +46,19 @@ public class RepositoryDepositConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         RepositoryDepositConfig that = (RepositoryDepositConfig) o;
 
         if (depositProcessing != null ? !depositProcessing.equals(that.depositProcessing) : that.depositProcessing !=
-                null)
+                                                                                            null) {
             return false;
+        }
         return statusMapping != null ? statusMapping.equals(that.statusMapping) : that.statusMapping == null;
     }
 
@@ -69,6 +72,6 @@ public class RepositoryDepositConfig {
     @Override
     public String toString() {
         return "RepositoryDepositConfig{" + "depositProcessing=" + depositProcessing +
-                ", statusMapping=" + statusMapping + '}';
+               ", statusMapping=" + statusMapping + '}';
     }
 }

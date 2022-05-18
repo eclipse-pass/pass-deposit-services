@@ -15,12 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import java.io.InputStream;
+
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.stax.FOMParserFactory;
-import org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomFeedStatusParserTest;
-
-import java.io.InputStream;
 
 /**
  * Utility methods for unit tests relating to Atom feeds.

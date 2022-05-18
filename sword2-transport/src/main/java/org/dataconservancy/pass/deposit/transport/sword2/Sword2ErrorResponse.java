@@ -26,6 +26,7 @@ import org.swordapp.client.SWORDError;
  * This class should be used when the calling code returns a {@code SWORDError}.  If the calling code is returning a
  * non-specific error, then the more generic {@link Sword2ThrowableResponse} should be used instead.
  * </p>
+ *
  * @see Sword2ThrowableResponse
  */
 public class Sword2ErrorResponse implements TransportResponse {
@@ -73,6 +74,6 @@ public class Sword2ErrorResponse implements TransportResponse {
      * @return the underlying {@code SWORDError}
      */
     public SWORDError getSwordError() {
-        return ((SwordErrorMessageWrapper)swordError).getSwordError();
+        return ((SwordErrorMessageWrapper) swordError).getSwordError();
     }
 }

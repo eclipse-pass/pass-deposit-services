@@ -16,13 +16,25 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.savePackage;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
 import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
 import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
-import resources.SharedSubmissionUtil;
 import org.dataconservancy.pass.deposit.model.DepositFile;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.junit.Before;
@@ -31,19 +43,7 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.function.Function.*;
-import static java.util.stream.Collectors.toMap;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.packageFile;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.savePackage;
-import static org.junit.Assert.assertTrue;
+import resources.SharedSubmissionUtil;
 
 /**
  * Abstract integration test for {@link AbstractAssembler} implementations.
@@ -161,7 +161,7 @@ public abstract class BaseAssemblerIT {
      */
     protected List<DepositFile> prepareCustodialResources() {
         // Insure we're packaging something
-        assertTrue("Refusing to create an empty package!",submission.getFiles().size() > 0);
+        assertTrue("Refusing to create an empty package!", submission.getFiles().size() > 0);
         custodialResources = submission.getFiles();
         custodialResourcesMap = submission.getFiles().stream().collect(toMap(DepositFile::getName, identity()));
         return submission.getFiles();
@@ -173,7 +173,8 @@ public abstract class BaseAssemblerIT {
      * @param packageArchive the package archive file to open
      * @throws IOException if there is an error opening the package
      */
-    protected void extractPackage(File packageArchive, Archive.OPTS archive, Compression.OPTS compression) throws IOException {
+    protected void extractPackage(File packageArchive, Archive.OPTS archive, Compression.OPTS compression)
+        throws IOException {
         extractedPackageDir = openArchive(packageArchive, archive, compression);
 
         LOG.debug(">>>> Extracted package to '{}'", extractedPackageDir);

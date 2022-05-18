@@ -34,6 +34,7 @@
  * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
- * @see <a href="https://docs.spring.io/spring-boot/docs/2.0.1.RELEASE/reference/htmlsingle/#boot-features-command-line-runner">Spring Boot Application Runner</a>
+ * @see
+ * <a href="https://docs.spring.io/spring-boot/docs/2.0.1.RELEASE/reference/htmlsingle/#boot-features-command-line-runner">Spring Boot Application Runner</a>
  */
 package org.dataconservancy.pass.deposit.messaging.runner;

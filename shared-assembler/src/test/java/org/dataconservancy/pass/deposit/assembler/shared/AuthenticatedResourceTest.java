@@ -16,14 +16,6 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import static java.util.Base64.getEncoder;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -31,6 +23,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class AuthenticatedResourceTest {
 
@@ -77,7 +77,8 @@ public class AuthenticatedResourceTest {
         underTest = new AuthenticatedResource(resourceUrl, null, null);
         underTest.getInputStream();
         verify(urlConn).setRequestProperty(eq("Authorization"),
-                eq("Basic " + getEncoder().encodeToString(String.format("%s:%s", null, null).getBytes())));
+                                           eq("Basic " + getEncoder().encodeToString(
+                                               String.format("%s:%s", null, null).getBytes())));
     }
 
     /**
@@ -88,6 +89,6 @@ public class AuthenticatedResourceTest {
         underTest = new AuthenticatedResource(resourceUrl, "", "");
         underTest.getInputStream();
         verify(urlConn).setRequestProperty(eq("Authorization"),
-                eq("Basic " + getEncoder().encodeToString(":".getBytes())));
+                                           eq("Basic " + getEncoder().encodeToString(":".getBytes())));
     }
 }

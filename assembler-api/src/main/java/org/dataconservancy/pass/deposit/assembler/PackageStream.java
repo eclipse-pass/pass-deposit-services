@@ -15,14 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Iterator;
+
 import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.model.DepositSubmission;
-
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * A streamable serialized form of a submission package.
@@ -70,14 +70,15 @@ public interface PackageStream {
 
         /**
          * A suggested name for this package.  The {@link #spec() specification} used for
-         * {@link Assembler#assemble(DepositSubmission, java.util.Map) assembling} a package may place requirements on the name of the
+         * {@link Assembler#assemble(DepositSubmission, java.util.Map) assembling} a package may place requirements
+         * on the name of the
          * package file in the target system.  For example, BagIt recommends that the name of the package file be based
          * on the name of the base directory of the bag.  Submission components responsible for streaming {@link
          * PackageStream this package} to target systems can use the name returned by this method as the name of the
          * packaged file.
          *
          * @return a suggested name for the package, aligning with any recommendations from the
-         *         {@link #spec() packaging specification}
+         * {@link #spec() packaging specification}
          */
         String name();
 

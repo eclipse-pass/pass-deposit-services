@@ -15,6 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getFileUris;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static submissions.SubmissionResourceUtil.lookupStream;
+
+import java.net.URI;
+import java.util.Set;
+
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
 import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
@@ -35,17 +44,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import submissions.SubmissionResourceUtil;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Set;
-
-import static org.dataconservancy.pass.deposit.integration.shared.SubmissionUtil.getFileUris;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static submissions.SubmissionResourceUtil.lookupStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -75,7 +73,7 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         assertTrue(getFileUris(submission, passClient).size() > 0);
 
         triggerSubmission(submission.getId());
-        
+
         submission = passClient.readResource(submission.getId(), Submission.class);
         assertEquals(SubmissionStatus.SUBMITTED, submission.getSubmissionStatus());
 
@@ -95,29 +93,41 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         // 4. The Submission's SubmissionStatus should be changed to COMPLETE
 
         Condition<Set<Deposit>> deposits = depositsForSubmission(submission.getId(),
-                submission.getRepositories().size(),
-                (deposit, repo) -> {
-                    LOG.debug("Polling Submission {} for deposit-related resources", submission.getId());
-                    LOG.debug("  Deposit: {} {}", deposit.getDepositStatus(), deposit.getId());
-                    LOG.debug("  Repository: {} {}", repo.getName(), repo.getId());
+                                                                 submission.getRepositories().size(),
+                                                                 (deposit, repo) -> {
+                                                                     LOG.debug(
+                                                                         "Polling Submission {} for deposit-related " +
+                                                                         "resources",
+                                                                         submission.getId());
+                                                                     LOG.debug("  Deposit: {} {}",
+                                                                               deposit.getDepositStatus(),
+                                                                               deposit.getId());
+                                                                     LOG.debug("  Repository: {} {}", repo.getName(),
+                                                                               repo.getId());
 
-                    // Transport-dependent part: FilesystemTransport.onSuccess(...) sets the correct statuses
+                                                                     // Transport-dependent part: FilesystemTransport
+                                                                     // .onSuccess(...) sets the correct statuses
 
-                    if (deposit.getRepositoryCopy() == null) {
-                        return false;
-                    }
+                                                                     if (deposit.getRepositoryCopy() == null) {
+                                                                         return false;
+                                                                     }
 
-                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
-                            RepositoryCopy.class);
+                                                                     RepositoryCopy repoCopy = passClient.readResource(
+                                                                         deposit.getRepositoryCopy(),
+                                                                         RepositoryCopy.class);
 
-                    LOG.debug("  RepositoryCopy: {} {} {} {}", repoCopy.getCopyStatus(), repoCopy.getAccessUrl(),
-                            String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
+                                                                     LOG.debug("  RepositoryCopy: {} {} {} {}",
+                                                                               repoCopy.getCopyStatus(),
+                                                                               repoCopy.getAccessUrl(),
+                                                                               String.join(",",
+                                                                                           repoCopy.getExternalIds()),
+                                                                               repoCopy.getId());
 
-                    return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
-                            CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
-                            repoCopy.getAccessUrl() != null &&
-                            repoCopy.getExternalIds().size() > 0;
-                });
+                                                                     return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
+                                                                            CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
+                                                                            repoCopy.getAccessUrl() != null &&
+                                                                            repoCopy.getExternalIds().size() > 0;
+                                                                 });
 
         deposits.await();
 
@@ -126,17 +136,17 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
         Set<Deposit> result = deposits.getResult();
         assertEquals(submission.getRepositories().size(), result.size());
         assertEquals(result.stream().filter(deposit -> deposit.getSubmission().equals(submission.getId())).count(),
-                submission.getRepositories().size());
+                     submission.getRepositories().size());
         assertTrue(result.stream().allMatch(deposit -> deposit.getDepositStatus() == ACCEPTED));
 
         Condition<Submission> statusVerification =
-                new Condition<>(() -> passClient.readResource(submission.getId(), Submission.class),
-                        "Get updated Submission");
+            new Condition<>(() -> passClient.readResource(submission.getId(), Submission.class),
+                            "Get updated Submission");
 
         statusVerification.awaitAndVerify(
-                sub -> AggregatedDepositStatus.ACCEPTED == sub.getAggregatedDepositStatus());
+            sub -> AggregatedDepositStatus.ACCEPTED == sub.getAggregatedDepositStatus());
         statusVerification.awaitAndVerify(
-                sub -> SubmissionStatus.COMPLETE == sub.getSubmissionStatus());
+            sub -> SubmissionStatus.COMPLETE == sub.getSubmissionStatus());
 
         assertEquals(AggregatedDepositStatus.ACCEPTED, statusVerification.getResult().getAggregatedDepositStatus());
         assertEquals(SubmissionStatus.COMPLETE, statusVerification.getResult().getSubmissionStatus());

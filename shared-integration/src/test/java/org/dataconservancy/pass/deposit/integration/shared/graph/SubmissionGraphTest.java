@@ -15,6 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared.graph;
 
+import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.entityHaving;
+import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.uriSupplier;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.dataconservancy.pass.deposit.builder.fs.PassJsonFedoraAdapter;
 import org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.Rel;
 import org.dataconservancy.pass.model.File;
@@ -29,18 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import submissions.SubmissionResourceUtil;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.LinkInstruction.entityHaving;
-import static org.dataconservancy.pass.deposit.integration.shared.graph.SubmissionGraph.uriSupplier;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -54,12 +54,12 @@ public class SubmissionGraphTest {
         SubmissionGraph.GraphBuilder graphBuilder = SubmissionGraph.GraphBuilder.newGraph();
 
         Grant grant = graphBuilder.addEntity(Grant.class)
-                .set("awardNumber", "123456")
-                .set("localKey", "edu.jhu:123456")
-                .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
-                .add("coPis", uriSupplier.get())
-                .add("coPis", uriSupplier.get())
-                .build();
+                                  .set("awardNumber", "123456")
+                                  .set("localKey", "edu.jhu:123456")
+                                  .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+                                  .add("coPis", uriSupplier.get())
+                                  .add("coPis", uriSupplier.get())
+                                  .build();
 
         SubmissionGraph graph = graphBuilder.build();
         assertNotNull(graph);
@@ -85,94 +85,96 @@ public class SubmissionGraphTest {
         // Note that this link instruction doesn't have to have references to any Java objects or PassEntity IDs, it
         // can be crafted a priori if the the local keys are known ahead of time
         graphBuilder.link(entityHaving("locatorIds", "mpatton1"))
-                .to(entityHaving("awardNumber", "123456"))
-                .as(Rel.PI);
+                    .to(entityHaving("awardNumber", "123456"))
+                    .as(Rel.PI);
 
         // Reflection-based builder allows for building any PassEntity
         Grant grant = graphBuilder.addEntity(Grant.class)
-                .set("awardNumber", "123456")
-                .set("localKey", "edu.jhu:123456")
-                .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
-                .build((submission, g) -> {
-                    // build(...) method accepts functions to manipulate the submission after build
-                    // Normally links between resources are handled by link instructions, so a function like this
-                    // linking a Grant to the Submission isn't necessary
-                    submission.getGrants().add(g.getId());
-                    return g;
-                });
+                                  .set("awardNumber", "123456")
+                                  .set("localKey", "edu.jhu:123456")
+                                  .set("awardStatus", Grant.AwardStatus.class, Grant.AwardStatus.ACTIVE)
+                                  .build((submission, g) -> {
+                                      // build(...) method accepts functions to manipulate the submission after build
+                                      // Normally links between resources are handled by link instructions, so a
+                                      // function like this
+                                      // linking a Grant to the Submission isn't necessary
+                                      submission.getGrants().add(g.getId());
+                                      return g;
+                                  });
 
         // None of the following entities set ids (done automatically by the SubmissionGraph)
         // Linking entities is carried out later by processing link instructions
         Funder primaryFunder = graphBuilder.addEntity(Funder.class)
-                .set("name", "National Institutes of Health")
-                .set("url", URI.class, URI.create("http://nih.gov"))
-                .set("localKey", "edu.jhu:nih.gov")
-                .build();
+                                           .set("name", "National Institutes of Health")
+                                           .set("url", URI.class, URI.create("http://nih.gov"))
+                                           .set("localKey", "edu.jhu:nih.gov")
+                                           .build();
 
         Funder directFunder = graphBuilder.addEntity(Funder.class)
-                .set("name", "JHU")
-                .set("url", URI.class, URI.create("http://jhu.edu"))
-                .set("localKey", "edu.jhu")
-                .build();
+                                          .set("name", "JHU")
+                                          .set("url", URI.class, URI.create("http://jhu.edu"))
+                                          .set("localKey", "edu.jhu")
+                                          .build();
 
         Policy policy = graphBuilder.addEntity(Policy.class)
-                .set("title", "Institutional Policy")
-                .set("description", "My institutional policy")
-                .set("policyUrl", URI.class, URI.create("http://www.google.com"))
-                // link to other pass entities
-                .linkTo(entityHaving("repositoryKey", "edu:jhu:repo:j10p"), "repositories")
-                .linkFrom(entityHaving("localKey", "edu.jhu"), "policy")
-                .build();
+                                    .set("title", "Institutional Policy")
+                                    .set("description", "My institutional policy")
+                                    .set("policyUrl", URI.class, URI.create("http://www.google.com"))
+                                    // link to other pass entities
+                                    .linkTo(entityHaving("repositoryKey", "edu:jhu:repo:j10p"), "repositories")
+                                    .linkFrom(entityHaving("localKey", "edu.jhu"), "policy")
+                                    .build();
 
         Repository repo = graphBuilder.addEntity(Repository.class)
-                .set("repositoryKey", "edu:jhu:repo:j10p")
-                .build();
+                                      .set("repositoryKey", "edu:jhu:repo:j10p")
+                                      .build();
 
         User esm = graphBuilder.addEntity(User.class)
-                .set("username", "esm")
-                .set("firstName", "Elliot")
-                .set("lastName", "Metsger")
-                .set("displayName", "Elliot")
-                .set("email", "emetsger@jhu.edu")
-                .add("locatorIds", "emetsge1")
-                .linkFrom(graphBuilder.submission(), "submitter")
-                .build();
+                               .set("username", "esm")
+                               .set("firstName", "Elliot")
+                               .set("lastName", "Metsger")
+                               .set("displayName", "Elliot")
+                               .set("email", "emetsger@jhu.edu")
+                               .add("locatorIds", "emetsge1")
+                               .linkFrom(graphBuilder.submission(), "submitter")
+                               .build();
 
         User msp = graphBuilder.addEntity(User.class)
-                .set("username", "msp")
-                .set("firstName", "Mark")
-                .set("lastName", "Patton")
-                .set("displayName", "Moo")
-                .set("email", "mpatton@jhu.edu")
-                .add("locatorIds", "mpatton1")
-                .build();
+                               .set("username", "msp")
+                               .set("firstName", "Mark")
+                               .set("lastName", "Patton")
+                               .set("displayName", "Moo")
+                               .set("email", "mpatton@jhu.edu")
+                               .add("locatorIds", "mpatton1")
+                               .build();
 
         Publication pub = graphBuilder.addEntity(Publication.class)
-                .set("title", "Publication Title")
-                .set("doi", "http://dx.doi.org/123/45")
-                .set("volume", "1")
-                .set("issue", "4")
-                .linkFrom(graphBuilder.submission(), "publication")
-                .build();
+                                      .set("title", "Publication Title")
+                                      .set("doi", "http://dx.doi.org/123/45")
+                                      .set("volume", "1")
+                                      .set("issue", "4")
+                                      .linkFrom(graphBuilder.submission(), "publication")
+                                      .build();
 
         // Linking instructions can be added when building entities (as above) or arbitrarily set directly on the
         // graph builder.
 
         // Link the entity with the following localKey to the supplied Grant as the Grant.primaryFunder
         graphBuilder.link(entityHaving("localKey", "edu.jhu:nih.gov"))
-                .to(grant)
-                .as(Rel.PRIMARY_FUNDER);
+                    .to(grant)
+                    .as(Rel.PRIMARY_FUNDER);
 
         // If you have object references, you don't need to specify a field, just provide the reference.
         graphBuilder.link(directFunder)
-                .to(grant)
-                .as(Rel.DIRECT_FUNDER);
+                    .to(grant)
+                    .as(Rel.DIRECT_FUNDER);
 
         graphBuilder.link(entityHaving("locatorIds", "emetsge1"))
-                .to(grant)
-                .as(Rel.COPI);
+                    .to(grant)
+                    .as(Rel.COPI);
 
-        // Build the graph and perform the linking of the elements in the graph using the link instructions supplied above
+        // Build the graph and perform the linking of the elements in the graph using the link instructions supplied
+        // above
         SubmissionGraph graph = graphBuilder.build();
 
         assertNotNull(grant.getPrimaryFunder());
@@ -201,7 +203,8 @@ public class SubmissionGraphTest {
 
         assertEquals("fake:submission1", graph.submission().getId().toString());
         LOG.info("Graph contains:");
-        graph.walk(entity -> true, (submission, entity) -> LOG.info("  {} ({})", entity.getClass().getSimpleName(), entity.getId()));
+        graph.walk(entity -> true,
+                   (submission, entity) -> LOG.info("  {} ({})", entity.getClass().getSimpleName(), entity.getId()));
     }
 
     @Test

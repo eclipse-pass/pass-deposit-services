@@ -15,6 +15,29 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
+import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
+import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INREVIEW;
+import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_WITHDRAWN;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.ARCHIVED_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INPROGRESS_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INREVIEW_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MISSING_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MULTIPLE_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.UNKNOWN_STATUS_RESOURCE;
+import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static resources.SharedResourceUtil.findStreamByName;
+import static resources.SharedResourceUtil.findUriByName;
+
+import java.io.InputStream;
+import java.net.URI;
+
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
@@ -25,29 +48,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.io.Resource;
-
-import java.io.InputStream;
-import java.net.URI;
-
-import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
-import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
-import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INREVIEW;
-import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_WITHDRAWN;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.ARCHIVED_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INPROGRESS_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.INREVIEW_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MISSING_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.MULTIPLE_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.UNKNOWN_STATUS_RESOURCE;
-import static org.dataconservancy.pass.deposit.messaging.support.swordv2.AtomResources.WITHDRAWN_STATUS_RESOURCE;
-import static resources.SharedResourceUtil.findStreamByName;
-import static resources.SharedResourceUtil.findUriByName;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -86,6 +86,7 @@ public class AtomFeedStatusParserTest {
 
     /**
      * An Atom Statement containing a <sword:state> of http://dspace.org/state/archived should be parsed
+     *
      * @throws Exception
      */
     @Test

@@ -1,6 +1,5 @@
 {
   "pmc": {
-
     "deposit-config": {
       "processing": {
         "beanName": "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
@@ -11,12 +10,10 @@
         "default-mapping": "submitted"
       }
     },
-
     "assembler": {
       "specification": "http://purl.org/net/sword/package/METSDSpaceSIP",
       "beanName": "preassembledAssembler"
     },
-
     "transport-config": {
       "auth-realms": [
         {
@@ -38,7 +35,6 @@
         "deposit-receipt": true,
         "user-agent": "pass-deposit/DepositStatusIT"
       }
-
     }
   }
 }

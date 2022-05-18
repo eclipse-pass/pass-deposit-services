@@ -54,13 +54,15 @@ public enum JournalPublicationType {
      *
      * @param typeDescription the string form of a journal publication type
      * @return the corresponding {@code JournalPublicationType}
-     * @throws IllegalArgumentException if the {@code typeDescription} does not correspond to an existing {@code JournalPublicationType}
+     * @throws IllegalArgumentException if the {@code typeDescription} does not correspond to an existing {@code
+     * JournalPublicationType}
      */
     public static JournalPublicationType parseTypeDescription(String typeDescription) {
         return Arrays.stream(values())
-                .filter(candidatePubType -> candidatePubType.getTypeDescription().equals(typeDescription))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("No JournalPublicationType exists for '" + typeDescription + "'"));
+                     .filter(candidatePubType -> candidatePubType.getTypeDescription().equals(typeDescription))
+                     .findAny()
+                     .orElseThrow(() -> new IllegalArgumentException(
+                         "No JournalPublicationType exists for '" + typeDescription + "'"));
     }
 
     @Override

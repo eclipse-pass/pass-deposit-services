@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec.KEY;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -27,17 +34,14 @@ import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
-import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec.KEY;
-
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class AssemblerSupport {
+
+    private AssemblerSupport() {
+        //never called
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AssemblerSupport.class);
 
@@ -58,7 +62,8 @@ public class AssemblerSupport {
      *     <dd>A function of the {@link MetadataBuilder#archive(Archive.OPTS) archive} and
      *         {@link MetadataBuilder#compression(Compression.OPTS) compression} used</dd>
      * </dl>
-     * @param mdb MetadataBuilder to be populated
+     *
+     * @param mdb     MetadataBuilder to be populated
      * @param options the Assembler options to be copied to the MetadataBuilder
      */
     public static void buildMetadata(MetadataBuilder mdb, Map<String, Object> options) {
@@ -94,6 +99,8 @@ public class AssemblerSupport {
             case GZIP:
                 mdb.mimeType(MediaType.application("gzip").toString());
                 break;
+            default:
+                break;
         }
     }
 
@@ -101,7 +108,7 @@ public class AssemblerSupport {
      * Determine the media type of the supplied InputStream.  If the supplied stream does not support {@code mark(int)}
      * the default mime type 'application/octet-stream' is returned.
      *
-     * @param in the InputStream to type
+     * @param in       the InputStream to type
      * @param detector the Tika-based Detector
      * @return the mime type of the InputStream
      * @throws IOException if any errors occur reading bytes from the stream
@@ -112,7 +119,7 @@ public class AssemblerSupport {
         if (!in.markSupported()) {
             MediaType defaultMimeType = MediaType.OCTET_STREAM;
             LOG.debug("Mime type detection of {}@{} failed: mark(int) is not supported.  Using default mime type {}",
-                    in.getClass().getName(), Integer.toHexString(System.identityHashCode(in)), defaultMimeType);
+                      in.getClass().getName(), Integer.toHexString(System.identityHashCode(in)), defaultMimeType);
 
             return defaultMimeType;
         }

@@ -16,6 +16,20 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -43,27 +57,13 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Converts and transports PassEntity data between local JSON files, indexed lists and Fedora repositories.
  * The functionality supports:
- *   1. Creating DepositSubmission data from resources on a Fedora server.
- *   2. Creating DepositSubmission data from a local JSON file containing PassEntity data.
- *   3. Downloading a JSON snapshot of Fedora resources rooted at a specified Submission resource.
- *   4. Uploading JSON PassEntity data to a Fedora repository to create test data or migrate repository contents.
+ * 1. Creating DepositSubmission data from resources on a Fedora server.
+ * 2. Creating DepositSubmission data from a local JSON file containing PassEntity data.
+ * 3. Downloading a JSON snapshot of Fedora resources rooted at a specified Submission resource.
+ * 4. Uploading JSON PassEntity data to a Fedora repository to create test data or migrate repository contents.
  *
  * It might make sense to migrate this functionality to the pass-json-adapter module.
  *
@@ -75,7 +75,8 @@ public class PassJsonFedoraAdapter {
 
     /**
      * Extract PassEntity data from a JSON input stream and fill a collection of PassEntity objects.
-     * @param is the input stream carrying the JSON data.
+     *
+     * @param is       the input stream carrying the JSON data.
      * @param entities the map that will contain the parsed PassEntity objects, indexed by their IDs.
      * @return the PassEntity Submission object that is the root of the data tree.
      */
@@ -93,7 +94,7 @@ public class PassJsonFedoraAdapter {
                 JsonElement typeName = entityJson.getAsJsonObject().get("@type");
                 String typeStr = "org.dataconservancy.pass.model." + typeName.getAsString();
                 Class<org.dataconservancy.pass.model.PassEntity> type =
-                        (Class<org.dataconservancy.pass.model.PassEntity>) Class.forName(typeStr);
+                    (Class<org.dataconservancy.pass.model.PassEntity>) Class.forName(typeStr);
 
                 // Create and save the PassEntity object
                 byte[] entityJsonBytes = entityJson.toString().getBytes();
@@ -102,12 +103,12 @@ public class PassJsonFedoraAdapter {
                     entity = adapter.toModel(entityJsonBytes, type);
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to adapt the following JSON to a " + type.getName() + ": " +
-                            new String(entityJsonBytes), e);
+                                               new String(entityJsonBytes), e);
                 }
                 URI uri = new URI(entityJson.getAsJsonObject().get("@id").getAsString());
                 entities.put(uri, entity);
                 if (entity instanceof Submission) {
-                    submission = (Submission)entity;
+                    submission = (Submission) entity;
                 }
             }
             return submission;
@@ -151,7 +152,7 @@ public class PassJsonFedoraAdapter {
             PassEntity entity = entities.get(uri);
             byte[] text = adapter.toJson(entity, false);
             // Make sure each resource is only printed once
-            if (! printedUris.contains(uri)) {
+            if (!printedUris.contains(uri)) {
                 if (!first) {
                     pw.println(",");
                 } else {
@@ -210,32 +211,32 @@ public class PassJsonFedoraAdapter {
             boolean needUpdate = true;
             if (entity instanceof Submission) {
                 submissionUri = uriMap.get(oldUri);
-                Submission submission = (Submission)entity;
+                Submission submission = (Submission) entity;
                 submission.setPublication(uriMap.get(submission.getPublication()));
                 submission.setSubmitter(uriMap.get(submission.getSubmitter()));
                 submission.setRepositories(getUpdatedUris(uriMap, submission.getRepositories()));
                 submission.setGrants(getUpdatedUris(uriMap, submission.getGrants()));
             } else if (entity instanceof Grant) {
-                Grant grant = (Grant)entity;
+                Grant grant = (Grant) entity;
                 grant.setPrimaryFunder(uriMap.get(grant.getPrimaryFunder()));
                 grant.setDirectFunder(uriMap.get(grant.getDirectFunder()));
                 grant.setPi(uriMap.get(grant.getPi()));
                 grant.setCoPis(getUpdatedUris(uriMap, grant.getCoPis()));
             } else if (entity instanceof Funder) {
-                Funder funder = (Funder)entity;
+                Funder funder = (Funder) entity;
                 funder.setPolicy(uriMap.get(funder.getPolicy()));
             } else if (entity instanceof Policy) {
-                Policy policy = (Policy)entity;
+                Policy policy = (Policy) entity;
                 policy.setInstitution(uriMap.get(policy.getInstitution()));
                 policy.setRepositories(getUpdatedUris(uriMap, policy.getRepositories()));
             } else if (entity instanceof Journal) {
-                Journal journal = (Journal)entity;
+                Journal journal = (Journal) entity;
                 journal.setPublisher(uriMap.get(journal.getPublisher()));
             } else if (entity instanceof Publication) {
-                Publication publication = (Publication)entity;
+                Publication publication = (Publication) entity;
                 publication.setJournal(uriMap.get(publication.getJournal()));
             } else if (entity instanceof File) {
-                File file = (File)entity;
+                File file = (File) entity;
                 file.setSubmission(uriMap.get(file.getSubmission()));
             } else {
                 needUpdate = false;
@@ -263,8 +264,8 @@ public class PassJsonFedoraAdapter {
      * Resolves the content referenced by {@link File#getUri()}, uploads the binary to Fedora, and then updates the
      * {@code File uri} with the location of the binary in the repository.
      *
-     * @param s the Submission resource that the binary File content will be subordinate to
-     * @param f a File entity that may have a URI that links to binary content
+     * @param s      the Submission resource that the binary File content will be subordinate to
+     * @param f      a File entity that may have a URI that links to binary content
      * @param client client used to update the File URI in the repository
      */
     private void uploadBinaryToSubmission(Submission s, File f, PassClient client) {
@@ -288,7 +289,7 @@ public class PassJsonFedoraAdapter {
 
         if (contentUri.startsWith("classpath*:")) {
             contentResource = new ClassPathResource(
-                    contentUri.substring("classpath*:".length()), this.getClass().getClassLoader());
+                contentUri.substring("classpath*:".length()), this.getClass().getClassLoader());
         }
 
         if (contentUri.startsWith("classpath:")) {
@@ -297,7 +298,7 @@ public class PassJsonFedoraAdapter {
 
         if (contentUri.startsWith(EncodingClassPathResource.RESOURCE_KEY)) {
             contentResource = new EncodingClassPathResource(contentUri.substring(
-                    EncodingClassPathResource.RESOURCE_KEY.length()));
+                EncodingClassPathResource.RESOURCE_KEY.length()));
         }
 
         if (contentResource == null) {
@@ -320,10 +321,10 @@ public class PassJsonFedoraAdapter {
             f.setSubmission(s.getId());
             client.updateResource(f);
             LOG.trace("Uploaded binary {} for {} to {}.  Updating File 'uri' field to {} from {}",
-                    contentUri, f.getId(), s.getId(), binaryUri, contentUri);
+                      contentUri, f.getId(), s.getId(), binaryUri, contentUri);
         } catch (Exception e) {
             throw new RuntimeException("Error uploading resource " + contentResource + " to " + f.getId() +
-                    ": " + e.getMessage(), e);
+                                       ": " + e.getMessage(), e);
         }
     }
 
@@ -331,10 +332,10 @@ public class PassJsonFedoraAdapter {
     // and do the same for its referenced Policy.
     private void funderFcrepoToPass(HashMap<URI, PassEntity> entities, PassClient client, URI funderURI) {
         // Make sure each funder and policy is only added once.
-        if (! entities.containsKey(funderURI)) {
+        if (!entities.containsKey(funderURI)) {
             Funder funder = client.readResource(funderURI, Funder.class);
             entities.put(funderURI, funder);
-            if (! entities.containsKey(funder.getPolicy()) && funder.getPolicy() != null) {
+            if (!entities.containsKey(funder.getPolicy()) && funder.getPolicy() != null) {
                 Policy policy = client.readResource(funder.getPolicy(), Policy.class);
                 entities.put(funder.getPolicy(), policy);
                 // Ignore the repositories listed for the policy - they are added from the Submission's list.
@@ -388,7 +389,7 @@ public class PassJsonFedoraAdapter {
             User pi = client.readResource(grant.getPi(), User.class);
             entities.put(grant.getPi(), pi);
             for (URI copiUri : grant.getCoPis()) {
-                if (! entities.containsKey(copiUri)) {
+                if (!entities.containsKey(copiUri)) {
                     User copi = client.readResource(copiUri, User.class);
                     entities.put(copiUri, copi);
                 }

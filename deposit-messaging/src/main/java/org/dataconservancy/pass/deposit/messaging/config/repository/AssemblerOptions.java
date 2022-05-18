@@ -15,17 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 
 /**
  * Represents the {@code options} provided to an Assembler, typically serialized from JSON.  This class encapsulates
@@ -167,9 +167,9 @@ public class AssemblerOptions {
                 }
                 if (algorithms != null) {
                     put(Checksum.KEY,
-                            algorithms.stream()
-                                    .map(algo -> Checksum.OPTS.valueOf(algo.toUpperCase()))
-                                    .collect(Collectors.toList()));
+                        algorithms.stream()
+                                  .map(algo -> Checksum.OPTS.valueOf(algo.toUpperCase()))
+                                  .collect(Collectors.toList()));
                 }
                 this.putAll(optionsMap);
             }
@@ -178,12 +178,15 @@ public class AssemblerOptions {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         AssemblerOptions that = (AssemblerOptions) o;
-        return Objects.equals(compression, that.compression) && Objects.equals(archive, that.archive) && Objects.equals(algorithms, that.algorithms);
+        return Objects.equals(compression, that.compression) && Objects.equals(archive, that.archive) && Objects.equals(
+            algorithms, that.algorithms);
     }
 
     @Override
@@ -194,7 +197,7 @@ public class AssemblerOptions {
     @Override
     public String toString() {
         return "AssemblerOptions{" + "compression='" + compression + '\'' + ", archive='" + archive + '\'' + ", " +
-                "algorithms=" + algorithms + '}';
+               "algorithms=" + algorithms + '}';
     }
 
 }

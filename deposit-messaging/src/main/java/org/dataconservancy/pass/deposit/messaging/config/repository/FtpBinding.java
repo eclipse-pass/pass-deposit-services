@@ -16,20 +16,20 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.ftp.FtpTransportHints;
 
 public class FtpBinding extends ProtocolBinding {
 
@@ -123,16 +123,22 @@ public class FtpBinding extends ProtocolBinding {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         FtpBinding that = (FtpBinding) o;
         return usePasv == that.usePasv &&
-                Objects.equals(username, that.username) &&
-                Objects.equals(password, that.password) &&
-                Objects.equals(dataType, that.dataType) &&
-                Objects.equals(transferMode, that.transferMode) &&
-                Objects.equals(defaultDirectory, that.defaultDirectory);
+               Objects.equals(username, that.username) &&
+               Objects.equals(password, that.password) &&
+               Objects.equals(dataType, that.dataType) &&
+               Objects.equals(transferMode, that.transferMode) &&
+               Objects.equals(defaultDirectory, that.defaultDirectory);
     }
 
     @Override
@@ -143,8 +149,8 @@ public class FtpBinding extends ProtocolBinding {
     @Override
     public String toString() {
         return "FtpBinding{" + "username='" + username + '\'' + ", password='" +
-                ((password != null) ? "xxxx" : "<null>" ) + '\'' + ", dataType='" + dataType + '\'' +
-                ", transferMode='" + transferMode + '\'' + ", usePasv=" + usePasv +
-                ", defaultDirectory='" + defaultDirectory + '\'' + "} " + super.toString();
+               ((password != null) ? "xxxx" : "<null>") + '\'' + ", dataType='" + dataType + '\'' +
+               ", transferMode='" + transferMode + '\'' + ", usePasv=" + usePasv +
+               ", defaultDirectory='" + defaultDirectory + '\'' + "} " + super.toString();
     }
 }

@@ -19,6 +19,5 @@
  *
  * @see <a href="https://www.nihms.nih.gov/db/sub.cgi?page=faq">NIHMS FAQ</a>
  * @see <a href="https://www.nihms.nih.gov/db/i/nihms-bulk-sub.tar.gz">NIHMS bulk upload information package</a>
- *
  */
 package org.dataconservancy.pass.deposit.model;

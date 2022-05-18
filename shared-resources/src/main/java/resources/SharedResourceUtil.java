@@ -15,10 +15,7 @@
  */
 package resources;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -28,7 +25,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertNotNull;
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.utils.ClasspathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides access to test resources found on the classpath.
@@ -36,6 +36,10 @@ import static org.junit.Assert.assertNotNull;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SharedResourceUtil {
+
+    private SharedResourceUtil() {
+        //never calles
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(SharedResourceUtil.class);
 
@@ -55,7 +59,7 @@ public class SharedResourceUtil {
      * Caller is responsible for closing the returned stream.
      *
      * @param resourceName the classpath resource name
-     * @param baseClass the base class to scan from
+     * @param baseClass    the base class to scan from
      * @return the input stream
      */
     public static InputStream findStreamByName(String resourceName, Class<?> baseClass) {
@@ -83,13 +87,11 @@ public class SharedResourceUtil {
             }
         });
 
-
         scanner.scan();
 
         assertFound(resourceName, resource);
         return resource.get();
     }
-
 
     /**
      * Finds the URI of a test resource using the resource's name.
@@ -105,7 +107,7 @@ public class SharedResourceUtil {
      * Finds the URI of a test resource using the resource's name.
      *
      * @param resourceName the classpath resource name
-     * @param baseClass the base class to scan from
+     * @param baseClass    the base class to scan from
      * @return the uri of the resource
      */
     public static URI findUriByName(String resourceName, Class<?> baseClass) {
@@ -136,7 +138,6 @@ public class SharedResourceUtil {
             }
         });
 
-
         scanner.scan();
 
         assertFound(resourceName, resource);
@@ -162,10 +163,10 @@ public class SharedResourceUtil {
      * Convenience method which checks for the presence of the {@code classpathElement}/{@code relativePath} pair in the
      * {@code seen} {@code Set}.
      *
-     * @param seen a {@code Set} which contains all of the {@code ElementPathPair}s seen so far
+     * @param seen             a {@code Set} which contains all of the {@code ElementPathPair}s seen so far
      * @param classpathElement a classpath element, which combined with a relative path, may have been seen
-     *         before
-     * @param relativePath a relative path, when combined with a classpath element, may have been seen before
+     *                         before
+     * @param relativePath     a relative path, when combined with a classpath element, may have been seen before
      * @return true if the {@code classpathElement}/{@code relativePath} has been seen before
      * @see ElementPathPair
      */
@@ -196,16 +197,19 @@ public class SharedResourceUtil {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (o == null || getClass() != o.getClass())
+            }
+            if (o == null || getClass() != o.getClass()) {
                 return false;
+            }
 
             ElementPathPair that = (ElementPathPair) o;
 
             if (classpathElement != null ? !classpathElement.equals(that.classpathElement) : that.classpathElement !=
-                    null)
+                                                                                             null) {
                 return false;
+            }
             return relativePath != null ? relativePath.equals(that.relativePath) : that.relativePath == null;
         }
 

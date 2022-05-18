@@ -16,9 +16,9 @@
 
 package org.dataconservancy.pass.deposit.transport;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-
 import java.util.Map;
+
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
 
 /**
  * Abstracts the transport protocol used to deposit a package with a target submission system.  Callers are able to
@@ -45,12 +45,14 @@ public interface Transport {
     String TRANSPORT_PASSWORD = "deposit.transport.password";
 
     /**
-     * Property key identifying the mode of authentication; value encoded as the {@link Enum#name} form of {@link AUTHMODE}.
+     * Property key identifying the mode of authentication; value encoded as the {@link Enum#name} form of
+     * {@link AUTHMODE}.
      */
     String TRANSPORT_AUTHMODE = "deposit.transport.authmode";
 
     /**
-     * Property key identifying the protocol used for transport, value encoded as the {@link Enum#name} form of {@link PROTOCOL}.
+     * Property key identifying the protocol used for transport, value encoded as the {@link Enum#name} form of
+     * {@link PROTOCOL}.
      */
     String TRANSPORT_PROTOCOL = "deposit.transport.protocol";
 
@@ -102,7 +104,8 @@ public interface Transport {
     enum AUTHMODE {
 
         /**
-         * The implementation will use the username and password from {@link #TRANSPORT_USERNAME} and {@link #TRANSPORT_PASSWORD}
+         * The implementation will use the username and password from {@link #TRANSPORT_USERNAME} and
+         * {@link #TRANSPORT_PASSWORD}
          */
         userpass,
 

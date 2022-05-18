@@ -26,7 +26,8 @@ import org.swordapp.client.DepositReceipt;
  * ultimate deposit status.
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
- * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#depositreceipt">SWORD v2 Profile: Deposit Receipt</a>
+ * @see
+ * <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#depositreceipt">SWORD v2 Profile: Deposit Receipt</a>
  * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement">SWORD v2 Profile: Statement</a>
  */
 public class Sword2DepositReceiptResponse implements TransportResponse {

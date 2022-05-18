@@ -15,10 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.UrlResource;
-import org.springframework.util.ResourceUtils;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+import static java.util.Base64.getEncoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,9 +25,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
-import static java.util.Base64.getEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.UrlResource;
+import org.springframework.util.ResourceUtils;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -47,7 +47,7 @@ public class AuthenticatedResource extends UrlResource {
      * Preemptively supplies Basic authentication credentials when the URL is accessed.  Redirects are not followed
      * when accessing the URL.
      *
-     * @param url the URL of the resource requiring authentication
+     * @param url      the URL of the resource requiring authentication
      * @param username the username used to authenticate to the resource, may be empty or {@code null}
      * @param password the password used to authenticate to the resource, may be empty or {@code null}
      */
@@ -65,8 +65,7 @@ public class AuthenticatedResource extends UrlResource {
         customizeConnection(con);
         try {
             return con.getInputStream();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             // Close the HTTP connection (if applicable).
             if (con instanceof HttpURLConnection) {
                 ((HttpURLConnection) con).disconnect();

@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.net.ftp.FTPClient;
-
 import java.util.Map;
+
+import org.apache.commons.net.ftp.FTPClient;
 
 /**
  * Creates, and optionally configures, {@link FTPClient} instances for use.

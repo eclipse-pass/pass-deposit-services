@@ -16,17 +16,17 @@
 
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.io.input.BrokenInputStream;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.nihms.integration.BaseIT;
-import org.dataconservancy.nihms.integration.FtpBaseIT;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.PATH_SEP;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.directoryExists;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.isPathAbsolute;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.performSilently;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,27 +37,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.directoryExists;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.isPathAbsolute;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.PATH_SEP;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.performSilently;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.commons.io.input.BrokenInputStream;
+import org.dataconservancy.nihms.integration.BaseIT;
+import org.dataconservancy.nihms.integration.FtpBaseIT;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class FtpTransportIT extends FtpBaseIT {
 
     private static final String EXPECTED_SUCCESS = "Expected successful TransportResponse.  " +
-            "Underlying exception was:%n%s";
+                                                   "Underlying exception was:%n%s";
 
     private static final String FILE_LISTING = "Listing files in directory {}: {}";
 
     private static final String FTP_BASE_DIRECTORY = String.format("%s/%s", FtpBaseIT.FTP_SUBMISSION_BASE_DIRECTORY,
-            FtpTransportIT.class.getSimpleName());
+                                                                   FtpTransportIT.class.getSimpleName());
 
     private FtpTransport transport;
 
@@ -111,13 +111,15 @@ public class FtpTransportIT extends FtpBaseIT {
     }
 
     /**
-     * Attempts to successfully store a file using the package-private {@link FtpTransportSession#storeFile(String, InputStream)}
+     * Attempts to successfully store a file using the package-private
+     * {@link FtpTransportSession#storeFile(String, InputStream)}
      * method.
      */
     @Test
     public void testStoreFile() {
         String expectedFilename = "FtpTransportIT-testStoreFile.jpg";
-        TransportResponse response = transportSession.storeFile(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        TransportResponse response = transportSession.storeFile(expectedFilename,
+                                                                this.getClass().getResourceAsStream("/org.jpg"));
 
         assertSuccessfulResponse(response);
 
@@ -134,15 +136,16 @@ public class FtpTransportIT extends FtpBaseIT {
         String expectedDirectory = String.format("%s/%s", FTP_BASE_DIRECTORY, "testStoreFileWithDirectory");
         String storeFilename = String.format("%s/%s", expectedDirectory, expectedFilename);
         assertFalse("Did not expect the directory '" + expectedDirectory + "' to exist on the FTP server!",
-                directoryExists(ftpClient, expectedDirectory));
+                    directoryExists(ftpClient, expectedDirectory));
 
         assertTrue("Expected the store filename to be an absolute path.", isPathAbsolute(storeFilename));
 
-        TransportResponse response = transportSession.storeFile(storeFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        TransportResponse response = transportSession.storeFile(storeFilename,
+                                                                this.getClass().getResourceAsStream("/org.jpg"));
         assertSuccessfulResponse(response);
 
         assertTrue("Expected the directory '" + expectedDirectory + "' to be created on the FTP server!",
-                directoryExists(ftpClient, expectedDirectory));
+                   directoryExists(ftpClient, expectedDirectory));
 
         FtpUtil.setWorkingDirectory(ftpClient, expectedDirectory);
 
@@ -156,7 +159,8 @@ public class FtpTransportIT extends FtpBaseIT {
     @Test
     public void testStoreFileWithSameName() {
         String expectedFilename = "FtpTransportIT-testStoreFileWithSameName.jpg";
-        TransportResponse response = transportSession.storeFile(expectedFilename, this.getClass().getResourceAsStream("/org.jpg"));
+        TransportResponse response = transportSession.storeFile(expectedFilename,
+                                                                this.getClass().getResourceAsStream("/org.jpg"));
 
         assertSuccessfulResponse(response);
 
@@ -170,14 +174,15 @@ public class FtpTransportIT extends FtpBaseIT {
     }
 
     /**
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
+     * Attempt to send a file to the FTP server using the <em>public</em>
+     * {@link FtpTransportSession#send(PackageStream, Map)}
      * method.
      */
     @Test
     public void testSendFile() {
         String expectedFilename = "FtpTransportIT-testSendFile.jpg";
         PackageStream stream = resourceAsPackage(expectedFilename,
-                this.getClass().getResourceAsStream("/org.jpg"), -1);
+                                                 this.getClass().getResourceAsStream("/org.jpg"), -1);
         TransportResponse response = transportSession.send(stream, Collections.emptyMap());
 
         assertSuccessfulResponse(response);
@@ -186,7 +191,8 @@ public class FtpTransportIT extends FtpBaseIT {
     }
 
     /**
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
+     * Attempt to send a file to the FTP server using the <em>public</em>
+     * {@link FtpTransportSession#send(PackageStream, Map)}
      * method, which will fail because the file stream cannot be read.  Insure that the underlying exception can be
      * retrieved and that the transport response indicates failure.  Insure that the file is not present on the FTP
      * server.  The underlying FTP connection should still be open even though the file transfer failed.
@@ -197,7 +203,7 @@ public class FtpTransportIT extends FtpBaseIT {
         IOException expectedException = new IOException("Broken stream.");
 
         PackageStream brokenStream = resourceAsPackage(expectedFilename,
-                new BrokenInputStream(expectedException), -1);
+                                                       new BrokenInputStream(expectedException), -1);
         TransportResponse response = transportSession.send(brokenStream, Collections.emptyMap());
 
         assertErrorResponse(response);
@@ -207,8 +213,10 @@ public class FtpTransportIT extends FtpBaseIT {
         ftpClient.enterLocalPassiveMode();
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
-                .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
-                .noneMatch(candidateFile -> candidateFile.getName().endsWith(expectedFilename))));
+                                               .peek(f -> LOG.trace(FILE_LISTING, performSilently(
+                                                   () -> ftpClient.printWorkingDirectory()), f.getName()))
+                                               .noneMatch(candidateFile -> candidateFile.getName()
+                                                                                        .endsWith(expectedFilename))));
 
         assertTrue(ftpClient.isConnected());
         assertTrue(performSilently(() -> ftpClient.sendNoOp()));
@@ -217,7 +225,8 @@ public class FtpTransportIT extends FtpBaseIT {
     /**
      * A transport session should not become unusable just because a file transfer failed.
      * <p>
-     * Attempt to send a file to the FTP server using the <em>public</em> {@link FtpTransportSession#send(PackageStream, Map)}
+     * Attempt to send a file to the FTP server using the <em>public</em>
+     * {@link FtpTransportSession#send(PackageStream, Map)}
      * method, which will fail because the file stream cannot be read.  Then retry, and send a file that should succeed.
      * </p>
      * Assertions that are redundant with respect to {@link #testSendFileWithException()} are not re-asserted.
@@ -242,14 +251,14 @@ public class FtpTransportIT extends FtpBaseIT {
         IOException expectedException = new IOException("Broken stream.");
 
         PackageStream brokenStream = resourceAsPackage(expectedFilename,
-                new BrokenInputStream(expectedException), -1);
+                                                       new BrokenInputStream(expectedException), -1);
         TransportResponse response = transportSession.send(brokenStream, Collections.emptyMap());
 
         assertErrorResponse(response);
         assertEquals(expectedException, response.error().getCause().getCause().getCause());
 
         PackageStream stream = resourceAsPackage(expectedFilename,
-                this.getClass().getResourceAsStream("/org.jpg"), -1);
+                                                 this.getClass().getResourceAsStream("/org.jpg"), -1);
 
         response = transportSession.send(stream, Collections.emptyMap());
 
@@ -267,15 +276,15 @@ public class FtpTransportIT extends FtpBaseIT {
 
 
         TransportResponse response = transportSession.send(
-                resourceAsPackage(expectedFilename_01, this.getClass().getResourceAsStream("/org.jpg"), -1),
-                    Collections.emptyMap());
+            resourceAsPackage(expectedFilename_01, this.getClass().getResourceAsStream("/org.jpg"), -1),
+            Collections.emptyMap());
 
         assertSuccessfulResponse(response);
         assertFileListingContains(expectedFilename_01);
 
         response = transportSession.send(
-                resourceAsPackage(expectedFilename_02, this.getClass().getResourceAsStream("/org.jpg"), -1),
-                        Collections.emptyMap());
+            resourceAsPackage(expectedFilename_02, this.getClass().getResourceAsStream("/org.jpg"), -1),
+            Collections.emptyMap());
 
         assertSuccessfulResponse(response);
         assertFileListingContains(expectedFilename_02);
@@ -319,20 +328,26 @@ public class FtpTransportIT extends FtpBaseIT {
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
-        String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(".")) : expectedFilename;
-        String suffix = (expectedFilename.contains(".")) ? expectedFilename.substring(expectedFilename.indexOf(".")) : "";
+        String prefix = (expectedFilename.contains(".")) ? expectedFilename.substring(0, expectedFilename.indexOf(
+            ".")) : expectedFilename;
+        String suffix = (expectedFilename.contains(".")) ? expectedFilename.substring(
+            expectedFilename.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
         assertTrue("Must have a filename suffix!", suffix.length() > 0);
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
-                .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
-                .anyMatch(candidateFile -> candidateFile.getName().startsWith(prefix) && candidateFile.getName().endsWith(suffix))));
+                                               .peek(f -> LOG.trace(FILE_LISTING, performSilently(
+                                                   () -> ftpClient.printWorkingDirectory()), f.getName()))
+                                               .anyMatch(candidateFile -> candidateFile.getName().startsWith(
+                                                   prefix) && candidateFile.getName().endsWith(suffix))));
     }
 
     /**
-     * Lists the contents of the current working directory of the FTP server, and asserts that there is at least one directory
-     * name that matches the prefix and the suffix of the {@code expectedFilename}. This test is a little different from the file
+     * Lists the contents of the current working directory of the FTP server, and asserts that there is at least one
+     * directory
+     * name that matches the prefix and the suffix of the {@code expectedFilename}. This test is a little different
+     * from the file
      * name test in taht we allow directory names to not be "normal" - i.e., they may not have a suffix
      *
      * @param expectedDirectoryName the file that is expected to exist in the current working directory
@@ -341,15 +356,21 @@ public class FtpTransportIT extends FtpBaseIT {
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
-        String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0, expectedDirectoryName.indexOf(".")) : expectedDirectoryName;
-        String suffix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(expectedDirectoryName.indexOf(".")) : "";
+        String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0,
+                                                                                                expectedDirectoryName.indexOf(
+                                                                                                    ".")) :
+                        expectedDirectoryName;
+        String suffix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(
+            expectedDirectoryName.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
         //directory names may not have a dot in them, so we do not check for a positive length suffix
 
         performSilently(() -> assertTrue(Stream.of(ftpClient.listFiles())
-                .peek(f -> LOG.trace(FILE_LISTING, performSilently(() -> ftpClient.printWorkingDirectory()), f.getName()))
-                .anyMatch(candidateFile -> candidateFile.getName().startsWith(prefix) && candidateFile.getName().endsWith(suffix))));
+                                               .peek(f -> LOG.trace(FILE_LISTING, performSilently(
+                                                   () -> ftpClient.printWorkingDirectory()), f.getName()))
+                                               .anyMatch(candidateFile -> candidateFile.getName().startsWith(
+                                                   prefix) && candidateFile.getName().endsWith(suffix))));
     }
 
     /**
@@ -371,7 +392,7 @@ public class FtpTransportIT extends FtpBaseIT {
      * the supplied {@code name} as the name of the file, and will return the InputStream {@code resource} in
      * response to {@link PackageStream#open()}.
      *
-     * @param name the name of the package, used as the filename by the FtpTransport
+     * @param name     the name of the package, used as the filename by the FtpTransport
      * @param resource the resource which is encapsulated by the PackageStream
      * @return the resource encapsulated as a PackageStream
      */

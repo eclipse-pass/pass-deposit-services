@@ -16,66 +16,77 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.junit.Test;
-
 import java.util.Collections;
+
+import org.junit.Test;
 
 public class RepositoryConfigMappingTest extends AbstractJacksonMappingTest {
 
     static final String SWORD_REPOSITORY_JSON = "" +
-            "{\n" +
-            "\n" +
-            "    \"deposit-config\": {\n" +
-            "\n" +
-            /*
-             * Empty elements aren't supported without additional mapping configuration:
-             * com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig["deposit-config"]->org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig["processing"])
-             */
+                                                "{\n" +
+                                                "\n" +
+                                                "    \"deposit-config\": {\n" +
+                                                "\n" +
+        /*
+         * Empty elements aren't supported without additional mapping configuration:
+         * com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org
+         * .dataconservancy.pass.deposit.messaging.config.repository.DepositProcessing and no properties discovered
+         * to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through
+         * reference chain: org.dataconservancy.pass.deposit.messaging.config.repository
+         * .RepositoryConfig["deposit-config"]->org.dataconservancy.pass.deposit.messaging.config.repository
+         * .RepositoryDepositConfig["processing"])
+         */
 //            "      \"processing\": {\n" +
 //            "\n" +
 //            "      },\n" +
-            "\n" +
-            "      \"mapping\": {\n" +
-            "        \"http://dspace.org/state/archived\": \"http://oapass.org/status/deposit#accepted\",\n" +
-            "        \"http://dspace.org/state/withdrawn\": \"http://oapass.org/status/deposit#rejected\",\n" +
-            "        \"default-mapping\": \"http://oapass.org/status/deposit#submitted\"\n" +
-            "      }\n" +
-            "    },\n" +
-            "\n" +
-            "    \"assembler\": {\n" +
-            "      \"specification\": \"http://purl.org/net/sword/package/METSDSpaceSIP\"\n" +
-            "    },\n" +
-            "\n" +
-            "    \"transport-config\": {\n" +
-            "      \"auth-realms\": [\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://jscholarship.library.jhu.edu/\"\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://dspace-prod.mse.jhu.edu:8080/\"\n" +
-            "        }\n" +
-            "      ],\n" +
-            "\n" +
-            "      \"protocol-binding\": {\n" +
-            "        \"protocol\": \"SWORDv2\",\n" +
-            "        \"username\": \"sworduser\",\n" +
-            "        \"password\": \"swordpass\",\n" +
-            "        \"server-fqdn\": \"${dspace.host}\",\n" +
-            "        \"server-port\": \"${dspace.port}\",\n" +
-            "        \"service-doc\": \"http://${dspace.host}:${dspace.port}/swordv2/servicedocument\",\n" +
-            "        \"default-collection\": \"http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
-            "        \"on-behalf-of\": null,\n" +
-            "        \"deposit-receipt\": true,\n" +
-            "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }";
+                                                "\n" +
+                                                "      \"mapping\": {\n" +
+                                                "        \"http://dspace.org/state/archived\": \"http://oapass" +
+                                                ".org/status/deposit#accepted\",\n" +
+                                                "        \"http://dspace.org/state/withdrawn\": \"http://oapass" +
+                                                ".org/status/deposit#rejected\",\n" +
+                                                "        \"default-mapping\": \"http://oapass" +
+                                                ".org/status/deposit#submitted\"\n" +
+                                                "      }\n" +
+                                                "    },\n" +
+                                                "\n" +
+                                                "    \"assembler\": {\n" +
+                                                "      \"specification\": \"http://purl" +
+                                                ".org/net/sword/package/METSDSpaceSIP\"\n" +
+                                                "    },\n" +
+                                                "\n" +
+                                                "    \"transport-config\": {\n" +
+                                                "      \"auth-realms\": [\n" +
+                                                "        {\n" +
+                                                "          \"mech\": \"basic\",\n" +
+                                                "          \"username\": \"user\",\n" +
+                                                "          \"password\": \"pass\",\n" +
+                                                "          \"url\": \"https://jscholarship.library.jhu.edu/\"\n" +
+                                                "        },\n" +
+                                                "        {\n" +
+                                                "          \"mech\": \"basic\",\n" +
+                                                "          \"username\": \"user\",\n" +
+                                                "          \"password\": \"pass\",\n" +
+                                                "          \"url\": \"https://dspace-prod.mse.jhu.edu:8080/\"\n" +
+                                                "        }\n" +
+                                                "      ],\n" +
+                                                "\n" +
+                                                "      \"protocol-binding\": {\n" +
+                                                "        \"protocol\": \"SWORDv2\",\n" +
+                                                "        \"username\": \"sworduser\",\n" +
+                                                "        \"password\": \"swordpass\",\n" +
+                                                "        \"server-fqdn\": \"${dspace.host}\",\n" +
+                                                "        \"server-port\": \"${dspace.port}\",\n" +
+                                                "        \"service-doc\": \"http://${dspace.host}:${dspace" +
+                                                ".port}/swordv2/servicedocument\",\n" +
+                                                "        \"default-collection\": \"http://${dspace.host}:${dspace" +
+                                                ".port}/swordv2/collection/123456789/2\",\n" +
+                                                "        \"on-behalf-of\": null,\n" +
+                                                "        \"deposit-receipt\": true,\n" +
+                                                "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
+                                                "      }\n" +
+                                                "    }\n" +
+                                                "  }";
 
     @Test
     public void mapRepositoryConfigFromJsonRoundTrip() throws Exception {

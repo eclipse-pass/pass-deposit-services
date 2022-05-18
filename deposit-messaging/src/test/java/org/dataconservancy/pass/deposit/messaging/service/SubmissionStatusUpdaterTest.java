@@ -15,22 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.client.SubmissionStatusService;
-import org.dataconservancy.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.Collections;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomSubmissionStatusExcept;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
@@ -43,6 +27,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.client.SubmissionStatusService;
+import org.dataconservancy.pass.deposit.messaging.service.SubmissionStatusUpdater.CriFunc;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -75,7 +75,7 @@ public class SubmissionStatusUpdaterTest {
     public void criPreconditionSuccess() {
         Submission s = mock(Submission.class);
         when(s.getSubmissionStatus()).thenReturn(
-                randomSubmissionStatusExcept(SubmissionStatus.COMPLETE, SubmissionStatus.CANCELLED));
+            randomSubmissionStatusExcept(SubmissionStatus.COMPLETE, SubmissionStatus.CANCELLED));
         when(s.getSubmitted()).thenReturn(Boolean.TRUE);
 
         assertTrue(CriFunc.preCondition.test(s));
@@ -150,10 +150,10 @@ public class SubmissionStatusUpdaterTest {
         when(s.getSubmitted()).thenReturn(Boolean.TRUE);
 
         Stream.of(SubmissionStatus.values())
-                .filter(status -> status != SubmissionStatus.CANCELLED && status != SubmissionStatus.COMPLETE)
-                .peek(status -> when(s.getSubmissionStatus()).thenReturn(status))
-                .peek(status -> LOG.trace("Testing status {}", status))
-                .forEach(status -> assertTrue(CriFunc.preCondition.test(s)));
+              .filter(status -> status != SubmissionStatus.CANCELLED && status != SubmissionStatus.COMPLETE)
+              .peek(status -> when(s.getSubmissionStatus()).thenReturn(status))
+              .peek(status -> LOG.trace("Testing status {}", status))
+              .forEach(status -> assertTrue(CriFunc.preCondition.test(s)));
     }
 
     /**
@@ -222,16 +222,16 @@ public class SubmissionStatusUpdaterTest {
     @Test
     public void toUpdateCollectsAllButCompleteAndCancelled() {
         when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any()))
-                .then(inv -> {
-                    String status = inv.getArgument(2);
-                    assertFalse(status.equalsIgnoreCase(SubmissionStatus.COMPLETE.name()));
-                    assertFalse(status.equalsIgnoreCase(SubmissionStatus.CANCELLED.name()));
-                    return Collections.emptySet(); // don't care about the result
-                });
+            .then(inv -> {
+                String status = inv.getArgument(2);
+                assertFalse(status.equalsIgnoreCase(SubmissionStatus.COMPLETE.name()));
+                assertFalse(status.equalsIgnoreCase(SubmissionStatus.CANCELLED.name()));
+                return Collections.emptySet(); // don't care about the result
+            });
         SubmissionStatusUpdater.toUpdate(passClient);
 
         verify(passClient, times(SubmissionStatus.values().length - 2))
-                .findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any());
+            .findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any());
     }
 
     /**
@@ -243,7 +243,7 @@ public class SubmissionStatusUpdaterTest {
         URI submissionUri = randomUri();
         underTest.doUpdate(Collections.singleton(submissionUri));
 
-        verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate)any(), any());
+        verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate) any(), any());
     }
 
     /**
@@ -254,11 +254,14 @@ public class SubmissionStatusUpdaterTest {
     @SuppressWarnings("unchecked")
     public void doUpdateInvokesPassClientAndCri() {
         URI submissionUri = randomUri();
-        when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any())).thenReturn(Collections.singleton(submissionUri));
+        when(passClient.findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any())).thenReturn(
+            Collections.singleton(submissionUri));
 
         underTest.doUpdate();
 
-        verify(passClient, times(SubmissionStatus.values().length - 2)).findAllByAttribute(eq(Submission.class), eq("submissionStatus"), any());
+        verify(passClient, times(SubmissionStatus.values().length - 2)).findAllByAttribute(eq(Submission.class),
+                                                                                           eq("submissionStatus"),
+                                                                                           any());
         verify(cri, times(1)).performCritical(eq(submissionUri), eq(Submission.class), any(), (Predicate) any(), any());
 
     }

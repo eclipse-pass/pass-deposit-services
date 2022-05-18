@@ -15,21 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.apache.commons.lang.StringUtils;
-import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
-import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
-import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
-import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.Banner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -39,6 +24,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.commons.lang.StringUtils;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.runner.FailedDepositRunner;
+import org.dataconservancy.pass.deposit.messaging.runner.ListenerRunner;
+import org.dataconservancy.pass.deposit.messaging.runner.SubmittedUpdateRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.Banner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 
 /**
@@ -82,18 +82,19 @@ public class DepositApp {
                 gitProperties.load(gitPropertiesResource.openStream());
                 boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
 
-            LOG.info("Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
-                    gitProperties.get(GIT_BUILD_VERSION_KEY),
-                    gitProperties.get(GIT_BRANCH),
-                    gitProperties.get(GIT_COMMIT_HASH_KEY),
-                    gitProperties.get(GIT_COMMIT_TIME_KEY),
-                    gitProperties.get(GIT_BUILD_TIME));
+                LOG.info("Starting DepositServices (version: {} branch: {} commit: {} commit date: {} build date: {})",
+                         gitProperties.get(GIT_BUILD_VERSION_KEY),
+                         gitProperties.get(GIT_BRANCH),
+                         gitProperties.get(GIT_COMMIT_HASH_KEY),
+                         gitProperties.get(GIT_COMMIT_TIME_KEY),
+                         gitProperties.get(GIT_BUILD_TIME));
 
                 if (isDirty) {
                     LOG.warn("** Deposit Services was compiled from a Git repository with uncommitted changes! **");
                 }
             } catch (IOException e) {
-                LOG.warn("Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
+                LOG.warn(
+                    "Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
             }
         }
 
@@ -106,27 +107,31 @@ public class DepositApp {
         switch (args[0]) {
             case "listen": {
                 app = new SpringApplicationBuilder(DepositApp.class, ListenerRunner.class)
-                        .banner(new DepositAppBanner())
-                        .build();
+                    .banner(new DepositAppBanner())
+                    .build();
                 break;
             }
             case "refresh": {
                 app = new SpringApplicationBuilder(DepositApp.class, SubmittedUpdateRunner.class)
-                        .banner(new DepositAppBanner())
-                        .build();
+                    .banner(new DepositAppBanner())
+                    .build();
                 // TODO figure out elegant way to exclude JMS-related beans like SubmissionProcessor from being spun up
-                app.setDefaultProperties(new HashMap<String, Object>() { {
-                    put("spring.jms.listener.auto-startup", Boolean.FALSE);
-                }});
+                app.setDefaultProperties(new HashMap<String, Object>() {
+                    {
+                        put("spring.jms.listener.auto-startup", Boolean.FALSE);
+                    }
+                });
                 break;
             }
             case "retry": {
                 app = new SpringApplicationBuilder(DepositApp.class, FailedDepositRunner.class)
-                        .banner(new DepositAppBanner())
-                        .build();
-                app.setDefaultProperties(new HashMap<String, Object>() { {
-                    put("spring.jms.listener.auto-startup", Boolean.FALSE);
-                }});
+                    .banner(new DepositAppBanner())
+                    .build();
+                app.setDefaultProperties(new HashMap<String, Object>() {
+                    {
+                        put("spring.jms.listener.auto-startup", Boolean.FALSE);
+                    }
+                });
                 break;
             }
 //                default: report
@@ -178,7 +183,7 @@ public class DepositApp {
                     resolvedValue = origValue;
                     errorMsg = "(could not resolve property: " + e.getMessage() + ")";
                 }
-                if (! resolvedValue.equals(origValue) || ! errorMsg.isEmpty()) {
+                if (!resolvedValue.equals(origValue) || !errorMsg.isEmpty()) {
                     if (firstOne) {
                         LOG.info("Resolved Spring Environment property values:");
                         firstOne = false;

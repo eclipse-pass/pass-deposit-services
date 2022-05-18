@@ -19,6 +19,9 @@ package org.dataconservancy.pass.deposit.transport.fs;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class FilesystemTransportHints {
+    private FilesystemTransportHints() {
+        //never called
+    }
 
     public static final String CREATE_IF_MISSING = "createIfMissing";
 

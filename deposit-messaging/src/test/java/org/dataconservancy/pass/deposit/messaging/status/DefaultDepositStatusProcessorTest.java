@@ -15,20 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig;
-import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
-import org.dataconservancy.pass.model.Deposit;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_ARCHIVED;
 import static org.dataconservancy.pass.deposit.messaging.status.SwordDspaceDepositStatus.SWORD_STATE_INPROGRESS;
 import static org.junit.Assert.assertEquals;
@@ -39,6 +25,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryDepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
+import org.dataconservancy.pass.model.Deposit;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -91,7 +91,7 @@ public class DefaultDepositStatusProcessorTest {
         });
 
         assertEquals(Deposit.DepositStatus.ACCEPTED,
-                underTest.process(deposit, repositoryConfig));
+                     underTest.process(deposit, repositoryConfig));
 
         verify(resolver).resolve(refUri, repositoryConfig);
         verify(mapping).getStatusMap();

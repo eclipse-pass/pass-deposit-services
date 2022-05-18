@@ -16,10 +16,10 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TransportConfig {
 
@@ -47,11 +47,15 @@ public class TransportConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TransportConfig that = (TransportConfig) o;
         return Objects.equals(authRealms, that.authRealms) &&
-                Objects.equals(protocolBinding, that.protocolBinding);
+               Objects.equals(protocolBinding, that.protocolBinding);
     }
 
     @Override

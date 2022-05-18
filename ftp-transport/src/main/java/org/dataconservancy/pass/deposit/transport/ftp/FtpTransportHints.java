@@ -18,6 +18,10 @@ package org.dataconservancy.pass.deposit.transport.ftp;
 
 public class FtpTransportHints {
 
+    private FtpTransportHints() {
+        //never called
+    }
+
     public static final String BASE_DIRECTORY = "deposit.transport.protocol.ftp.basedir";
 
     public static final String TRANSFER_MODE = "deposit.transport.protocol.ftp.transfer-mode";

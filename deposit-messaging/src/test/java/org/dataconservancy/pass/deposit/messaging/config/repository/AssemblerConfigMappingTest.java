@@ -15,11 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -27,17 +28,18 @@ import static org.junit.Assert.*;
 public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
 
     private static final String ASSEMBLER_CONFIG = "" +
-            "{\n" +
-            "      \"specification\": \"http://purl.org/net/sword/package/METSDSpaceSIP\",\n" +
-            "      \"options\": {\n" +
-            "        \"archive\": \"ZIP\",\n" +
-            "        \"compression\": \"NONE\",\n" +
-            "        \"algorithms\": [\n" +
-            "          \"sha512\",\n" +
-            "          \"md5\"\n" +
-            "        ]\n" +
-            "      }\n" +
-            "    }";
+                                                   "{\n" +
+                                                   "      \"specification\": \"http://purl" +
+                                                   ".org/net/sword/package/METSDSpaceSIP\",\n" +
+                                                   "      \"options\": {\n" +
+                                                   "        \"archive\": \"ZIP\",\n" +
+                                                   "        \"compression\": \"NONE\",\n" +
+                                                   "        \"algorithms\": [\n" +
+                                                   "          \"sha512\",\n" +
+                                                   "          \"md5\"\n" +
+                                                   "        ]\n" +
+                                                   "      }\n" +
+                                                   "    }";
 
 
     @Test

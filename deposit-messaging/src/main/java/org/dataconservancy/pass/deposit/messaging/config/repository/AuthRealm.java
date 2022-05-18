@@ -16,17 +16,17 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.Objects;
-
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "mech")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "mech")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = BasicAuthRealm.class, name = "basic")
+    @JsonSubTypes.Type(value = BasicAuthRealm.class, name = "basic")
 })
 public abstract class AuthRealm {
 
@@ -42,8 +42,12 @@ public abstract class AuthRealm {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AuthRealm authRealm = (AuthRealm) o;
         return Objects.equals(mech, authRealm.mech);
     }

@@ -16,6 +16,10 @@
 
 package org.dataconservancy.nihms.integration;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
 import com.google.common.net.InetAddresses;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
@@ -23,10 +27,6 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.dataconservancy.pass.deposit.transport.ftp.FtpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
 
 public class IntegrationUtil {
 
@@ -54,7 +54,7 @@ public class IntegrationUtil {
         int replyCode = ftpClient.getReplyCode();
         String replyString = ftpClient.getReplyString();
         assertTrue("(" + ftpClient() + ") Command failed: " + replyCode + " " + replyString,
-                FTPReply.isPositiveCompletion(replyCode));
+                   FTPReply.isPositiveCompletion(replyCode));
     }
 
     public void connect() throws IOException {
@@ -73,7 +73,8 @@ public class IntegrationUtil {
                     ftpClient.connect(ftpHost, ftpPort);
                 }
                 if (!ftpClient.sendNoOp()) {
-                    LOG.debug("({}) NOOP *FAILED*, connection to {}:{} not established.", ftpClient(), ftpHost, ftpPort);
+                    LOG.debug("({}) NOOP *FAILED*, connection to {}:{} not established.", ftpClient(), ftpHost,
+                              ftpPort);
                     connectionSuccess = false;
                 } else {
                     connectionSuccess = true;
@@ -83,7 +84,7 @@ public class IntegrationUtil {
                 // retry until a timeout is reached or a connection is successful.
                 try {
                     LOG.debug("({}) Connection *FAILED* to {}:{}, sleeping for {} ms ...",
-                            ftpClient(), ftpHost, ftpPort, waitMs);
+                              ftpClient(), ftpHost, ftpPort, waitMs);
                     Thread.sleep(waitMs);
                 } catch (InterruptedException ie) {
                     throw new RuntimeException(ie);
@@ -117,13 +118,13 @@ public class IntegrationUtil {
 
         if (baseDirectory != null && !FtpUtil.directoryExists(ftpClient, baseDirectory)) {
             assertTrue("Unable to create base directory '" + baseDirectory + "'",
-                    ftpClient.makeDirectory(baseDirectory));
+                       ftpClient.makeDirectory(baseDirectory));
             assertTrue("Unable to set working directory to '" + baseDirectory + "'",
-                    ftpClient.changeWorkingDirectory(baseDirectory));
+                       ftpClient.changeWorkingDirectory(baseDirectory));
             LOG.trace("Setting working directory to '{}'", ftpClient.printWorkingDirectory());
         } else if (baseDirectory != null) {
             assertTrue("Unable to set working directory to '" + baseDirectory + "'",
-                    ftpClient.changeWorkingDirectory(baseDirectory));
+                       ftpClient.changeWorkingDirectory(baseDirectory));
             LOG.trace("Setting working directory to '{}'", ftpClient.printWorkingDirectory());
         } else {
             baseDirectory = ftpClient.printWorkingDirectory();
@@ -168,7 +169,7 @@ public class IntegrationUtil {
 
         if (!baseDirectory.startsWith("/")) {
             throw new IllegalArgumentException("Base directory must begin with a forward slash (was: '" +
-                    baseDirectory + "'");
+                                               baseDirectory + "'");
         }
         this.baseDirectory = baseDirectory;
     }

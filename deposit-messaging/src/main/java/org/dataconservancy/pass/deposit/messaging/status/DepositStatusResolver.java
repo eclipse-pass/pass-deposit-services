@@ -32,7 +32,7 @@ public interface DepositStatusResolver<T, R> {
      * is a URL that references a deposit status document), the supplied {@code authRealm} will be expected to provide
      * authentication parameters.
      *
-     * @param o the object that contains or references a deposit status
+     * @param o                the object that contains or references a deposit status
      * @param repositoryConfig the configuration for the downstream repository that the deposit targeted
      * @return the deposit status
      */

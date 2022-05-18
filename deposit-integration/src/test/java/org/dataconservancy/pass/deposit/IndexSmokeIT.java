@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit;
 
+import static org.dataconservancy.pass.model.Submission.SubmissionStatus.SUBMITTED;
+import static org.junit.Assert.assertTrue;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.dataconservancy.deposit.util.async.Condition;
 import org.dataconservancy.nihms.integration.BaseIT;
 import org.dataconservancy.pass.client.PassClient;
@@ -26,13 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-
-import static org.dataconservancy.pass.model.Submission.SubmissionStatus.SUBMITTED;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -54,13 +54,13 @@ public class IndexSmokeIT extends BaseIT {
     @Before
     public void setUp() throws Exception {
         assertTrue("Missing expected system property " + PASS_FEDORA_USER,
-                System.getProperties().containsKey(PASS_FEDORA_USER));
+                   System.getProperties().containsKey(PASS_FEDORA_USER));
         assertTrue("Missing expected system property " + PASS_FEDORA_PASSWORD,
-                System.getProperties().containsKey(PASS_FEDORA_PASSWORD));
+                   System.getProperties().containsKey(PASS_FEDORA_PASSWORD));
         assertTrue("Missing expected system property " + PASS_FEDORA_BASEURL,
-                System.getProperties().containsKey(PASS_FEDORA_BASEURL));
+                   System.getProperties().containsKey(PASS_FEDORA_BASEURL));
         assertTrue("Missing expected system property " + PASS_ES_URL,
-                System.getProperties().containsKey(PASS_ES_URL));
+                   System.getProperties().containsKey(PASS_ES_URL));
 
         passClient = new PassClientDefault();
     }
@@ -83,8 +83,8 @@ public class IndexSmokeIT extends BaseIT {
         LOG.debug(">>>> Waiting for user {} to appear in index", userUri);
 
         Condition<URI> userCondition = new Condition<>(
-                () -> passClient.findByAttribute(User.class, "@id", userUri),
-                "Poll index for User.");
+            () -> passClient.findByAttribute(User.class, "@id", userUri),
+            "Poll index for User.");
 
         assertTrue(userCondition.awaitAndVerify((uri) -> uri.getPath().equals(userUri.getPath())));
 
@@ -103,14 +103,15 @@ public class IndexSmokeIT extends BaseIT {
         URI repoJsUri = passClient.createResource(js);
 
         LOG.debug(">>>> Waiting for repo {} to appear in index", repoNihUri);
-        Condition<URI> repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
-                "Poll index for repo");
+        Condition<URI> repoCondition = new Condition<>(
+            () -> passClient.findByAttribute(Repository.class, "@id", repoNihUri),
+            "Poll index for repo");
 
         assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoNihUri.getPath())));
 
         LOG.debug(">>>> Waiting for repo {} to appear in index", repoJsUri);
         repoCondition = new Condition<>(() -> passClient.findByAttribute(Repository.class, "@id", repoJsUri),
-                "Poll index for repo");
+                                        "Poll index for repo");
 
         assertTrue(repoCondition.awaitAndVerify((uri) -> uri.getPath().equals(repoJsUri.getPath())));
 
@@ -126,7 +127,7 @@ public class IndexSmokeIT extends BaseIT {
         URI submissionUri = passClient.createResource(submission);
 
         Condition<URI> submissionCondition = new Condition<>(() -> passClient.findByAttribute(Submission.class, "@id"
-                , submissionUri), "Poll index for Submission.");
+            , submissionUri), "Poll index for Submission.");
 
         LOG.debug(">>>> Waiting for submission {} to appear in index", submissionUri);
 

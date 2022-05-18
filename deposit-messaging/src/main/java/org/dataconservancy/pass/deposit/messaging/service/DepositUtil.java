@@ -15,32 +15,32 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import static java.time.Instant.ofEpochMilli;
+import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.FAILED;
+
+import java.net.URI;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.dataconservancy.pass.deposit.messaging.model.Packager;
 import org.dataconservancy.pass.deposit.messaging.policy.TerminalDepositStatusPolicy;
 import org.dataconservancy.pass.deposit.messaging.policy.TerminalSubmissionStatusPolicy;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusEvaluator;
 import org.dataconservancy.pass.deposit.messaging.status.SubmissionStatusEvaluator;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.RepositoryCopy;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jms.JmsProperties;
 import org.springframework.messaging.Message;
-
-import javax.jms.JMSException;
-import javax.jms.Session;
-import java.net.URI;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.stream.Stream;
-
-import static java.time.Instant.ofEpochMilli;
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.FAILED;
 
 /**
  * Utility methods for deposit messaging.
@@ -56,10 +56,10 @@ public class DepositUtil {
     private static final String UTC = "UTC";
 
     private static final TerminalDepositStatusPolicy TERMINAL_DEPOSIT_STATUS_POLICY = new TerminalDepositStatusPolicy
-            (new DepositStatusEvaluator());
+        (new DepositStatusEvaluator());
 
     private static final TerminalSubmissionStatusPolicy TERMINAL_SUBMISSION_STATUS_POLICY = new
-            TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
+        TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
 
     static final String UNKNOWN_DATETIME = "UNKNOWN";
 
@@ -67,9 +67,9 @@ public class DepositUtil {
      * Returns true if the {@code Message} in the supplied {@link MessageContext} has the specified {@code eventType}
      * and {@code resourceType}.  Useful for filtering creation events of Submission resources.
      *
-     * @param eventType the Fedora event type, may be a comma-delimited multi-value string
+     * @param eventType    the Fedora event type, may be a comma-delimited multi-value string
      * @param resourceType the Fedora resource type, may be a comma-delimited multi-value string
-     * @param mc the message context
+     * @param mc           the message context
      * @return true if the message matches {@code eventType} and {@code resourceType}
      */
     public static boolean isMessageA(String eventType, String resourceType, MessageContext mc) {
@@ -86,15 +86,16 @@ public class DepositUtil {
      * @return a formatted date and time string
      */
     public static String parseDateTime(long timeStamp) {
-        return (timeStamp > 0) ? TIME_FORMATTER.format(ofEpochMilli(timeStamp).atZone(ZoneId.of(UTC))) : UNKNOWN_DATETIME;
+        return (timeStamp > 0) ? TIME_FORMATTER.format(
+            ofEpochMilli(timeStamp).atZone(ZoneId.of(UTC))) : UNKNOWN_DATETIME;
     }
 
     /**
      * Obtain the acknowledgement mode of the {@link Session} as a String.
      *
-     * @param session the JMS session
+     * @param session  the JMS session
      * @param dateTime the formatted date and time the message was received
-     * @param id the identifier of the received message
+     * @param id       the identifier of the received message
      * @return the acknowlegement mode as a {@code String}
      */
     public static String parseAckMode(Session session, String dateTime, String id) {
@@ -133,7 +134,7 @@ public class DepositUtil {
      * Splits a comma-delimited multi-valued string into individual strings, and tests whether {@code toMatch} matches
      * any of the values.
      *
-     * @param toMatch the String to match
+     * @param toMatch       the String to match
      * @param csvCandidates a String that may contain multiple values separated by commas
      * @return true if {@code toMatch} is contained within {@code csvCandidates}
      */
@@ -143,24 +144,25 @@ public class DepositUtil {
         }
 
         return Stream.of(csvCandidates.split(","))
-                .anyMatch(candidateType -> candidateType.trim().equals(toMatch));
+                     .anyMatch(candidateType -> candidateType.trim().equals(toMatch));
     }
 
     /**
      * Creates a convenience object that holds references to the objects related to an incoming JMS message.
      *
      * @param resourceType the type of the resource in Fedora, comma-delimited multi-value
-     * @param eventType the type of the event from Fedora, comma-delimited multi-value
-     * @param timestamp the timestamp of the message
-     * @param id the identifier of the message
-     * @param session the JMS session that received the message
-     * @param message the message, in the Spring domain model
-     * @param jmsMessage the message, in the native JMS model
+     * @param eventType    the type of the event from Fedora, comma-delimited multi-value
+     * @param timestamp    the timestamp of the message
+     * @param id           the identifier of the message
+     * @param session      the JMS session that received the message
+     * @param message      the message, in the Spring domain model
+     * @param jmsMessage   the message, in the native JMS model
      * @return an Object with references to the context of an incoming JMS message
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static MessageContext toMessageContext(String resourceType, String eventType, long timestamp, String id, Session
-            session, Message message, javax.jms.Message jmsMessage) {
+    public static MessageContext toMessageContext(String resourceType, String eventType, long timestamp, String id,
+                                                  Session
+                                                      session, Message message, javax.jms.Message jmsMessage) {
         MessageContext mc = new MessageContext();
         mc.resourceType = resourceType;
         mc.eventType = eventType;
@@ -178,14 +180,15 @@ public class DepositUtil {
     /**
      * Creates a convenience object that holds references to the objects related to performing a deposit.
      *
-     * @param depositResource the {@code Deposit} itself
-     * @param submission the {@code Submission} the {@code Deposit} is for
+     * @param depositResource   the {@code Deposit} itself
+     * @param submission        the {@code Submission} the {@code Deposit} is for
      * @param depositSubmission the {@code Submission} adapted to the deposit services model
-     * @param repository the {@code Repository} the custodial content should be transferred to
-     * @param packager the {@code Packager} used to assemble and stream the custodial content
+     * @param repository        the {@code Repository} the custodial content should be transferred to
+     * @param packager          the {@code Packager} used to assemble and stream the custodial content
      * @return an Object with references necessary for a {@code DepositTask} to be executed
      */
-    public static DepositWorkerContext toDepositWorkerContext(Deposit depositResource, Submission submission, DepositSubmission depositSubmission,
+    public static DepositWorkerContext toDepositWorkerContext(Deposit depositResource, Submission submission,
+                                                              DepositSubmission depositSubmission,
                                                               Repository repository, Packager packager) {
         DepositWorkerContext dc = new DepositWorkerContext();
         dc.depositResource = depositResource;
@@ -218,22 +221,27 @@ public class DepositUtil {
      * FAILED}, another thread may have succeeded in the interim).
      *
      * @param submissionUri the URI of the submission
-     * @param cri the critical repository interaction
+     * @param cri           the critical repository interaction
      * @return true if the {@code Submission} was marked {@code FAILED}
      */
     public static boolean markSubmissionFailed(URI submissionUri, CriticalRepositoryInteraction cri) {
         CriticalResult<Submission, Submission> updateResult = cri.performCritical(submissionUri, Submission.class,
-                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(submission.getAggregatedDepositStatus()),
-                (submission) -> submission.getAggregatedDepositStatus() == FAILED,
-                (submission) -> {
-                    submission.setAggregatedDepositStatus(FAILED);
-                    return submission;
-                });
+                                                                                  (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(
+                                                                                      submission.getAggregatedDepositStatus()),
+                                                                                  (submission) -> submission.getAggregatedDepositStatus() == FAILED,
+                                                                                  (submission) -> {
+                                                                                      submission.setAggregatedDepositStatus(
+                                                                                          FAILED);
+                                                                                      return submission;
+                                                                                  });
 
         if (!updateResult.success()) {
             LOG.debug("Updating status of {} to {} failed: {}", submissionUri, FAILED, updateResult.throwable()
-                    .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
-                    updateResult.throwable().get());
+                                                                                                   .isPresent() ?
+                                                                                       updateResult.throwable()
+                                                                                                                              .get()
+                                                                                                                              .getMessage() : "(missing Throwable cause)",
+                      updateResult.throwable().get());
         } else {
             LOG.debug("Marked {} as FAILED.", submissionUri);
         }
@@ -249,23 +257,26 @@ public class DepositUtil {
      * thread may have succeeded in the interim).
      *
      * @param depositUri the URI of the deposit
-     * @param cri the critical repository interaction
+     * @param cri        the critical repository interaction
      * @return true if the {@code Deposit} was marked {@code FAILED}
      */
     public static boolean markDepositFailed(URI depositUri, CriticalRepositoryInteraction cri) {
         CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(depositUri, Deposit.class,
-                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(deposit.getDepositStatus()),
-                (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
-                (deposit) -> {
-                    deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
-                    return deposit;
-                });
+                                                                            (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(
+                                                                                deposit.getDepositStatus()),
+                                                                            (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
+                                                                            (deposit) -> {
+                                                                                deposit.setDepositStatus(
+                                                                                    Deposit.DepositStatus.FAILED);
+                                                                                return deposit;
+                                                                            });
 
         if (!updateResult.success()) {
             LOG.debug("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,
-                    updateResult.throwable()
-                            .isPresent() ? updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
-                    updateResult.throwable().get());
+                      updateResult.throwable()
+                                  .isPresent() ? updateResult.throwable().get()
+                                                             .getMessage() : "(missing Throwable cause)",
+                      updateResult.throwable().get());
         } else {
             LOG.debug("Marked {} as FAILED.", depositUri);
         }
@@ -383,6 +394,7 @@ public class DepositUtil {
 
         /**
          * the {@code Deposit} itself
+         *
          * @return the Deposit
          */
         public Deposit deposit() {
@@ -466,14 +478,14 @@ public class DepositUtil {
         @Override
         public String toString() {
             return "DepositWorkerContext{" +
-                    "depositResource=" + depositResource +
-                    ", depositSubmission=" + depositSubmission +
-                    ", submission=" + submission +
-                    ", repository=" + repository +
-                    ", packager=" + packager +
-                    ", repoCopy=" + repoCopy +
-                    ", statusUri='" + statusUri + '\'' +
-                    '}';
+                   "depositResource=" + depositResource +
+                   ", depositSubmission=" + depositSubmission +
+                   ", submission=" + submission +
+                   ", repository=" + repository +
+                   ", packager=" + packager +
+                   ", repoCopy=" + repoCopy +
+                   ", statusUri='" + statusUri + '\'' +
+                   '}';
         }
     }
 }

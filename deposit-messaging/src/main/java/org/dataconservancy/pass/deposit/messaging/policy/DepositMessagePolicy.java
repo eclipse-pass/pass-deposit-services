@@ -15,17 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.springframework.stereotype.Component;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.DEPOSIT_RESOURCE;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
-import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
-import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.DEPOSIT_RESOURCE;
+import org.dataconservancy.pass.model.Deposit;
+import org.springframework.stereotype.Component;
 
 /**
  * Accepts messages that represent the creation or modification of a PASS {@link Deposit}.  Messages that do not meet
@@ -37,12 +37,12 @@ import static org.dataconservancy.pass.support.messaging.constants.Constants.Pas
 public class DepositMessagePolicy extends FedoraMessagePolicy {
 
     private static final Set<FedoraResourceEventType> DEPOSIT_RESOURCE_EVENT_TYPES = Collections.unmodifiableSet(
-            new HashSet<FedoraResourceEventType>() {
-                {
-                    add(new FedoraResourceEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION));
-                    add(new FedoraResourceEventType(DEPOSIT_RESOURCE, RESOURCE_MODIFICATION));
-                }
-            });
+        new HashSet<FedoraResourceEventType>() {
+            {
+                add(new FedoraResourceEventType(DEPOSIT_RESOURCE, RESOURCE_CREATION));
+                add(new FedoraResourceEventType(DEPOSIT_RESOURCE, RESOURCE_MODIFICATION));
+            }
+        });
 
     /**
      * Returns {@code FedoraResourceEventType}s for {@code Deposit} creation and modification messages.

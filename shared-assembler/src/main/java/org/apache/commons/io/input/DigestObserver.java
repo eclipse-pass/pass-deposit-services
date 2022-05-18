@@ -15,16 +15,16 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
-import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
-import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
+import static java.util.Base64.getEncoder;
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static java.util.Base64.getEncoder;
-import static org.apache.commons.codec.binary.Hex.encodeHexString;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions.Checksum;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.assembler.shared.ChecksumImpl;
 
 /**
  * Computes a digest over the observed bytes, and applies it to the {@link ResourceBuilder}.

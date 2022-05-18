@@ -76,8 +76,8 @@ public enum Extension {
      */
     public static Extension parseExt(String ext) {
         return Arrays.stream(values())
-                .filter(candidateExt -> candidateExt.getExt().equals(ext))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("No Extension exists for '" + ext + "'"));
+                     .filter(candidateExt -> candidateExt.getExt().equals(ext))
+                     .findAny()
+                     .orElseThrow(() -> new IllegalArgumentException("No Extension exists for '" + ext + "'"));
     }
 }

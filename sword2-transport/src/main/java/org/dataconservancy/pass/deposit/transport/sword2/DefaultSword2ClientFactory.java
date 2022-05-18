@@ -16,14 +16,13 @@
 
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
 import org.swordapp.client.ClientConfiguration;
 import org.swordapp.client.SWORDClient;
 
-import java.util.Map;
-
 /**
- *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
@@ -33,7 +32,7 @@ public class DefaultSword2ClientFactory implements Sword2ClientFactory {
     public SWORDClient newInstance(Map<String, String> hints) {
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setUserAgent(hints.getOrDefault(Sword2TransportHints.SWORD_CLIENT_USER_AGENT,
-                "oapass/SWORDv2"));
+                                                            "oapass/SWORDv2"));
         clientConfiguration.setReturnDepositReceipt(true);
 
         return new SWORDClient(clientConfiguration);

@@ -15,13 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -29,28 +29,28 @@ import static org.junit.Assert.assertTrue;
 public class AssemblerOptionsMappingTest extends AbstractJacksonMappingTest {
 
     private static final String OPTIONS_CONFIG = "" +
-            "{\n" +
-            "        \"archive\": \"ZIP\",\n" +
-            "        \"compression\": \"NONE\",\n" +
-            "        \"algorithms\": [\n" +
-            "          \"sha512\",\n" +
-            "          \"md5\"\n" +
-            "        ]\n" +
-            "}";
+                                                 "{\n" +
+                                                 "        \"archive\": \"ZIP\",\n" +
+                                                 "        \"compression\": \"NONE\",\n" +
+                                                 "        \"algorithms\": [\n" +
+                                                 "          \"sha512\",\n" +
+                                                 "          \"md5\"\n" +
+                                                 "        ]\n" +
+                                                 "}";
 
     private static final String OPTIONS_CONFIG_ADDITIONAL_VALUES = "" +
-            "{\n" +
-            "        \"archive\": \"ZIP\",\n" +
-            "        \"compression\": \"NONE\",\n" +
-            "        \"algorithms\": [\n" +
-            "          \"sha512\",\n" +
-            "          \"md5\"\n" +
-            "        ],\n" +
-            "        \"stringkey\": \"stringvalue\",\n" +
-            "        \"arraykey\": [\n" +
-            "          \"arrayvalue\"\n" +
-            "        ]\n" +
-            "}";
+                                                                   "{\n" +
+                                                                   "        \"archive\": \"ZIP\",\n" +
+                                                                   "        \"compression\": \"NONE\",\n" +
+                                                                   "        \"algorithms\": [\n" +
+                                                                   "          \"sha512\",\n" +
+                                                                   "          \"md5\"\n" +
+                                                                   "        ],\n" +
+                                                                   "        \"stringkey\": \"stringvalue\",\n" +
+                                                                   "        \"arraykey\": [\n" +
+                                                                   "          \"arrayvalue\"\n" +
+                                                                   "        ]\n" +
+                                                                   "}";
 
     @Test
     public void mapOptions() throws IOException {
