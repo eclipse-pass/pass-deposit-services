@@ -15,22 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Integer.toHexString;
+import static java.lang.String.format;
+import static java.lang.System.identityHashCode;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,11 +30,22 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.String.format;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.RepositoryCopy.CopyStatus;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Assembles, packages, and transports the custodial content associated with a {@code Submission} to a remote endpoint
@@ -101,22 +101,22 @@ public class DepositTask implements Runnable {
         LOG.debug("Running {}@{}", DepositTask.class.getSimpleName(), toHexString(identityHashCode(this)));
 
         CriticalResult<TransportResponse, Deposit> physicalResult =
-                cri.performCritical(dc.deposit().getId(), Deposit.class,
+            cri.performCritical(dc.deposit().getId(), Deposit.class,
 
                 /*
                  * Only "intermediate" deposits can be processed by {@code DepositTask}
                  */
-                DepositTaskCriFunc.depositPrecondition(intermediateDepositStatusPolicy),
+                                DepositTaskCriFunc.depositPrecondition(intermediateDepositStatusPolicy),
 
                 /*
                  * Determines *physical* success of the Deposit: were the bytes of the package successfully received?
                  */
-                DepositTaskCriFunc.depositPostcondition(dc),
+                                DepositTaskCriFunc.depositPostcondition(dc),
 
                 /*
                  * Assemble and stream a package of content to the repository endpoint, update status to SUBMITTED
                  */
-                DepositTaskCriFunc.performDeposit(dc));
+                                DepositTaskCriFunc.performDeposit(dc));
 
         // Check *physical* success: were the bytes of the package successfully streamed to endpoint?
 
@@ -125,18 +125,21 @@ public class DepositTask implements Runnable {
             if (physicalResult.throwable().isPresent()) {
                 Throwable t = physicalResult.throwable().get();
                 String msg = format("Failed to perform deposit for tuple [%s, %s, %s]: %s",
-                        dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(), t.getMessage());
+                                    dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
+                                    t.getMessage());
                 throw new DepositServiceRuntimeException(msg, t, dc.deposit());
             }
 
             String msg = format("Failed to perform deposit for tuple [%s, %s, %s]",
-                    dc.submission().getId(), dc.repository().getId(), dc.deposit().getId());
+                                dc.submission().getId(), dc.repository().getId(), dc.deposit().getId());
             throw new DepositServiceRuntimeException(msg, dc.deposit());
         }
 
-        TransportResponse transportResponse = physicalResult.result().orElseThrow(() ->
-                new DepositServiceRuntimeException("Missing TransportResponse for " +
-                        dc.deposit().getId(), dc.deposit()));
+        TransportResponse transportResponse = physicalResult.result()
+                .orElseThrow(() ->
+                                  new DepositServiceRuntimeException("Missing TransportResponse for " +
+                                      dc.deposit().getId(),
+                                      dc.deposit()));
 
         // Determine *logical* success: was the Deposit accepted by the remote system?
 
@@ -159,16 +162,16 @@ public class DepositTask implements Runnable {
                 if (prefixToMatch != null && statementUri.startsWith(prefixToMatch) && replacementPrefix != null) {
                     String newUri = statementUri.replace(prefixToMatch, replacementPrefix);
                     LOG.trace("Replacing Atom Statement URI '{}' with '{}'", statementUri, newUri);
-                    statementUri  = newUri;
+                    statementUri = newUri;
                 } else {
                     LOG.trace("Prefix '{}' did not match Atom Statement URI '{}', no replacement will take place.",
-                            prefixToMatch == null ? "<null>" : prefixToMatch, statementUri);
+                              prefixToMatch == null ? "<null>" : prefixToMatch, statementUri);
                 }
             } catch (Exception e) {
                 String msg = format("Failed to update deposit status to %s for tuple [%s, %s, %s]; " +
-                            "parsing the Atom statement %s for %s failed: %s",
-                        ACCEPTED, dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
-                        statementUri, dc.deposit().getId(), e.getMessage());
+                                    "parsing the Atom statement %s for %s failed: %s",
+                                    ACCEPTED, dc.submission().getId(), dc.repository().getId(), dc.deposit().getId(),
+                                    statementUri, dc.deposit().getId(), e.getMessage());
                 throw new DepositServiceRuntimeException(msg, e, dc.deposit());
             }
 
@@ -177,11 +180,11 @@ public class DepositTask implements Runnable {
             String finalStatementUri = statementUri;
             String finalItemUri = itemUri;
             CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(
-                    dc.deposit().getId(),
-                    Deposit.class,
-                    (criDeposit) -> true,
-                    TransportResponseUpdateFunc.verifyResourceState(dc),
-                    TransportResponseUpdateFunc.updateResources(finalStatementUri, finalItemUri, passClient, dc));
+                dc.deposit().getId(),
+                Deposit.class,
+                (criDeposit) -> true,
+                TransportResponseUpdateFunc.verifyResourceState(dc),
+                TransportResponseUpdateFunc.updateResources(finalStatementUri, finalItemUri, passClient, dc));
 
             if (!cr.success()) {
                 if (cr.throwable().isPresent()) {
@@ -197,7 +200,8 @@ public class DepositTask implements Runnable {
                     throw new RuntimeException(t.getMessage(), t);
                 } else {
                     throw new RuntimeException(format("Failed updating Deposit and RepositoryCopy for tuple " +
-                            "[%s, %s, %s]", dc.submission().getId(), dc.repository().getId(), dc.deposit().getId()));
+                                                      "[%s, %s, %s]", dc.submission().getId(), dc.repository().getId(),
+                                                      dc.deposit().getId()));
                 }
             }
         }
@@ -207,7 +211,8 @@ public class DepositTask implements Runnable {
         // the onSuccess(...) handler of the TransportResponse
 
         if (dc.repoCopy() == null) {
-            RepositoryCopy repoCopy = TransportResponseUpdateFunc.newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS).get();
+            RepositoryCopy repoCopy = TransportResponseUpdateFunc.newRepositoryCopy(dc, "", CopyStatus.IN_PROGRESS)
+                                                                 .get();
             dc.repoCopy(passClient.createAndReadResource(repoCopy, RepositoryCopy.class));
             dc.deposit().setRepositoryCopy(dc.repoCopy().getId());
             dc.deposit(passClient.updateAndReadResource(dc.deposit(), Deposit.class));
@@ -288,7 +293,8 @@ public class DepositTask implements Runnable {
          * Updates resources as a result of a successful deposit to a downstream repository.
          * <ul>
          *     <li>The deposit status reference is set on the Deposit</li>
-         *     <li>A RepositoryCopy resource is created according to {@link #newRepositoryCopy(DepositWorkerContext, String, CopyStatus)}</li>
+         *     <li>A RepositoryCopy resource is created according to
+         *     {@link #newRepositoryCopy(DepositWorkerContext, String, CopyStatus)}</li>
          *     <li>The external id is set on the newly created RepositoryCopy</li>
          *     <li>The Deposit and RepositoryCopy are updated/persisted in the PASS repository</li>
          * </ul>
@@ -324,7 +330,7 @@ public class DepositTask implements Runnable {
                 // Deposit resource that is updated by the updateResources(...) method
                 dc.deposit(criDeposit);
                 return dc.deposit().getDepositStatusRef() != null &&
-                        dc.repoCopy() != null;
+                       dc.repoCopy() != null;
             };
         }
 
@@ -358,7 +364,8 @@ public class DepositTask implements Runnable {
                     try {
                         repoCopy.setAccessUrl(new URI(extId));
                     } catch (URISyntaxException e) {
-                        LOG.warn("Error creating an accessUrl from '{}' for a RepositoryCopy associated with {}", extId, dc.deposit().getId());
+                        LOG.warn("Error creating an accessUrl from '{}' for a RepositoryCopy associated with {}", extId,
+                                 dc.deposit().getId());
                     }
                 }
 
@@ -399,7 +406,7 @@ public class DepositTask implements Runnable {
                 boolean accept = intermediateDepositStatusPolicy.test(deposit.getDepositStatus());
                 if (!accept) {
                     LOG.debug("Precondition failed for {}: Deposit must have an intermediate deposit status",
-                            deposit.getId());
+                              deposit.getId());
                 }
 
                 return accept;
@@ -431,11 +438,11 @@ public class DepositTask implements Runnable {
                 try {
                     packager = dc.packager();
                     packageStream = packager.getAssembler().assemble(
-                            dc.depositSubmission(), packager.getAssemblerOptions());
+                        dc.depositSubmission(), packager.getAssemblerOptions());
                     packagerConfig = packager.getConfiguration();
                 } catch (Exception e) {
                     throw new RuntimeException("Error resolving a Packager or Packager configuration for " +
-                            dc.deposit().getId(), e);
+                                               dc.deposit().getId(), e);
                 }
 
                 try (TransportSession transport = packager.getTransport().open(packagerConfig)) {
@@ -444,7 +451,7 @@ public class DepositTask implements Runnable {
                     return tr;
                 } catch (Exception e) {
                     throw new RuntimeException("Error closing transport session for deposit " +
-                            dc.deposit().getId() + ": " + e.getMessage(), e);
+                                               dc.deposit().getId() + ": " + e.getMessage(), e);
                 }
             };
         }
@@ -460,18 +467,18 @@ public class DepositTask implements Runnable {
             return (deposit, tr) -> {
                 if (deposit.getDepositStatus() != SUBMITTED) {
                     LOG.debug("Postcondition failed for {}: Expected Deposit status '{}' but actual status " +
-                            "is '{}'", deposit.getId(), SUBMITTED, deposit.getDepositStatus());
+                              "is '{}'", deposit.getId(), SUBMITTED, deposit.getDepositStatus());
                     return false;
                 }
 
                 if (!tr.success()) {
                     if (tr.error() != null) {
                         final String msg = format("Postcondition failed for %s: Transport of package to " +
-                                "endpoint failed: %s", deposit.getId(), tr.error().getMessage());
+                                                  "endpoint failed: %s", deposit.getId(), tr.error().getMessage());
                         throw new RuntimeException(msg, tr.error());
                     } else {
                         throw new RuntimeException(format("Postcondition failed for %s: Transport of package to " +
-                                "endpoint failed.", deposit.getId()));
+                                                          "endpoint failed.", deposit.getId()));
                     }
                 }
 

@@ -15,14 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
+import java.net.URI;
+import java.util.Map;
+
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.config.repository.StatusMapping;
 import org.dataconservancy.pass.model.Deposit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.Map;
 
 /**
  * Resolves the {@link Deposit#getDepositStatusRef() Deposit status reference}, parses the resolved document, and
@@ -44,7 +44,7 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
     /**
      * Parses the SWORD statement at {@code depositStatusRef}, and returns a corresponding {@link Deposit.DepositStatus}
      *
-     * @param deposit the Deposit
+     * @param deposit          the Deposit
      * @param repositoryConfig the configuration for the repository containing the Deposit
      * @return the deposit status, may be {@code null}
      */
@@ -52,7 +52,7 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
     public Deposit.DepositStatus process(Deposit deposit, RepositoryConfig repositoryConfig) {
         if (deposit.getDepositStatusRef() == null || deposit.getDepositStatusRef().trim().length() == 0) {
             LOG.warn("Deposit {} is missing a depositStatusRef; the deposit status will not be processed.",
-                    deposit.getId());
+                     deposit.getId());
             return null;
         }
 
@@ -60,8 +60,8 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
 
         if (swordState == null) {
             LOG.warn("SWORD state cannot be resolved from SWORD statement {}: no SWORD status was found by " +
-                            "DepositStatusResolver impl {}.",
-                    deposit.getId(), deposit.getDepositStatusRef(), statusResolver.getClass().getSimpleName());
+                     "DepositStatusResolver impl {}.",
+                     deposit.getId(), deposit.getDepositStatusRef(), statusResolver.getClass().getSimpleName());
             return null;
         }
 
@@ -72,13 +72,13 @@ public class DefaultDepositStatusProcessor implements DepositStatusProcessor {
             status = statusMap.getOrDefault(swordState.toString(), statusMapping.getDefaultMapping());
         } catch (RuntimeException e) {
             LOG.error("SWORD state '{}' for {} cannot be mapped to a Deposit.DepositStatus from SWORD statement {}: {}",
-                    swordState, deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
+                      swordState, deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
             throw e;
         }
 
         if (status == null) {
             LOG.warn("Error mapping the SWORD state {} (parsed from the SWORD statement {}) to a " +
-                    "Deposit.DepositStatus; returning 'null'.", swordState, deposit.getDepositStatusRef());
+                     "Deposit.DepositStatus; returning 'null'.", swordState, deposit.getDepositStatusRef());
             return null;
         }
 

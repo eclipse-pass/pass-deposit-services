@@ -15,10 +15,10 @@
  */
 package submissions;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

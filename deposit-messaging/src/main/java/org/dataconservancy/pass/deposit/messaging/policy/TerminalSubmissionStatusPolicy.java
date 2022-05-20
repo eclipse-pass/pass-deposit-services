@@ -29,7 +29,8 @@ public class TerminalSubmissionStatusPolicy implements Policy<Submission.Aggrega
     private StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator;
 
     @Autowired
-    public TerminalSubmissionStatusPolicy(StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
+    public TerminalSubmissionStatusPolicy(
+        StatusEvaluator<Submission.AggregatedDepositStatus> submissionStatusEvaluator) {
         this.submissionStatusEvaluator = submissionStatusEvaluator;
     }
 

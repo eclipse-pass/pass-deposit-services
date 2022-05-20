@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.builder;
 
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-
 import java.io.InputStream;
 import java.util.Map;
+
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 /**
  * Responsible for creating an instance of a {@link DepositSubmission submission}.  Knowledgeable of the
@@ -34,7 +34,7 @@ public interface StreamingSubmissionBuilder {
      * Validates the submission model
      * Returns the submission
      *
-     * @param stream InputStream containing a representation of a submission
+     * @param stream   InputStream containing a representation of a submission
      * @param streamMd metadata about the stream, e.g. length, content type
      * @return a submission for the NIHMS system based on the form data
      * @throws InvalidModel if the form data cannot be successfully parsed into a valid submission model

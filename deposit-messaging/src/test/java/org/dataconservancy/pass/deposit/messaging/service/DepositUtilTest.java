@@ -15,21 +15,21 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.messaging.policy.JmsMessagePolicy;
-import org.junit.Test;
-import org.springframework.boot.autoconfigure.jms.JmsProperties;
-import org.springframework.messaging.Message;
-
-import javax.jms.Session;
-import java.time.Instant;
-import java.util.Calendar;
-
 import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.UNKNOWN_DATETIME;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.parseAckMode;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import javax.jms.Session;
+
+import org.junit.Test;
+import org.springframework.boot.autoconfigure.jms.JmsProperties;
+import org.springframework.messaging.Message;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -96,10 +96,10 @@ public class DepositUtilTest {
     public void parseAckMode() throws Exception {
         Session session = mock(Session.class);
         when(session.getAcknowledgeMode())
-                .thenReturn(Session.AUTO_ACKNOWLEDGE)
-                .thenReturn(Session.CLIENT_ACKNOWLEDGE)
-                .thenReturn(Session.DUPS_OK_ACKNOWLEDGE)
-                .thenReturn(-1);
+            .thenReturn(Session.AUTO_ACKNOWLEDGE)
+            .thenReturn(Session.CLIENT_ACKNOWLEDGE)
+            .thenReturn(Session.DUPS_OK_ACKNOWLEDGE)
+            .thenReturn(-1);
 
         assertEquals("AUTO", DepositUtil.parseAckMode(session, null, null));
         assertEquals("CLIENT", DepositUtil.parseAckMode(session, null, null));

@@ -37,7 +37,8 @@
   <logger name="org.dataconservancy.pass" additivity="false" level="${org.dataconservancy.pass.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-INFO}">
+  <logger name="org.dataconservancy.pass.deposit" additivity="false"
+          level="${org.dataconservancy.pass.deposit.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
   <logger name="STREAMING_IO_LOG" additivity="false"
@@ -45,10 +46,12 @@
     <appender-ref ref="STDERR"/>
   </logger>
   <!-- the rest client is noisy, and detracts from looking at test logging output -->
-  <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
+  <logger name="org.elasticsearch.client.RestClient" additivity="false"
+          level="${org.elasticsearch.client.level:-ERROR}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit.integration.shared.graph" additivity="false" level="${org.dataconservancy.pass.deposit.level:-TRACE}">
+  <logger name="org.dataconservancy.pass.deposit.integration.shared.graph" additivity="false"
+          level="${org.dataconservancy.pass.deposit.level:-TRACE}">
     <appender-ref ref="STDERR"/>
   </logger>
 </configuration>

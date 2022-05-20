@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
+import static org.junit.Assert.assertTrue;
+
 import org.dataconservancy.pass.model.Submission;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

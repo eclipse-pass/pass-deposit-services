@@ -15,14 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.function.Predicate;
-
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomUri;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +23,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.function.Predicate;
+
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -57,16 +57,16 @@ public class DepositServiceErrorHandlerTest {
         Deposit depositResource = new Deposit();
         depositResource.setId(randomUri());
         DepositServiceRuntimeException dsreWithDeposit =
-                new DepositServiceRuntimeException("handleDepositServiceReWithDeposit", depositResource);
+            new DepositServiceRuntimeException("handleDepositServiceReWithDeposit", depositResource);
 
         CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(
-                eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
-                .thenAnswer(inv -> {
-                    depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
-                    return cr;
-                });
+            eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
+            .thenAnswer(inv -> {
+                depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
+                return cr;
+            });
 
         underTest.handleError(dsreWithDeposit);
 
@@ -84,21 +84,22 @@ public class DepositServiceErrorHandlerTest {
         Submission submissionResource = new Submission();
         submissionResource.setId(randomUri());
         DepositServiceRuntimeException depositServiceReWithSubmission =
-                new DepositServiceRuntimeException("handleDepositServiceReWithSubmission", submissionResource);
+            new DepositServiceRuntimeException("handleDepositServiceReWithSubmission", submissionResource);
 
         CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(
-                eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class), any()))
-                .thenAnswer(inv -> {
-                    submissionResource.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.FAILED);
-                    return cr;
-                });
+            eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class), any()))
+            .thenAnswer(inv -> {
+                submissionResource.setAggregatedDepositStatus(Submission.AggregatedDepositStatus.FAILED);
+                return cr;
+            });
 
         underTest.handleError(depositServiceReWithSubmission);
 
         assertEquals(Submission.AggregatedDepositStatus.FAILED, submissionResource.getAggregatedDepositStatus());
-        verify(cri).performCritical(eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class), any());
+        verify(cri).performCritical(eq(submissionResource.getId()), eq(Submission.class), any(), any(Predicate.class),
+                                    any());
     }
 
     /**
@@ -135,16 +136,16 @@ public class DepositServiceErrorHandlerTest {
         Deposit depositResource = new Deposit();
         depositResource.setId(randomUri());
         DepositServiceRuntimeException dsreWithDeposit =
-                new DepositServiceRuntimeException("handleRteWithDsreCause", depositResource);
+            new DepositServiceRuntimeException("handleRteWithDsreCause", depositResource);
         RuntimeException re = new RuntimeException("handleRteWithDsreCause", dsreWithDeposit);
 
         CriticalRepositoryInteraction.CriticalResult cr = mock(CriticalRepositoryInteraction.CriticalResult.class);
         when(cr.success()).thenReturn(true);
         when(cri.performCritical(eq(depositResource.getId()), eq(Deposit.class), any(), any(Predicate.class), any()))
-                .thenAnswer(inv -> {
-                    depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
-                    return cr;
-                });
+            .thenAnswer(inv -> {
+                depositResource.setDepositStatus(Deposit.DepositStatus.FAILED);
+                return cr;
+            });
 
         underTest.handleError(re);
 

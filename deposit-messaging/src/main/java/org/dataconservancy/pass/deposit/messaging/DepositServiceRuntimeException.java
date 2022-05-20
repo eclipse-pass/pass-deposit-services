@@ -44,7 +44,7 @@ public class DepositServiceRuntimeException extends RuntimeException {
     /**
      * Constructs a new exception that relates to the supplied {@code resource}
      *
-     * @param message exception message
+     * @param message  exception message
      * @param resource the repository resource that was the subject of a repository interaction
      */
     public DepositServiceRuntimeException(String message, PassEntity resource) {
@@ -55,8 +55,8 @@ public class DepositServiceRuntimeException extends RuntimeException {
     /**
      * Constructs a new exception that relates to the supplied {@code resource}
      *
-     * @param message exception message
-     * @param cause the cause of this exception
+     * @param message  exception message
+     * @param cause    the cause of this exception
      * @param resource the repository resource that was the subject of a repository interaction
      */
     public DepositServiceRuntimeException(String message, Throwable cause, PassEntity resource) {
@@ -67,7 +67,7 @@ public class DepositServiceRuntimeException extends RuntimeException {
     /**
      * Constructs a new exception that relates to the supplied {@code resource}
      *
-     * @param cause the cause of this exception
+     * @param cause    the cause of this exception
      * @param resource the repository resource that was the subject of a repository interaction
      */
     public DepositServiceRuntimeException(Throwable cause, PassEntity resource) {

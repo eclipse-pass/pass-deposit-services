@@ -16,6 +16,18 @@
 
 package org.dataconservancy.pass.deposit.builder.fs;
 
+import static org.dataconservancy.pass.deposit.model.JournalPublicationType.parseTypeDescription;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -32,18 +44,6 @@ import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-
-import static org.dataconservancy.pass.deposit.model.JournalPublicationType.parseTypeDescription;
 
 /***
  * Base class for copying deposit-submission data from Fedora-based sources into the deposit data model.
@@ -182,39 +182,39 @@ abstract class ModelBuilder {
     }
 
     private void processCommonMetadata(DepositMetadata metadata, JsonObject submissionData)
-            throws InvalidModel {
+        throws InvalidModel {
 
         // Is this tile for manuscript or article or both?
         getStringProperty(submissionData, MANUSCRIPT_TITLE_KEY)
-                .ifPresent(title -> {
-                    metadata.getManuscriptMetadata().setTitle(title);
-                    metadata.getArticleMetadata().setTitle(title);
-        });
+            .ifPresent(title -> {
+                metadata.getManuscriptMetadata().setTitle(title);
+                metadata.getArticleMetadata().setTitle(title);
+            });
 
         getStringProperty(submissionData, ABSTRACT_KEY)
-                .ifPresent(abs -> metadata.getManuscriptMetadata().setMsAbstract(abs));
+            .ifPresent(abs -> metadata.getManuscriptMetadata().setMsAbstract(abs));
 
         getStringProperty(submissionData, JOURNAL_TITLE_KEY)
-                .ifPresent(jTitle -> metadata.getJournalMetadata().setJournalTitle(jTitle));
+            .ifPresent(jTitle -> metadata.getJournalMetadata().setJournalTitle(jTitle));
 
         getStringProperty(submissionData, VOLUME_KEY)
-                .ifPresent(volume -> metadata.getArticleMetadata().setVolume(volume));
+            .ifPresent(volume -> metadata.getArticleMetadata().setVolume(volume));
 
         getStringProperty(submissionData, ISSUE_KEY)
-                .ifPresent(issue -> metadata.getArticleMetadata().setIssue(issue));
+            .ifPresent(issue -> metadata.getArticleMetadata().setIssue(issue));
 
         getArrayProperty(submissionData, AUTHORS_KEY).ifPresent(authors -> {
             authors.forEach(authorElement -> {
                 getStringProperty(authorElement.getAsJsonObject(), AUTHOR_KEY)
-                        .ifPresent(name -> metadata.getPersons().add(createAuthor(name)));
+                    .ifPresent(name -> metadata.getPersons().add(createAuthor(name)));
             });
         });
 
         getStringProperty(submissionData, PUBLISHER_KEY)
-                .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
+            .ifPresent(pName -> metadata.getJournalMetadata().setPublisherName(pName));
 
         getStringProperty(submissionData, PUBLICATION_DATE_KEY)
-                .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
+            .ifPresent(pName -> metadata.getJournalMetadata().setPublicationDate(pName));
 
         getArrayProperty(submissionData, ISSNS).ifPresent(issns -> {
             issns.forEach(issnObjAsStr -> {
@@ -224,13 +224,9 @@ abstract class ModelBuilder {
                     Optional<String> issn = getStringProperty(issnObj, ISSN);
                     Optional<String> pubType = getStringProperty(issnObj, PUB_TYPE_KEY);
 
-                    issn.ifPresent(i ->
-                            pubType.ifPresent(p ->
-                                    metadata.getJournalMetadata()
-                                            .getIssnPubTypes()
-                                            .putIfAbsent(i,
-                                                    new DepositMetadata.IssnPubType(i, parseTypeDescription(p)))));
-
+                    issn.ifPresent(i -> pubType.ifPresent(p -> metadata.getJournalMetadata()
+                        .getIssnPubTypes().putIfAbsent(i,
+                            new DepositMetadata.IssnPubType(i, parseTypeDescription(p)))));
                 } catch (Exception e) {
                     // Shouldn't happen.  If ISSNs can't be parsed, then they should be ignored, and not included
                     // in the Journal metadata
@@ -249,7 +245,7 @@ abstract class ModelBuilder {
                 metadata.getArticleMetadata().setEmbargoLiftDate(zonedEndDate);
             } catch (Exception e) {
                 InvalidModel im = new InvalidModel(String.format("Data file contained an invalid Date: '%s'.",
-                        endDate), e);
+                                                                 endDate), e);
                 throw new RuntimeException(im.getMessage(), im);
             }
         });
@@ -269,7 +265,7 @@ abstract class ModelBuilder {
 
     private void processPmcMetadata(DepositMetadata metadata, JsonObject submissionData) {
         getStringProperty(submissionData, NLMTA_KEY).ifPresent(nlmta ->
-                metadata.getJournalMetadata().setJournalId(nlmta));
+                                                                   metadata.getJournalMetadata().setJournalId(nlmta));
     }
 
     /**
@@ -281,7 +277,7 @@ abstract class ModelBuilder {
      * @throws InvalidModel
      */
     void processMetadata(DepositMetadata depositMetadata, String metadataStr)
-            throws InvalidModel {
+        throws InvalidModel {
         JsonObject json = new JsonParser().parse(metadataStr).getAsJsonObject();
         processCommonMetadata(depositMetadata, json);
         processPmcMetadata(depositMetadata, json);
@@ -298,7 +294,7 @@ abstract class ModelBuilder {
      * @throws InvalidModel
      */
     DepositSubmission createDepositSubmission(Submission submissionEntity, HashMap<URI, PassEntity> entities)
-            throws InvalidModel {
+        throws InvalidModel {
 
         // The submission object to populate
         DepositSubmission submission = new DepositSubmission();
@@ -306,7 +302,7 @@ abstract class ModelBuilder {
         // Prepare for Metadata
         DepositMetadata metadata = new DepositMetadata();
         submission.setMetadata(metadata);
-            submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
+        submission.setSubmissionMeta(new JsonParser().parse(submissionEntity.getMetadata()).getAsJsonObject());
         DepositMetadata.Manuscript manuscript = new DepositMetadata.Manuscript();
         metadata.setManuscriptMetadata(manuscript);
         DepositMetadata.Article article = new DepositMetadata.Article();
@@ -320,21 +316,21 @@ abstract class ModelBuilder {
         submission.setId(submissionEntity.getId().toString());
         // The deposit data model requires a "name" - for now we use the ID.
         submission.setName(submissionEntity.getId().toString());
-        
+
         submission.setSubmissionDate(submissionEntity.getSubmittedDate());
 
         // Data from the Submission's user resource
-      
+
         if (submissionEntity.getSubmitter() == null) {
             throw new InvalidModel("Submitter is undefined for submission " + submissionEntity.getId());
         }
-        
-        User userEntity = (User)entities.get(submissionEntity.getSubmitter());
-        
+
+        User userEntity = (User) entities.get(submissionEntity.getSubmitter());
+
         if (userEntity == null) {
             throw new InvalidModel("Could not find User entity for " + submissionEntity.getSubmitter());
         }
-        
+
         persons.add(createPerson(userEntity, DepositMetadata.PERSON_TYPE.submitter));
 
         // As of 5/14/18, the following data is available from both the Submission metadata
@@ -346,13 +342,13 @@ abstract class ModelBuilder {
 
         // Data from the Grant resources
         for (URI grantUri : submissionEntity.getGrants()) {
-            Grant grantEntity = (Grant)entities.get(grantUri);
+            Grant grantEntity = (Grant) entities.get(grantUri);
 
             // Data from the User resources for the PI and CoPIs
-            User piEntity = (User)entities.get(grantEntity.getPi());
+            User piEntity = (User) entities.get(grantEntity.getPi());
             persons.add(createPerson(piEntity, DepositMetadata.PERSON_TYPE.pi));
             for (URI copiUri : grantEntity.getCoPis()) {
-                User copiEntity = (User)entities.get(copiUri);
+                User copiEntity = (User) entities.get(copiUri);
                 persons.add(createPerson(copiEntity, DepositMetadata.PERSON_TYPE.copi));
             }
         }
@@ -367,7 +363,7 @@ abstract class ModelBuilder {
         for (URI key : entities.keySet()) {
             PassEntity entity = entities.get(key);
             if (entity instanceof File) {
-                File file = (File)entity;
+                File file = (File) entity;
                 // Ignore any Files that do not reference this Submission
                 if (file.getSubmission().toString().equals(submissionEntity.getId().toString())) {
                     DepositFile depositFile = new DepositFile();

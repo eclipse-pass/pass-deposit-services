@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.builder.fedora;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import org.dataconservancy.deposit.util.spring.EncodingClassPathResource;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,13 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -89,7 +89,8 @@ public class ClasspathResourceIT {
     @Ignore("Passes locally, but not portable.  Remains for documentation.")
     public void verifyHardcodedEncodedUrlWithSpace() throws Exception {
         UrlResource u = new UrlResource("file:/Users/esm/workspaces/pass/nihms-submission/nihms-integration/target" +
-                "/test-classes/org/dataconservancy/pass/deposit/builder/fedora/ilford%20panf.pdf");
+                                        "/test-classes/org/dataconservancy/pass/deposit/builder/fedora/ilford%20panf" +
+                                        ".pdf");
         verify(u);
     }
 
@@ -97,7 +98,7 @@ public class ClasspathResourceIT {
         assertNotNull(r.getURL());
         assertTrue(r.exists());
         if (r instanceof ClassPathResource) {
-            assertNotNull(((ClassPathResource)r).getPath());
+            assertNotNull(((ClassPathResource) r).getPath());
         }
         try (InputStream inputStream = r.getInputStream()) {
             assertNotNull(inputStream);
@@ -106,18 +107,17 @@ public class ClasspathResourceIT {
 
     private static ClassPathResource asClasspathResource(String resource) {
         String resourcePath = ClasspathResourceIT.class.getPackage().getName()
-                .replace(".", "/") + resource;
+                                                       .replace(".", "/") + resource;
         LOG.debug("Instantiating ClassPathResource({})", resourcePath);
         return new ClassPathResource(resourcePath);
     }
 
     private static EncodingClassPathResource asEncodedClasspathResource(String resource) {
         String resourcePath = ClasspathResourceIT.class.getPackage().getName()
-                .replace(".", "/") + resource;
+                                                       .replace(".", "/") + resource;
         LOG.debug("Instantiating ClassPathResource({})", resourcePath);
         return new EncodingClassPathResource(resourcePath);
     }
-
 
     private static UrlResource asUrlResource(String resource) {
         String resourcePath = "/org/dataconservancy/pass/deposit/builder/fedora" + resource;

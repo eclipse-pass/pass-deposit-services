@@ -15,23 +15,26 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.File;
-import org.dataconservancy.pass.model.PassEntity;
-import org.dataconservancy.pass.model.Submission;
+import static java.util.stream.Collectors.toSet;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toSet;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.File;
+import org.dataconservancy.pass.model.PassEntity;
+import org.dataconservancy.pass.model.Submission;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class SubmissionUtil {
+
+    private SubmissionUtil() {
+    }
 
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
         return getIncomingUris(submission, passClient, Deposit.class);

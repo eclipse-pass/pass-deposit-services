@@ -15,17 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.dataconservancy.pass.deposit.transport.Transport;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.BASEDIR;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.CREATE_IF_MISSING;
 import static org.dataconservancy.pass.deposit.transport.fs.FilesystemTransportHints.OVERWRITE;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import org.dataconservancy.pass.deposit.transport.Transport;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -83,16 +83,19 @@ public class FilesystemBinding extends ProtocolBinding {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
-        if (!super.equals(o))
+        }
+        if (!super.equals(o)) {
             return false;
+        }
         FilesystemBinding that = (FilesystemBinding) o;
         return Objects.equals(baseDir, that.baseDir) &&
-                Objects.equals(overwrite, that.overwrite) &&
-                Objects.equals(createIfMissing, that.createIfMissing);
+               Objects.equals(overwrite, that.overwrite) &&
+               Objects.equals(createIfMissing, that.createIfMissing);
     }
 
     @Override
@@ -103,6 +106,6 @@ public class FilesystemBinding extends ProtocolBinding {
     @Override
     public String toString() {
         return "FilesystemBinding{" + "baseDir='" + baseDir + '\'' + ", overwrite='" + overwrite + '\'' + ", " +
-                "createIfMissing='" + createIfMissing + '\'' + "} " + super.toString();
+               "createIfMissing='" + createIfMissing + '\'' + "} " + super.toString();
     }
 }

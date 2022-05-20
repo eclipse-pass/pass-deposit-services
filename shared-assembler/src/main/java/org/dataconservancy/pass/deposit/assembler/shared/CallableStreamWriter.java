@@ -15,19 +15,19 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.springframework.core.io.Resource;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -51,7 +51,8 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
     /**
      * Constructs an {@code CallableStreamWriter} that is supplied with the output stream being written to, the
      * custodial content being packaged, the submission, and other supporting classes.
-     *  @param delegate
+     *
+     * @param delegate
      * @param archiveOut
      * @param custodialFiles
      */
@@ -84,13 +85,13 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
 
     @Override
     public PackageStream.Resource writeResource(ResourceBuilder builder, Resource custodialFile)
-            throws IOException {
+        throws IOException {
         return delegate.writeResource(builder, custodialFile);
     }
 
     @Override
     public void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources)
-            throws IOException {
+        throws IOException {
         if (alreadyFinished.getAndSet(true) == Boolean.FALSE) {
             delegate.finish(submission, custodialResources);
         } else {
@@ -109,7 +110,8 @@ public class CallableStreamWriter<V> implements Callable<V>, StreamWriter {
 
     private IllegalStateException stateException(String stateViolated) {
         return new IllegalStateException(String.format(STATE_EXCEPTION,
-                this.getClass().getName(), toHexString(identityHashCode(this)), stateViolated));
+                                                       this.getClass().getName(), toHexString(identityHashCode(this)),
+                                                       stateViolated));
     }
 
 }

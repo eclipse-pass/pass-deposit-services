@@ -15,13 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
+import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
+import static org.dataconservancy.pass.model.Submission.Source.PASS;
+
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import static org.dataconservancy.pass.model.Submission.AggregatedDepositStatus.NOT_STARTED;
-import static org.dataconservancy.pass.model.Submission.Source.PASS;
 
 /**
  * Accepts {@link Submission}s that are submitted by a user of the PASS UI.
@@ -31,7 +31,8 @@ import static org.dataconservancy.pass.model.Submission.Source.PASS;
  * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)
- * @see <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
+ * @see
+ * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
  */
 @Component
 public class PassUserSubmittedPolicy implements SubmissionPolicy {
@@ -44,7 +45,8 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
      *
      * @param submission the Submission
      * @return {@code true} if the {@code Submission} was submitted by a user of the PASS UI
-     * @see <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
+     * @see
+     * <a href="https://github.com/OA-PASS/pass-data-model/blob/master/documentation/Submission.md">Submission model documentation</a>
      */
     @Override
     public boolean test(Submission submission) {
@@ -56,13 +58,13 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
 
         if (submission.getSubmitted() != null && submission.getSubmitted() == Boolean.FALSE) {
             LOG.debug("Submission {} will not be accepted for processing: submitted = {}, expected submitted = true",
-                    submission.getId(), submission.getSubmitted());
+                      submission.getId(), submission.getSubmitted());
             return false;
         }
 
         if (submission.getSource() != PASS) {
             LOG.debug("Submission {} will not be accepted for processing: source = {}, expected source = {}",
-                    submission.getId(), submission.getSource(), PASS);
+                      submission.getId(), submission.getSource(), PASS);
             return false;
         }
 
@@ -70,7 +72,7 @@ public class PassUserSubmittedPolicy implements SubmissionPolicy {
         // failures.
         if (submission.getAggregatedDepositStatus() != NOT_STARTED) {
             LOG.debug("Submission {} will not be accepted for processing: status = {}, expected status = {}",
-                    submission.getId(), submission.getAggregatedDepositStatus(), NOT_STARTED);
+                      submission.getId(), submission.getAggregatedDepositStatus(), NOT_STARTED);
             return false;
         }
 

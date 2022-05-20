@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.SubmissionStatusService;
 import org.dataconservancy.pass.model.Submission;
@@ -23,13 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Recalculates the {@code Submission.submissionStatus} for a collection of Submission URIs.
@@ -84,14 +84,14 @@ public class SubmissionStatusUpdater {
             return;
         } else {
             LOG.trace("Updating the Submission.submissionStatus of {} Submission{}", submissionUris.size(),
-                    submissionUris.size() > 1 ? "s" : "");
+                      submissionUris.size() > 1 ? "s" : "");
         }
 
         submissionUris.forEach(uri -> {
             try {
                 LOG.trace("Updating Submission.submissionStatus for {}", uri);
                 cri.performCritical(uri, Submission.class, CriFunc.preCondition, CriFunc.postCondition,
-                        CriFunc.critical(statusService));
+                                    CriFunc.critical(statusService));
             } catch (Exception e) {
                 LOG.warn("Unable to update the 'submissionStatus' of {}", uri, e);
             }
@@ -107,12 +107,12 @@ public class SubmissionStatusUpdater {
      */
     static Collection<URI> toUpdate(PassClient passClient) {
         return Stream.of(Submission.SubmissionStatus.values())
-                .filter(status -> status != Submission.SubmissionStatus.COMPLETE)
-                .filter(status -> status != Submission.SubmissionStatus.CANCELLED)
-                .map(status -> status.name().toLowerCase())
-                .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+                     .filter(status -> status != Submission.SubmissionStatus.COMPLETE)
+                     .filter(status -> status != Submission.SubmissionStatus.CANCELLED)
+                     .map(status -> status.name().toLowerCase())
+                     .map(status -> passClient.findAllByAttribute(Submission.class, "submissionStatus", status))
+                     .flatMap(Collection::stream)
+                     .collect(Collectors.toSet());
     }
 
     /**
@@ -129,7 +129,8 @@ public class SubmissionStatusUpdater {
          *     <li>Submission.submissionStatus must not be 'CANCELLED'</li>
          * </ul>
          */
-        static Predicate<Submission> preCondition = (submission) -> submission.getSubmissionStatus() != null &&
+        static Predicate<Submission> preCondition = (submission) ->
+                submission.getSubmissionStatus() != null &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
                 submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
                 Boolean.TRUE == submission.getSubmitted();
@@ -142,7 +143,7 @@ public class SubmissionStatusUpdater {
          * </ul>
          */
         static Predicate<Submission> postCondition = (submission -> submission.getSubmissionStatus() != null &&
-                Boolean.TRUE == submission.getSubmitted());
+                                                                    Boolean.TRUE == submission.getSubmitted());
 
         /**
          * Critical section calculates the Submission.submissionStatus, which may or may not be different from the

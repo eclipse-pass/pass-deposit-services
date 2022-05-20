@@ -15,6 +15,39 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared;
 
+import static java.lang.Math.floorDiv;
+import static java.lang.System.getProperty;
+import static java.lang.System.getenv;
+import static java.net.URI.create;
+import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static submissions.SubmissionResourceUtil.REPOSITORY_TYPE_FILTER;
+import static submissions.SubmissionResourceUtil.SUBMISSION_TYPE_FILTER;
+import static submissions.SubmissionResourceUtil.asJson;
+import static submissions.SubmissionResourceUtil.asStream;
+import static submissions.SubmissionResourceUtil.toInputStream;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,39 +79,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static java.lang.Math.floorDiv;
-import static java.lang.System.getProperty;
-import static java.lang.System.getenv;
-import static java.net.URI.create;
-import static org.dataconservancy.pass.deposit.DepositTestUtil.openArchive;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static submissions.SubmissionResourceUtil.REPOSITORY_TYPE_FILTER;
-import static submissions.SubmissionResourceUtil.SUBMISSION_TYPE_FILTER;
-import static submissions.SubmissionResourceUtil.asJson;
-import static submissions.SubmissionResourceUtil.asStream;
-import static submissions.SubmissionResourceUtil.toInputStream;
 
 /**
  * Integration test fixture that performs submissions against Deposit Services and gathers the resulting packages for
@@ -172,8 +172,8 @@ import static submissions.SubmissionResourceUtil.toInputStream;
  * }
  * </pre>
  *
- * @see PackageVerifier
  * @author Elliot Metsger (emetsger@jhu.edu)
+ * @see PackageVerifier
  */
 @RunWith(SpringRunner.class)
 public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixture {
@@ -247,7 +247,8 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     public static void setUpExecutorService() {
         ThreadFactory itTf = r -> new Thread(r, "SubmitAndValidatePackagesITPool-" + IT_THREAD.getAndIncrement());
         itExecutorService = new ThreadPoolExecutor(floorDiv(NO_THREADS, 2), NO_THREADS, 10,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(NO_THREADS, 2)), itTf);
+                                                   TimeUnit.SECONDS, new ArrayBlockingQueue<>(floorDiv(NO_THREADS, 2)),
+                                                   itTf);
     }
 
     /**
@@ -264,15 +265,15 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     @BeforeClass
     public static void copyIndex() throws IOException {
         okHttp = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(90, TimeUnit.SECONDS)
-                .writeTimeout(5, TimeUnit.SECONDS).build();
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS).build();
 
         passIndexUrl = new URL(getenv().getOrDefault("PASS_ELASTICSEARCH_URL",
-                getProperty("pass.elasticsearch.url")));
+                                                     getProperty("pass.elasticsearch.url")));
 
         assertNotNull("Missing value for PASS_ELASTICSEARCH_URL environment variable or " +
-                "pass.elasticsearch.url system property", passIndexUrl);
+                      "pass.elasticsearch.url system property", passIndexUrl);
 
         if (!accessUrlFieldMappingCarriesNormalizer(okHttp, passIndexUrl)) {
             return;
@@ -288,76 +289,85 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
     @Before
     public void preparePackagesForVerification() throws Exception {
         Collection<Submission> submissions =
-                performSubmissions()
-                        .stream()
-                        .map(submissionUri -> passClient.readResource(submissionUri, Submission.class))
-                        .collect(Collectors.toSet());
+            performSubmissions()
+                .stream()
+                .map(submissionUri -> passClient.readResource(submissionUri, Submission.class))
+                .collect(Collectors.toSet());
 
         // Wait for Deposit Services to process each Submission by searching for RepositoryCopies that are ACCEPTED
         // which have incoming links matching a Submission we just created.  There should be one RepositoryCopy for
         // each Repository for each Submission.
 
         long expectedRepositoryCopyCount = submissions.stream()
-                .flatMap(submission -> submission.getRepositories().stream())
-                .map(repoUri -> passClient.readResource(repoUri, Repository.class))
-                // Filter out Repositories that have an integration type of web link, because Deposit Services will not
-                // attempt deposits to those repositories
-                .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
-                .count();
+              .flatMap(submission -> submission.getRepositories().stream())
+              .map(repoUri -> passClient.readResource(repoUri, Repository.class))
+              // Filter out Repositories that have an integration type of web
+              // link, because Deposit Services will not
+              // attempt deposits to those repositories
+              .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
+              .count();
 
         // A Condition executes this logic, and provides the results (the Set of RepositoryCopy resources created for
         // each Submission)
 
         Condition<Collection<RepositoryCopy>> repoCountCondition = new Condition<>(
-        () -> {
-            LOG.debug("Executing Repository Count Condition");
+            () -> {
+                LOG.debug("Executing Repository Count Condition");
 
-            Collection<RepositoryCopy> candidates = RepositoryCopyPackageQuery.execute(
+                Collection<RepositoryCopy> candidates = RepositoryCopyPackageQuery.execute(
                     okHttp, jsonAdapter, passIndexUrl.toString() + "/_search");
 
-            LOG.debug("Found {} candidates", candidates.size());
+                LOG.debug("Found {} candidates", candidates.size());
 
-            Set<RepositoryCopy> results = candidates.stream()
-                    .filter(candidate -> {
-                        if (!candidate.getId().toString().startsWith(fcrepoBaseUrl)) {
-                            LOG.warn("Excluding RepositoryCopy with unknown base url: {} " + "(doesn't start with {})",
-                                    candidate, fcrepoBaseUrl);
-                            return false;
-                        }
-                        return true;
-                    })
-                    .filter(candidate -> {
-                        // Filter RepositoryCopies that have in incoming link from a Deposit resource created
-                        // for each Submission.
-                        Map<String, Collection<URI>> incoming = passClient.getIncoming(candidate.getId());
-                        Collection<URI> submissionUris = submissions
-                                .stream()
-                                .map(Submission::getId)
-                                .collect(Collectors.toSet());
-                        return incoming.getOrDefault("repositoryCopy", Collections.emptySet())
-                                .stream()
-                                .map(depositUri -> passClient.readResource(depositUri, Deposit.class))
-                                .map(Deposit::getSubmission)
-                                .anyMatch(submissionUris::contains);
-                        })
-                    .collect(Collectors.toSet());
+                Set<RepositoryCopy> results = candidates.stream()
+                                                        .filter(candidate -> {
+                                                            if (!candidate.getId().toString()
+                                                                          .startsWith(fcrepoBaseUrl)) {
+                                                                LOG.warn(
+                                                                    "Excluding RepositoryCopy with unknown base url: " +
+                                                                    "{} " + "(doesn't start with {})",
+                                                                    candidate, fcrepoBaseUrl);
+                                                                return false;
+                                                            }
+                                                            return true;
+                                                        })
+                                                        .filter(candidate -> {
+                                                            // Filter RepositoryCopies that have in incoming link
+                                                            // from a Deposit resource created
+                                                            // for each Submission.
+                                                            Map<String, Collection<URI>> incoming =
+                                                                passClient.getIncoming(
+                                                                candidate.getId());
+                                                            Collection<URI> submissionUris = submissions
+                                                                .stream()
+                                                                .map(Submission::getId)
+                                                                .collect(Collectors.toSet());
+                                                            return incoming.getOrDefault("repositoryCopy",
+                                                                                         Collections.emptySet())
+                                                                           .stream()
+                                                                           .map(depositUri -> passClient.readResource(
+                                                                               depositUri, Deposit.class))
+                                                                           .map(Deposit::getSubmission)
+                                                                           .anyMatch(submissionUris::contains);
+                                                        })
+                                                        .collect(Collectors.toSet());
 
-            LOG.debug("Found {} RepositoryCopies", results.size());
-            return results;
-        },
+                LOG.debug("Found {} RepositoryCopies", results.size());
+                return results;
+            },
 
-        // There should be a RepositoryCopy for each Repository for each Submission
+            // There should be a RepositoryCopy for each Repository for each Submission
 
-        (results) -> {
-            if (results.size() > 0) {
-                LOG.debug("Discovered {} Repository Copies: ", results.size());
-                results.forEach(repoCopy -> LOG.debug("  {}", repoCopy.getId()));
-            }
-            return results.size() == expectedRepositoryCopyCount;
+            (results) -> {
+                if (results.size() > 0) {
+                    LOG.debug("Discovered {} Repository Copies: ", results.size());
+                    results.forEach(repoCopy -> LOG.debug("  {}", repoCopy.getId()));
+                }
+                return results.size() == expectedRepositoryCopyCount;
             }, "Repository Copy Count");
 
         LOG.info("Waiting for {} Submissions to be processed and produce {} expected Repository Copies " +
-                "by Deposit Services.", submissions.size(), expectedRepositoryCopyCount);
+                 "by Deposit Services.", submissions.size(), expectedRepositoryCopyCount);
         repoCountCondition.setTimeoutThresholdMs(300 * 1000);
         repoCountCondition.setBackoffFactor(1.1f);
         repoCountCondition.await();
@@ -372,40 +382,41 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         Map<RepositoryCopy, ExplodedPackage> packageDirs = new HashMap<>();
 
         repositoryCopies.forEach(repoCopy -> {
-                    File packageFile = new File("target" +
-                            URI.create(repoCopy.getExternalIds().iterator().next()).getPath());
-                    try {
-                        LOG.info("Exploding {}", packageFile);
-                        File packageDir = openArchive(packageFile,
-                                sniffArchive(packageFile), sniffCompression(packageFile));
-                        LOG.info("{} exploded to {}", packageFile, packageDir);
-                        packageDirs.put(repoCopy, new ExplodedPackage(packageFile, packageDir));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            File packageFile = new File("target" +
+                                        URI.create(repoCopy.getExternalIds().iterator().next()).getPath());
+            try {
+                LOG.info("Exploding {}", packageFile);
+                File packageDir = openArchive(packageFile,
+                                              sniffArchive(packageFile), sniffCompression(packageFile));
+                LOG.info("{} exploded to {}", packageFile, packageDir);
+                packageDirs.put(repoCopy, new ExplodedPackage(packageFile, packageDir));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         // Sanity - one package per RepositoryCopy
 
         assertEquals(expectedRepositoryCopyCount, packageDirs.size());
 
         toVerify = repositoryCopies
-                .stream()
-                .collect(Collectors.toMap(
-                        (repoCopy) -> {
-                            URI depositUri = passClient.getIncoming(repoCopy.getId())
-                                    .get("repositoryCopy").stream()
-                                    .findFirst()
-                                    .orElseThrow(() ->
-                                            new RuntimeException(
-                                                    "Missing expected incoming link 'Deposit -> repositoryCopy'"));
-                            URI submissionUri = passClient.readResource(depositUri, Deposit.class).getSubmission();
-                            try {
-                                return builder.build(submissionUri.toString());
-                            } catch (InvalidModel e) {
-                                throw new RuntimeException(e);
-                            }
-                        }, packageDirs::get));
+            .stream()
+            .collect(Collectors.toMap(
+                (repoCopy) -> {
+                    URI depositUri = passClient.getIncoming(repoCopy.getId())
+                                               .get("repositoryCopy").stream()
+                                               .findFirst()
+                                               .orElseThrow(() ->
+                                                                new RuntimeException(
+                                                                    "Missing expected incoming link 'Deposit -> " +
+                                                                    "repositoryCopy'"));
+                    URI submissionUri = passClient.readResource(depositUri, Deposit.class).getSubmission();
+                    try {
+                        return builder.build(submissionUri.toString());
+                    } catch (InvalidModel e) {
+                        throw new RuntimeException(e);
+                    }
+                }, packageDirs::get));
     }
 
     /**
@@ -413,7 +424,8 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * {@link PackageVerifier#verify(DepositSubmission, ExplodedPackage, Map)} with an <em>empty map</em>.
      * <h4>Implementation note</h4>
      * This class does not have the package options used to generate a given package.  Therefore the package options
-     * supplied to {@link PackageVerifier#verify(DepositSubmission, ExplodedPackage, Map)} will <em>always</em> be an empty Map.
+     * supplied to {@link PackageVerifier#verify(DepositSubmission, ExplodedPackage, Map)} will <em>always</em> be an
+     * empty Map.
      * It's unfortunate, but because the Deposit Services runtime is configured by the subclass, there's no way for this
      * class to know what they are without some heavy lifting.
      */
@@ -423,7 +435,7 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
             try {
                 PackageVerifier verifier = getVerifier(depositSubmission, explodedPackage);
                 LOG.debug("Invoking verify on {} (original archive: {}), using {}",
-                        explodedPackage.getExplodedDir(), explodedPackage.getPackageFile(), verifier);
+                          explodedPackage.getExplodedDir(), explodedPackage.getPackageFile(), verifier);
                 verifier.verify(depositSubmission, explodedPackage, Collections.emptyMap());
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -438,11 +450,12 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * implementation can be returned.
      * <h4>Implementation note</h4>
      * This class does not have the package options used to generate a given package.  Therefore the package options
-     * supplied to {@link PackageVerifier#verify(DepositSubmission, ExplodedPackage, Map)} will <em>always</em> be an empty Map.
+     * supplied to {@link PackageVerifier#verify(DepositSubmission, ExplodedPackage, Map)} will <em>always</em> be an
+     * empty Map.
      * It's unfortunate, but because the Deposit Services runtime is configured by the subclass, there's no way for this
      * class to know what they are without some heavy lifting.
      *
-     * @param submission the Submission being verified as a DepositSubmission
+     * @param submission      the Submission being verified as a DepositSubmission
      * @param explodedPackage the exploded package containing its original filename and exploded location
      * @return the PackageVerifier
      */
@@ -460,7 +473,7 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * </p>
      *
      * @return a Collection of Submissions that have been persisted in the PASS respository and submitted for processing
-     *         by Deposit Services
+     * by Deposit Services
      */
     protected Collection<URI> performSubmissions() {
         Map<Future<URI>, Map<URI, PassEntity>> futureSubmissions = new HashMap<>();
@@ -514,34 +527,35 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
 
             LOG.info("Creating Submission in the Fedora repository for {}", localSubmissionUri);
             Future<URI> passSubmissionUri =
-                    itExecutorService.submit(() -> passAdapter.jsonToFcrepo(toInputStream(root), submissionMap).getId());
+                itExecutorService.submit(() -> passAdapter.jsonToFcrepo(toInputStream(root), submissionMap).getId());
             futureSubmissions.put(passSubmissionUri, submissionMap);
         }
 
         // Wait for the Submission resources to be created in Fedora
 
         Map<URI, Map<URI, PassEntity>> submissions =
-                futureSubmissions.entrySet().stream().collect(Collectors.toMap((entry) -> {
-                    try {
-                        URI submissionUri = entry.getKey().get();
-                        LOG.info("Created Submission {}", submissionUri);
-                        return submissionUri;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }, Map.Entry::getValue));
+            futureSubmissions.entrySet().stream().collect(Collectors.toMap((entry) -> {
+                try {
+                    URI submissionUri = entry.getKey().get();
+                    LOG.info("Created Submission {}", submissionUri);
+                    return submissionUri;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }, Map.Entry::getValue));
 
         // Trigger Deposit Services to process each Submission by flipping the Submission.submitted flag to 'true'
 
         submissions.keySet().stream()
-                .map(submissionUri -> passClient.readResource(submissionUri, Submission.class))
-                .filter(submission -> Boolean.FALSE.equals(submission.getSubmitted()))
-                .forEach(submission -> {
-                    // Trigger the Submission so that Deposit Services will package the custodial content and perform a
-                    // deposit to a downstream repository
-                    LOG.info("Triggering Submission {}", submission.getId());
-                    triggerSubmission(submission.getId());
-                });
+                   .map(submissionUri -> passClient.readResource(submissionUri, Submission.class))
+                   .filter(submission -> Boolean.FALSE.equals(submission.getSubmitted()))
+                   .forEach(submission -> {
+                       // Trigger the Submission so that Deposit Services will package the custodial content and
+                       // perform a
+                       // deposit to a downstream repository
+                       LOG.info("Triggering Submission {}", submission.getId());
+                       triggerSubmission(submission.getId());
+                   });
 
         return submissions.keySet();
     }
@@ -582,8 +596,8 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      */
     protected PackageOptions.Archive.OPTS sniffArchive(File packageFile) {
         if (packageFile.getName().endsWith(".tar.gz") ||
-                packageFile.getName().endsWith(".tar.gzip") ||
-                packageFile.getName().endsWith(".tar")) {
+            packageFile.getName().endsWith(".tar.gzip") ||
+            packageFile.getName().endsWith(".tar")) {
             return PackageOptions.Archive.OPTS.TAR;
         }
 
@@ -626,13 +640,13 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
      * Determines if the ElasticSearch configuration at the provided url carries a {@code normalizer} on the {@code
      * accessUrl} field in its mapping.
      *
-     * @param okHttp the OkHttpClient
+     * @param okHttp       the OkHttpClient
      * @param passIndexUrl the URL to the ElasticSearch PASS index
      * @return true if the index has an {@code accessUrl} field with a {@code normalizer}
      * @throws IOException if communication with the index fails
      */
     private static boolean accessUrlFieldMappingCarriesNormalizer(OkHttpClient okHttp, URL passIndexUrl)
-            throws IOException {
+        throws IOException {
         try (Response res = okHttp.newCall(new Request.Builder().url(passIndexUrl).get().build()).execute()) {
             JsonNode config = new ObjectMapper().readTree(res.body().string());
             JsonNode accessUrl = config.findValue("accessUrl");

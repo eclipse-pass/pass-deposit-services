@@ -16,19 +16,6 @@
 
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -36,6 +23,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Deposit.DepositStatus;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DepositProcessor implements Consumer<Deposit> {
@@ -72,9 +72,9 @@ public class DepositProcessor implements Consumer<Deposit> {
         if (terminalDepositStatusPolicy.test(deposit.getDepositStatus())) {
             // terminal Deposit status, so update its Submission aggregate deposit status.
             cri.performCritical(deposit.getSubmission(), Submission.class,
-                    DepositProcessorCriFunc.precondition(intermediateSubmissionStatusPolicy),
-                    DepositProcessorCriFunc.postcondition(),
-                    DepositProcessorCriFunc.critical(passClient, terminalDepositStatusPolicy));
+                                DepositProcessorCriFunc.precondition(intermediateSubmissionStatusPolicy),
+                                DepositProcessorCriFunc.postcondition(),
+                                DepositProcessorCriFunc.critical(passClient, terminalDepositStatusPolicy));
         } else {
             // intermediate status, process the Deposit depositStatusRef
 
@@ -132,7 +132,7 @@ public class DepositProcessor implements Consumer<Deposit> {
          * AggregatedDepositStatus is updated to REJECTED.
          * </p>
          *
-         * @param passClient used to query the PASS repository for resources
+         * @param passClient           used to query the PASS repository for resources
          * @param terminalStatusPolicy a Policy that accepts DepositStatuses in a terminal state.
          * @return the critical function that may modify the Submission.AggregatedDepositStatus based on its Deposits
          */
@@ -142,20 +142,23 @@ public class DepositProcessor implements Consumer<Deposit> {
 
                 // Collect Deposits that are attached to the Submission using incoming links
                 // This avoids issues related to querying the index for Deposits
-                Collection<Deposit> deposits = passClient.getIncoming(criSubmission.getId())
+                Collection<Deposit> deposits = passClient
+                        .getIncoming(criSubmission.getId())
                         .getOrDefault(SUBMISSION_REL, Collections.emptySet())
                         .stream()
                         .map((uri) -> {
                             try {
                                 return passClient.readResource(uri, Deposit.class);
                             } catch (RuntimeException e) {
-                                // ignore exceptions whose cause is related to type coercion of JSON objects
+                                // ignore exceptions whose cause is related to type
+                                // coercion of JSON objects
                                 if (!(e.getCause() instanceof InvalidTypeIdException)) {
                                     throw e;
                                 }
 
                                 return null;
-                            } })
+                            }
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
@@ -166,17 +169,17 @@ public class DepositProcessor implements Consumer<Deposit> {
                 // If all the statuses are terminal, then we can update the aggregated deposit status of
                 // the submission
                 if (deposits.stream()
-                        .allMatch((criDeposit) -> terminalStatusPolicy.test(criDeposit.getDepositStatus()))) {
+                            .allMatch((criDeposit) -> terminalStatusPolicy.test(criDeposit.getDepositStatus()))) {
 
                     if (deposits.stream()
-                            .allMatch((criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus())) {
+                                .allMatch((criDeposit) -> DepositStatus.ACCEPTED == criDeposit.getDepositStatus())) {
                         criSubmission.setAggregatedDepositStatus(AggregatedDepositStatus.ACCEPTED);
                         LOG.debug("Updating {} aggregated deposit status to {}", criSubmission.getId(),
-                                DepositStatus.ACCEPTED);
+                                  DepositStatus.ACCEPTED);
                     } else {
                         criSubmission.setAggregatedDepositStatus(AggregatedDepositStatus.REJECTED);
                         LOG.debug("Updating {} aggregated deposit status to {}", criSubmission.getId(),
-                                AggregatedDepositStatus.REJECTED);
+                                  AggregatedDepositStatus.REJECTED);
                     }
                 }
 

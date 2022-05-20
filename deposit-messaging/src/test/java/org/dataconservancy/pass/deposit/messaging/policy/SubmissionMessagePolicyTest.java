@@ -15,10 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
 import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_MODIFICATION;
 import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.SUBMISSION_RESOURCE;
@@ -28,6 +24,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -99,7 +99,8 @@ public class SubmissionMessagePolicyTest {
 
     @Test
     public void denyFromSameUserAgent() throws Exception {
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-equals.json");
 
         AgentPolicy agentPolicy = mock(AgentPolicy.class);
         when(agentPolicy.test(mc)).thenReturn(false);
@@ -111,13 +112,15 @@ public class SubmissionMessagePolicyTest {
 
     @Test
     public void acceptFromMissingAgentName() throws Exception {
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-missing-name.json");
         assertTrue(underTest.test(mc));
     }
 
     @Test
     public void acceptWhenMissingAttribution() throws Exception {
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-missing-object.json");
         assertTrue(underTest.test(mc));
     }
 

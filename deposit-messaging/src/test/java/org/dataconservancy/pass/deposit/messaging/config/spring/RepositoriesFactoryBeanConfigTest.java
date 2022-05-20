@@ -15,6 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.dataconservancy.pass.deposit.messaging.config.repository.FtpBinding;
 import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
@@ -26,12 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -47,13 +47,12 @@ public class RepositoriesFactoryBeanConfigTest {
     @Autowired
     private Repositories underTest;
 
-
     @Test
     public void foo() throws Exception {
         assertNotNull(underTest);
-        
+
         assertEquals(2, underTest.keys().size());
-        
+
         RepositoryConfig j10p = underTest.getConfig("JScholarship");
         assertNotNull(j10p);
 
@@ -69,7 +68,7 @@ public class RepositoriesFactoryBeanConfigTest {
         assertNotNull(j10p.getTransportConfig().getProtocolBinding());
         assertTrue(j10p.getTransportConfig().getProtocolBinding() instanceof SwordV2Binding);
         assertFalse(((SwordV2Binding) j10p.getTransportConfig().getProtocolBinding()).getDefaultCollectionUrl()
-                .contains("${dspace.host}"));
+                                                                                     .contains("${dspace.host}"));
         assertNotNull(j10p.getTransportConfig().getAuthRealms());
 
         assertNotNull(pubMed.getTransportConfig());

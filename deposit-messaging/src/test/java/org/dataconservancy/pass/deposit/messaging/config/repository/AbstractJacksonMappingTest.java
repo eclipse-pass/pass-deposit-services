@@ -16,17 +16,16 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 
 public abstract class AbstractJacksonMappingTest {
 
     protected ObjectMapper mapper;
-
 
     @Before
     public void setUpObjectMapper() throws Exception {

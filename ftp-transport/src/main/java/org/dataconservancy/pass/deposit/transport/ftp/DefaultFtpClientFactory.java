@@ -15,11 +15,11 @@
  */
 package org.dataconservancy.pass.deposit.transport.ftp;
 
+import java.util.Map;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

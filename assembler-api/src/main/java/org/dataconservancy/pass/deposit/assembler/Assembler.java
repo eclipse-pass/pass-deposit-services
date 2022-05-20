@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.assembler;
 
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-
 import java.util.Map;
+
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 /**
  * Responsible for assembling the components of a {@link DepositSubmission submission} into a serialized package.  This
@@ -37,7 +37,7 @@ public interface Assembler {
      * the implementation.
      *
      * @param submission the custodial content being packaged
-     * @param options the options used when creating the package
+     * @param options    the options used when creating the package
      * @return a streamable package containing the custodial content being packaged
      */
     PackageStream assemble(DepositSubmission submission, Map<String, Object> options);

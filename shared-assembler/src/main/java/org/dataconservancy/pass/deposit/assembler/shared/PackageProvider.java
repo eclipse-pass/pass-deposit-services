@@ -15,14 +15,14 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.springframework.core.io.Resource;
+import static org.dataconservancy.pass.deposit.assembler.PackageOptions.Spec;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.dataconservancy.pass.deposit.assembler.PackageOptions.*;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.springframework.core.io.Resource;
 
 /**
  * Abstracts the naming and pathing of resources within a package, and allows implementations to add supplemental
@@ -42,6 +42,7 @@ import static org.dataconservancy.pass.deposit.assembler.PackageOptions.*;
  * A new {@code PackageProvider} is instantiated each time {@code PackageStream#open()} is invoked.  Implementations are
  * not expected to be invoked by multiple threads.
  * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface PackageProvider {
@@ -49,9 +50,9 @@ public interface PackageProvider {
     /**
      * Lifecycle method, invoked prior to streaming the package.  Implementations may initialize any necessary state.
      *
-     * @param submission the original submission
+     * @param submission         the original submission
      * @param custodialResources the custodial content to be packaged
-     * @param packageOptions the options for creating the package, including the packaging specification
+     * @param packageOptions     the options for creating the package, including the packaging specification
      */
     void start(DepositSubmission submission, List<DepositFileResource> custodialResources,
                Map<String, Object> packageOptions);
@@ -72,7 +73,7 @@ public interface PackageProvider {
      * written to the caller.  Implementations may return any non-custodial resources to be included in the package
      * stream.
      *
-     * @param submission the original submission
+     * @param submission       the original submission
      * @param packageResources the metadata for each resource that has been streamed so far
      * @return supplemental resources to be included in the package stream
      */
@@ -87,7 +88,7 @@ public interface PackageProvider {
          * The path of the resource relative to the base of the package.
          *
          * @return a valid posix path including the filename where the bytes for this {@code SupplementalResource} will
-         *         be written
+         * be written
          * @see PackageProvider#packagePath(DepositFileResource)
          */
         String getPackagePath();

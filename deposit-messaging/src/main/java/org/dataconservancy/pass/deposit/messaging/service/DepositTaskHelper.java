@@ -15,31 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
-import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
-import org.dataconservancy.pass.deposit.messaging.model.Packager;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Repository;
-import org.dataconservancy.pass.model.RepositoryCopy;
-import org.dataconservancy.pass.model.Submission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.stereotype.Component;
+import static java.lang.Integer.toHexString;
+import static java.lang.String.format;
+import static java.lang.System.identityHashCode;
+import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
+import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
 
 import java.net.URI;
 import java.util.Collection;
@@ -50,13 +32,31 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.String.format;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.toDepositWorkerContext;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.ACCEPTED;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.REJECTED;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceRuntimeException;
+import org.dataconservancy.pass.deposit.messaging.RemedialDepositException;
+import org.dataconservancy.pass.deposit.messaging.config.repository.AuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.Repositories;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.model.Packager;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil.DepositWorkerContext;
+import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Repository;
+import org.dataconservancy.pass.model.RepositoryCopy;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction.CriticalResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
 
 /**
  * Encapsulates functionality common to performing the submission of a Deposit to the TaskExecutor.
@@ -75,20 +75,22 @@ public class DepositTaskHelper {
     public static final String FAILED_TO_PROCESS_DEPOSIT = "Failed to process Deposit for tuple [%s, %s, %s]: %s";
 
     public static final String MISSING_PACKAGER = "No Packager found for tuple [{}, {}, {}]: " +
-            "Missing Packager for Repository named '{}', marking Deposit as FAILED.";
+                                                  "Missing Packager for Repository named '{}', marking Deposit as " +
+                                                  "FAILED.";
 
     private static final String PRECONDITION_FAILED = "Refusing to update {}, the following pre-condition failed: ";
 
     private static final String POSTCONDITION_FAILED = "Refusing to update {}, the following post-condition failed: ";
 
     private static final String ERR_RESOLVE_REPOSITORY = "Unable to resolve Repository Configuration for Repository " +
-            "%s (%s).  Verify the Deposit Services runtime configuration location and " + "content.";
+                                                         "%s (%s).  Verify the Deposit Services runtime configuration" +
+                                                         " location and " + "content.";
 
     private static final String ERR_PARSING_STATUS_DOC = "Failed to update deposit status for [%s], parsing the " +
-            "status document referenced by %s failed: %s";
+                                                         "status document referenced by %s failed: %s";
 
     private static final String ERR_MAPPING_STATUS = "Failed to update deposit status for [%s], mapping the status " +
-            "obtained from  %s failed";
+                                                     "obtained from  %s failed";
 
     private static final String ERR_UPDATE_REPOCOPY = "Failed to create or update RepositoryCopy '%s' for %s";
 
@@ -141,31 +143,33 @@ public class DepositTaskHelper {
      * <em>intermediate</em> state.
      * </p>
      *
-     * @param submission the submission that the {@code deposit} belongs to
+     * @param submission        the submission that the {@code deposit} belongs to
      * @param depositSubmission the submission in the Deposit Services' model
-     * @param repo the {@code Repository} that is the target of the {@code Deposit}, for which the {@code Packager}
-     *             knows how to communicate
-     * @param deposit the {@code Deposit} that is being submitted
-     * @param packager the Packager for the {@code repo}
+     * @param repo              the {@code Repository} that is the target of the {@code Deposit}, for which the
+     * {@code Packager}
+     *                          knows how to communicate
+     * @param deposit           the {@code Deposit} that is being submitted
+     * @param packager          the Packager for the {@code repo}
      */
-    public void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo, Deposit deposit,
-                       Packager packager) {
+    public void submitDeposit(Submission submission, DepositSubmission depositSubmission, Repository repo,
+                              Deposit deposit,
+                              Packager packager) {
         try {
             DepositWorkerContext dc = toDepositWorkerContext(
-                    deposit, submission, depositSubmission, repo, packager);
+                deposit, submission, depositSubmission, repo, packager);
             DepositTask depositTask = new DepositTask(dc, passClient, intermediateDepositStatusPolicy, cri);
             depositTask.setSwordSleepTimeMs(swordDepositSleepTimeMs);
             depositTask.setPrefixToMatch(statementUriPrefix);
             depositTask.setReplacementPrefix(statementUriReplacement);
 
             WORKERS_LOGGER.debug("Submitting task ({}@{}) for tuple [{}, {}, {}]",
-                    depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
-                    submission.getId(), repo.getId(), deposit.getId());
+                                 depositTask.getClass().getSimpleName(), toHexString(identityHashCode(depositTask)),
+                                 submission.getId(), repo.getId(), deposit.getId());
             taskExecutor.execute(depositTask);
         } catch (Exception e) {
             // For example, if the task isn't accepted by the taskExecutor
             String msg = format(FAILED_TO_PROCESS_DEPOSIT, submission.getId(), repo.getId(),
-                    (deposit == null) ? "null" : deposit.getId(), e.getMessage());
+                                (deposit == null) ? "null" : deposit.getId(), e.getMessage());
             throw new DepositServiceRuntimeException(msg, e, deposit);
         }
     }
@@ -173,9 +177,12 @@ public class DepositTaskHelper {
     public void processDepositStatus(URI depositUri) {
 
         CriticalResult<RepositoryCopy, Deposit> cr = cri.performCritical(depositUri, Deposit.class,
-                DepositStatusCriFunc.precondition(intermediateDepositStatusPolicy, passClient),
-                DepositStatusCriFunc.postcondition(),
-                DepositStatusCriFunc.critical(repositories, passClient));
+                                                                         DepositStatusCriFunc.precondition(
+                                                                             intermediateDepositStatusPolicy,
+                                                                             passClient),
+                                                                         DepositStatusCriFunc.postcondition(),
+                                                                         DepositStatusCriFunc.critical(repositories,
+                                                                                                       passClient));
 
         if (!cr.success()) {
             if (cr.throwable().isPresent()) {
@@ -191,13 +198,13 @@ public class DepositTaskHelper {
 
                 if (cr.resource().isPresent()) {
                     throw new DepositServiceRuntimeException(
-                            format("Failed to update Deposit %s: %s", depositUri, t.getMessage()),
-                                t, cr.resource().get());
+                        format("Failed to update Deposit %s: %s", depositUri, t.getMessage()),
+                        t, cr.resource().get());
                 }
             }
 
             LOG.debug(format("Failed to update Deposit %s: no cause was present, probably a pre- or post-condition " +
-                    "was not satisfied.", depositUri));
+                             "was not satisfied.", depositUri));
             return;
         }
 
@@ -242,7 +249,7 @@ public class DepositTaskHelper {
             String path = repository.getId().getPath();
             int idx;
             while ((idx = path.indexOf("/")) > -1) {
-                path = path.substring(idx+1);
+                path = path.substring(idx + 1);
 
                 if (repositoryKeys.contains("/" + path)) {
                     return Optional.of(repositories.getConfig("/" + path));
@@ -259,10 +266,10 @@ public class DepositTaskHelper {
 
     static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
         return authRealms.stream()
-                .filter(realm -> realm instanceof BasicAuthRealm)
-                .map(realm -> (BasicAuthRealm) realm)
-                .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
-                .findAny();
+                         .filter(realm -> realm instanceof BasicAuthRealm)
+                         .map(realm -> (BasicAuthRealm) realm)
+                         .filter(realm -> url.startsWith(realm.getBaseUrl().toString()))
+                         .findAny();
     }
 
     static class DepositStatusCriFunc {
@@ -280,7 +287,7 @@ public class DepositTaskHelper {
             return (deposit) -> {
                 if (!statusPolicy.test(deposit.getDepositStatus())) {
                     LOG.debug(PRECONDITION_FAILED + " Deposit.DepositStatus = {}, a terminal state.",
-                            deposit.getId(), deposit.getDepositStatus());
+                              deposit.getId(), deposit.getDepositStatus());
                     return false;
                 }
 
@@ -341,18 +348,18 @@ public class DepositTaskHelper {
                 try {
                     Repository repo = passClient.readResource(deposit.getRepository(), Repository.class);
                     RepositoryConfig repoConfig = lookupConfig(repo, repositories)
-                            .orElseThrow(() ->
-                                    new RemedialDepositException(
-                                            format(ERR_RESOLVE_REPOSITORY, repo.getName(), repo.getId()), repo));
+                        .orElseThrow(() ->
+                                         new RemedialDepositException(
+                                             format(ERR_RESOLVE_REPOSITORY, repo.getName(), repo.getId()), repo));
                     DepositStatusProcessor statusProcessor = repoConfig.getRepositoryDepositConfig()
-                            .getDepositProcessing()
-                            .getProcessor();
+                                                                       .getDepositProcessing()
+                                                                       .getProcessor();
                     status.set(statusProcessor.process(deposit, repoConfig));
                 } catch (RemedialDepositException e) {
                     throw e;
                 } catch (Exception e) {
                     String msg = format(ERR_PARSING_STATUS_DOC,
-                            deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
+                                        deposit.getId(), deposit.getDepositStatusRef(), e.getMessage());
                     throw new DepositServiceRuntimeException(msg, e, deposit);
                 }
 
@@ -362,7 +369,8 @@ public class DepositTaskHelper {
                 }
 
                 try {
-                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(), RepositoryCopy.class);
+                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
+                                                                      RepositoryCopy.class);
 
                     switch (status.get()) {
                         case ACCEPTED: {
@@ -380,6 +388,7 @@ public class DepositTaskHelper {
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                             break;
                         }
+                        default:
                     }
                     return repoCopy;
                 } catch (Exception e) {

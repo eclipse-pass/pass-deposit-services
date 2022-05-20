@@ -16,6 +16,15 @@
 
 package org.dataconservancy.nihms.integration;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.MessageDigestCalculatingInputStream;
 import org.apache.commons.io.input.NullInputStream;
@@ -23,18 +32,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Insures the FTP docker container is up and running and configured with the proper user credentials. Includes
@@ -98,7 +97,7 @@ public class FtpSmokeIT extends FtpBaseIT {
 
         String destFile = "org.jpg";
         MessageDigestCalculatingInputStream content = new MessageDigestCalculatingInputStream(
-                this.getClass().getResourceAsStream("/" + destFile));
+            this.getClass().getResourceAsStream("/" + destFile));
 
 //        TODO test quota exceeded
 //        552: 552-0 files used (0%) - authorized: 1000 files

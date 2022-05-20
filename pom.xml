@@ -14,702 +14,724 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.dataconservancy.pass.deposit</groupId>
-    <artifactId>deposit-parent</artifactId>
-    <version>1.1.0-3.5-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Deposit Services Parent Project</name>
-    <description>Responsible for the transfer of custody to downstream repositories</description>
-    <url>https://github.com/OA-PASS/deposit-services</url>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.pass</groupId>
+    <artifactId>eclipse-pass-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>org.dataconservancy.pass.deposit</groupId>
+  <artifactId>deposit-parent</artifactId>
+  <version>1.1.0-3.5-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Deposit Services Parent Project</name>
+  <description>Responsible for the transfer of custody to downstream repositories</description>
+  <url>https://github.com/OA-PASS/deposit-services</url>
 
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
 
-    <developers>
-        <developer>
-            <name>Elliot Metsger</name>
-            <email>emetsger@jhu.edu</email>
-            <organization>Johns Hopkins University, Sheridan Libraries, Digital Research and Curation Center
-            </organization>
-            <organizationUrl>https://www.library.jhu.edu/library-departments/digital-research-curation-center/
-            </organizationUrl>
-        </developer>
-    </developers>
+  <developers>
+    <developer>
+      <name>Elliot Metsger</name>
+      <email>emetsger@jhu.edu</email>
+      <organization>Johns Hopkins University, Sheridan Libraries, Digital Research and Curation Center
+      </organization>
+      <organizationUrl>https://www.library.jhu.edu/library-departments/digital-research-curation-center/
+      </organizationUrl>
+    </developer>
+  </developers>
 
-    <modules>
-        <module>deposit-model</module>
-        <module>builder-api</module>
-        <module>fedora-builder</module>
-        <module>assembler-api</module>
-        <!-- nihms-bagit-assembler -->
-        <module>transport-api</module>
-        <module>ftp-transport</module>
-        <!-- nihms-http-transport -->
-        <module>deposit-integration</module>
-        <module>deposit-util</module>
-        <module>sword2-transport</module>
-        <module>shared-assembler</module>
-        <module>deposit-messaging</module>
-        <module>shared-resources</module>
-        <module>filesystem-transport</module>
-        <module>shared-integration</module>
-    </modules>
+  <modules>
+    <module>deposit-model</module>
+    <module>builder-api</module>
+    <module>fedora-builder</module>
+    <module>assembler-api</module>
+    <!-- nihms-bagit-assembler -->
+    <module>transport-api</module>
+    <module>ftp-transport</module>
+    <!-- nihms-http-transport -->
+    <module>deposit-integration</module>
+    <module>deposit-util</module>
+    <module>sword2-transport</module>
+    <module>shared-assembler</module>
+    <module>deposit-messaging</module>
+    <module>shared-resources</module>
+    <module>filesystem-transport</module>
+    <module>shared-integration</module>
+  </modules>
 
-    <profiles>
+  <profiles>
 
-        <profile>
-            <id>release</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-gpg-plugin</artifactId>
-                            <version>${maven-gpg-plugin.version}</version>
-                            <executions>
-                                <execution>
-                                    <id>sign-artifacts</id>
-                                    <phase>verify</phase>
-                                    <goals>
-                                        <goal>sign</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                            <configuration>
-                                <useAgent>true</useAgent>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>external</id>
-            <activation>
-                <property>
-                    <name>external</name>
-                </property>
-            </activation>
-            <properties>
-                <scp.port>122</scp.port>
-            </properties>
-        </profile>
-
-    </profiles>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <scp.port>22</scp.port>
-
-        <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
-        <!-- see:
-            - https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.4-Release-Notes#integration-tests-with-the-maven-failsafe-plugin
-            - https://issues.apache.org/jira/browse/SUREFIRE-1198
-        -->
-        <maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
-        <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
-        <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
-        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
-        <maven.wagon.ssh.version>2.10</maven.wagon.ssh.version>
-        <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
-        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
-        <fabric8.docker.maven.plugin.version>0.30.0</fabric8.docker.maven.plugin.version>
-        <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <logback-classic.version>1.2.3</logback-classic.version>
-        <junit.version>4.12</junit.version>
-        <spring-framework.version>5.1.4.RELEASE</spring-framework.version>
-        <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
-        <commons-net.version>3.6</commons-net.version>
-        <commons-compress.version>1.15</commons-compress.version>
-        <commons-io.version>2.6</commons-io.version>
-        <mockito.version>3.1.0</mockito.version>
-        <okhttp.version>3.10.0</okhttp.version>
-        <guava.version>23.5-jre</guava.version>
-        <args4j.version>2.33</args4j.version>
-        <xmlunit.version>2.3.0</xmlunit.version>
-        <xstream.version>1.4.10</xstream.version>
-        <commons-codec.version>1.11</commons-codec.version>
-        <sword2-client.version>0.9.3</sword2-client.version>
-        <mets-api.version>1.3.0</mets-api.version>
-        <tika.version>1.17</tika.version>
-        <pass-client.version>0.7.0</pass-client.version>
-        <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
-        <jackson.version>2.9.6</jackson.version>
-        <messaging-support.version>0.1.3-3.4</messaging-support.version>
-        <gson.version>2.8.2</gson.version>
-
-        <!-- oapass/fcrepo:4.7.5-3.5 -->
-        <docker.fcrepo.version>oapass/fcrepo:4.7.5-3.5@sha256:bb44fff182ace1d0d57372f297cbab8cc04c662db2d10a061213178b7c0c9bba</docker.fcrepo.version>
-        <!-- oapass/indexer:0.0.18-3.4 -->
-        <docker.indexer.version>oapass/indexer@sha256:e51092a9d433219d52207f1ec3f5ea7c652d51f516bcbe9434dae556b921546d</docker.indexer.version>
-        <docker.elasticsearch.version>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</docker.elasticsearch.version>
-
-        <!-- TODO properly tag these images -->
-        <docker.postgres.version>oapass/postgres:latest</docker.postgres.version>
-        <docker.dspace.version>oapass/dspace:20200419@sha256:99df12f10846f2a2d62058cf4eef631393d7949a343b233a9e487d54fd82a483</docker.dspace.version>
-        <docker.ftp.version>oapass/ftpserver:latest</docker.ftp.version>
-
-        <pass.jsonld.context.version>3.5</pass.jsonld.context.version>
-        <pass.jsonld.context>https://oa-pass.github.io/pass-data-model/src/main/resources/context-${pass.jsonld.context.version}.jsonld</pass.jsonld.context>
-
-    </properties>
-
-    <build>
-
-        <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>${maven.release.plugin.version}</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-
+    <profile>
+      <id>release</id>
+      <build>
         <pluginManagement>
-
-            <plugins>
-
-                <plugin>
-                    <groupId>pl.project13.maven</groupId>
-                    <artifactId>git-commit-id-plugin</artifactId>
-                    <version>${git-commit-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.plugin.version}</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <compilerArgument>-Xlint:all</compilerArgument>
-                        <showWarnings>true</showWarnings>
-                        <showDeprecation>true</showDeprecation>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven.surefire.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven.failsafe.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>${codehaus.build-helper.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven.jar.plugin.version}</version>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/logback-test.xml</exclude>
-                        </excludes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>${maven.shade.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>io.fabric8</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>${fabric8.docker.maven.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven.resources.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>5</retryFailedDeploymentCount>
-                    </configuration>
-                    <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.wagon</groupId>
-                            <artifactId>wagon-ssh</artifactId>
-                            <version>${maven.wagon.ssh.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-remote-resources-plugin</artifactId>
-                    <version>${maven.remote-resources.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring-boot.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>${maven.release.plugin.version}</version>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <pushChanges>false</pushChanges>
-                        <localCheckout>true</localCheckout>
-                        <goals>deploy</goals>
-                        <releaseProfiles>release</releaseProfiles>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven-javadoc-plugin.version}</version>
-                    <configuration>
-                        <links>
-                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                            <link>https://commons.apache.org/proper/commons-io/javadocs/api-${commons-io.version}/</link>
-                            <link>https://commons.apache.org/proper/commons-compress/javadocs/api-${commons-compress.version}/</link>
-                            <link>https://commons.apache.org/proper/commons-codec/javadocs/api-${commons-codec.version}/</link>
-                            <link>https://docs.spring.io/autorepo/docs/spring-framework/${spring-framework.version}/javadoc-api/</link>
-                        </links>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${maven-gpg-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <useAgent>true</useAgent>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jar</goal>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-            </plugins>
-
+          <plugins>
+            <plugin>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>${maven-gpg-plugin.version}</version>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <useAgent>true</useAgent>
+              </configuration>
+            </plugin>
+          </plugins>
         </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
-    </build>
+    <profile>
+      <id>external</id>
+      <activation>
+        <property>
+          <name>external</name>
+        </property>
+      </activation>
+      <properties>
+        <scp.port>122</scp.port>
+      </properties>
+    </profile>
 
-    <dependencyManagement>
+  </profiles>
 
-        <dependencies>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <scp.port>22</scp.port>
 
+    <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
+    <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+    <!-- see:
+        - https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.4-Release-Notes#integration-tests-with-the-maven-failsafe-plugin
+        - https://issues.apache.org/jira/browse/SUREFIRE-1198
+    -->
+    <maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
+    <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
+    <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
+    <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
+    <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+    <maven.wagon.ssh.version>2.10</maven.wagon.ssh.version>
+    <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
+    <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+    <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+    <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+    <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
+    <fabric8.docker.maven.plugin.version>0.30.0</fabric8.docker.maven.plugin.version>
+    <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <logback-classic.version>1.2.3</logback-classic.version>
+    <junit.version>4.12</junit.version>
+    <spring-framework.version>5.1.4.RELEASE</spring-framework.version>
+    <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
+    <commons-net.version>3.6</commons-net.version>
+    <commons-compress.version>1.15</commons-compress.version>
+    <commons-io.version>2.6</commons-io.version>
+    <mockito.version>3.1.0</mockito.version>
+    <okhttp.version>3.10.0</okhttp.version>
+    <guava.version>23.5-jre</guava.version>
+    <args4j.version>2.33</args4j.version>
+    <xmlunit.version>2.3.0</xmlunit.version>
+    <xstream.version>1.4.10</xstream.version>
+    <commons-codec.version>1.11</commons-codec.version>
+    <sword2-client.version>0.9.3</sword2-client.version>
+    <mets-api.version>1.3.0</mets-api.version>
+    <tika.version>1.17</tika.version>
+    <pass-client.version>0.7.0</pass-client.version>
+    <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
+    <jackson.version>2.9.6</jackson.version>
+    <messaging-support.version>0.1.3-3.4</messaging-support.version>
+    <gson.version>2.8.2</gson.version>
+
+    <!-- oapass/fcrepo:4.7.5-3.5 -->
+    <docker.fcrepo.version>
+      oapass/fcrepo:4.7.5-3.5@sha256:bb44fff182ace1d0d57372f297cbab8cc04c662db2d10a061213178b7c0c9bba
+    </docker.fcrepo.version>
+    <!-- oapass/indexer:0.0.18-3.4 -->
+    <docker.indexer.version>oapass/indexer@sha256:e51092a9d433219d52207f1ec3f5ea7c652d51f516bcbe9434dae556b921546d
+    </docker.indexer.version>
+    <docker.elasticsearch.version>docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3</docker.elasticsearch.version>
+
+    <!-- TODO properly tag these images -->
+    <docker.postgres.version>oapass/postgres:latest</docker.postgres.version>
+    <docker.dspace.version>
+      oapass/dspace:20200419@sha256:99df12f10846f2a2d62058cf4eef631393d7949a343b233a9e487d54fd82a483
+    </docker.dspace.version>
+    <docker.ftp.version>oapass/ftpserver:latest</docker.ftp.version>
+
+    <pass.jsonld.context.version>3.5</pass.jsonld.context.version>
+    <pass.jsonld.context>
+      https://oa-pass.github.io/pass-data-model/src/main/resources/context-${pass.jsonld.context.version}.jsonld
+    </pass.jsonld.context>
+
+  </properties>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>${maven.release.plugin.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+
+    </plugins>
+
+    <pluginManagement>
+
+      <plugins>
+
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>${git-commit-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+            <compilerArgument>-Xlint:all</compilerArgument>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven.failsafe.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${codehaus.build-helper.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven.jar.plugin.version}</version>
+          <configuration>
+            <excludes>
+              <exclude>**/logback-test.xml</exclude>
+            </excludes>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven.shade.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${fabric8.docker.maven.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven.resources.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven.deploy.plugin.version}</version>
+          <configuration>
+            <retryFailedDeploymentCount>5</retryFailedDeploymentCount>
+          </configuration>
+          <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
+          <dependencies>
             <dependency>
-                <groupId>org.dataconservancy.pass.support.messaging</groupId>
-                <artifactId>json</artifactId>
-                <version>${messaging-support.version}</version>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh</artifactId>
+              <version>${maven.wagon.ssh.version}</version>
             </dependency>
+          </dependencies>
+        </plugin>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass.support.messaging</groupId>
-                <artifactId>cri</artifactId>
-                <version>${messaging-support.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <version>${maven.remote-resources.plugin.version}</version>
+        </plugin>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass.support.messaging</groupId>
-                <artifactId>constants</artifactId>
-                <version>${messaging-support.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${maven.release.plugin.version}</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <pushChanges>false</pushChanges>
+            <localCheckout>true</localCheckout>
+            <goals>deploy</goals>
+            <releaseProfiles>release</releaseProfiles>
+          </configuration>
+        </plugin>
 
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback-classic.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <links>
+              <link>https://docs.oracle.com/javase/8/docs/api/</link>
+              <link>https://commons.apache.org/proper/commons-io/javadocs/api-${commons-io.version}/</link>
+              <link>https://commons.apache.org/proper/commons-compress/javadocs/api-${commons-compress.version}/</link>
+              <link>https://commons.apache.org/proper/commons-codec/javadocs/api-${commons-codec.version}/</link>
+              <link>https://docs.spring.io/autorepo/docs/spring-framework/${spring-framework.version}/javadoc-api/
+              </link>
+            </links>
+          </configuration>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>${maven-gpg-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <useAgent>true</useAgent>
+          </configuration>
+        </plugin>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>jar</goal>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
 
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${spring-framework.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+      </plugins>
 
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-test</artifactId>
-                <version>${spring-framework.version}</version>
-            </dependency>
+    </pluginManagement>
 
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring-framework.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+  </build>
 
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring-framework.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+  <dependencyManagement>
 
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+    <dependencies>
 
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.dataconservancy.pass.support.messaging</groupId>
+        <artifactId>json</artifactId>
+        <version>${messaging-support.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-quartz</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.dataconservancy.pass.support.messaging</groupId>
+        <artifactId>cri</artifactId>
+        <version>${messaging-support.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.dataconservancy.pass.support.messaging</groupId>
+        <artifactId>constants</artifactId>
+        <version>${messaging-support.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>${mockito.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback-classic.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>commons-net</groupId>
-                <artifactId>commons-net</artifactId>
-                <version>${commons-net.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-compress</artifactId>
-                <version>${commons-compress.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring-framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>args4j</groupId>
-                <artifactId>args4j</artifactId>
-                <version>${args4j.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring-framework.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>com.thoughtworks.xstream</groupId>
-                <artifactId>xstream</artifactId>
-                <version>${xstream.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring-framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
-            <dependency>
-                <groupId>org.xmlunit</groupId>
-                <artifactId>xmlunit-core</artifactId>
-                <version>${xmlunit.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${spring-framework.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>${commons-codec.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
-            <dependency>
-                <groupId>org.swordapp</groupId>
-                <artifactId>sword2-client</artifactId>
-                <version>${sword2-client.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>joda-time</groupId>
-                        <artifactId>joda-time</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.lucene</groupId>
-                        <artifactId>lucene-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass</groupId>
-                <artifactId>mets-api</artifactId>
-                <version>${mets-api.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-quartz</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.apache.tika</groupId>
-                <artifactId>tika-core</artifactId>
-                <version>${tika.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass</groupId>
-                <artifactId>pass-model</artifactId>
-                <version>${pass-client.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass</groupId>
-                <artifactId>pass-data-client</artifactId>
-                <version>${pass-client.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
 
-	        <dependency>
-	            <groupId>org.dataconservancy.pass</groupId>
-	            <artifactId>pass-status-service</artifactId>
-                <version>${pass-client.version}</version>
-	        </dependency>
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>${commons-net.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass</groupId>
-                <artifactId>pass-json-adapter</artifactId>
-                <version>${pass-client.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons-compress.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>org.dataconservancy.pass</groupId>
-                <artifactId>pass-client-api</artifactId>
-                <version>${pass-client.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>logging-interceptor</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>${args4j.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.4</version>
-            </dependency>
+      <dependency>
+        <groupId>com.thoughtworks.xstream</groupId>
+        <artifactId>xstream</artifactId>
+        <version>${xstream.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>io.github.lukehutch</groupId>
-                <artifactId>fast-classpath-scanner</artifactId>
-                <version>${fast-classpath-scanner.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>${xmlunit.version}</version>
+      </dependency>
 
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>${gson.version}</version>
-            </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec.version}</version>
+      </dependency>
 
-        </dependencies>
+      <dependency>
+        <groupId>org.swordapp</groupId>
+        <artifactId>sword2-client</artifactId>
+        <version>${sword2-client.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
-    </dependencyManagement>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>mets-api</artifactId>
+        <version>${mets-api.version}</version>
+      </dependency>
 
-    <repositories>
+      <dependency>
+        <groupId>org.apache.tika</groupId>
+        <artifactId>tika-core</artifactId>
+        <version>${tika.version}</version>
+      </dependency>
 
-        <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-model</artifactId>
+        <version>${pass-client.version}</version>
+      </dependency>
 
-        <repository>
-            <id>spring-libs-snap</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/libs-snapshot</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-data-client</artifactId>
+        <version>${pass-client.version}</version>
+      </dependency>
 
-        <repository>
-            <id>dc.public.releases</id>
-            <name>Data Conservancy Release Maven Repository</name>
-            <url>http://maven.dataconservancy.org/public/releases/</url>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-status-service</artifactId>
+        <version>${pass-client.version}</version>
+      </dependency>
 
-        <repository>
-            <id>dc.public.snapshots</id>
-            <name>Data Conservancy Snapshot Maven Repository</name>
-            <url>http://maven.dataconservancy.org/public/snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-json-adapter</artifactId>
+        <version>${pass-client.version}</version>
+      </dependency>
 
-    </repositories>
+      <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-client-api</artifactId>
+        <version>${pass-client.version}</version>
+      </dependency>
 
-    <distributionManagement>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
 
-        <repository>
-            <id>maven-central-staging</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>logging-interceptor</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
 
-        <snapshotRepository>
-            <id>oss.snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+      </dependency>
 
-    </distributionManagement>
+      <dependency>
+        <groupId>io.github.lukehutch</groupId>
+        <artifactId>fast-classpath-scanner</artifactId>
+        <version>${fast-classpath-scanner.version}</version>
+      </dependency>
 
-    <scm>
-        <connection>scm:git:https://github.com/OA-PASS/deposit-services.git</connection>
-        <developerConnection>scm:git:https://github.com/OA-PASS/deposit-services.git</developerConnection>
-        <url>https://github.com/OA-PASS/deposit-services</url>
-        <tag>HEAD</tag>
-    </scm>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+
+    </dependencies>
+
+  </dependencyManagement>
+
+  <repositories>
+
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>spring-libs-snap</id>
+      <name>Spring Snapshots</name>
+      <url>https://repo.spring.io/libs-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>dc.public.releases</id>
+      <name>Data Conservancy Release Maven Repository</name>
+      <url>http://maven.dataconservancy.org/public/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>dc.public.snapshots</id>
+      <name>Data Conservancy Snapshot Maven Repository</name>
+      <url>http://maven.dataconservancy.org/public/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
+  </repositories>
+
+  <distributionManagement>
+
+    <repository>
+      <id>maven-central-staging</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>oss.snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+
+  </distributionManagement>
+
+  <scm>
+    <connection>scm:git:https://github.com/OA-PASS/deposit-services.git</connection>
+    <developerConnection>scm:git:https://github.com/OA-PASS/deposit-services.git</developerConnection>
+    <url>https://github.com/OA-PASS/deposit-services</url>
+    <tag>HEAD</tag>
+  </scm>
 
 </project>

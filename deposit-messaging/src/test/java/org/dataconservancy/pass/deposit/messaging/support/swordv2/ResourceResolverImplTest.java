@@ -15,25 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
-import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
-import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
-import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Optional;
-
 import static org.dataconservancy.pass.deposit.messaging.support.swordv2.ResourceResolverImpl.isRedirect;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -46,6 +27,25 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Optional;
+
+import org.dataconservancy.pass.deposit.assembler.shared.AuthenticatedResource;
+import org.dataconservancy.pass.deposit.messaging.config.repository.BasicAuthRealm;
+import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -16,16 +16,14 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import com.google.gson.JsonObject;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Archive;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions.Compression;
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Provides metadata for a {@link PackageStream}.  Includes package-private accessors in addition to
@@ -44,7 +42,7 @@ public class SimpleMetadataImpl implements PackageStream.Metadata {
     private String spec = "nihms-native";
 
     private String mimeType = "application/gzip";
-    
+
     private boolean compressed = true;
 
     private Compression.OPTS compression = Compression.OPTS.GZIP;

@@ -16,9 +16,9 @@
 package org.dataconservancy.pass.deposit.messaging;
 
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.dataconservancy.pass.model.Deposit;
 import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -57,9 +57,9 @@ public class DepositServiceErrorHandler implements ErrorHandler {
                 LOG.error("Unrecoverable error: {}", t.getMessage(), t);
                 return;
             }
-            dsException = (DepositServiceRuntimeException)cause;
+            dsException = (DepositServiceRuntimeException) cause;
         } else {
-            dsException = (DepositServiceRuntimeException)t;
+            dsException = (DepositServiceRuntimeException) t;
         }
 
         if (dsException.getResource() != null) {
@@ -77,8 +77,8 @@ public class DepositServiceErrorHandler implements ErrorHandler {
         }
 
         LOG.error("Unrecoverable error (note that {} is missing its PassEntity resource - no resources will be be " +
-                        "marked as FAILED)",
-                    dsException.getClass().getName(), t);
+                  "marked as FAILED)",
+                  dsException.getClass().getName(), t);
 
     }
 }

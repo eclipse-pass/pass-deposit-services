@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -57,13 +57,15 @@ public class AssemblerConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         AssemblerConfig that = (AssemblerConfig) o;
-        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options) && Objects.equals(beanName,
-                that.beanName);
+        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options) &&
+                Objects.equals(beanName, that.beanName);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class AssemblerConfig {
     @Override
     public String toString() {
         return "AssemblerConfig{" + "spec='" + spec + '\'' + ", options=" + options +
-                ", beanName='" + beanName + '\'' + '}';
+               ", beanName='" + beanName + '\'' + '}';
     }
 
 }

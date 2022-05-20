@@ -15,6 +15,16 @@
  */
 package org.dataconservancy.pass.deposit.transport.ftp;
 
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setTransferMode;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setWorkingDirectory;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Map;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.dataconservancy.pass.deposit.transport.TransportSession;
@@ -22,16 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Map;
-
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setTransferMode;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setWorkingDirectory;
 
 /**
  * Encapsulates a provider for FTP transport sessions.  {@link #open(Map) Opening} a FTP transport session entails the
@@ -110,7 +110,7 @@ public class FtpTransport implements Transport {
      * </p>
      *
      * @param ftpClient the FTP client used by the underlying FTP session
-     * @param hints configuration hints
+     * @param hints     configuration hints
      * @return the open transport session
      * @throws RuntimeException if the session cannot be successfully opened
      */
@@ -139,6 +139,5 @@ public class FtpTransport implements Transport {
         LOG.debug("Opened {}@{}...", session.getClass().getSimpleName(), toHexString(identityHashCode(session)));
         return session;
     }
-
 
 }

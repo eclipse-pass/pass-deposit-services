@@ -14,361 +14,363 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.dataconservancy.pass.deposit</groupId>
-        <artifactId>deposit-parent</artifactId>
-        <version>1.1.0-3.5-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.dataconservancy.pass.deposit</groupId>
+    <artifactId>deposit-parent</artifactId>
+    <version>1.1.0-3.5-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>deposit-messaging</artifactId>
-    <name>PASS messaging integration</name>
+  <artifactId>deposit-messaging</artifactId>
+  <name>PASS messaging integration</name>
 
-    <build>
+  <build>
 
-        <plugins>
+    <plugins>
 
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <configuration>
-                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/deposit-services-git.properties</generateGitPropertiesFilename>
-                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
-                    <abbrevLength>8</abbrevLength>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>gitproperties</id>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/deposit-services-git.properties
+          </generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <abbrevLength>8</abbrevLength>
+        </configuration>
+        <executions>
+          <execution>
+            <id>gitproperties</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <classifier>exec</classifier>
-                    <attach>true</attach>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <classifier>exec</classifier>
+          <attach>true</attach>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <artifact>${project.groupId}:${project.artifactId}:${project.version}:jar:exec</artifact>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <artifact>${project.groupId}:${project.artifactId}:${project.version}:jar:exec</artifact>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <!-- Disable Quartz jobs from running when unit tests are executed. -->
-                        <pass.deposit.jobs.disabled>true</pass.deposit.jobs.disabled>
-                    </systemProperties>
-                </configuration>
-            </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <!-- Disable Quartz jobs from running when unit tests are executed. -->
+            <pass.deposit.jobs.disabled>true</pass.deposit.jobs.disabled>
+          </systemProperties>
+        </configuration>
+      </plugin>
 
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>oapass/deposit-services-core:%v</name>
-                        </image>
-                    </images>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>build-before-its</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <images>
+            <image>
+              <name>oapass/deposit-services-core:%v</name>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-before-its</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-        </plugins>
+    </plugins>
 
-    </build>
+  </build>
 
-    <dependencies>
+  <dependencies>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.support.messaging</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.support.messaging</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.support.messaging</groupId>
-            <artifactId>cri</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.support.messaging</groupId>
+      <artifactId>cri</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.support.messaging</groupId>
-            <artifactId>constants</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.support.messaging</groupId>
+      <artifactId>constants</artifactId>
+    </dependency>
 
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-quartz</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-broker</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>geronimo-jms_1.1_spec</artifactId>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-broker</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>geronimo-jms_1.1_spec</artifactId>
+          <groupId>org.apache.geronimo.specs</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>javax.jms-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>deposit-model</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>deposit-model</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass</groupId>
-            <artifactId>pass-data-client</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass</groupId>
+      <artifactId>pass-data-client</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass</groupId>
-            <artifactId>pass-status-service</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass</groupId>
+      <artifactId>pass-status-service</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass</groupId>
-            <artifactId>pass-json-adapter</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass</groupId>
+      <artifactId>pass-json-adapter</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass</groupId>
-            <artifactId>pass-model</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass</groupId>
+      <artifactId>pass-model</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>assembler-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>assembler-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>fedora-builder</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>fedora-builder</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>builder-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>builder-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>transport-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>transport-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>shared-assembler</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>shared-assembler</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>sword2-transport</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>sword2-transport</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>ftp-transport</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>ftp-transport</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>filesystem-transport</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>filesystem-transport</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>logging-interceptor</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-activemq</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-activemq</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
 
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <!--<scope>test</scope>-->
-        </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <!--<scope>test</scope>-->
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>shared-assembler</artifactId>
-            <version>${project.parent.version}</version>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>shared-assembler</artifactId>
+      <version>${project.parent.version}</version>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>shared-resources</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>shared-resources</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
-            <artifactId>fedora-builder</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-        </dependency>
+    <dependency>
+      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <artifactId>fedora-builder</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+    </dependency>
 
-        <dependency>
-            <groupId>io.github.lukehutch</groupId>
-            <artifactId>fast-classpath-scanner</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>io.github.lukehutch</groupId>
+      <artifactId>fast-classpath-scanner</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-    </dependencies>
+  </dependencies>
 
 </project>

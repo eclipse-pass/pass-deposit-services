@@ -15,16 +15,16 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
+import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.isMessageA;
 
 import java.util.Collection;
 import java.util.Objects;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
-import static org.dataconservancy.pass.deposit.messaging.service.DepositUtil.isMessageA;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides common logic for accepting JMS messages from Fedora based on the resource and event type.
@@ -46,14 +46,16 @@ public abstract class FedoraMessagePolicy implements JmsMessagePolicy {
     public boolean test(DepositUtil.MessageContext messageContext) {
         // the message must be one of these FedoraResourceEventTypes
         boolean result = acceptableFedoraResourceEventTypes().stream().anyMatch((ret) ->
-                isMessageA(ret.EVENT_TYPE, ret.RESOURCE_TYPE, messageContext));
+                                                                                    isMessageA(ret.EVENT_TYPE,
+                                                                                               ret.RESOURCE_TYPE,
+                                                                                               messageContext));
 
         if (!result) {
             LOG.trace("Dropping message {}, it did not match any of the acceptable " +
-                            "FedoraResourceEventTypes {}: was {}",
-                    messageContext.id(),
-                    acceptableFedoraResourceEventTypes().stream().map(Objects::toString).collect(joining(",")),
-                    format(FedoraResourceEventType.FMT, messageContext.resourceType(), messageContext.eventType()));
+                      "FedoraResourceEventTypes {}: was {}",
+                      messageContext.id(),
+                      acceptableFedoraResourceEventTypes().stream().map(Objects::toString).collect(joining(",")),
+                      format(FedoraResourceEventType.FMT, messageContext.resourceType(), messageContext.eventType()));
             return false;
         }
 

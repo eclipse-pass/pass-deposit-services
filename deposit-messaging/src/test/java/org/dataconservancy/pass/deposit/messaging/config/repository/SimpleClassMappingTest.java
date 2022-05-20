@@ -16,62 +16,66 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URL;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleClassMappingTest.class);
 
     private static final String AUTH_REALM_JSON = "" +
-            "{\n" +
-            "          \"mech\": \"basic\",\n" +
-            "          \"username\": \"user\",\n" +
-            "          \"password\": \"pass\",\n" +
-            "          \"url\": \"https://jscholarship.library.jhu.edu/\",\n" +
-            "          \"realm-name\": \"foo realm\"\n" +
-            "        }";
+                                                  "{\n" +
+                                                  "          \"mech\": \"basic\",\n" +
+                                                  "          \"username\": \"user\",\n" +
+                                                  "          \"password\": \"pass\",\n" +
+                                                  "          \"url\": \"https://jscholarship.library.jhu.edu/\",\n" +
+                                                  "          \"realm-name\": \"foo realm\"\n" +
+                                                  "        }";
 
     private static final String SWORD_BINDING_JSON = "" +
-            "{\n" +
-            "        \"protocol\": \"SWORDv2\",\n" +
-            "        \"username\": \"sworduser\",\n" +
-            "        \"password\": \"swordpass\",\n" +
-            "        \"service-doc\": \"http://${dspace.host}:${dspace.port}/swordv2/servicedocument\",\n" +
-            "        \"default-collection\": \"http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
-            "        \"on-behalf-of\": null,\n" +
-            "        \"deposit-receipt\": true,\n" +
-            "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
-            "      }";
+                                                     "{\n" +
+                                                     "        \"protocol\": \"SWORDv2\",\n" +
+                                                     "        \"username\": \"sworduser\",\n" +
+                                                     "        \"password\": \"swordpass\",\n" +
+                                                     "        \"service-doc\": \"http://${dspace.host}:${dspace" +
+                                                     ".port}/swordv2/servicedocument\",\n" +
+                                                     "        \"default-collection\": \"http://${dspace" +
+                                                     ".host}:${dspace.port}/swordv2/collection/123456789/2\",\n" +
+                                                     "        \"on-behalf-of\": null,\n" +
+                                                     "        \"deposit-receipt\": true,\n" +
+                                                     "        \"user-agent\": \"pass-deposit/x.y.z\"\n" +
+                                                     "      }";
 
     private static final String FTP_BINDING_JSON = "" +
-            "{\n" +
-            "        \"protocol\": \"ftp\",\n" +
-            "        \"username\": \"ftpuser\",\n" +
-            "        \"password\": \"ftppass\",\n" +
-            "        \"server-fqdn\": \"${ftp.host}\",\n" +
-            "        \"server-port\": \"${ftp.port}\",\n" +
-            "        \"data-type\": \"binary\",\n" +
-            "        \"transfer-mode\": \"stream\",\n" +
-            "        \"use-pasv\": true,\n" +
-            "        \"default-directory\": \"/logs/upload/%s\"\n" +
-            "      }";
+                                                   "{\n" +
+                                                   "        \"protocol\": \"ftp\",\n" +
+                                                   "        \"username\": \"ftpuser\",\n" +
+                                                   "        \"password\": \"ftppass\",\n" +
+                                                   "        \"server-fqdn\": \"${ftp.host}\",\n" +
+                                                   "        \"server-port\": \"${ftp.port}\",\n" +
+                                                   "        \"data-type\": \"binary\",\n" +
+                                                   "        \"transfer-mode\": \"stream\",\n" +
+                                                   "        \"use-pasv\": true,\n" +
+                                                   "        \"default-directory\": \"/logs/upload/%s\"\n" +
+                                                   "      }";
 
     private static final String J10P_STATUS_MAPPING_JSON = "" +
-            "{\n" +
-            "      \"http://dspace.org/state/archived\": \"http://oapass.org/status/deposit#accepted\",\n" +
-            "      \"http://dspace.org/state/withdrawn\": \"http://oapass.org/status/deposit#rejected\",\n" +
-            "      \"default-mapping\": \"http://oapass.org/status/deposit#submitted\"\n" +
-            "    }";
+                                                           "{\n" +
+                                                           "      \"http://dspace.org/state/archived\": " +
+                                                           "\"http://oapass.org/status/deposit#accepted\",\n" +
+                                                           "      \"http://dspace.org/state/withdrawn\": " +
+                                                           "\"http://oapass.org/status/deposit#rejected\",\n" +
+                                                           "      \"default-mapping\": \"http://oapass" +
+                                                           ".org/status/deposit#submitted\"\n" +
+                                                           "    }";
 
     @Test
     public void mapAuthRealmFromJson() throws IOException {
@@ -112,7 +116,8 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
         assertEquals("sworduser", swordBinding.getUsername());
         assertEquals("swordpass", swordBinding.getPassword());
         assertEquals("http://${dspace.host}:${dspace.port}/swordv2/servicedocument", swordBinding.getServiceDocUrl());
-        assertEquals("http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2", swordBinding.getDefaultCollectionUrl());
+        assertEquals("http://${dspace.host}:${dspace.port}/swordv2/collection/123456789/2",
+                     swordBinding.getDefaultCollectionUrl());
         assertNull(swordBinding.getOnBehalfOf());
         assertTrue(swordBinding.isDepositReceipt());
         assertEquals("pass-deposit/x.y.z", swordBinding.getUserAgent());
@@ -182,8 +187,10 @@ public class SimpleClassMappingTest extends AbstractJacksonMappingTest {
 
         assertNotNull(mapping);
         assertEquals("http://oapass.org/status/deposit#submitted", mapping.getDefaultMapping());
-        assertEquals("http://oapass.org/status/deposit#rejected", mapping.getStatusMap().get("http://dspace.org/state/withdrawn"));
-        assertEquals("http://oapass.org/status/deposit#accepted", mapping.getStatusMap().get("http://dspace.org/state/archived"));
+        assertEquals("http://oapass.org/status/deposit#rejected",
+                     mapping.getStatusMap().get("http://dspace.org/state/withdrawn"));
+        assertEquals("http://oapass.org/status/deposit#accepted",
+                     mapping.getStatusMap().get("http://dspace.org/state/archived"));
     }
 
     @Test

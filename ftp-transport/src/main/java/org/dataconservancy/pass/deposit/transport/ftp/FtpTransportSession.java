@@ -15,12 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Integer.toHexString;
+import static java.lang.String.format;
+import static java.lang.System.identityHashCode;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.PATH_SEP;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.performSilently;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setDataType;
+import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setPasv;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,13 +34,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.lang.Integer.toHexString;
-import static java.lang.String.format;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.PATH_SEP;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.performSilently;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setDataType;
-import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.setPasv;
+import org.apache.commons.net.ftp.FTPClient;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates a logged-in connection to an FTP server.
@@ -51,7 +51,7 @@ public class FtpTransportSession implements TransportSession {
     private static final Logger LOG = LoggerFactory.getLogger(FtpTransportSession.class);
 
     private static final String ERR_TRANSFER_WITH_CODE = "Error transferring file %s to %s:%s; " +
-            "(FTP server reply code %s) error message: %s";
+                                                         "(FTP server reply code %s) error message: %s";
 
     private static final String ERR_TRANSFER = "Exception transferring file %s to %s:%s; error message: %s";
 
@@ -92,7 +92,7 @@ public class FtpTransportSession implements TransportSession {
         validateDestinationResource(streamMetadata.name());
 
         this.transfer = new FutureTask<>(() -> {
-            try (InputStream inputStream = packageStream.open()){
+            try (InputStream inputStream = packageStream.open()) {
                 return storeFile(streamMetadata.name(), inputStream);
             }
         });
@@ -139,16 +139,16 @@ public class FtpTransportSession implements TransportSession {
     @Override
     public void close() throws Exception {
         LOG.debug("Closing {}@{}...",
-                this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+                  this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
         if (transfer != null && !transfer.isDone()) {
             LOG.debug("Closing {}@{}, cancelling pending transfer...",
-                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+                      this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
             transfer.cancel(true);
         }
 
         if (this.isClosed) {
             LOG.debug("{}@{} is already closed.",
-                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+                      this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
             return;
         }
 
@@ -156,17 +156,18 @@ public class FtpTransportSession implements TransportSession {
             FtpUtil.disconnect(ftpClient);
         } catch (IOException e) {
             LOG.debug("Exception encountered while closing {}@{}, FTP client logout failed.  " +
-                            "Continuing to close the object despite the exception: {}",
-                    this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
+                      "Continuing to close the object despite the exception: {}",
+                      this.getClass().getSimpleName(), toHexString(identityHashCode(this)), e.getMessage(), e);
         }
 
         LOG.debug("Marking {}@{} as closed.",
-                this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
+                  this.getClass().getSimpleName(), toHexString(identityHashCode(this)));
         this.isClosed = true;
     }
 
     /**
      * Streams the supplied {@code content} to t
+     *
      * @param destinationResource
      * @param content
      * @return
@@ -233,8 +234,8 @@ public class FtpTransportSession implements TransportSession {
             public Throwable error() {
                 if (!success.get()) {
                     return new RuntimeException(
-                            format(ERR_TRANSFER_WITH_CODE, destinationResource, "host", "port",
-                                    ftpReplyCode.get(), ftpReplyString.get()), caughtException.get());
+                        format(ERR_TRANSFER_WITH_CODE, destinationResource, "host", "port",
+                               ftpReplyCode.get(), ftpReplyString.get()), caughtException.get());
                 }
 
                 return null;

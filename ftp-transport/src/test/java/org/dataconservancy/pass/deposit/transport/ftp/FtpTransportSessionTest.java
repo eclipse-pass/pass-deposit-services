@@ -16,18 +16,6 @@
 
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.dataconservancy.pass.deposit.transport.TransportResponse;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.dataconservancy.pass.deposit.transport.ftp.FtpTestUtil.FTP_ROOT_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,6 +31,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.dataconservancy.pass.deposit.transport.TransportResponse;
+import org.junit.Before;
+import org.junit.Test;
 
 public class FtpTransportSessionTest {
 
@@ -202,14 +202,19 @@ public class FtpTransportSessionTest {
     }
 
     private void verifyDestinationResource(String destinationResource, InputStream content) throws IOException {
-        String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0, destinationResource.indexOf(".")) : destinationResource;
-        String suffix = (destinationResource.contains(".")) ? destinationResource.substring(destinationResource.indexOf(".")) : "";
+        String prefix = (destinationResource.contains(".")) ? destinationResource.substring(0,
+                                                                                            destinationResource.indexOf(
+                                                                                                ".")) :
+                        destinationResource;
+        String suffix = (destinationResource.contains(".")) ? destinationResource.substring(
+            destinationResource.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0); //we are requiring both a prefix
         assertTrue("Must have a filename suffix!", suffix.length() > 0); //and a suffix
 
         verify(ftpClient).storeFile(argThat((candidateResource) ->
-                        candidateResource.startsWith(prefix) && candidateResource.endsWith(suffix)), eq(content));
+                                                candidateResource.startsWith(prefix) && candidateResource.endsWith(
+                                                    suffix)), eq(content));
     }
 
 }

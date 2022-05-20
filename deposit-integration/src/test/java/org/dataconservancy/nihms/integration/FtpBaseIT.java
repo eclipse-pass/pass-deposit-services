@@ -15,13 +15,11 @@
  */
 package org.dataconservancy.nihms.integration;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.junit.After;
 import org.junit.Before;
-
-import static org.dataconservancy.nihms.integration.BaseIT.DOCKER_HOST_PROPERTY;
-import static org.dataconservancy.nihms.integration.BaseIT.LOG;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

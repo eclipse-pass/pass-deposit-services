@@ -15,13 +15,12 @@
  */
 package org.dataconservancy.pass.deposit.builder.fs;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.fs.FilesystemModelBuilder;
 import org.junit.Test;
 import resources.SharedSubmissionUtil;
 import submissions.SubmissionResourceUtil;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

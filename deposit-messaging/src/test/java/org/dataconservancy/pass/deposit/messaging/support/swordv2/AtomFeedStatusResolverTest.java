@@ -15,21 +15,21 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.InputStream;
+import java.net.URI;
+
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMParserFactory;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.Resource;
-
-import java.io.InputStream;
-import java.net.URI;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -51,7 +51,8 @@ public class AtomFeedStatusResolverTest {
         resource = mock(Resource.class);
 
         when(resolver.resolve(any(), any())).thenReturn(resource);
-        InputStream swordStatement = this.getClass().getResourceAsStream("/org/dataconservancy/pass/deposit/messaging/support/swordv2/sword-statement.xml");
+        InputStream swordStatement = this.getClass().getResourceAsStream(
+            "/org/dataconservancy/pass/deposit/messaging/support/swordv2/sword-statement.xml");
         assertNotNull(swordStatement);
         when(resource.getInputStream()).thenReturn(swordStatement);
 

@@ -15,12 +15,6 @@
  */
 package org.dataconservancy.deposit.util.spring;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +22,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring ClassPathResource which exposes <em>encoded</em> paths, but performs internal operations such as resolving
@@ -54,7 +54,7 @@ public class EncodingClassPathResource extends ClassPathResource {
     private Class<?> clazz;
 
     public EncodingClassPathResource(String encodedPath) {
-        this(encodedPath, (ClassLoader)null);
+        this(encodedPath, (ClassLoader) null);
     }
 
     public EncodingClassPathResource(String encodedPath, @Nullable ClassLoader classLoader) {
@@ -89,7 +89,6 @@ public class EncodingClassPathResource extends ClassPathResource {
      * of being returned as a URL.
      * </p>
      *
-     *
      * @return the URL which
      */
     @Nullable
@@ -97,11 +96,9 @@ public class EncodingClassPathResource extends ClassPathResource {
     protected URL resolveURL() {
         if (this.clazz != null) {
             return this.clazz.getResource(this.decodedPath);
-        }
-        else if (this.classLoader != null) {
+        } else if (this.classLoader != null) {
             return this.classLoader.getResource(this.decodedPath);
-        }
-        else {
+        } else {
             return ClassLoader.getSystemResource(this.decodedPath);
         }
     }
@@ -111,11 +108,9 @@ public class EncodingClassPathResource extends ClassPathResource {
         InputStream is;
         if (this.clazz != null) {
             is = this.clazz.getResourceAsStream(this.decodedPath);
-        }
-        else if (this.classLoader != null) {
+        } else if (this.classLoader != null) {
             is = this.classLoader.getResourceAsStream(this.decodedPath);
-        }
-        else {
+        } else {
             is = ClassLoader.getSystemResourceAsStream(this.decodedPath);
         }
         if (is == null) {

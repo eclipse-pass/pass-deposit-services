@@ -18,6 +18,7 @@
  * Implementation capable of building a
  * {@link org.dataconservancy.pass.deposit.model.DepositSubmission} from submission metadata
  * mounted on the local filesystem.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 package org.dataconservancy.pass.deposit.builder.fs;

@@ -50,15 +50,18 @@ public class DepositMetadata {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (o == null || getClass() != o.getClass())
+            }
+            if (o == null || getClass() != o.getClass()) {
                 return false;
+            }
 
             IssnPubType that = (IssnPubType) o;
 
-            if (!issn.equals(that.issn))
+            if (!issn.equals(that.issn)) {
                 return false;
+            }
             return pubType == that.pubType;
         }
 
@@ -115,7 +118,6 @@ public class DepositMetadata {
      */
     private Article articleMetadata;
 
-
     /**
      * Manuscript-related metadata fields
      */
@@ -160,9 +162,13 @@ public class DepositMetadata {
             this.msAbstract = msAbstract;
         }
 
-        public String getTitle() { return title; }
+        public String getTitle() {
+            return title;
+        }
 
-        public void setTitle(String title) { this.title = title; }
+        public void setTitle(String title) {
+            this.title = title;
+        }
 
         public String getNihmsId() {
             return nihmsId;
@@ -255,15 +261,25 @@ public class DepositMetadata {
             return journalTitle;
         }
 
-        public void setJournalTitle(String journalTitle) { this.journalTitle = journalTitle; }
+        public void setJournalTitle(String journalTitle) {
+            this.journalTitle = journalTitle;
+        }
 
-        public String getPublisherName() { return publisherName; }
+        public String getPublisherName() {
+            return publisherName;
+        }
 
-        public void setPublisherName(String publisherName) { this.publisherName = publisherName; }
+        public void setPublisherName(String publisherName) {
+            this.publisherName = publisherName;
+        }
 
-        public String getPublicationDate() { return publicationDate; }
+        public String getPublicationDate() {
+            return publicationDate;
+        }
 
-        public void setPublicationDate(String publicationDate) { this.publicationDate = publicationDate; }
+        public void setPublicationDate(String publicationDate) {
+            this.publicationDate = publicationDate;
+        }
 
         public Map<String, IssnPubType> getIssnPubTypes() {
             return issnPubTypes;
@@ -308,17 +324,29 @@ public class DepositMetadata {
 
         public ZonedDateTime embargoLiftDate = null;
 
-        public String getTitle() { return title; }
+        public String getTitle() {
+            return title;
+        }
 
-        public void setTitle(String title) { this.title = title; }
+        public void setTitle(String title) {
+            this.title = title;
+        }
 
-        public String getVolume() { return volume; }
+        public String getVolume() {
+            return volume;
+        }
 
-        public void setVolume(String volume) { this.volume = volume; }
+        public void setVolume(String volume) {
+            this.volume = volume;
+        }
 
-        public String getIssue() { return issue; }
+        public String getIssue() {
+            return issue;
+        }
 
-        public void setIssue(String issue) { this.issue = issue; }
+        public void setIssue(String issue) {
+            this.issue = issue;
+        }
 
         public URI getDoi() {
             return doi;
@@ -328,9 +356,13 @@ public class DepositMetadata {
             this.doi = doi;
         }
 
-        public ZonedDateTime getEmbargoLiftDate() { return embargoLiftDate; }
+        public ZonedDateTime getEmbargoLiftDate() {
+            return embargoLiftDate;
+        }
 
-        public void setEmbargoLiftDate(ZonedDateTime embargoLiftDate) { this.embargoLiftDate = embargoLiftDate; }
+        public void setEmbargoLiftDate(ZonedDateTime embargoLiftDate) {
+            this.embargoLiftDate = embargoLiftDate;
+        }
     }
 
     /**
@@ -353,7 +385,8 @@ public class DepositMetadata {
          */
         public PERSON_TYPE type;
 
-        public Person() {}
+        public Person() {
+        }
 
         public Person(Person otherPerson) {
             this.setFullName(otherPerson.getFullName());
@@ -365,6 +398,7 @@ public class DepositMetadata {
 
         /**
          * Returns the assembled name for the person using the first/middle/last names.
+         *
          * @return the complete name for the person, or empty string if first or last are missing.
          */
         public String getConstructedName() {
@@ -382,6 +416,7 @@ public class DepositMetadata {
          * Returns the "total" name for the person, regardless of how that name was supplied.
          * If a "full" name (single string) was supplied, it will be returned.
          * Otherwise, a name will be constructed from the supplied first/middle/last names.
+         *
          * @return the complete name for the person, or empty string if none assigned.
          */
         public String getName() {
@@ -395,6 +430,7 @@ public class DepositMetadata {
         /**
          * Returns the last-name-first version of the "total" name for a person
          * whose name was supplied as a combination of a first, a last and an optional middle name.
+         *
          * @return the complete name for the person, or empty string if none assigned.
          */
         public String getReversedName() {
@@ -410,6 +446,7 @@ public class DepositMetadata {
 
         /**
          * Returns the supplied "full" name string for the person.
+         *
          * @return the supplied name string or null if none assigned.
          */
         public String getFullName() {
@@ -418,6 +455,7 @@ public class DepositMetadata {
 
         /**
          * Stores a single string containing the person's entire name.
+         *
          * @param fullName the person's entire name
          */
         public void setFullName(String fullName) {
@@ -507,11 +545,11 @@ public class DepositMetadata {
     @Override
     public String toString() {
         return "DepositMetadata{" +
-                "manuscriptMetadata=" + manuscriptMetadata +
-                ", journalMetadata=" + journalMetadata +
-                ", persons=" + persons +
-                ", articleMetadata=" + articleMetadata +
-                '}';
+               "manuscriptMetadata=" + manuscriptMetadata +
+               ", journalMetadata=" + journalMetadata +
+               ", persons=" + persons +
+               ", articleMetadata=" + articleMetadata +
+               '}';
     }
 
 }

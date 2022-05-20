@@ -16,16 +16,6 @@
 
 package org.dataconservancy.pass.deposit.transport.ftp;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.io.IOException;
-
 import static org.dataconservancy.pass.deposit.transport.ftp.FtpUtil.PATH_SEP;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -38,6 +28,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class FtpUtilTest {
 
@@ -267,8 +267,8 @@ public class FtpUtilTest {
         when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.PATHNAME_CREATED)
-                .thenReturn(FTPReply.COMMAND_OK);
+            .thenReturn(FTPReply.PATHNAME_CREATED)
+            .thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
         FtpUtil.makeDirectories(ftpClient, "dir");
@@ -295,12 +295,14 @@ public class FtpUtilTest {
         when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(FTPReply.FILE_UNAVAILABLE)  // considered successful by FtpUtil.makeDirectories(...) because
-                // the file may already exist on the remote system
-                .thenReturn(FTPReply.FILE_UNAVAILABLE)  // Returned twice because the reply code is checked by two different callbacks
-                .thenReturn(FTPReply.COMMAND_OK);
+            .thenReturn(FTPReply.COMMAND_OK)
+            .thenReturn(FTPReply.COMMAND_OK)
+            .thenReturn(FTPReply.FILE_UNAVAILABLE)  // considered successful by FtpUtil.makeDirectories(...) because
+            // the file may already exist on the remote system
+            .thenReturn(
+                FTPReply.FILE_UNAVAILABLE)  // Returned twice because the reply code is checked by two different
+            // callbacks
+            .thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
         FtpUtil.makeDirectories(ftpClient, "dir");
@@ -328,8 +330,8 @@ public class FtpUtilTest {
         when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.PATHNAME_CREATED)
-                .thenReturn(FTPReply.COMMAND_OK);
+            .thenReturn(FTPReply.PATHNAME_CREATED)
+            .thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
         FtpUtil.makeDirectories(ftpClient, "dir" + PATH_SEP + "subdir");
@@ -351,6 +353,7 @@ public class FtpUtilTest {
      * - changes the current working directory to the originally obtained working directory
      *
      * Specifically that leading slashes in the directory name are handled properly when parsed
+     *
      * @throws IOException
      */
     @Test
@@ -358,8 +361,8 @@ public class FtpUtilTest {
         when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
         when(ftpClient.makeDirectory(argThat(s -> s.length() > 0))).thenReturn(true);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.PATHNAME_CREATED)
-                .thenReturn(FTPReply.COMMAND_OK);
+            .thenReturn(FTPReply.PATHNAME_CREATED)
+            .thenReturn(FTPReply.COMMAND_OK);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 
         FtpUtil.makeDirectories(ftpClient, PATH_SEP + "dir" + PATH_SEP + "subdir");
@@ -383,9 +386,9 @@ public class FtpUtilTest {
     public void testMakeDirectoryFails() throws Exception {
         when(ftpClient.printWorkingDirectory()).thenReturn(FtpTestUtil.FTP_ROOT_DIR);
         when(ftpClient.getReplyCode())
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(FTPReply.COMMAND_OK)
-                .thenReturn(FTPReply.NOT_LOGGED_IN);
+            .thenReturn(FTPReply.COMMAND_OK)
+            .thenReturn(FTPReply.COMMAND_OK)
+            .thenReturn(FTPReply.NOT_LOGGED_IN);
         when(ftpClient.makeDirectory(anyString())).thenReturn(true);
         when(ftpClient.changeWorkingDirectory(anyString())).thenReturn(true);
 

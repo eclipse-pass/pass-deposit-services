@@ -15,18 +15,18 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.dataconservancy.pass.deposit.model.DepositFile;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.lang.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+
+import org.dataconservancy.pass.deposit.model.DepositFile;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.lang.Nullable;
 
 /**
  * A Spring {@code Resource} paired with its {@link DepositFile}, providing access to resource metadata (e.g. file name
@@ -69,7 +69,7 @@ public class DepositFileResource implements Resource {
      * Create a new instance with the {@code resource} supplying the bytes for the {@code depositFile}.
      *
      * @param depositFile the DepositFile
-     * @param resource the underlying Resource
+     * @param resource    the underlying Resource
      */
     public DepositFileResource(DepositFile depositFile, Resource resource) {
         if (resource == null) {
@@ -331,7 +331,7 @@ public class DepositFileResource implements Resource {
     private void assertState() {
         if (this.resource == null) {
             throw new IllegalStateException("The delegate Spring Resource is null: has setResource(Resource) been " +
-                    "called?");
+                                            "called?");
         }
     }
 

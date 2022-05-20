@@ -15,6 +15,13 @@
  */
 package org.dataconservancy.pass.deposit.messaging.runner;
 
+import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
+import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
+
+import java.net.URI;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.service.DepositTaskHelper;
@@ -28,13 +35,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import static org.dataconservancy.pass.support.messaging.constants.Constants.Indexer.DEPOSIT_STATUS;
-import static org.dataconservancy.pass.model.Deposit.DepositStatus.SUBMITTED;
 
 /**
  * Accepts uris for, or searches for,
@@ -68,7 +68,7 @@ public class SubmittedUpdateRunner {
      *
      * @param passClient the client implementation used to resolve PASS entity uris and perform searches
      * @return the Spring {@code ApplicationRunner} which receives the command line arguments supplied to this
-     *         application
+     * application
      */
     @Bean
     public ApplicationRunner depositUpdate(PassClient passClient) {
@@ -96,7 +96,7 @@ public class SubmittedUpdateRunner {
      * updated Deposits as they happen</dd> <dt>--async</dt> <dd>the console detaches immediately, with the Deposit URIs
      * processed in the background</dd> </dl>
      *
-     * @param args the command line arguments
+     * @param args       the command line arguments
      * @param passClient used to search the index for dirty deposits
      * @return a {@code Collection} of URIs representing dirty deposits
      */

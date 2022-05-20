@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
+import java.io.IOException;
+import java.util.Iterator;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
@@ -24,9 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Iterator;
-
 /**
  * <em>Rejects</em> JMS messages that originate from the user agent supplied on construction.
  * <p>
@@ -35,6 +35,7 @@ import java.util.Iterator;
  * for that modification.  Currently, there is no need to process those messages, and this policy insures that they will
  * be dropped.
  * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Component
@@ -50,7 +51,7 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
      * Constructs a new policy using the supplied {@code ObjectMapper} for parsing the user agent from the JMS message.
      *
      * @param objectMapper parses the JMS message body
-     * @param userAgent the user agent used by Deposit Services when interacting with the Fedora repository
+     * @param userAgent    the user agent used by Deposit Services when interacting with the Fedora repository
      */
     public AgentPolicy(ObjectMapper objectMapper, @Value("${pass.deposit.http.agent}") String userAgent) {
         if (objectMapper == null) {
@@ -81,20 +82,20 @@ public class AgentPolicy implements Policy<DepositUtil.MessageContext> {
         JsonNode attribution = null;
         try {
             attribution = objectMapper.readTree(messageContext.message().getPayload().toString()).findValue
-                    ("wasAttributedTo");
+                ("wasAttributedTo");
         } catch (IOException e) {
             throw new RuntimeException("Unable to resolve JMS message body: " + e.getMessage(), e);
         }
 
         if (attribution != null) {
-            for (Iterator<JsonNode> itr = attribution.elements(); itr.hasNext();) {
+            for (Iterator<JsonNode> itr = attribution.elements(); itr.hasNext(); ) {
                 JsonNode node = itr.next();
                 if (node.has("type") && node.findValue("type").textValue()
-                        .equals(Constants.Prov.SOFTWARE_AGENT)) {
+                                            .equals(Constants.Prov.SOFTWARE_AGENT)) {
                     if (node.has("name") && node.findValue("name").textValue()
-                            .equals(depositServicesUserAgent)) {
+                                                .equals(depositServicesUserAgent)) {
                         LOG.trace("Dropping message that originated from this agent: {}",
-                                depositServicesUserAgent);
+                                  depositServicesUserAgent);
                         return false;
                     } else {
                         return true;

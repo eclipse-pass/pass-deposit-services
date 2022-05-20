@@ -23,6 +23,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Loggers {
 
+    private Loggers() {
+        //never called
+    }
+
     /**
      * Logger for task queue or thread pool management; e.g. for rejected tasks
      */

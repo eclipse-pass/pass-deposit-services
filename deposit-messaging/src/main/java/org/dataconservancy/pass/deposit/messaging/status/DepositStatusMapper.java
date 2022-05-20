@@ -21,7 +21,8 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 /**
  * Accepts an object representing the status of some entity, and attempts to map the status to a
  * {@link DepositStatus}.  The status of the entity being mapped will have some kind of relationship with
- * a PASS {@code Deposit}.  That is, the value of the returned {@code DepositStatus} is a function of the status of the entity
+ * a PASS {@code Deposit}.  That is, the value of the returned {@code DepositStatus} is a function of the status of
+ * the entity
  * being mapped.
  * <p>
  * The entity being mapped from may be another PASS entity, for example, using a {@link RepositoryCopy#getCopyStatus()

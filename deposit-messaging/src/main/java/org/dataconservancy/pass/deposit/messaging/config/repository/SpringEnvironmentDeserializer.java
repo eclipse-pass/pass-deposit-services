@@ -16,13 +16,13 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import org.springframework.core.env.Environment;
-
-import java.io.IOException;
 
 public class SpringEnvironmentDeserializer extends StringDeserializer {
 
@@ -33,7 +33,8 @@ public class SpringEnvironmentDeserializer extends StringDeserializer {
     }
 
     @Override
-    public String deserialize(JsonParser parser, DeserializationContext ctx) throws IOException, JsonProcessingException {
+    public String deserialize(JsonParser parser, DeserializationContext ctx)
+        throws IOException, JsonProcessingException {
         String result = super.deserialize(parser, ctx);
         return (result != null && !result.trim().equals("")) ? env.resolveRequiredPlaceholders(result) : result;
     }

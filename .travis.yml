@@ -3,30 +3,30 @@ language: java
 sudo: required
 cache:
   directories:
-  - "$HOME/.m2"
+    - "$HOME/.m2"
 
 before_install:
-- sudo service mysql stop
-- sudo service postgresql stop
-- sudo service acpid stop
-- sudo service atd stop
-- sudo service cron stop
-- sudo service memcached stop
-- sudo service ntp stop
-- sudo service rabbitmq-server stop
-- sudo service resolvconf stop
-- sudo service sshguard stop
-- sudo service ssh stop
-- sudo service rsyslog stop
-- if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then openssl aes-256-cbc -K $encrypted_a8bae9369974_key -iv $encrypted_a8bae9369974_iv -in settings-central.tar.enc -out settings-central.tar -d && tar -xf settings-central.tar ; fi
+  - sudo service mysql stop
+  - sudo service postgresql stop
+  - sudo service acpid stop
+  - sudo service atd stop
+  - sudo service cron stop
+  - sudo service memcached stop
+  - sudo service ntp stop
+  - sudo service rabbitmq-server stop
+  - sudo service resolvconf stop
+  - sudo service sshguard stop
+  - sudo service ssh stop
+  - sudo service rsyslog stop
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then openssl aes-256-cbc -K $encrypted_a8bae9369974_key -iv $encrypted_a8bae9369974_iv -in settings-central.tar.enc -out settings-central.tar -d && tar -xf settings-central.tar ; fi
 
 install: mvn -U install -Ddocker.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script: if [ "$TRAVIS_PULL_REQUEST" == "false" ] ; then mvn -s ./settings.xml deploy
-   -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false -Ddocker.useColor=false; fi
+  -DtrimStackTrace=false; else mvn verify -DtrimStackTrace=false -Ddocker.useColor=false; fi
 
 jdk:
-- oraclejdk8
+  - oraclejdk8
 
 after_failure:
   - docker logs `docker ps|grep deposit-services-providers-its-1|awk '{print $1}'`

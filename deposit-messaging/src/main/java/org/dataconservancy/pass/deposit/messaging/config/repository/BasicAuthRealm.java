@@ -16,12 +16,11 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BasicAuthRealm extends AuthRealm {
 
@@ -91,14 +90,20 @@ public class BasicAuthRealm extends AuthRealm {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         BasicAuthRealm that = (BasicAuthRealm) o;
         return Objects.equals(baseUrl, that.baseUrl) &&
-                Objects.equals(username, that.username) &&
-                Objects.equals(password, that.password) &&
-                Objects.equals(realmName, that.realmName);
+               Objects.equals(username, that.username) &&
+               Objects.equals(password, that.password) &&
+               Objects.equals(realmName, that.realmName);
     }
 
     @Override
@@ -109,7 +114,7 @@ public class BasicAuthRealm extends AuthRealm {
     @Override
     public String toString() {
         return "BasicAuthRealm{" + "baseUrl=" + baseUrl + ", username='" + username + '\'' +
-                ", password='" + ((password != null) ? "xxxxx" : "<null>") + '\'' +
-                ", realmName='" + realmName + '\'' + "} " + super.toString();
+               ", password='" + ((password != null) ? "xxxxx" : "<null>") + '\'' +
+               ", realmName='" + realmName + '\'' + "} " + super.toString();
     }
 }

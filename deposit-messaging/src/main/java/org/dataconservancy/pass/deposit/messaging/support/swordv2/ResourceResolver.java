@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import java.net.URI;
+
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.springframework.core.io.Resource;
-
-import java.net.URI;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

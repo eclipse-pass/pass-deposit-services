@@ -16,6 +16,13 @@
 
 package org.dataconservancy.pass.deposit.transport.ftp;
 
+import static java.lang.String.format;
+
+import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import com.google.common.net.InetAddresses;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -26,14 +33,11 @@ import org.dataconservancy.deposit.util.function.ExceptionThrowingVoidCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-
 public class FtpUtil {
+
+    private FtpUtil () {
+        //never called
+    }
 
     private static final String OVERVIEW_CONNECTION_ATTEMPT = "({}) Connecting to {}:{} ...";
 
@@ -41,11 +45,14 @@ public class FtpUtil {
 
     private static final String CONNECTION_ATTEMPT = "({}) Attempting connection to {}:{} ...";
 
-    private static final String CONNECTION_ATTEMPT_FAILED = "({}) Connection *FAILED* to {}:{} (sleeping for {} ms) ...";
+    private static final String CONNECTION_ATTEMPT_FAILED = "({}) Connection *FAILED* to {}:{} (sleeping for {} ms) ." +
+                                                            "..";
 
-    private static final String CONNECTION_ATTEMPT_FAILED_WITH_EXCEPTION = "({}) Connection *FAILED* to {}:{} (sleeping for {} ms); Exception was: {}";
+    private static final String CONNECTION_ATTEMPT_FAILED_WITH_EXCEPTION = "({}) Connection *FAILED* to {}:{} " +
+                                                                           "(sleeping for {} ms); Exception was: {}";
 
-    private static final String ERR_CONNECT = "({}) Error connecting to {}:{}; error code from the FTP server was '{}', and the error string was '{}'";
+    private static final String ERR_CONNECT = "({}) Error connecting to {}:{}; error code from the FTP server was " +
+                                              "'{}', and the error string was '{}'";
 
     private static final String NOOP_FAILED = "({}) NOOP *FAILED*, connection to {}:{} not established.";
 
@@ -67,11 +74,11 @@ public class FtpUtil {
      * {@code false} otherwise.
      */
     static final Function<FTPClient, Boolean> ACCEPT_POSITIVE_COMPLETION = (ftpClient) ->
-            FTPReply.isPositiveCompletion(ftpClient.getReplyCode());
+        FTPReply.isPositiveCompletion(ftpClient.getReplyCode());
 
     static final Function<FTPClient, Boolean> ACCEPT_MKD_COMPLETION = (ftpClient) ->
-            ACCEPT_POSITIVE_COMPLETION.apply(ftpClient) ||
-                    acceptResponseCodes(550, 553).apply(ftpClient.getReplyCode());
+        ACCEPT_POSITIVE_COMPLETION.apply(ftpClient) ||
+        acceptResponseCodes(550, 553).apply(ftpClient.getReplyCode());
 
     static final Consumer<FTPClient> ASSERT_POSITIVE_COMPLETION = (ftpClient) -> {
         if (!ACCEPT_POSITIVE_COMPLETION.apply(ftpClient)) {
@@ -117,9 +124,9 @@ public class FtpUtil {
      * from the FTP server being retrieved), it will be wrapped as a {@link RuntimeException} and re-thrown.
      * </p>
      *
-     * @param ftpClient the FTP client used to execute the command
+     * @param ftpClient     the FTP client used to execute the command
      * @param clientCommand the command to execute against the FTP server using the supplied client
-     * @param <T> the type returned by the command
+     * @param <T>           the type returned by the command
      * @return the result of the command
      * @throws RuntimeException if the command is executed and is not considered successful, or if the command fails to
      *                          execute.
@@ -138,14 +145,15 @@ public class FtpUtil {
      * from being executed), it will be wrapped as a {@link RuntimeException} and re-thrown.
      * </p>
      *
-     * @param ftpClient the FTP client used to execute the command
+     * @param ftpClient     the FTP client used to execute the command
      * @param clientCommand the command to execute against the FTP server using the supplied client
-     * @param <T> the type returned by the command
+     * @param <T>           the type returned by the command
      * @return the result of the command
      * @throws RuntimeException if the command is executed and is not considered successful, or if the command fails to
      *                          execute.
      */
-    static <T> T performSilently(FTPClient ftpClient, ExceptionThrowingCommand<T> clientCommand, Consumer<FTPClient> callback) {
+    static <T> T performSilently(FTPClient ftpClient, ExceptionThrowingCommand<T> clientCommand,
+                                 Consumer<FTPClient> callback) {
         try {
             T result = clientCommand.perform();
             callback.accept(ftpClient);
@@ -162,7 +170,8 @@ public class FtpUtil {
         return performSilently(ftpClient, clientCommand, ASSERT_POSITIVE_COMPLETION);
     }
 
-    static <R> R performSilently(FTPClient ftpClient, ExceptionThrowingFunction<FTPClient, R> clientCommand, Consumer<FTPClient> callback) {
+    static <R> R performSilently(FTPClient ftpClient, ExceptionThrowingFunction<FTPClient, R> clientCommand,
+                                 Consumer<FTPClient> callback) {
         try {
             R result = clientCommand.apply(ftpClient);
             callback.accept(ftpClient);
@@ -283,7 +292,7 @@ public class FtpUtil {
      * not a directory.
      * </p>
      *
-     * @param ftpClient the FTP client, which is connected and logged in to a remote FTP server
+     * @param ftpClient   the FTP client, which is connected and logged in to a remote FTP server
      * @param directories the directory to create, comprised of at least one path element.  Relative directories will
      *                    be created relative to the current working directory.
      */
@@ -295,7 +304,7 @@ public class FtpUtil {
         }
 
         LOG.trace("Creating intermediate directories for destination resource '{}' (cwd '{}')",
-                directories, origCwd);
+                  directories, origCwd);
 
         if (isPathAbsolute(directories)) {
             performSilently(ftpClient, () -> ftpClient.changeWorkingDirectory(PATH_SEP));
@@ -327,8 +336,8 @@ public class FtpUtil {
      * </p>
      *
      * @param ftpClient the connected FTP client
-     * @param username the username to authenticate as
-     * @param password the password for the user
+     * @param username  the username to authenticate as
+     * @param password  the password for the user
      * @throws RuntimeException if authentication fails
      */
     static void login(FTPClient ftpClient, String username, String password) {
@@ -337,21 +346,25 @@ public class FtpUtil {
 
     static Function<Integer, Boolean> acceptResponseCodes(Integer... responseCodes) {
         return (candidateResponseCode) -> Stream.of(responseCodes)
-                .anyMatch((code) -> code.equals(candidateResponseCode));
+                                                .anyMatch((code) -> code.equals(candidateResponseCode));
     }
 
     /**
      * It seems there may be some issue with the Apache FTP library re-using closed sockets when
-     * establishing new connections.  Through trial and error it seems important to {@link FTPClient#connect(String, int) connect}, and then issue a {@link FTPClient#noop() NOOP} <em>before</em> attempting a login.  This method issues a {@code NOOP} in order to validate that the socket is actually connected.
+     * establishing new connections.  Through trial and error it seems important to
+     * {@link FTPClient#connect(String, int) connect}, and then issue a {@link FTPClient#noop() NOOP} <em>before</em>
+     * attempting a login.  This method issues a {@code NOOP} in order to validate that the socket is actually
+     * connected.
      * <p>
      * When a connection fails, it is assumed to be a transient failure (again, due to potential bugs in the underlying
      * Apache FTP library).  So this method will block and retry a failed connection up to a 30 second timeout before
      * giving up.  If this method cannot connect within the timeout period, a {@code RuntimeException} will be thrown.
      * The thrown exception will have its {@link Exception#getCause() underlying cause set}, if one was caught.
      * </p>
+     *
      * @param ftpClient the FTP client instance that is not yet connected
-     * @param ftpHost the host to connect to (may be an IPv4, IPv6, or string domain name)
-     * @param ftpPort the port to connect to
+     * @param ftpHost   the host to connect to (may be an IPv4, IPv6, or string domain name)
+     * @param ftpPort   the port to connect to
      * @throws RuntimeException if the connection fails (the cause of the connection failure will be set, if one was
      *                          caught)
      */
@@ -392,7 +405,7 @@ public class FtpUtil {
                 // retry until a timeout is reached or a connection is successful.
                 try {
                     LOG.debug(CONNECTION_ATTEMPT_FAILED_WITH_EXCEPTION,
-                            ftpClientAsString(ftpClient), ftpHost, ftpPort, waitMs, e.getMessage(), e);
+                              ftpClientAsString(ftpClient), ftpHost, ftpPort, waitMs, e.getMessage(), e);
                     Thread.sleep(waitMs);
                     waitMs = Math.round(waitMs * backoffFactor);
                 } catch (InterruptedException ie) {
@@ -404,7 +417,7 @@ public class FtpUtil {
         if (!connectionSuccess) {
             if (caughtException != null) {
                 throw new RuntimeException(format(CONNECTION_FAILED_WITH_EXCEPTION,
-                        ftpHost, ftpPort, caughtException.getMessage()), caughtException);
+                                                  ftpHost, ftpPort, caughtException.getMessage()), caughtException);
             } else {
                 throw new RuntimeException(format(CONNECTION_FAILED_WITH_EXCEPTION, ftpHost, ftpPort, "null"));
             }
@@ -477,7 +490,7 @@ public class FtpUtil {
      * {@code RuntimeException} is thrown.  If the directory is relative, then it is interpreted relative to the current
      * working directory of the {@code client}.
      *
-     * @param client an FTP client that is connected and logged in
+     * @param client    an FTP client that is connected and logged in
      * @param directory the directory that must exist
      * @throws RuntimeException if the supplied {@code directory} does not exist
      */
@@ -492,7 +505,7 @@ public class FtpUtil {
 
         if (directory.equals("/")) {
             LOG.trace("Supplied directory '{}' was the root of the directory hierarchy, returning 'true'",
-                    directory);
+                      directory);
             return;
         }
 
@@ -509,7 +522,7 @@ public class FtpUtil {
             }
         } catch (IOException e) {
             throw new RuntimeException("Unable to change working directory to '" + directory + "': " +
-                    e.getMessage(), e);
+                                       e.getMessage(), e);
         } finally {
             try {
                 client.changeWorkingDirectory(originalCwd);
@@ -523,7 +536,7 @@ public class FtpUtil {
      * Uses the supplied client to verify the supplied directory exists.  If the directory is relative, then it is
      * interpreted relative to the current working directory of the {@code client}.
      *
-     * @param client an FTP client that is connected and logged in
+     * @param client    an FTP client that is connected and logged in
      * @param directory the directory that may exist
      * @return true if the directory exists, {@code false} otherwise
      */

@@ -15,26 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.service;
 
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.deposit.messaging.policy.Policy;
-import org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.DepositProcessorCriFunc;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
-import org.junit.Test;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateAggregatedDepositStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomIntermediateDepositStatus;
 import static org.dataconservancy.pass.deposit.messaging.DepositMessagingTestUtil.randomTerminalAggregatedDepositStatus;
@@ -51,6 +31,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.deposit.messaging.policy.Policy;
+import org.dataconservancy.pass.deposit.messaging.service.DepositProcessor.DepositProcessorCriFunc;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Deposit.DepositStatus;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
+import org.dataconservancy.pass.support.messaging.cri.CriticalRepositoryInteraction;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -72,7 +72,7 @@ public class DepositProcessorTest {
     private DepositTaskHelper depositHelper = mock(DepositTaskHelper.class);
 
     private DepositProcessor underTest = new DepositProcessor(terminalStatusPolicy, intermediateStatusPolicy, cri,
-            passClient, depositHelper);
+                                                              passClient, depositHelper);
 
     @Test
     public void criFuncPreconditionSuccess() {
@@ -232,7 +232,7 @@ public class DepositProcessorTest {
     }
 
     private void prepareCriFuncCriticalNoop(Supplier<DepositStatus> intermediateSupplier,
-                                               Supplier<DepositStatus> terminalSupplier) {
+                                            Supplier<DepositStatus> terminalSupplier) {
         URI submissionUri = randomUri();
         URI depositUri1 = randomUri();
         Deposit deposit1 = mock(Deposit.class);

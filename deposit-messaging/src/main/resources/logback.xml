@@ -31,13 +31,16 @@
   <logger name="org.dataconservancy" additivity="false" level="${org.dataconservancy.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.deposit" additivity="false" level="${org.dataconservancy.pass.deposit.level:-INFO}">
+  <logger name="org.dataconservancy.pass.deposit" additivity="false"
+          level="${org.dataconservancy.pass.deposit.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="edu.jhu.library.pass.deposit.provider" additivity="false" level="${edu.jhu.library.pass.deposit.provider.level:-INFO}">
+  <logger name="edu.jhu.library.pass.deposit.provider" additivity="false"
+          level="${edu.jhu.library.pass.deposit.provider.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </logger>
-  <logger name="org.dataconservancy.pass.client" additivity="false" level="${org.dataconservancy.pass.client.level:-WARN}">
+  <logger name="org.dataconservancy.pass.client" additivity="false"
+          level="${org.dataconservancy.pass.client.level:-WARN}">
     <appender-ref ref="STDERR"/>
   </logger>
 
@@ -87,7 +90,8 @@
   </logger>
 
   <!-- the rest client is noisy, and detracts from looking at test logging output -->
-  <logger name="org.elasticsearch.client.RestClient" additivity="false" level="${org.elasticsearch.client.level:-ERROR}">
+  <logger name="org.elasticsearch.client.RestClient" additivity="false"
+          level="${org.elasticsearch.client.level:-ERROR}">
     <appender-ref ref="STDERR"/>
   </logger>
 </configuration>

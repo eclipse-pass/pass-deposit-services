@@ -16,6 +16,14 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.quartz;
 
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
 import org.dataconservancy.pass.deposit.messaging.support.quartz.DepositUpdaterJob;
 import org.dataconservancy.pass.deposit.messaging.support.quartz.SubmissionStatusUpdaterJob;
@@ -31,14 +39,6 @@ import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomi
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
-import static org.dataconservancy.deposit.util.loggers.Loggers.WORKERS_LOGGER;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 
 @Configuration
 @ConditionalOnProperty(name = "pass.deposit.jobs.disabled", havingValue = "false", matchIfMissing = true)
@@ -69,43 +69,42 @@ public class QuartzConfig {
     @Value("${pass.deposit.jobs.disabled}")
     private boolean disabled;
 
-
     @Bean
     public JobDetail depositUpdaterJobDetail() {
         return JobBuilder.newJob(DepositUpdaterJob.class)
-                .withIdentity(DEPOSIT_UPDATER_JOB, DEPOSIT_JOB_GROUP)
-                .storeDurably()
-                .build();
+                         .withIdentity(DEPOSIT_UPDATER_JOB, DEPOSIT_JOB_GROUP)
+                         .storeDurably()
+                         .build();
     }
 
     @Bean
     public SimpleTrigger depositUpdaterTrigger(JobDetail depositUpdaterJobDetail) {
         return TriggerBuilder.newTrigger()
-                .forJob(DEPOSIT_UPDATER_JOB, DEPOSIT_JOB_GROUP)
-                .withSchedule(simpleSchedule()
-                        .withIntervalInMilliseconds(defaultJobInterval)
-                        .repeatForever())
-                .forJob(depositUpdaterJobDetail)
-                .build();
+                             .forJob(DEPOSIT_UPDATER_JOB, DEPOSIT_JOB_GROUP)
+                             .withSchedule(simpleSchedule()
+                                               .withIntervalInMilliseconds(defaultJobInterval)
+                                               .repeatForever())
+                             .forJob(depositUpdaterJobDetail)
+                             .build();
     }
 
     @Bean
     public JobDetail submissionStatusUpdaterJobDetail() {
         return JobBuilder.newJob(SubmissionStatusUpdaterJob.class)
-                .withIdentity(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
-                .storeDurably()
-                .build();
+                         .withIdentity(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
+                         .storeDurably()
+                         .build();
     }
 
     @Bean
     public SimpleTrigger submissionStatusUpdateTrigger(JobDetail submissionStatusUpdaterJobDetail) {
         return TriggerBuilder.newTrigger()
-                .forJob(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
-                .withSchedule(simpleSchedule()
-                        .withIntervalInMilliseconds(defaultJobInterval)
-                        .repeatForever())
-                .forJob(submissionStatusUpdaterJobDetail)
-                .build();
+                             .forJob(SUBMISSION_UPDATER_JOB, SUBMISSION_STATUS_JOB_GROUP)
+                             .withSchedule(simpleSchedule()
+                                               .withIntervalInMilliseconds(defaultJobInterval)
+                                               .repeatForever())
+                             .forJob(submissionStatusUpdaterJobDetail)
+                             .build();
     }
 
     @Bean
@@ -116,7 +115,8 @@ public class QuartzConfig {
         executor.setQueueCapacity(capacity);
         executor.setRejectedExecutionHandler((rejectedTask, exe) -> {
             String msg = String.format("Task %s@%s rejected by the Quartz-Worker thread pool task executor.",
-                    rejectedTask.getClass().getSimpleName(), toHexString(identityHashCode(rejectedTask)));
+                                       rejectedTask.getClass().getSimpleName(),
+                                       toHexString(identityHashCode(rejectedTask)));
             WORKERS_LOGGER.error(msg);
         });
 
@@ -131,7 +131,7 @@ public class QuartzConfig {
         executor.setThreadFactory(tf);
 
         WORKERS_LOGGER.debug("Created Quartz worker thread pool with maxPoolSize: {} and capacity {}",
-                jobWorkerConcurrency, capacity);
+                             jobWorkerConcurrency, capacity);
 
         return executor;
     }
@@ -143,7 +143,7 @@ public class QuartzConfig {
             factoryBean.setAutoStartup(!disabled);
             if (disabled) {
                 LOG.info("Quartz SchedulerFactoryBean autoStartup is disabled; Quartz jobs will not be run.  " +
-                        "Check the value of 'pass.deposit.jobs.disabled' property or ENV variable.");
+                         "Check the value of 'pass.deposit.jobs.disabled' property or ENV variable.");
             }
         };
     }

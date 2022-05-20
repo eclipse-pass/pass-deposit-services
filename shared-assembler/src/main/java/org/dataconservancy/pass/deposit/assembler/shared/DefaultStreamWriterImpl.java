@@ -15,6 +15,19 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.ERR_PUT_RESOURCE;
+import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
+import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -32,19 +45,6 @@ import org.dataconservancy.pass.deposit.model.DepositSubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.ERR_PUT_RESOURCE;
-import static org.dataconservancy.pass.deposit.assembler.shared.ArchivingPackageStream.STREAMING_IO_LOG;
-import static org.dataconservancy.pass.deposit.assembler.shared.AssemblerSupport.detectMediaType;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -69,10 +69,10 @@ public class DefaultStreamWriterImpl implements StreamWriter {
      * Constructs an {@code StreamWriter} that is supplied with the output stream being written to, the custodial
      * content being packaged, the submission, and other supporting classes.
      *
-     * @param submission the submission
-     * @param packageFiles the custodial content of the package
-     * @param rbf factory for building {@link PackageStream.Resource package resources}
-     * @param packageOptions options used for building the package
+     * @param submission      the submission
+     * @param packageFiles    the custodial content of the package
+     * @param rbf             factory for building {@link PackageStream.Resource package resources}
+     * @param packageOptions  options used for building the package
      * @param packageProvider used to resources within a package, and generate non-custodial package resources
      */
     public DefaultStreamWriterImpl(DepositSubmission submission,
@@ -100,7 +100,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
 
             if (packageFiles.size() < 1) {
                 throw new RuntimeException("Refusing to create an empty package: no Resources were supplied to this " +
-                        this.getClass().getName());
+                                           this.getClass().getName());
             }
 
             packageProvider.start(submission, custodialFiles, packageOptions);
@@ -108,17 +108,17 @@ public class DefaultStreamWriterImpl implements StreamWriter {
             packageFiles.forEach(custodialFile -> assembledResources.add(assembleResource(custodialFile)));
 
             List<SupplementalResource> supplementalResources =
-                    packageProvider.finish(submission, assembledResources);
+                packageProvider.finish(submission, assembledResources);
 
             supplementalResources.forEach(supplementalResource ->
-                    assembledResources.add(assembleResource(supplementalResource)));
+                                              assembledResources.add(assembleResource(supplementalResource)));
 
             finish(submission, assembledResources);
 
             close();
         } catch (Exception e) {
             LOG.warn("Exception encountered streaming package, cleaning up by closing the archive output stream ({}) "
-                    + "and any underlying output streams", archiveOut);
+                     + "and any underlying output streams", archiveOut);
 
             // Must re-throw this exception when an error occurs streaming the package so that the caller knows to
             // fail the deposit
@@ -136,7 +136,8 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     }
 
     @Override
-    public void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources) throws IOException {
+    public void finish(DepositSubmission submission, List<PackageStream.Resource> custodialResources)
+        throws IOException {
         archiveOut.finish();
     }
 
@@ -144,7 +145,7 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     @Override
     public PackageStream.Resource writeResource(ResourceBuilder resourceBuilder, Resource resource) throws IOException {
         try (InputStream resourceIn = resource.getInputStream(); BufferedInputStream buffIn =
-                resourceIn.markSupported() ? null : new BufferedInputStream(resourceIn)) {
+            resourceIn.markSupported() ? null : new BufferedInputStream(resourceIn)) {
 
             InputStream in;
 
@@ -161,11 +162,11 @@ public class DefaultStreamWriterImpl implements StreamWriter {
                 observableIn.add(clObs);
 
                 ((List<PackageOptions.Checksum.OPTS>) packageOptions.getOrDefault(
-                        PackageOptions.Checksum.KEY, emptyList()))
-                        .forEach(algo -> observableIn.add(new DigestObserver(resourceBuilder, algo)));
+                    PackageOptions.Checksum.KEY, emptyList()))
+                    .forEach(algo -> observableIn.add(new DigestObserver(resourceBuilder, algo)));
 
                 if (resource instanceof DepositFileResource) {
-                    resourceBuilder.name(packageProvider.packagePath((DepositFileResource)resource));
+                    resourceBuilder.name(packageProvider.packagePath((DepositFileResource) resource));
                 }
 
                 if (resource instanceof SupplementalResource) {
@@ -186,14 +187,14 @@ public class DefaultStreamWriterImpl implements StreamWriter {
     /**
      * Create an ArchiveEntry from a {@code String} name and a {@code long} length
      *
-     * @param name the name for the antry
+     * @param name   the name for the antry
      * @param length the length to be assigned to the entry if the entry type supports setSize() setSize() is
-     *         not attempted if length &lt; 0
+     *               not attempted if length &lt; 0
      * @return the ArchiveEntry
      */
     protected ArchiveEntry createEntry(String name, long length) {
         switch ((PackageOptions.Archive.OPTS) packageOptions.getOrDefault(PackageOptions.Archive.KEY,
-                PackageOptions.Archive.OPTS.NONE)) {
+                                                                          PackageOptions.Archive.OPTS.NONE)) {
             case TAR: {
                 TarArchiveEntry entry = new TarArchiveEntry(name);
                 if (length >= 0) {
@@ -222,14 +223,13 @@ public class DefaultStreamWriterImpl implements StreamWriter {
      * Note this method closes the {@code ArchiveEntry} after the bytes of {@code archiveEntryIn} are written.
      * </p>
      *
-     *
-     * @param archiveOut the package output stream
-     * @param archiveEntry metadata describing {@code archiveEntryIn}, closed before this method returns
+     * @param archiveOut     the package output stream
+     * @param archiveEntry   metadata describing {@code archiveEntryIn}, closed before this method returns
      * @param archiveEntryIn the bytes to be written
      * @throws IOException if there is an error encountered writing the bytes
      */
     private void writeResource(ArchiveOutputStream archiveOut, ArchiveEntry archiveEntry, InputStream archiveEntryIn)
-            throws IOException {
+        throws IOException {
         archiveOut.putArchiveEntry(archiveEntry);
         int bytesWritten = IOUtils.copy(archiveEntryIn, archiveOut);
         STREAMING_IO_LOG.debug("Wrote {}: {} bytes", archiveEntry.getName(), bytesWritten);

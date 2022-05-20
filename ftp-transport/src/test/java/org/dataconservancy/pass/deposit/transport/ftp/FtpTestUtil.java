@@ -18,6 +18,10 @@ package org.dataconservancy.pass.deposit.transport.ftp;
 
 public class FtpTestUtil {
 
+    private FtpTestUtil() {
+        //never called
+    }
+
     /**
      * String literal for the "root" directory of the FTP server.  Used by unit tests only.
      */

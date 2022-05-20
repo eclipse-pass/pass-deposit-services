@@ -15,8 +15,7 @@
  */
 package org.dataconservancy.deposit.util.async;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -25,7 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -98,7 +98,7 @@ public class Condition<T> {
      * Create a new Condition.  By default, the condition is deemed successful when it returns a non-null object.
      *
      * @param condition the condition to be checked
-     * @param name a short, human-readable description of this Condition
+     * @param name      a short, human-readable description of this Condition
      */
     public Condition(Callable<T> condition, String name) {
         this(condition, Objects::nonNull, name);
@@ -108,9 +108,9 @@ public class Condition<T> {
      * Create a new Condition.  The condition is deemed successful when the {@code verificationFunc} returns {@code
      * true}.
      *
-     * @param condition the condition to be checked
+     * @param condition        the condition to be checked
      * @param verificationFunc the verification function used to verify the result of the condition
-     * @param name a short, human-readable description of this Condition
+     * @param name             a short, human-readable description of this Condition
      */
     public Condition(Callable<T> condition, Function<T, Boolean> verificationFunc, String name) {
         this.condition = condition;
@@ -159,7 +159,7 @@ public class Condition<T> {
      * verified, then the result ought to be valid with respect to the {@link #verificationFunc verification function}.
      *
      * @return the condition's result, which may be verified (and may be {@code null}, depending on the supplied
-     *         condition)
+     * condition)
      */
     public T getResult() {
         return futureResult;
@@ -168,7 +168,7 @@ public class Condition<T> {
     /**
      * Execute and re-try this condition until the timeout expires, or the result is verified.
      *
-     * @param timeoutMs the timeout threshold, in milliseconds
+     * @param timeoutMs    the timeout threshold, in milliseconds
      * @param verification the verification function applied to the result of the condition
      * @return the result of the verification function
      */
@@ -192,7 +192,8 @@ public class Condition<T> {
                     submitInternal();
                 }
             } catch (InterruptedException ie) {
-                LOG.trace("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                LOG.trace("Condition {} was interrupted after {} ms; aborting.", name,
+                          System.currentTimeMillis() - start);
                 result = false;
                 failureException = ie;
                 break;
@@ -201,10 +202,12 @@ public class Condition<T> {
                 failureException = e;
                 try {
                     Thread.sleep(backoffMs);
-                    // must re-submit after catching an exception, because Future.get will perpetually return the exception unless the Future is re-executed
+                    // must re-submit after catching an exception, because Future.get will perpetually return the
+                    // exception unless the Future is re-executed
                     submitInternal();
                 } catch (InterruptedException ie) {
-                    LOG.trace("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                    LOG.trace("Condition {} was interrupted after {} ms; aborting.", name,
+                              System.currentTimeMillis() - start);
                     result = false;
                     failureException = ie;
                     break;
@@ -216,7 +219,8 @@ public class Condition<T> {
         if (result == null || !result) {
             LOG.debug("Condition {} failed, elapsed time {} ms", name, System.currentTimeMillis() - start);
             if (failureException != null) {
-                LOG.warn("Condition {} failed with exception: {}", name, failureException.getMessage(), failureException);
+                LOG.warn("Condition {} failed with exception: {}", name, failureException.getMessage(),
+                         failureException);
             }
             this.result = false;
         } else {
@@ -239,7 +243,6 @@ public class Condition<T> {
         this.submitted = true;
         this.conditionFuture = executorService.submit(condition);
     }
-
 
     public ExecutorService getExecutorService() {
         return executorService;

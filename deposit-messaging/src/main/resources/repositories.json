@@ -1,5 +1,4 @@
 {
-
   "JScholarship": {
     "assembler": {
       "specification": "simple",
@@ -22,7 +21,6 @@
       }
     }
   },
-
   "PubMed Central": {
     "assembler": {
       "specification": "simple",
@@ -45,7 +43,6 @@
       }
     }
   },
-
   "BagIt": {
     "assembler": {
       "specification": "simple",
@@ -69,7 +66,6 @@
       }
     }
   },
-
   "dash": {
     "assembler": {
       "specification": "simple",

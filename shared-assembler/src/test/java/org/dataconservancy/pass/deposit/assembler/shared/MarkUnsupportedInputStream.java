@@ -25,7 +25,9 @@ public class MarkUnsupportedInputStream extends NullInputStream {
     }
 
     /**
-     * Overrides the behavior of {@link NullInputStream} to be a no-op.  The contract for {@link java.io.InputStream} does not demand that calls to {@code mark(int)} result in an exception being thrown in the event {@code markSupported()} returns {@code false}; the exception is thrown by {@code reset()}.
+     * Overrides the behavior of {@link NullInputStream} to be a no-op.  The contract for {@link java.io.InputStream}
+     * does not demand that calls to {@code mark(int)} result in an exception being thrown in the event {@code
+     * markSupported()} returns {@code false}; the exception is thrown by {@code reset()}.
      *
      * @param readlimit {@inheritDoc}
      */

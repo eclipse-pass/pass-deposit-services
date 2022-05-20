@@ -15,9 +15,9 @@
  */
 package org.apache.commons.io.input;
 
-import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
-
 import java.io.IOException;
+
+import org.dataconservancy.pass.deposit.assembler.ResourceBuilder;
 
 /**
  * Applies the number of bytes observed to the supplied {@link ResourceBuilder}.

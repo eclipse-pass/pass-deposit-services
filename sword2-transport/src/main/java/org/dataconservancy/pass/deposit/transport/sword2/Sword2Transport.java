@@ -15,19 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.transport.sword2;
 
+import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_SERVICE_DOC_URL;
+
+import java.util.Map;
+
 import org.dataconservancy.pass.deposit.assembler.PackageStream;
 import org.dataconservancy.pass.deposit.transport.Transport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.swordapp.client.AuthCredentials;
-import org.swordapp.client.ProtocolViolationException;
 import org.swordapp.client.SWORDClient;
-import org.swordapp.client.SWORDClientException;
 import org.swordapp.client.ServiceDocument;
-
-import java.util.Map;
-
-import static org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints.SWORD_SERVICE_DOC_URL;
 
 /**
  * Encapsulates a provider for SWORD protocol version 2 transport sessions.  {@link #open(Map) Opening} a SWORDv2
@@ -97,6 +95,7 @@ public class Sword2Transport implements Transport {
      * <ul>
      *     <li>on-behalf-of user</li>
      * </ul>
+     *
      * @param hints transport hints used to configure the transport session
      * @return a SWORDv2 transport session, ready to be used
      */
@@ -107,7 +106,7 @@ public class Sword2Transport implements Transport {
 
         if (!AUTHMODE.userpass.name().equals(hints.get(TRANSPORT_AUTHMODE))) {
             throw new IllegalArgumentException("This transport only supports AUTHMODE " + AUTHMODE.userpass.name() +
-                    " (was: '" + hints.get(TRANSPORT_AUTHMODE) + "'");
+                                               " (was: '" + hints.get(TRANSPORT_AUTHMODE) + "'");
         }
 
         if (hints.get(TRANSPORT_USERNAME) == null || hints.get(TRANSPORT_USERNAME).trim().length() == 0) {
@@ -122,10 +121,10 @@ public class Sword2Transport implements Transport {
         AuthCredentials authCreds = null;
         try {
             if (hints.containsKey(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER) &&
-                    (hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER) != null) &&
-                    (hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER).trim().length() > 0)) {
+                (hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER) != null) &&
+                (hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER).trim().length() > 0)) {
                 authCreds = new AuthCredentials(hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD),
-                        hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER));
+                                                hints.get(Sword2TransportHints.SWORD_ON_BEHALF_OF_USER));
             } else {
                 authCreds = new AuthCredentials(hints.get(TRANSPORT_USERNAME), hints.get(TRANSPORT_PASSWORD));
             }

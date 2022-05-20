@@ -15,21 +15,21 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import static java.lang.String.format;
+
+import java.net.URI;
+
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusResolver;
-import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.dataconservancy.pass.deposit.transport.sword2.Sword2DepositReceiptResponse;
 import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-
-import java.net.URI;
-
-import static java.lang.String.format;
 
 /**
  * Attempts to determine the status of a {@link Deposit} by retrieving the Atom Statement associated with the
@@ -70,7 +70,8 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
      * @param repositoryConfig the configuration containing an {@code auth-realm} with authentication credentials for
      *                         retrieving the {@code atomStatementUri}
      * @return the state {@code URI}, or {@code null} if one cannot be found
-     * @see <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
+     * @see
+     * <a href="http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#statement_predicates_state">SWORDv2 Profile §11.1.2</a>
      */
     public URI resolve(URI atomStatementUri, RepositoryConfig repositoryConfig) {
         if (atomStatementUri == null) {
@@ -81,7 +82,7 @@ public class AtomFeedStatusResolver implements DepositStatusResolver<URI, URI> {
 
         if (resource == null) {
             throw new IllegalArgumentException(format(ERR, atomStatementUri,
-                    "Statement URI not recognized as a Spring resource"));
+                                                      "Statement URI not recognized as a Spring resource"));
         }
 
         Document<Feed> statementDoc = null;

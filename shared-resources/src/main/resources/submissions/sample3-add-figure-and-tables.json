@@ -1,181 +1,216 @@
 [
   {
-    "metadata" : "{\n  \"agreements\": {\n    \"JScholarship\": \"NON-EXCLUSIVE LICENSE FOR USE OF MATERIALS This non-exclusive license defines the terms for the deposit of Materials in all formats into the digital repository of materials collected, preserved and made available through the Johns Hopkins Digital Repository, JScholarship. The Contributor hereby grants to Johns Hopkins a royalty free, non-exclusive worldwide license to use, re-use, display, distribute, transmit, publish, re-publish or copy the Materials, either digitally or in print, or in any other medium, now or hereafter known, for the purpose of including the Materials hereby licensed in the collection of materials in the Johns Hopkins Digital Repository for educational use worldwide. In some cases, access to content may be restricted according to provisions established in negotiation with the copyright holder. This license shall not authorize the commercial use of the Materials by Johns Hopkins or any other person or organization, but such Materials shall be restricted to non-profit educational use. Persons may apply for commercial use by contacting the copyright holder. Copyright and any other intellectual property right in or to the Materials shall not be transferred by this agreement and shall remain with the Contributor, or the Copyright holder if different from the Contributor. Other than this limited license, the Contributor or Copyright holder retains all rights, title, copyright and other interest in the images licensed. If the submission contains material for which the Contributor does not hold copyright, the Contributor represents that s/he has obtained the permission of the Copyright owner to grant Johns Hopkins the rights required by this license, and that such third-party owned material is clearly identified and acknowledged within the text or content of the submission. If the submission is based upon work that has been sponsored or supported by an agency or organization other than Johns Hopkins, the Contributor represents that s/he has fulfilled any right of review or other obligations required by such contract or agreement. Johns Hopkins will not make any alteration, other than as allowed by this license, to your submission. This agreement embodies the entire agreement of the parties. No modification of this agreement shall be of any effect unless it is made in writing and signed by all of the parties to the agreement.\"\n  },\n  \"abstract\": \"Differential enhancement of luminal growth factor bioactivity and targeted regional gut growth occurs dependent on dietary protein supplement.\",\n  \"authors\": [\n    {\n      \"author\": \"Tania Marchbank\",\n      \"orcid\": \"http://orcid.org/0000-0003-2076-9098\"\n    },\n    {\n      \"author\": \"Nikki Mandir\"\n    },\n    {\n      \"author\": \"Denis Calnan\"\n    },\n    {\n      \"author\": \"Robert A. Goodlad\"\n    },\n    {\n      \"author\": \"Theo Podas\"\n    },\n    {\n      \"author\": \"Raymond J. Playford\",\n      \"orcid\": \"http://orcid.org/0000-0003-1235-8504\"\n    }\n  ],\n  \"doi\": \"10.1039/c7fo01251a\",\n  \"Embargo-end-date\": \"2018-06-30\",\n  \"journal-NLMTA-ID\": \"Food Funct\",\n  \"journal-title\": \"Food & Function\",\n  \"journal-title-short\": \"Food Funct.\",\n  \"issue\": \"1\",\n  \"issns\": [\n    {\n      \"issn\": \"2042-6496\",\n      \"pubType\": \"Print\"\n    },\n    {\n      \"issn\": \"2042-650X\",\n      \"pubType\": \"Online\"\n    }\n  ],\n  \"publisher\": \"Royal Society of Chemistry (RSC)\",\n  \"publicationDate\": \"2018-09-12\",\n  \"title\": \"Specific protein supplementation using soya, casein or whey differentially affects regional gut growth and luminal growth factor bioactivity in rats; implications for the treatment of gut injury and stimulating repair\",\n  \"volume\": \"9\"\n}",
-    "source" : "pass",
-    "submitted" : true,
-    "submittedDate" : "2017-06-02T00:00:00.000Z",
-    "aggregatedDepositStatus" : "not-started",
-    "submissionStatus" : "submitted",
-    "publication" : "fake:publication1",
-    "repositories" : [ "fake:repository1", "fake:repository3", "fake:repository4" ],
-    "submitter" : "fake:user1",
-    "grants" : [ "fake:grant1" ],
-    "@id" : "fake:submission4",
-    "@type" : "Submission"
+    "metadata": "{\n  \"agreements\": {\n    \"JScholarship\": \"NON-EXCLUSIVE LICENSE FOR USE OF MATERIALS This non-exclusive license defines the terms for the deposit of Materials in all formats into the digital repository of materials collected, preserved and made available through the Johns Hopkins Digital Repository, JScholarship. The Contributor hereby grants to Johns Hopkins a royalty free, non-exclusive worldwide license to use, re-use, display, distribute, transmit, publish, re-publish or copy the Materials, either digitally or in print, or in any other medium, now or hereafter known, for the purpose of including the Materials hereby licensed in the collection of materials in the Johns Hopkins Digital Repository for educational use worldwide. In some cases, access to content may be restricted according to provisions established in negotiation with the copyright holder. This license shall not authorize the commercial use of the Materials by Johns Hopkins or any other person or organization, but such Materials shall be restricted to non-profit educational use. Persons may apply for commercial use by contacting the copyright holder. Copyright and any other intellectual property right in or to the Materials shall not be transferred by this agreement and shall remain with the Contributor, or the Copyright holder if different from the Contributor. Other than this limited license, the Contributor or Copyright holder retains all rights, title, copyright and other interest in the images licensed. If the submission contains material for which the Contributor does not hold copyright, the Contributor represents that s/he has obtained the permission of the Copyright owner to grant Johns Hopkins the rights required by this license, and that such third-party owned material is clearly identified and acknowledged within the text or content of the submission. If the submission is based upon work that has been sponsored or supported by an agency or organization other than Johns Hopkins, the Contributor represents that s/he has fulfilled any right of review or other obligations required by such contract or agreement. Johns Hopkins will not make any alteration, other than as allowed by this license, to your submission. This agreement embodies the entire agreement of the parties. No modification of this agreement shall be of any effect unless it is made in writing and signed by all of the parties to the agreement.\"\n  },\n  \"abstract\": \"Differential enhancement of luminal growth factor bioactivity and targeted regional gut growth occurs dependent on dietary protein supplement.\",\n  \"authors\": [\n    {\n      \"author\": \"Tania Marchbank\",\n      \"orcid\": \"http://orcid.org/0000-0003-2076-9098\"\n    },\n    {\n      \"author\": \"Nikki Mandir\"\n    },\n    {\n      \"author\": \"Denis Calnan\"\n    },\n    {\n      \"author\": \"Robert A. Goodlad\"\n    },\n    {\n      \"author\": \"Theo Podas\"\n    },\n    {\n      \"author\": \"Raymond J. Playford\",\n      \"orcid\": \"http://orcid.org/0000-0003-1235-8504\"\n    }\n  ],\n  \"doi\": \"10.1039/c7fo01251a\",\n  \"Embargo-end-date\": \"2018-06-30\",\n  \"journal-NLMTA-ID\": \"Food Funct\",\n  \"journal-title\": \"Food & Function\",\n  \"journal-title-short\": \"Food Funct.\",\n  \"issue\": \"1\",\n  \"issns\": [\n    {\n      \"issn\": \"2042-6496\",\n      \"pubType\": \"Print\"\n    },\n    {\n      \"issn\": \"2042-650X\",\n      \"pubType\": \"Online\"\n    }\n  ],\n  \"publisher\": \"Royal Society of Chemistry (RSC)\",\n  \"publicationDate\": \"2018-09-12\",\n  \"title\": \"Specific protein supplementation using soya, casein or whey differentially affects regional gut growth and luminal growth factor bioactivity in rats; implications for the treatment of gut injury and stimulating repair\",\n  \"volume\": \"9\"\n}",
+    "source": "pass",
+    "submitted": true,
+    "submittedDate": "2017-06-02T00:00:00.000Z",
+    "aggregatedDepositStatus": "not-started",
+    "submissionStatus": "submitted",
+    "publication": "fake:publication1",
+    "repositories": [
+      "fake:repository1",
+      "fake:repository3",
+      "fake:repository4"
+    ],
+    "submitter": "fake:user1",
+    "grants": [
+      "fake:grant1"
+    ],
+    "@id": "fake:submission4",
+    "@type": "Submission"
   },
   {
-    "title" : "This is the first submission",
-    "abstract" : "This is a great paper!",
-    "doi" : "abcdef",
-    "pmid" : "fedcba",
-    "journal" : "fake:journal1",
-    "volume" : "123",
-    "issue" : "May 2015",
-    "@id" : "fake:publication1",
-    "@type" : "Publication"
+    "title": "This is the first submission",
+    "abstract": "This is a great paper!",
+    "doi": "abcdef",
+    "pmid": "fedcba",
+    "journal": "fake:journal1",
+    "volume": "123",
+    "issue": "May 2015",
+    "@id": "fake:publication1",
+    "@type": "Publication"
   },
   {
-    "journalName" : "AAPS PharmSci",
-    "issns" : [ "issn123", "issn456" ],
-    "nlmta" : "AAPS PharmSci",
-    "pmcParticipation" : "A",
-    "publisher" : "",
-    "@id" : "fake:journal1",
-    "@type" : "Journal"
+    "journalName": "AAPS PharmSci",
+    "issns": [
+      "issn123",
+      "issn456"
+    ],
+    "nlmta": "AAPS PharmSci",
+    "pmcParticipation": "A",
+    "publisher": "",
+    "@id": "fake:journal1",
+    "@type": "Journal"
   },
   {
-    "name" : "PubMed Central",
-    "description" : "Contains lots of medical papers",
-    "url" : "http://example.com",
-    "formSchema" : "{}",
-    "@id" : "fake:repository1",
-    "@type" : "Repository"
+    "name": "PubMed Central",
+    "description": "Contains lots of medical papers",
+    "url": "http://example.com",
+    "formSchema": "{}",
+    "@id": "fake:repository1",
+    "@type": "Repository"
   },
   {
-    "name" : "BagIt Repo",
-    "repositoryKey" : "BagIt",
-    "description" : "Repository for storing bags",
-    "@id" : "fake:repository3",
-    "@type" : "Repository"
+    "name": "BagIt Repo",
+    "repositoryKey": "BagIt",
+    "description": "Repository for storing bags",
+    "@id": "fake:repository3",
+    "@type": "Repository"
   },
   {
-    "name" : "DASH Repo",
-    "repositoryKey" : "dash",
-    "description" : "DASH repository",
-    "@id" : "fake:repository4",
-    "@type" : "Repository"
+    "name": "DASH Repo",
+    "repositoryKey": "dash",
+    "description": "DASH repository",
+    "@id": "fake:repository4",
+    "@type": "Repository"
   },
   {
-    "awardNumber" : "R01EY026617",
-    "awardStatus" : "active",
-    "localKey" : "112233",
-    "projectName" : "Optimal magnification and oculomotor strategies in low vision patients",
-    "awardDate" : "2017-06-01T00:00:00.000Z",
-    "startDate" : "2017-05-01T00:00:00.000Z",
-    "endDate" : "2018-06-01T00:00:00.000Z",
-    "primaryFunder" : "fake:funder1",
-    "directFunder" : "fake:funder2",
-    "pi" : "fake:user2",
-    "coPis" : [ "fake:user3" ],
-    "@id" : "fake:grant1",
-    "@type" : "Grant"
+    "awardNumber": "R01EY026617",
+    "awardStatus": "active",
+    "localKey": "112233",
+    "projectName": "Optimal magnification and oculomotor strategies in low vision patients",
+    "awardDate": "2017-06-01T00:00:00.000Z",
+    "startDate": "2017-05-01T00:00:00.000Z",
+    "endDate": "2018-06-01T00:00:00.000Z",
+    "primaryFunder": "fake:funder1",
+    "directFunder": "fake:funder2",
+    "pi": "fake:user2",
+    "coPis": [
+      "fake:user3"
+    ],
+    "@id": "fake:grant1",
+    "@type": "Grant"
   },
   {
-    "name" : "National Eye Institute",
-    "url" : "http://example.com/eyeguys",
-    "localKey" : "aabbcc",
-    "policy" : "fake:policy1",
-    "@id" : "fake:funder1",
-    "@type" : "Funder"
+    "name": "National Eye Institute",
+    "url": "http://example.com/eyeguys",
+    "localKey": "aabbcc",
+    "policy": "fake:policy1",
+    "@id": "fake:funder1",
+    "@type": "Funder"
   },
   {
-    "title" : "Be Nice to People With Eyes",
-    "description" : "We only have eyes for you.",
-    "policyUrl" : "http://theeyeshaveit.com/policy",
-    "repositories" : [ "fake:repository1" ],
-    "institution" : "fake:institution1",
-    "funder" : "fake:funder1",
-    "@id" : "fake:policy1",
-    "@type" : "Policy"
+    "title": "Be Nice to People With Eyes",
+    "description": "We only have eyes for you.",
+    "policyUrl": "http://theeyeshaveit.com/policy",
+    "repositories": [
+      "fake:repository1"
+    ],
+    "institution": "fake:institution1",
+    "funder": "fake:funder1",
+    "@id": "fake:policy1",
+    "@type": "Policy"
   },
   {
-    "name" : "International Eye Institute",
-    "url" : "http://example.com/othereyeguys",
-    "localKey" : "ddeeff",
-    "policy" : "fake:policy1",
-    "@id" : "fake:funder2",
-    "@type" : "Funder"
+    "name": "International Eye Institute",
+    "url": "http://example.com/othereyeguys",
+    "localKey": "ddeeff",
+    "policy": "fake:policy1",
+    "@id": "fake:funder2",
+    "@type": "Funder"
   },
   {
-    "username" : "bobsmith",
-    "firstName" : "Robert",
-    "middleName" : "Cure",
-    "lastName" : "Smith",
-    "displayName" : "Bob Smith",
-    "email" : "bobsmith@jhu.edu",
-    "affiliation" : [ "Johns Hopkins" ],
-    "locatorIds" : [ "johnshopkins.edu:hopkinsid:key123", "johnshopkins.edu:jhed:bs1" ],
-    "orcidId" : "orcid123",
-    "roles" : [ "submitter", "admin" ],
-    "@id" : "fake:user1",
-    "@type" : "User"
+    "username": "bobsmith",
+    "firstName": "Robert",
+    "middleName": "Cure",
+    "lastName": "Smith",
+    "displayName": "Bob Smith",
+    "email": "bobsmith@jhu.edu",
+    "affiliation": [
+      "Johns Hopkins"
+    ],
+    "locatorIds": [
+      "johnshopkins.edu:hopkinsid:key123",
+      "johnshopkins.edu:jhed:bs1"
+    ],
+    "orcidId": "orcid123",
+    "roles": [
+      "submitter",
+      "admin"
+    ],
+    "@id": "fake:user1",
+    "@type": "User"
   },
   {
-    "username" : "suzyv",
-    "firstName" : "Suzanne",
-    "middleName" : "X",
-    "lastName" : "Vega",
-    "displayName" : "Suzanne Vega",
-    "email" : "suzannev@jhu.edu",
-    "affiliation" : [ "Johns Hopkins" ],
-    "locatorIds" : [ "johnshopkins.edu:hopkinsid:keyabc", "johnshopkins.edu:jhed:sxv3" ],
-    "orcidId" : "orc456",
-    "roles" : [ "submitter" ],
-    "@id" : "fake:user2",
-    "@type" : "User"
+    "username": "suzyv",
+    "firstName": "Suzanne",
+    "middleName": "X",
+    "lastName": "Vega",
+    "displayName": "Suzanne Vega",
+    "email": "suzannev@jhu.edu",
+    "affiliation": [
+      "Johns Hopkins"
+    ],
+    "locatorIds": [
+      "johnshopkins.edu:hopkinsid:keyabc",
+      "johnshopkins.edu:jhed:sxv3"
+    ],
+    "orcidId": "orc456",
+    "roles": [
+      "submitter"
+    ],
+    "@id": "fake:user2",
+    "@type": "User"
   },
   {
-    "username" : "johndoe",
-    "firstName" : "John",
-    "middleName" : "Nobody",
-    "lastName" : "Doe",
-    "displayName" : "John Doe",
-    "email" : "jd@jhu.edu",
-    "affiliation" : [ "Johns Hopkins" ],
-    "locatorIds" : [ "johnshopkins.edu:hopkinsid:keyabc123", "johnshopkins.edu:jhed:jd123" ],
-    "orcidId" : "orc789",
-    "roles" : [ "admin" ],
-    "@id" : "fake:user3",
-    "@type" : "User"
+    "username": "johndoe",
+    "firstName": "John",
+    "middleName": "Nobody",
+    "lastName": "Doe",
+    "displayName": "John Doe",
+    "email": "jd@jhu.edu",
+    "affiliation": [
+      "Johns Hopkins"
+    ],
+    "locatorIds": [
+      "johnshopkins.edu:hopkinsid:keyabc123",
+      "johnshopkins.edu:jhed:jd123"
+    ],
+    "orcidId": "orc789",
+    "roles": [
+      "admin"
+    ],
+    "@id": "fake:user3",
+    "@type": "User"
   },
   {
-    "name" : "test_image",
-    "uri" : "classpath:/submissions/sample3/dektol.jpg",
-    "description" : "A logo to test figure type",
-    "fileRole" : "figure",
-    "mimeType" : "image/png",
-    "submission" : "fake:submission4",
-    "@id" : "fake:file1",
-    "@type" : "File"
+    "name": "test_image",
+    "uri": "classpath:/submissions/sample3/dektol.jpg",
+    "description": "A logo to test figure type",
+    "fileRole": "figure",
+    "mimeType": "image/png",
+    "submission": "fake:submission4",
+    "@id": "fake:file1",
+    "@type": "File"
   },
   {
-    "name" : "test_pdf",
-    "uri" : "classpath:/submissions/sample3/ilford_film_processing_chart.pdf",
-    "description" : "PDF type to test manuscript type",
-    "fileRole" : "manuscript",
-    "mimeType" : "application/pdf",
-    "submission" : "fake:submission4",
-    "@id" : "fake:file2",
-    "@type" : "File"
+    "name": "test_pdf",
+    "uri": "classpath:/submissions/sample3/ilford_film_processing_chart.pdf",
+    "description": "PDF type to test manuscript type",
+    "fileRole": "manuscript",
+    "mimeType": "application/pdf",
+    "submission": "fake:submission4",
+    "@id": "fake:file2",
+    "@type": "File"
   },
   {
-    "name" : "test_table",
-    "uri" : "classpath:/submissions/sample3/table.ods",
-    "description" : "spreadsheet type to test table type",
-    "fileRole" : "table",
-    "mimeType" : "application/vnd.oasis.opendocument.spreadsheet",
-    "submission" : "fake:submission4",
-    "@id" : "fake:file3",
-    "@type" : "File"
+    "name": "test_table",
+    "uri": "classpath:/submissions/sample3/table.ods",
+    "description": "spreadsheet type to test table type",
+    "fileRole": "table",
+    "mimeType": "application/vnd.oasis.opendocument.spreadsheet",
+    "submission": "fake:submission4",
+    "@id": "fake:file3",
+    "@type": "File"
   },
   {
-    "name" : "test_supplement",
-    "uri" : "classpath:/submissions/sample3/somefile.txt",
-    "description" : "text file type to test supplemental type",
-    "fileRole" : "supplemental",
-    "mimeType" : "text/plain",
-    "submission" : "fake:submission4",
-    "@id" : "fake:file4",
-    "@type" : "File"
+    "name": "test_supplement",
+    "uri": "classpath:/submissions/sample3/somefile.txt",
+    "description": "text file type to test supplemental type",
+    "fileRole": "supplemental",
+    "mimeType": "text/plain",
+    "submission": "fake:submission4",
+    "@id": "fake:file4",
+    "@type": "File"
   }
 ]

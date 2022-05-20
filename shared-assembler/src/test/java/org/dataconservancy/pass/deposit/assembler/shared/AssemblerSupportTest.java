@@ -16,16 +16,6 @@
 
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.io.input.CharSequenceInputStream;
-import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.mime.MediaType;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,6 +25,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.input.CharSequenceInputStream;
+import org.apache.tika.detect.DefaultDetector;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.mime.MediaType;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AssemblerSupportTest {
 
@@ -67,11 +67,11 @@ public class AssemblerSupportTest {
      *
      * I think there are some subtle bugs lurking, for a couple of reasons:
      * 1) InputStream.mark(int) is not required to throw an exception when markSupported() is false.  However, it
-     *    must be thrown by reset().  This allows for bytes to be read from the stream without being able to reset().
+     * must be thrown by reset().  This allows for bytes to be read from the stream without being able to reset().
      * 2) We can protect against in AssemblerSupport.detectMediaType by refusing to invoke the Detector unless the
-     *    supplied stream supports mark(int).  The problem is that the Detector doesn't necessarily have to invoke
-     *    mark(int).  If AssemblerSupport ever provides Metadata to the Detector, the stream may not need to be read at
-     *    all, so whether or not mark(int) is supported may not be relevant.
+     * supplied stream supports mark(int).  The problem is that the Detector doesn't necessarily have to invoke
+     * mark(int).  If AssemblerSupport ever provides Metadata to the Detector, the stream may not need to be read at
+     * all, so whether or not mark(int) is supported may not be relevant.
      *
      * Currently AssemblerSupport.detectMediaType provides an empty Metadata, therefore the only code path available to
      * media type detection will require reading bytes from the stream.  Therefore, as long as
@@ -93,6 +93,7 @@ public class AssemblerSupportTest {
     /**
      * When the supplied stream <em>does</em> {@link InputStream#markSupported() support mark(int)}, the supplied stream
      * <em>may</em> be read.  When the stream is read, the stream should be reset() after.
+     *
      * @throws IOException
      */
     @Test

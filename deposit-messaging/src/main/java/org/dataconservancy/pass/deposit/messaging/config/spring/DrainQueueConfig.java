@@ -16,6 +16,10 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +27,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
 
 /**
  * Provides a JMS listener which immediately {@link Message#acknowledge() acknowledge} each message received for its
@@ -67,7 +66,8 @@ public class DrainQueueConfig {
     }
 
     @Bean
-    public DefaultJmsListenerContainerFactory drainQueueJmsListenerContainerFactory(ConnectionFactory connectionFactory) {
+    public DefaultJmsListenerContainerFactory drainQueueJmsListenerContainerFactory(
+        ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setConcurrency("2");

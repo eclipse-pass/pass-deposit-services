@@ -16,23 +16,21 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.repository;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_AUTHMODE;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PASSWORD;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_PROTOCOL;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_FQDN;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_SERVER_PORT;
 import static org.dataconservancy.pass.deposit.transport.Transport.TRANSPORT_USERNAME;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dataconservancy.pass.deposit.transport.Transport;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2TransportHints;
 
 public class SwordV2Binding extends ProtocolBinding {
 
@@ -176,23 +174,35 @@ public class SwordV2Binding extends ProtocolBinding {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
-        if (!super.equals(o))
+        }
+        if (!super.equals(o)) {
             return false;
+        }
         SwordV2Binding that = (SwordV2Binding) o;
-        return depositReceipt == that.depositReceipt && Objects.equals(username, that.username) && Objects.equals(password, that.password) && Objects.equals(serviceDocUrl, that.serviceDocUrl) && Objects.equals(defaultCollectionUrl, that.defaultCollectionUrl) && Objects.equals(onBehalfOf, that.onBehalfOf) && Objects.equals(userAgent, that.userAgent) && Objects.equals(collectionHints, that.collectionHints);
+        return depositReceipt == that.depositReceipt && Objects.equals(username, that.username) && Objects.equals(
+            password, that.password) && Objects.equals(serviceDocUrl, that.serviceDocUrl) && Objects.equals(
+            defaultCollectionUrl, that.defaultCollectionUrl) && Objects.equals(onBehalfOf,
+                                                                               that.onBehalfOf) && Objects.equals(
+            userAgent, that.userAgent) && Objects.equals(collectionHints, that.collectionHints);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), username, password, serviceDocUrl, defaultCollectionUrl, onBehalfOf, depositReceipt, userAgent, collectionHints);
+        return Objects.hash(super.hashCode(), username, password, serviceDocUrl, defaultCollectionUrl, onBehalfOf,
+                            depositReceipt, userAgent, collectionHints);
     }
 
     @Override
     public String toString() {
-        return new StringJoiner("\n  ", SwordV2Binding.class.getSimpleName() + "[", "]").add("username='" + username + "'").add("password='" + password + "'").add("serviceDocUrl='" + serviceDocUrl + "'").add("defaultCollectionUrl='" + defaultCollectionUrl + "'").add("onBehalfOf='" + onBehalfOf + "'").add("depositReceipt=" + depositReceipt).add("userAgent='" + userAgent + "'").add("collectionHints=" + collectionHints).toString();
+        return new StringJoiner("\n  ", SwordV2Binding.class.getSimpleName() + "[", "]").add(
+            "username='" + username + "'").add("password='" + password + "'").add(
+            "serviceDocUrl='" + serviceDocUrl + "'").add("defaultCollectionUrl='" + defaultCollectionUrl + "'").add(
+            "onBehalfOf='" + onBehalfOf + "'").add("depositReceipt=" + depositReceipt).add(
+            "userAgent='" + userAgent + "'").add("collectionHints=" + collectionHints).toString();
     }
 }

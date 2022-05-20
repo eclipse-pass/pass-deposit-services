@@ -15,10 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging;
 
-import org.dataconservancy.pass.model.Deposit.DepositStatus;
-import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
-import org.dataconservancy.pass.model.Submission.SubmissionStatus;
-
 import java.net.URI;
 import java.util.Random;
 import java.util.UUID;
@@ -27,10 +23,17 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.dataconservancy.pass.model.Deposit.DepositStatus;
+import org.dataconservancy.pass.model.Submission.AggregatedDepositStatus;
+import org.dataconservancy.pass.model.Submission.SubmissionStatus;
+
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DepositMessagingTestUtil {
+
+    private DepositMessagingTestUtil() {
+    }
 
     private static final Random RANDOM = new Random();
 
@@ -38,42 +41,41 @@ public class DepositMessagingTestUtil {
      * Supplies a random AggregatedDepositStatus
      */
     public static Supplier<AggregatedDepositStatus> randomAggregatedDepositStatus =
-            DepositMessagingTestUtil::randomAggregateDepositStatus;
+        DepositMessagingTestUtil::randomAggregateDepositStatus;
 
     /**
      * Supplies a random terminal AggregatedDepositStatus
      */
     public static Supplier<AggregatedDepositStatus> randomTerminalAggregatedDepositStatus =
-            () -> randomAggregatedDepositStatusExcept(
-                    AggregatedDepositStatus.FAILED,
-                    AggregatedDepositStatus.IN_PROGRESS,
-                    AggregatedDepositStatus.NOT_STARTED);
+        () -> randomAggregatedDepositStatusExcept(
+            AggregatedDepositStatus.FAILED,
+            AggregatedDepositStatus.IN_PROGRESS,
+            AggregatedDepositStatus.NOT_STARTED);
 
     /**
      * Supplies a random intermediate AggregatedDepositStatus
      */
     public static Supplier<AggregatedDepositStatus> randomIntermediateAggregatedDepositStatus =
-            () -> randomAggregatedDepositStatusExcept(
-                    AggregatedDepositStatus.REJECTED, AggregatedDepositStatus.ACCEPTED);
+        () -> randomAggregatedDepositStatusExcept(
+            AggregatedDepositStatus.REJECTED, AggregatedDepositStatus.ACCEPTED);
 
     /**
      * Supplies a random DepositStatus
      */
     public static Supplier<DepositStatus> randomDepositStatus =
-            DepositMessagingTestUtil::randomDepositStatus;
+        DepositMessagingTestUtil::randomDepositStatus;
 
     /**
      * Supplies a random terminal DepositStatus
      */
     public static Supplier<DepositStatus> randomTerminalDepositStatus =
-            () -> randomDepositStatusExcept(DepositStatus.SUBMITTED, DepositStatus.FAILED);
+        () -> randomDepositStatusExcept(DepositStatus.SUBMITTED, DepositStatus.FAILED);
 
     /**
      * Supplies a random intermediate DepositStatus
      */
     public static Supplier<DepositStatus> randomIntermediateDepositStatus =
-            () -> randomDepositStatusExcept(DepositStatus.REJECTED, DepositStatus.ACCEPTED);
-
+        () -> randomDepositStatusExcept(DepositStatus.REJECTED, DepositStatus.ACCEPTED);
 
     /**
      * Generates a random {@link SubmissionStatus}
@@ -143,7 +145,7 @@ public class DepositMessagingTestUtil {
      * @return
      */
     public static AggregatedDepositStatus randomAggregatedDepositStatusExcept(
-            AggregatedDepositStatus... excludes) {
+        AggregatedDepositStatus... excludes) {
         return random(AggregatedDepositStatus.class, excludes);
     }
 
@@ -155,7 +157,7 @@ public class DepositMessagingTestUtil {
      * @return
      */
     public static AggregatedDepositStatus randomAggregatedDepositStatusExcept(
-            Predicate<AggregatedDepositStatus> excludes) {
+        Predicate<AggregatedDepositStatus> excludes) {
         return random(AggregatedDepositStatus.class, excludes);
     }
 
@@ -182,7 +184,7 @@ public class DepositMessagingTestUtil {
     @SafeVarargs
     public static <T extends Enum<T>> T random(Class<T> clazz, T... excludes) {
         Predicate<String> excludesPredicate =
-                (statusName) -> Stream.of(excludes).anyMatch(toExclude -> toExclude.name().equals(statusName));
+            (statusName) -> Stream.of(excludes).anyMatch(toExclude -> toExclude.name().equals(statusName));
         Enum anEnum = randomFromEnumExcludes(clazz, excludesPredicate);
         return T.valueOf(clazz, anEnum.name());
     }

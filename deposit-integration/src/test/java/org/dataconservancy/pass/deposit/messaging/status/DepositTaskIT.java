@@ -15,42 +15,6 @@
  */
 package org.dataconservancy.pass.deposit.messaging.status;
 
-import org.apache.commons.io.IOUtils;
-import org.dataconservancy.deposit.util.async.Condition;
-import org.dataconservancy.pass.deposit.assembler.PackageOptions;
-import org.dataconservancy.pass.deposit.assembler.PackageStream;
-import org.dataconservancy.pass.deposit.assembler.shared.PreassembledAssembler;
-import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFixture;
-import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
-import org.dataconservancy.pass.deposit.messaging.config.quartz.QuartzConfig;
-import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
-import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
-import org.dataconservancy.pass.deposit.transport.TransportSession;
-import org.dataconservancy.pass.deposit.transport.fs.FilesystemTransport;
-import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
-import org.dataconservancy.pass.model.Deposit;
-import org.dataconservancy.pass.model.Submission;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import submissions.SubmissionResourceUtil;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -63,6 +27,39 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static submissions.SubmissionResourceUtil.lookupStream;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.commons.io.IOUtils;
+import org.dataconservancy.deposit.util.async.Condition;
+import org.dataconservancy.pass.deposit.assembler.PackageOptions;
+import org.dataconservancy.pass.deposit.assembler.PackageStream;
+import org.dataconservancy.pass.deposit.assembler.shared.PreassembledAssembler;
+import org.dataconservancy.pass.deposit.integration.shared.AbstractSubmissionFixture;
+import org.dataconservancy.pass.deposit.messaging.DepositServiceErrorHandler;
+import org.dataconservancy.pass.deposit.messaging.config.quartz.QuartzConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.DepositConfig;
+import org.dataconservancy.pass.deposit.messaging.config.spring.JmsConfig;
+import org.dataconservancy.pass.deposit.transport.TransportSession;
+import org.dataconservancy.pass.deposit.transport.sword2.Sword2Transport;
+import org.dataconservancy.pass.model.Deposit;
+import org.dataconservancy.pass.model.Submission;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * This IT insures that the SWORD transport properly handles the Deposit.depositStatusRef field by updating the
@@ -86,9 +83,10 @@ import static submissions.SubmissionResourceUtil.lookupStream;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = {"pass.deposit.repository.configuration=" +
-        "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositTaskIT.json"})
+                                  "classpath:org/dataconservancy/pass/deposit/messaging/status/DepositTaskIT.json"})
 @Import({DepositConfig.class, JmsConfig.class, QuartzConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)  // the repository configuration json pollutes the context
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+// the repository configuration json pollutes the context
 public class DepositTaskIT extends AbstractSubmissionFixture {
 
     /**
@@ -183,9 +181,10 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
 
         // Wait for the Deposit resource to show up as ACCEPTED (terminal state)
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-                deposit.getDepositStatusRef() != null);
+            deposit.getDepositStatusRef() != null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                Deposit.DepositStatus.ACCEPTED == deposits.iterator().next().getDepositStatus()));
+                                                Deposit.DepositStatus.ACCEPTED == deposits.iterator().next()
+                                                                                          .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         Deposit deposit = deposits.iterator().next();
 
@@ -221,9 +220,10 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         triggerSubmission(submission.getId());
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-                deposit.getDepositStatusRef() == null);
+            deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                                                        .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
 
@@ -241,9 +241,10 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         triggerSubmission(submission.getId());
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-                deposit.getDepositStatusRef() == null);
+            deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                                                        .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
 
@@ -260,9 +261,10 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         triggerSubmission(submission.getId());
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-                deposit.getDepositStatusRef() == null);
+            deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                                                        .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
 
@@ -290,14 +292,16 @@ public class DepositTaskIT extends AbstractSubmissionFixture {
         triggerSubmission(submission.getId());
 
         Condition<Set<Deposit>> c = depositsForSubmission(submission.getId(), 1, (deposit, repo) ->
-                deposit.getDepositStatusRef() == null);
+            deposit.getDepositStatusRef() == null);
         assertTrue(c.awaitAndVerify(deposits -> deposits.size() == 1 &&
-                Deposit.DepositStatus.FAILED == deposits.iterator().next().getDepositStatus()));
+                                                Deposit.DepositStatus.FAILED == deposits.iterator().next()
+                                                                                        .getDepositStatus()));
         Set<Deposit> deposits = c.getResult();
         assertNull(deposits.iterator().next().getDepositStatusRef());
 
         verify(errorHandler).handleError(throwableCaptor.capture());
         assertTrue(throwableCaptor.getValue().getCause().getMessage()
-                .contains("Manifest file references file &apos;pdf3.pdf&apos; not included in the zip."));
+                                  .contains(
+                                      "Manifest file references file &apos;pdf3.pdf&apos; not included in the zip."));
     }
 }

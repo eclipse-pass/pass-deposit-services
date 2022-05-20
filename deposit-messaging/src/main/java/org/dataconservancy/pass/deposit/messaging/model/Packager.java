@@ -15,24 +15,23 @@
  */
 package org.dataconservancy.pass.deposit.messaging.model;
 
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.dataconservancy.pass.deposit.assembler.Assembler;
 import org.dataconservancy.pass.deposit.assembler.PackageOptions;
 import org.dataconservancy.pass.deposit.messaging.config.repository.AssemblerOptions;
 import org.dataconservancy.pass.deposit.messaging.config.repository.RepositoryConfig;
+import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.deposit.messaging.status.DepositStatusProcessor;
 import org.dataconservancy.pass.deposit.transport.Transport;
-import org.dataconservancy.pass.deposit.messaging.service.DepositTask;
 import org.dataconservancy.pass.model.Repository;
 import org.dataconservancy.pass.model.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.lang.Integer.toHexString;
-import static java.lang.System.identityHashCode;
 
 /**
  * Provides a package {@link Assembler} and repository {@link Transport}, along with {@code Map} carrying configuration
@@ -42,7 +41,8 @@ import static java.lang.System.identityHashCode;
  * DepositTask} for assembing packages and performing deposits.  The configuration {@code Registry} is used to
  * configure both the assembler and transport.
  * </p>
- **
+ * *
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class Packager {
@@ -105,19 +105,19 @@ public class Packager {
      */
     public Map<String, Object> getAssemblerOptions() {
         LOG.debug("Packager {}@{} RepositoryConfig: {}", this.getClass().getSimpleName(),
-                toHexString(identityHashCode(this)),
-                (repositoryConfig != null) ? repositoryConfig : "null RepositoryConfig");
+                  toHexString(identityHashCode(this)),
+                  (repositoryConfig != null) ? repositoryConfig : "null RepositoryConfig");
 
         AssemblerOptions assemblerOptions = repositoryConfig.getAssemblerConfig().getOptions();
         if (assemblerOptions == null || assemblerOptions.asOptionsMap() == null ||
-                assemblerOptions.asOptionsMap().isEmpty()) {
+            assemblerOptions.asOptionsMap().isEmpty()) {
             LOG.warn("The assembler {} associated with the packager {} does not have any configured options.  " +
-                    "This may result in assembly failure or corrupt packages.", assembler.getClass().getName(), name);
+                     "This may result in assembly failure or corrupt packages.", assembler.getClass().getName(), name);
         }
 
         Map<String, Object> optionsMap = (assemblerOptions == null || assemblerOptions.asOptionsMap() == null ||
-                assemblerOptions.asOptionsMap().isEmpty()) ?
-                new HashMap<>() : assemblerOptions.asOptionsMap();
+                                          assemblerOptions.asOptionsMap().isEmpty()) ?
+                                         new HashMap<>() : assemblerOptions.asOptionsMap();
 
         // Include the package specification in the options map
         optionsMap.putIfAbsent(PackageOptions.Spec.KEY, repositoryConfig.getAssemblerConfig().getSpec());

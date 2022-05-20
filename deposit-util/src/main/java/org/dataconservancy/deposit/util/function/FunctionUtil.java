@@ -18,6 +18,10 @@ package org.dataconservancy.deposit.util.function;
 
 public class FunctionUtil {
 
+    private FunctionUtil() {
+        //never called
+    }
+
     public static <T> T performSilently(ExceptionThrowingCommand<T> command) {
         try {
             return command.perform();

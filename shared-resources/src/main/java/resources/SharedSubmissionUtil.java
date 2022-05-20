@@ -15,13 +15,13 @@
  */
 package resources;
 
-import org.dataconservancy.pass.deposit.builder.InvalidModel;
-import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
-import org.dataconservancy.pass.deposit.model.DepositSubmission;
+import static submissions.SubmissionResourceUtil.lookupUri;
 
 import java.net.URI;
 
-import static submissions.SubmissionResourceUtil.lookupUri;
+import org.dataconservancy.pass.deposit.builder.InvalidModel;
+import org.dataconservancy.pass.deposit.builder.SubmissionBuilder;
+import org.dataconservancy.pass.deposit.model.DepositSubmission;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.deposit.assembler.shared;
 
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
-
 import java.io.OutputStream;
 import java.util.Map;
+
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -15,16 +15,17 @@
  */
 package org.dataconservancy.pass.deposit.messaging.policy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
-import org.junit.Test;
-
 import static org.dataconservancy.pass.support.messaging.constants.Constants.JmsFcrepoEvent.RESOURCE_CREATION;
 import static org.dataconservancy.pass.support.messaging.constants.Constants.PassType.SUBMISSION_RESOURCE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dataconservancy.pass.deposit.messaging.service.DepositUtil;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -39,7 +40,8 @@ public class AgentPolicyTest {
         when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-equals.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-equals.json");
         assertFalse(underTest.test(mc));
     }
 
@@ -49,7 +51,8 @@ public class AgentPolicyTest {
         when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-not-equal.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-not-equal.json");
         assertTrue(underTest.test(mc));
     }
 
@@ -59,7 +62,8 @@ public class AgentPolicyTest {
         when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-name.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-missing-name.json");
         assertTrue(underTest.test(mc));
     }
 
@@ -69,7 +73,8 @@ public class AgentPolicyTest {
         when(agentPolicy.test(any())).thenReturn(false);
         AgentPolicy underTest = new AgentPolicy(new ObjectMapper(), AGENT_STRING);
 
-        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION, "software-agent-missing-object.json");
+        DepositUtil.MessageContext mc = PolicyTestUtil.withResourceAndEventType(SUBMISSION_RESOURCE, RESOURCE_CREATION,
+                                                                                "software-agent-missing-object.json");
         assertTrue(underTest.test(mc));
     }
 }

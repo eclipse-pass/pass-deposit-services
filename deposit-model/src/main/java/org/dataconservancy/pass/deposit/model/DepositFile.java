@@ -80,14 +80,24 @@ public class DepositFile {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         DepositFile depositFile = (DepositFile) o;
 
-        if (type != depositFile.type) return false;
-        if (name != null ? !name.equals(depositFile.name) : depositFile.name != null) return false;
-        if (label != null ? !label.equals(depositFile.label) : depositFile.label != null) return false;
+        if (type != depositFile.type) {
+            return false;
+        }
+        if (name != null ? !name.equals(depositFile.name) : depositFile.name != null) {
+            return false;
+        }
+        if (label != null ? !label.equals(depositFile.label) : depositFile.label != null) {
+            return false;
+        }
         return location != null ? location.equals(depositFile.location) : depositFile.location == null;
     }
 
@@ -103,11 +113,11 @@ public class DepositFile {
     @Override
     public String toString() {
         return "DepositFile{" +
-                "type=" + type +
-                ", name='" + name + '\'' +
-                ", label='" + label + '\'' +
-                ", location='" + location + '\'' +
-                '}';
+               "type=" + type +
+               ", name='" + name + '\'' +
+               ", label='" + label + '\'' +
+               ", location='" + location + '\'' +
+               '}';
     }
 
 }

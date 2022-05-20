@@ -15,15 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.messaging.support.swordv2;
 
+import static org.dataconservancy.pass.support.messaging.constants.Constants.SWORD.SWORD_STATE;
+
+import java.net.URI;
+
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Feed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-
-import static org.dataconservancy.pass.support.messaging.constants.Constants.SWORD.SWORD_STATE;
 
 /**
  * Utility methods for parsing Atom documents
@@ -48,7 +48,7 @@ public class AtomUtil {
      */
     public static URI parseSwordState(Document<Feed> statementDoc) {
         Category category = statementDoc.getRoot().getCategories(SWORD_STATE).stream()
-                .findFirst().orElse(null);
+                                        .findFirst().orElse(null);
 
         if (category != null) {
             try {
@@ -56,7 +56,7 @@ public class AtomUtil {
             } catch (IllegalArgumentException e) {
                 // An unknown term value, which is exceptional
                 LOG.error("Unable to resolve the term value for Atom <feed>/<category> scheme " + SWORD_STATE + " " +
-                        "as a URI: " + category.getTerm());
+                          "as a URI: " + category.getTerm());
                 throw e;
             }
         }

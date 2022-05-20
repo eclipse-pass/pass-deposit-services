@@ -16,6 +16,8 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
+import java.net.URI;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
-
-import java.net.URI;
 
 /**
  * Parses the global repository configuration file, and returns the configured {@link Repositories}.
@@ -59,6 +59,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
     /**
      * Parses the {@code repositories.json} configuration file.  Each entry in the file represents the configuration for
      * a is mapped to a {@link RepositoryConfig}
+     *
      * @return the configured Repositories object
      * @throws Exception if the object cannot be configured
      */
@@ -70,7 +71,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
 
         if (LOG.isTraceEnabled()) {
             LOG.trace("Configuration dump:\n{}", IOUtils.toString(
-                    repositoryConfigResource.getInputStream(), "UTF-8"));
+                repositoryConfigResource.getInputStream(), "UTF-8"));
         }
 
         JsonNode configNode = mapper.readTree(repositoryConfigResource.getInputStream());
@@ -79,7 +80,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
 
         if (configNode.size() == 0) {
             LOG.warn("Empty Repositories configuration resource, no Repositories will be configured: {}",
-                    repositoryConfigResource);
+                     repositoryConfigResource);
             return result;
         }
 
@@ -91,7 +92,7 @@ public class RepositoriesFactory implements FactoryBean<Repositories> {
                 config = mapper.treeToValue(repositoryConfigNode, RepositoryConfig.class);
             } catch (JsonProcessingException e) {
                 LOG.error("Error processing Repository configuration node from {}:\n{}",
-                        configurationUri, repositoryConfigNode.asText());
+                          configurationUri, repositoryConfigNode.asText());
                 throw new RuntimeException(e);
             }
             config.setRepositoryKey(id);

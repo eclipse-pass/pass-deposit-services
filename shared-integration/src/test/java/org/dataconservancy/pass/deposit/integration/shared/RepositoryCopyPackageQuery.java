@@ -15,6 +15,15 @@
  */
 package org.dataconservancy.pass.deposit.integration.shared;
 
+import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TreeNode;
@@ -31,15 +40,6 @@ import org.dataconservancy.pass.model.RepositoryCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
-
 /**
  * Uses the Elastic Search Query DSL to perform a search for RepositoryCopies with a copy status of
  * "complete" and an access URL that begins with "file:/packages/*".  As it is currently implemented, the
@@ -49,22 +49,27 @@ import static org.dataconservancy.pass.model.RepositoryCopy.CopyStatus.COMPLETE;
  */
 class RepositoryCopyPackageQuery {
 
+    private RepositoryCopyPackageQuery() {
+    }
+
     private static Logger LOG = LoggerFactory.getLogger(RepositoryCopyPackageQuery.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final String QUERY = "{\n" +
-            "  \"size\": \"10000\",\n" +
-            "  \"query\": {\n" +
-            "    \"bool\" : {\n" +
-            "      \"must\": [\n" +
-            "        { \"term\" : { \"@type\" :  \"RepositoryCopy\" } },\n" +
-            "        { \"term\" : { \"copyStatus\" : \"" + COMPLETE.name().toLowerCase() + "\" } },\n" +
-            "        { \"wildcard\": {\"accessUrl\": \"file:/packages/*\" } }\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  }\n" +
-            "}";
+                                        "  \"size\": \"10000\",\n" +
+                                        "  \"query\": {\n" +
+                                        "    \"bool\" : {\n" +
+                                        "      \"must\": [\n" +
+                                        "        { \"term\" : { \"@type\" :  \"RepositoryCopy\" } },\n" +
+                                        "        { \"term\" : { \"copyStatus\" : \"" + COMPLETE.name()
+                                                                                               .toLowerCase() + "\" }" +
+                                        " },\n" +
+                                        "        { \"wildcard\": {\"accessUrl\": \"file:/packages/*\" } }\n" +
+                                        "      ]\n" +
+                                        "    }\n" +
+                                        "  }\n" +
+                                        "}";
 
     private static final MediaType APPLICATION_JSON = MediaType.parse("application/json");
 
@@ -79,15 +84,15 @@ class RepositoryCopyPackageQuery {
 
     private static Request packageQuery(String searchEndpoint) {
         return new Request.Builder()
-                .url(searchEndpoint)
-                .post(RequestBody.create(APPLICATION_JSON, QUERY))
-                .build();
+            .url(searchEndpoint)
+            .post(RequestBody.create(APPLICATION_JSON, QUERY))
+            .build();
     }
 
     private static Collection<RepositoryCopy> parseResponse(Response res, PassJsonAdapter adapter) {
         if (res.body() == null) {
             throw new RuntimeException("Error performing ES search: response code " + res.code() +
-                    " (response body was null)");
+                                       " (response body was null)");
         }
 
         JsonNode rootNode;
@@ -95,7 +100,7 @@ class RepositoryCopyPackageQuery {
         try (InputStream in = res.body().byteStream()) {
             if (res.code() != 200) {
                 throw new RuntimeException("Error performing ES search: response code " + res.code() + ", body:\n" +
-                        IOUtils.toString(in, StandardCharsets.UTF_8));
+                                           IOUtils.toString(in, StandardCharsets.UTF_8));
             }
             rootNode = OBJECT_MAPPER.readTree(in);
         } catch (IOException e) {
