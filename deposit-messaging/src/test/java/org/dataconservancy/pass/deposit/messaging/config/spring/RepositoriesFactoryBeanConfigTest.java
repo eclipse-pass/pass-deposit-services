@@ -47,7 +47,6 @@ public class RepositoriesFactoryBeanConfigTest {
     @Autowired
     private Repositories underTest;
 
-
     @Test
     public void foo() throws Exception {
         assertNotNull(underTest);

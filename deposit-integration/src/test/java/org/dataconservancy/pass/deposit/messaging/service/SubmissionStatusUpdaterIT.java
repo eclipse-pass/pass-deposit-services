@@ -87,17 +87,13 @@ public class SubmissionStatusUpdaterIT extends AbstractSubmissionFixture {
         triggerSubmission(submission.getId());
 
         // wait for the deposit to succeed
-        assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                                                      deposits.size() == submission.getRepositories().size()));
-        assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                                                      deposits.stream().allMatch(
-                                                          d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
-        assertTrue(refreshDeposits.awaitAndVerify(deposits ->
-                                                      deposits.stream().allMatch(d ->
-                                                                                     passClient.readResource(
-                                                                                                   d.getRepositoryCopy(),
-                                                                                                   RepositoryCopy.class)
-                                                                                               .getCopyStatus() == CopyStatus.COMPLETE)));
+        assertTrue(refreshDeposits.awaitAndVerify(deposits -> deposits.size() == submission.getRepositories().size()));
+        assertTrue(refreshDeposits.awaitAndVerify(
+                deposits -> deposits.stream().allMatch(d -> d.getDepositStatus() == DepositStatus.ACCEPTED)));
+        assertTrue(refreshDeposits.awaitAndVerify(
+                deposits -> deposits.stream().allMatch(
+                        d -> passClient.readResource(d.getRepositoryCopy(), RepositoryCopy.class)
+                                .getCopyStatus() == CopyStatus.COMPLETE)));
 
         // insure the Submission is indexed, as the SubmissionStatusUpdater.doUpdate(...) depends on it being indexed
 

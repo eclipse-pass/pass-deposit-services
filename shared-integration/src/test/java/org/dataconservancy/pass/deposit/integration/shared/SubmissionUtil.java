@@ -33,6 +33,9 @@ import org.dataconservancy.pass.model.Submission;
  */
 public class SubmissionUtil {
 
+    private SubmissionUtil() {
+    }
+
     public static Collection<URI> getDepositUris(Submission submission, PassClient passClient) {
         return getIncomingUris(submission, passClient, Deposit.class);
     }

@@ -106,7 +106,6 @@ public class ResourceResolverImpl implements ResourceResolver {
         return resource;
     }
 
-
     private static Optional<BasicAuthRealm> matchRealm(String url, Collection<AuthRealm> authRealms) {
         if (authRealms == null || authRealms.isEmpty()) {
             return Optional.empty();

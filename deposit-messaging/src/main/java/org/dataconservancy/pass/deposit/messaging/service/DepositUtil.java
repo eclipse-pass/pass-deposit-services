@@ -49,14 +49,17 @@ import org.springframework.messaging.Message;
  */
 public class DepositUtil {
 
+    private DepositUtil() {
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(DepositUtil.class);
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private static final String UTC = "UTC";
 
-    private static final TerminalDepositStatusPolicy TERMINAL_DEPOSIT_STATUS_POLICY = new TerminalDepositStatusPolicy
-        (new DepositStatusEvaluator());
+    private static final TerminalDepositStatusPolicy TERMINAL_DEPOSIT_STATUS_POLICY =
+            new TerminalDepositStatusPolicy(new DepositStatusEvaluator());
 
     private static final TerminalSubmissionStatusPolicy TERMINAL_SUBMISSION_STATUS_POLICY = new
         TerminalSubmissionStatusPolicy(new SubmissionStatusEvaluator());
@@ -125,6 +128,7 @@ public class DepositUtil {
                 return JmsProperties.AcknowledgeMode.CLIENT;
             case Session.DUPS_OK_ACKNOWLEDGE:
                 return JmsProperties.AcknowledgeMode.DUPS_OK;
+            default:
         }
 
         throw new RuntimeException("Unknown acknowledgement mode for session: " + mode);
@@ -225,23 +229,23 @@ public class DepositUtil {
      * @return true if the {@code Submission} was marked {@code FAILED}
      */
     public static boolean markSubmissionFailed(URI submissionUri, CriticalRepositoryInteraction cri) {
-        CriticalResult<Submission, Submission> updateResult = cri.performCritical(submissionUri, Submission.class,
-                                                                                  (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(
-                                                                                      submission.getAggregatedDepositStatus()),
-                                                                                  (submission) -> submission.getAggregatedDepositStatus() == FAILED,
-                                                                                  (submission) -> {
-                                                                                      submission.setAggregatedDepositStatus(
-                                                                                          FAILED);
-                                                                                      return submission;
-                                                                                  });
+        CriticalResult<Submission, Submission> updateResult = cri.performCritical(
+                submissionUri, Submission.class,
+                (submission) -> !TERMINAL_SUBMISSION_STATUS_POLICY.test(submission.getAggregatedDepositStatus()),
+                (submission) -> submission.getAggregatedDepositStatus() == FAILED,
+                (submission) -> {
+                    submission.setAggregatedDepositStatus(FAILED);
+                    return submission;
+                });
 
         if (!updateResult.success()) {
-            LOG.debug("Updating status of {} to {} failed: {}", submissionUri, FAILED, updateResult.throwable()
-                                                                                                   .isPresent() ?
-                                                                                       updateResult.throwable()
-                                                                                                                              .get()
-                                                                                                                              .getMessage() : "(missing Throwable cause)",
-                      updateResult.throwable().get());
+            LOG.debug(
+                    "Updating status of {} to {} failed: {}",
+                    submissionUri,
+                    FAILED,
+                    updateResult.throwable().isPresent() ?
+                            updateResult.throwable().get().getMessage() : "(missing Throwable cause)",
+                    updateResult.throwable().get());
         } else {
             LOG.debug("Marked {} as FAILED.", submissionUri);
         }
@@ -261,15 +265,14 @@ public class DepositUtil {
      * @return true if the {@code Deposit} was marked {@code FAILED}
      */
     public static boolean markDepositFailed(URI depositUri, CriticalRepositoryInteraction cri) {
-        CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(depositUri, Deposit.class,
-                                                                            (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(
-                                                                                deposit.getDepositStatus()),
-                                                                            (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
-                                                                            (deposit) -> {
-                                                                                deposit.setDepositStatus(
-                                                                                    Deposit.DepositStatus.FAILED);
-                                                                                return deposit;
-                                                                            });
+        CriticalResult<Deposit, Deposit> updateResult = cri.performCritical(
+                depositUri, Deposit.class,
+                (deposit) -> !TERMINAL_DEPOSIT_STATUS_POLICY.test(deposit.getDepositStatus()),
+                (deposit) -> deposit.getDepositStatus() == Deposit.DepositStatus.FAILED,
+                (deposit) -> {
+                    deposit.setDepositStatus(Deposit.DepositStatus.FAILED);
+                    return deposit;
+                });
 
         if (!updateResult.success()) {
             LOG.debug("Updating status of {} to {} failed: {}", depositUri, Deposit.DepositStatus.FAILED,

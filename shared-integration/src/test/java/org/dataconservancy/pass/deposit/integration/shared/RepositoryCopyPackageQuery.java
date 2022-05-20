@@ -49,6 +49,9 @@ import org.slf4j.LoggerFactory;
  */
 class RepositoryCopyPackageQuery {
 
+    private RepositoryCopyPackageQuery() {
+    }
+
     private static Logger LOG = LoggerFactory.getLogger(RepositoryCopyPackageQuery.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

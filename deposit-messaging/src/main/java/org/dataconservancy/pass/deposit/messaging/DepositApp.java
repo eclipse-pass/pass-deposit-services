@@ -94,7 +94,8 @@ public class DepositApp {
                 }
             } catch (IOException e) {
                 LOG.warn(
-                    "Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
+                    "Starting DepositService (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " +
+                            e.getMessage() + ")");
             }
         }
 
@@ -134,7 +135,7 @@ public class DepositApp {
                 });
                 break;
             }
-//                default: report
+            default:
         }
 
         if (app == null) {

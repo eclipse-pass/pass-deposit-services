@@ -129,10 +129,11 @@ public class SubmissionStatusUpdater {
          *     <li>Submission.submissionStatus must not be 'CANCELLED'</li>
          * </ul>
          */
-        static Predicate<Submission> preCondition = (submission) -> submission.getSubmissionStatus() != null &&
-                                                                    submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
-                                                                    submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
-                                                                    Boolean.TRUE == submission.getSubmitted();
+        static Predicate<Submission> preCondition = (submission) ->
+                submission.getSubmissionStatus() != null &&
+                submission.getSubmissionStatus() != Submission.SubmissionStatus.COMPLETE &&
+                submission.getSubmissionStatus() != Submission.SubmissionStatus.CANCELLED &&
+                Boolean.TRUE == submission.getSubmitted();
 
         /**
          * Verifies the expected state of the Submission after updating Submission.submissionStatus:

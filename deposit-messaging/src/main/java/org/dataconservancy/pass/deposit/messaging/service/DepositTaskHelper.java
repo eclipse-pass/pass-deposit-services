@@ -388,6 +388,7 @@ public class DepositTaskHelper {
                             repoCopy = passClient.updateAndReadResource(repoCopy, RepositoryCopy.class);
                             break;
                         }
+                        default:
                     }
                     return repoCopy;
                 } catch (Exception e) {

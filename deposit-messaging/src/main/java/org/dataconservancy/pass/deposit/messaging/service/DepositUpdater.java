@@ -49,15 +49,13 @@ public class DepositUpdater {
     }
 
     void doUpdate(Collection<URI> depositUris) {
-        depositUris.forEach(depositUri ->
-                            {
-                                try {
-                                    depositHelper.processDepositStatus(depositUri);
-                                } catch (Exception e) {
-                                    LOG.warn("Failed to update {}: {}", depositUri, e.getMessage(), e);
-                                }
-                            }
-                           );
+        depositUris.forEach(depositUri -> {
+            try {
+                depositHelper.processDepositStatus(depositUri);
+            } catch (Exception e) {
+                LOG.warn("Failed to update {}: {}", depositUri, e.getMessage(), e);
+            }
+        });
     }
 
     private static Collection<URI> depositUrisToUpdate(PassClient passClient) {

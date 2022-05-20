@@ -896,8 +896,8 @@ public class SubmissionGraph {
      */
     private static String upperCase(String fieldName) {
         if (Character.isLowerCase(fieldName.charAt(0))) {
-            fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
-                                                                                                     fieldName.length());
+            fieldName = Character.toString(toUpperCase(fieldName.charAt(0))) +
+                    fieldName.subSequence(1, fieldName.length());
         }
         return fieldName;
     }
@@ -963,8 +963,8 @@ public class SubmissionGraph {
             Predicate<PassEntity> withPredicate = (entity -> {
                 String field;
                 if (Character.isLowerCase(fieldName.charAt(0))) {
-                    field = Character.toString(toUpperCase(fieldName.charAt(0))) + fieldName.subSequence(1,
-                                                                                                         fieldName.length());
+                    field = Character.toString(toUpperCase(fieldName.charAt(0))) +
+                            fieldName.subSequence(1, fieldName.length());
                 } else {
                     field = fieldName;
                 }

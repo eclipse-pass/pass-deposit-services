@@ -299,15 +299,13 @@ public abstract class SubmitAndValidatePackagesIT extends AbstractSubmissionFixt
         // each Repository for each Submission.
 
         long expectedRepositoryCopyCount = submissions.stream()
-                                                      .flatMap(submission -> submission.getRepositories().stream())
-                                                      .map(
-                                                          repoUri -> passClient.readResource(repoUri, Repository.class))
-                                                      // Filter out Repositories that have an integration type of web
-                                                      // link, because Deposit Services will not
-                                                      // attempt deposits to those repositories
-                                                      .filter(
-                                                          repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
-                                                      .count();
+              .flatMap(submission -> submission.getRepositories().stream())
+              .map(repoUri -> passClient.readResource(repoUri, Repository.class))
+              // Filter out Repositories that have an integration type of web
+              // link, because Deposit Services will not
+              // attempt deposits to those repositories
+              .filter(repo -> Repository.IntegrationType.WEB_LINK != repo.getIntegrationType())
+              .count();
 
         // A Condition executes this logic, and provides the results (the Set of RepositoryCopy resources created for
         // each Submission)

@@ -232,65 +232,63 @@ public class DepositConfig {
                                            ApplicationContext appCtx) {
 
         Map<String, Packager> packagers = repositories.keys().stream().map(repositories::getConfig)
-                                                      .map(repoConfig -> {
-                                                          String dspBeanName = null;
-                                                          DepositStatusProcessor dsp = null;
-                                                          if (repoConfig.getRepositoryDepositConfig() != null && repoConfig.getRepositoryDepositConfig()
-                                                                                                                           .getDepositProcessing() != null) {
-                                                              dspBeanName = repoConfig.getRepositoryDepositConfig()
-                                                                                      .getDepositProcessing()
-                                                                                      .getBeanName();
-                                                              dsp = null;
-                                                              if (dspBeanName != null) {
-                                                                  dsp = appCtx.getBean(dspBeanName,
-                                                                                       DepositStatusProcessor.class);
-                                                                  repoConfig.getRepositoryDepositConfig()
-                                                                            .getDepositProcessing().setProcessor(dsp);
-                                                              }
-                                                          }
+              .map(repoConfig -> {
+                  String dspBeanName = null;
+                  DepositStatusProcessor dsp = null;
+                  if (repoConfig.getRepositoryDepositConfig() != null &&
+                          repoConfig.getRepositoryDepositConfig().getDepositProcessing() != null) {
+                      dspBeanName = repoConfig.getRepositoryDepositConfig()
+                                              .getDepositProcessing()
+                                              .getBeanName();
+                      dsp = null;
+                      if (dspBeanName != null) {
+                          dsp = appCtx.getBean(dspBeanName, DepositStatusProcessor.class);
+                          repoConfig.getRepositoryDepositConfig()
+                                    .getDepositProcessing().setProcessor(dsp);
+                      }
+                  }
 
-                                                          String repositoryKey = repoConfig.getRepositoryKey();
-                                                          String transportProtocol = repoConfig.getTransportConfig()
-                                                                                               .getProtocolBinding()
-                                                                                               .getProtocol();
-                                                          String assemblerBean = repoConfig.getAssemblerConfig()
-                                                                                           .getBeanName();
+                  String repositoryKey = repoConfig.getRepositoryKey();
+                  String transportProtocol = repoConfig.getTransportConfig()
+                                                       .getProtocolBinding()
+                                                       .getProtocol();
+                  String assemblerBean = repoConfig.getAssemblerConfig()
+                                                   .getBeanName();
 
-                                                          // Resolve the Transport impl from the protocol binding,
-                                                          // currently assumes a 1:1 protocol binding to transport impl
-                                                          Transport transport = transports.values()
-                                                                                          .stream()
-                                                                                          .filter(
-                                                                                              candidate -> candidate.protocol()
-                                                                                                                    .name()
-                                                                                                                    .equalsIgnoreCase(
-                                                                                                                        transportProtocol))
-                                                                                          .findAny()
-                                                                                          .orElseThrow(() ->
-                                                                                                           new RuntimeException(
-                                                                                                               "Missing Transport implementation for protocol binding " +
-                                                                                                               transportProtocol));
+                  // Resolve the Transport impl from the protocol binding,
+                  // currently assumes a 1:1 protocol binding to transport impl
+                  Transport transport = transports.values()
+                      .stream()
+                      .filter(
+                          candidate -> candidate.protocol()
+                                                .name()
+                                                .equalsIgnoreCase(
+                                                    transportProtocol))
+                      .findAny()
+                      .orElseThrow(() ->
+                                       new RuntimeException(
+                                           "Missing Transport implementation for protocol binding " +
+                                           transportProtocol));
 
-                                                          LOG.info(
-                                                              "Configuring Packager for Repository configuration {}",
-                                                              repoConfig.getRepositoryKey());
-                                                          LOG.info("  Repository Key: {}", repositoryKey);
-                                                          LOG.info("  Assembler: {}", assemblerBean);
-                                                          LOG.info("  Transport Binding: {}", transportProtocol);
-                                                          LOG.info("  Transport Implementation: {}", transport);
-                                                          if (dspBeanName != null) {
-                                                              LOG.info("  Deposit Status Processor: {}", dspBeanName);
-                                                          }
+                  LOG.info(
+                      "Configuring Packager for Repository configuration {}",
+                      repoConfig.getRepositoryKey());
+                  LOG.info("  Repository Key: {}", repositoryKey);
+                  LOG.info("  Assembler: {}", assemblerBean);
+                  LOG.info("  Transport Binding: {}", transportProtocol);
+                  LOG.info("  Transport Implementation: {}", transport);
+                  if (dspBeanName != null) {
+                      LOG.info("  Deposit Status Processor: {}", dspBeanName);
+                  }
 
-                                                          return new Packager(repositoryKey,
-                                                                              assemblers.get(assemblerBean),
-                                                                              transport,
-                                                                              repoConfig,
-                                                                              dsp);
-                                                      })
-                                                      .collect(
-                                                          Collectors.toMap(Packager::getName, Function.identity()));
-
+                  return new Packager(repositoryKey,
+                                      assemblers.get(assemblerBean),
+                                      transport,
+                                      repoConfig,
+                                      dsp);
+              })
+              .collect(
+                  Collectors.toMap(Packager::getName, Function.identity()));
 
         return packagers;
     }
@@ -353,9 +351,8 @@ public class DepositConfig {
                                        rejectedTask.getClass().getSimpleName(),
                                        toHexString(identityHashCode(rejectedTask)));
             if (rejectedTask instanceof DepositTask && ((DepositTask) rejectedTask).getDepositWorkerContext() != null) {
-                DepositServiceRuntimeException ex = new DepositServiceRuntimeException(msg, ((DepositTask)
-                                                                                                 rejectedTask).getDepositWorkerContext()
-                                                                                                              .deposit());
+                DepositServiceRuntimeException ex = new DepositServiceRuntimeException(msg,
+                        ((DepositTask) rejectedTask).getDepositWorkerContext().deposit());
                 errorHandler.handleError(ex);
             } else {
                 LOG.error(msg);
@@ -385,9 +382,10 @@ public class DepositConfig {
         return new ResourceResolverImpl(followRedirects);
     }
 
-
-    @Bean(
-        {"defaultDepositStatusProcessor", "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"})
+    @Bean({
+        "defaultDepositStatusProcessor",
+        "org.dataconservancy.pass.deposit.messaging.status.DefaultDepositStatusProcessor"
+    })
     public DefaultDepositStatusProcessor defaultDepositStatusProcessor(DepositStatusResolver<URI, URI> statusResolver) {
         return new DefaultDepositStatusProcessor(statusResolver);
     }

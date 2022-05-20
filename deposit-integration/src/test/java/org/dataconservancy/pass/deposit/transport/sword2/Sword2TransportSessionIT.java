@@ -296,7 +296,6 @@ public class Sword2TransportSessionIT extends BaseIT {
         SwordIdentifier atomStatement = receipt.getAtomStatementLink();
         Link alt = receipt.getEntry().getAlternateLink();
 
-
         assertNotNull(content);
         assertNotNull(treatement);
         assertNotNull(dc);
@@ -334,7 +333,8 @@ public class Sword2TransportSessionIT extends BaseIT {
                 String bodyString = body == null ? "Response body was null " : body.string();
 
                 assertTrue(
-                    "Unexpected response code '" + code + "' when GETting '" + url + "': " + message + "\n" + bodyString,
+                    "Unexpected response code '" + code + "' when GETting '" + url + "': " + message + "\n" +
+                            bodyString,
                     199 < code && code < 300);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("{}", (body == null ? "Response body was null" : bodyString));
@@ -512,7 +512,6 @@ public class Sword2TransportSessionIT extends BaseIT {
                                    "        ]\n" +
                                    "    }\n" + "}";
 
-
         PackageStream.Metadata md = preparePackageMd(sampleZipPackage, SPEC_SIMPLE_ZIP, APPLICATION_ZIP);
         JsonObject submissionMeta = new JsonParser().parse(submissionMetaStr).getAsJsonObject();
         when(md.submissionMeta()).thenReturn(submissionMeta);
@@ -686,7 +685,8 @@ public class Sword2TransportSessionIT extends BaseIT {
         try {
             serviceDoc = swordClient.getServiceDocument(serviceDocEndpoint, authCreds);
             assertNotNull("SWORD Service Document obtained from '" + serviceDocEndpoint + "' (auth creds: " +
-                          "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "' (on-behalf-of: '" + authCreds.getOnBehalfOf() + "') was null.",
+                                "'" + authCreds.getUsername() + "':'" + authCreds.getPassword() + "' (on-behalf-of: '" +
+                                authCreds.getOnBehalfOf() + "') was null.",
                           serviceDoc);
         } catch (Exception e) {
             String msg = String.format("Failed to connect to %s: %s", serviceDocEndpoint, e.getMessage());

@@ -92,42 +92,32 @@ public class SubmissionProcessorIT extends AbstractSubmissionIT {
 
         // 4. The Submission's SubmissionStatus should be changed to COMPLETE
 
-        Condition<Set<Deposit>> deposits = depositsForSubmission(submission.getId(),
-                                                                 submission.getRepositories().size(),
-                                                                 (deposit, repo) -> {
-                                                                     LOG.debug(
-                                                                         "Polling Submission {} for deposit-related " +
-                                                                         "resources",
-                                                                         submission.getId());
-                                                                     LOG.debug("  Deposit: {} {}",
-                                                                               deposit.getDepositStatus(),
-                                                                               deposit.getId());
-                                                                     LOG.debug("  Repository: {} {}", repo.getName(),
-                                                                               repo.getId());
+        Condition<Set<Deposit>> deposits = depositsForSubmission(
+                submission.getId(),
+                submission.getRepositories().size(),
+                (deposit, repo) -> {
+                    LOG.debug("Polling Submission {} for deposit-related resources", submission.getId());
+                    LOG.debug("  Deposit: {} {}", deposit.getDepositStatus(), deposit.getId());
+                    LOG.debug("  Repository: {} {}", repo.getName(), repo.getId());
 
-                                                                     // Transport-dependent part: FilesystemTransport
-                                                                     // .onSuccess(...) sets the correct statuses
+                    // Transport-dependent part: FilesystemTransport
+                    // .onSuccess(...) sets the correct statuses
 
-                                                                     if (deposit.getRepositoryCopy() == null) {
-                                                                         return false;
-                                                                     }
+                    if (deposit.getRepositoryCopy() == null) {
+                        return false;
+                    }
 
-                                                                     RepositoryCopy repoCopy = passClient.readResource(
-                                                                         deposit.getRepositoryCopy(),
-                                                                         RepositoryCopy.class);
+                    RepositoryCopy repoCopy = passClient.readResource(deposit.getRepositoryCopy(),
+                            RepositoryCopy.class);
 
-                                                                     LOG.debug("  RepositoryCopy: {} {} {} {}",
-                                                                               repoCopy.getCopyStatus(),
-                                                                               repoCopy.getAccessUrl(),
-                                                                               String.join(",",
-                                                                                           repoCopy.getExternalIds()),
-                                                                               repoCopy.getId());
+                    LOG.debug("  RepositoryCopy: {} {} {} {}", repoCopy.getCopyStatus(), repoCopy.getAccessUrl(),
+                        String.join(",", repoCopy.getExternalIds()), repoCopy.getId());
 
-                                                                     return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
-                                                                            CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
-                                                                            repoCopy.getAccessUrl() != null &&
-                                                                            repoCopy.getExternalIds().size() > 0;
-                                                                 });
+                    return DepositStatus.ACCEPTED == deposit.getDepositStatus() &&
+                        CopyStatus.COMPLETE == repoCopy.getCopyStatus() &&
+                        repoCopy.getAccessUrl() != null &&
+                        repoCopy.getExternalIds().size() > 0;
+                });
 
         deposits.await();
 

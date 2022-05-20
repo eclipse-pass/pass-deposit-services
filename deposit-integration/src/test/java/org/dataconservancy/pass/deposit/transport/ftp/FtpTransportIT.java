@@ -274,7 +274,6 @@ public class FtpTransportIT extends FtpBaseIT {
         String expectedFilename_01 = "FtpTransportIT-testSendMultipleFiles-01.jpg";
         String expectedFilename_02 = "FtpTransportIT-testSendMultipleFiles-02.jpg";
 
-
         TransportResponse response = transportSession.send(
             resourceAsPackage(expectedFilename_01, this.getClass().getResourceAsStream("/org.jpg"), -1),
             Collections.emptyMap());
@@ -356,12 +355,10 @@ public class FtpTransportIT extends FtpBaseIT {
         ftpClient.setUseEPSVwithIPv4(true);
         ftpClient.enterLocalPassiveMode();
 
-        String prefix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(0,
-                                                                                                expectedDirectoryName.indexOf(
-                                                                                                    ".")) :
-                        expectedDirectoryName;
-        String suffix = (expectedDirectoryName.contains(".")) ? expectedDirectoryName.substring(
-            expectedDirectoryName.indexOf(".")) : "";
+        String prefix = (expectedDirectoryName.contains(".")) ?
+                expectedDirectoryName.substring(0, expectedDirectoryName.indexOf(".")) : expectedDirectoryName;
+        String suffix = (expectedDirectoryName.contains(".")) ?
+                expectedDirectoryName.substring(expectedDirectoryName.indexOf(".")) : "";
 
         assertTrue("Must have a filename prefix!", prefix.length() > 0);
         //directory names may not have a dot in them, so we do not check for a positive length suffix

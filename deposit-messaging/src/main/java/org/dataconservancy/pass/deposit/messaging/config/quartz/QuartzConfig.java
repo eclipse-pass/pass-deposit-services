@@ -69,7 +69,6 @@ public class QuartzConfig {
     @Value("${pass.deposit.jobs.disabled}")
     private boolean disabled;
 
-
     @Bean
     public JobDetail depositUpdaterJobDetail() {
         return JobBuilder.newJob(DepositUpdaterJob.class)

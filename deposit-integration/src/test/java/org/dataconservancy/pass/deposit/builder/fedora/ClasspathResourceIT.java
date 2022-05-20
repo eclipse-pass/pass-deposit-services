@@ -119,7 +119,6 @@ public class ClasspathResourceIT {
         return new EncodingClassPathResource(resourcePath);
     }
 
-
     private static UrlResource asUrlResource(String resource) {
         String resourcePath = "/org/dataconservancy/pass/deposit/builder/fedora" + resource;
         URL u = ClasspathResourceIT.class.getResource(resourcePath);

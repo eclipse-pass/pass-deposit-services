@@ -135,12 +135,11 @@ public class DepositTask implements Runnable {
             throw new DepositServiceRuntimeException(msg, dc.deposit());
         }
 
-        TransportResponse transportResponse = physicalResult.result().orElseThrow(() ->
-                                                                                      new DepositServiceRuntimeException(
-                                                                                          "Missing TransportResponse " +
-                                                                                          "for " +
-                                                                                          dc.deposit().getId(),
-                                                                                          dc.deposit()));
+        TransportResponse transportResponse = physicalResult.result()
+                .orElseThrow(() ->
+                                  new DepositServiceRuntimeException("Missing TransportResponse for " +
+                                      dc.deposit().getId(),
+                                      dc.deposit()));
 
         // Determine *logical* success: was the Deposit accepted by the remote system?
 

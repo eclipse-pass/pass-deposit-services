@@ -64,8 +64,8 @@ public class AssemblerConfig {
             return false;
         }
         AssemblerConfig that = (AssemblerConfig) o;
-        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options) && Objects.equals(beanName,
-                                                                                                          that.beanName);
+        return Objects.equals(spec, that.spec) && Objects.equals(options, that.options) &&
+                Objects.equals(beanName, that.beanName);
     }
 
     @Override

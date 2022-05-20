@@ -32,6 +32,10 @@ import org.springframework.messaging.Message;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class PolicyTestUtil {
+
+    private PolicyTestUtil() {
+    }
+
     static DepositUtil.MessageContext withResourceAndEventType(String resourceType, String eventType)
         throws IOException {
         return withResourceAndEventType(resourceType, eventType, "software-agent-web-browser.json");

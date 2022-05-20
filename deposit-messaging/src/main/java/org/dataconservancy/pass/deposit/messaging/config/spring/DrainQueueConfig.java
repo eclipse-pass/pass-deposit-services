@@ -16,7 +16,6 @@
 
 package org.dataconservancy.pass.deposit.messaging.config.spring;
 
-
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;

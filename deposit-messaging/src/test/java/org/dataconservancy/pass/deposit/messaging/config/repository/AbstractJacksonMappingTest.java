@@ -27,7 +27,6 @@ public abstract class AbstractJacksonMappingTest {
 
     protected ObjectMapper mapper;
 
-
     @Before
     public void setUpObjectMapper() throws Exception {
         mapper = new ObjectMapper();

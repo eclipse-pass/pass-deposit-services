@@ -142,24 +142,25 @@ public class DepositProcessor implements Consumer<Deposit> {
 
                 // Collect Deposits that are attached to the Submission using incoming links
                 // This avoids issues related to querying the index for Deposits
-                Collection<Deposit> deposits = passClient.getIncoming(criSubmission.getId())
-                                                         .getOrDefault(SUBMISSION_REL, Collections.emptySet())
-                                                         .stream()
-                                                         .map((uri) -> {
-                                                             try {
-                                                                 return passClient.readResource(uri, Deposit.class);
-                                                             } catch (RuntimeException e) {
-                                                                 // ignore exceptions whose cause is related to type
-                                                                 // coercion of JSON objects
-                                                                 if (!(e.getCause() instanceof InvalidTypeIdException)) {
-                                                                     throw e;
-                                                                 }
+                Collection<Deposit> deposits = passClient
+                        .getIncoming(criSubmission.getId())
+                        .getOrDefault(SUBMISSION_REL, Collections.emptySet())
+                        .stream()
+                        .map((uri) -> {
+                            try {
+                                return passClient.readResource(uri, Deposit.class);
+                            } catch (RuntimeException e) {
+                                // ignore exceptions whose cause is related to type
+                                // coercion of JSON objects
+                                if (!(e.getCause() instanceof InvalidTypeIdException)) {
+                                    throw e;
+                                }
 
-                                                                 return null;
-                                                             }
-                                                         })
-                                                         .filter(Objects::nonNull)
-                                                         .collect(Collectors.toList());
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
 
                 if (deposits.isEmpty()) {
                     return criSubmission;

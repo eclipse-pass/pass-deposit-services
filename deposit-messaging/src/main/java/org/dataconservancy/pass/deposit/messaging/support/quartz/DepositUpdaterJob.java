@@ -44,5 +44,4 @@ public class DepositUpdaterJob implements Job {
         }
     }
 
-
 }

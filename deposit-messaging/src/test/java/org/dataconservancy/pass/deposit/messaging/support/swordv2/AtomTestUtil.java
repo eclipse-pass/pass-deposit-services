@@ -28,6 +28,9 @@ import org.apache.abdera.parser.stax.FOMParserFactory;
  */
 public class AtomTestUtil {
 
+    private AtomTestUtil() {
+    }
+
     /**
      * Relies on implementation classes present in Abdera to resolve a classpath resource as an Atom feed.
      *

@@ -32,6 +32,9 @@ import org.dataconservancy.pass.model.Submission.SubmissionStatus;
  */
 public class DepositMessagingTestUtil {
 
+    private DepositMessagingTestUtil() {
+    }
+
     private static final Random RANDOM = new Random();
 
     /**
@@ -73,7 +76,6 @@ public class DepositMessagingTestUtil {
      */
     public static Supplier<DepositStatus> randomIntermediateDepositStatus =
         () -> randomDepositStatusExcept(DepositStatus.REJECTED, DepositStatus.ACCEPTED);
-
 
     /**
      * Generates a random {@link SubmissionStatus}

@@ -41,7 +41,6 @@ public class AssemblerConfigMappingTest extends AbstractJacksonMappingTest {
                                                    "      }\n" +
                                                    "    }";
 
-
     @Test
     public void mapAssemblerConfig() throws IOException {
         AssemblerConfig config = mapper.readValue(ASSEMBLER_CONFIG, AssemblerConfig.class);

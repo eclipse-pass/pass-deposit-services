@@ -128,78 +128,72 @@ public class FailedDepositRunner {
                              * The failure to satisfy a pre-condition is *not* considered exceptional, and no action is
                              * taken on the Deposit or any other repository resource if one fails.
                              */
-                                            (d) -> {
-                                                if (deposit.getDepositStatus() != FAILED && deposit.getDepositStatus() != null) {
-                                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
-                                                             "Deposit status must equal 'null' " +
-                                                             "or '" + FAILED + "', but was '" + deposit.getDepositStatus() + "'");
-                                                    return false;
-                                                }
+                            (d) -> {
+                                if (deposit.getDepositStatus() != FAILED && deposit.getDepositStatus() != null) {
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
+                                             "Deposit status must equal 'null' " +
+                                             "or '" + FAILED + "', but was '" + deposit.getDepositStatus() + "'");
+                                    return false;
+                                }
 
-                                                packager[0] = packagerRegistry.get(repo.getName());
-                                                if (packager[0] == null) {
-                                                    LOG.warn(MISSING_PACKAGER,
-                                                             submission.getId(), repo.getId(), deposit.getId(),
-                                                             repo.getName());
-                                                    return false;
-                                                }
+                                packager[0] = packagerRegistry.get(repo.getName());
+                                if (packager[0] == null) {
+                                    LOG.warn(MISSING_PACKAGER,
+                                             submission.getId(), repo.getId(), deposit.getId(),
+                                             repo.getName());
+                                    return false;
+                                }
 
-                                                try {
-                                                    depositSubmission[0] =
-                                                        fcrepoModelBuilder.build(submission.getId().toString());
-                                                } catch (InvalidModel invalidModel) {
-                                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
-                                                             "Failed to build the DepositSubmission model",
-                                                             invalidModel);
-                                                    return false;
-                                                }
+                                try {
+                                    depositSubmission[0] =
+                                        fcrepoModelBuilder.build(submission.getId().toString());
+                                } catch (InvalidModel invalidModel) {
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
+                                             "Failed to build the DepositSubmission model",
+                                             invalidModel);
+                                    return false;
+                                }
 
-                                                if (depositSubmission[0].getFiles() == null ||
-                                                    depositSubmission[0].getFiles().size() < 1) {
-                                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
-                                                             "There are no files attached to " +
-                                                             "the submission " + submission.getId());
-                                                    return false;
-                                                }
+                                if (depositSubmission[0].getFiles() == null ||
+                                    depositSubmission[0].getFiles().size() < 1) {
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
+                                             "There are no files attached to " +
+                                             "the submission " + submission.getId());
+                                    return false;
+                                }
 
-                                                // Each DepositFile must have a URI that links to its content
-                                                String filesMissingLocations = depositSubmission[0].getFiles().stream()
-                                                                                                   .filter(
-                                                                                                       df -> df.getLocation() == null || df.getLocation()
-                                                                                                                                           .trim()
-                                                                                                                                           .length() == 0)
-                                                                                                   .map(
-                                                                                                       DepositFile::getName)
-                                                                                                   .collect(
-                                                                                                       Collectors.joining(
-                                                                                                           ", "));
+                                // Each DepositFile must have a URI that links to its content
+                                String filesMissingLocations = depositSubmission[0].getFiles().stream()
+                                    .filter(df -> df.getLocation() == null || df.getLocation().trim().length() == 0)
+                                    .map(DepositFile::getName)
+                                    .collect(Collectors.joining(", "));
 
-                                                if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
-                                                    String msg = "Update precondition failed for %s: the following " +
-                                                                 "DepositFiles are " +
-                                                                 "missing URIs referencing their binary content: %s";
-                                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
-                                                             format(msg, submission.getId(), filesMissingLocations));
-                                                }
+                                if (filesMissingLocations != null && filesMissingLocations.length() > 0) {
+                                    String msg = "Update precondition failed for %s: the following " +
+                                                 "DepositFiles are " +
+                                                 "missing URIs referencing their binary content: %s";
+                                    LOG.warn(FAILED_TO_PROCESS, deposit.getId(),
+                                             format(msg, submission.getId(), filesMissingLocations));
+                                }
 
-                                                return true;
-                                            },
+                                return true;
+                            },
 
                             /*
                              * The post condition does nothing, at least, it doesn't do anything right now.  In the
                              * future, if the user wants to see the console in the foreground as things progress, this
                              * post condition can track the progress of the retried Deposit.
                              */
-                                            (d) -> true,
+                            (d) -> true,
 
-                                            (d) -> {
-                                                depositTaskHelper.submitDeposit(submission, depositSubmission[0], repo,
-                                                                                deposit,
-                                                                                packager[0]);
+                            (d) -> {
+                                depositTaskHelper.submitDeposit(submission, depositSubmission[0], repo,
+                                                                deposit,
+                                                                packager[0]);
 
-                                                return null;
-                                            }
-                                           );
+                                return null;
+                            }
+                        );
 
                     if (!cr.success()) {
                         if (cr.throwable().isPresent()) {
@@ -275,7 +269,6 @@ public class FailedDepositRunner {
         if (args.containsOption("async")) {
             return MODE.ASYNC;
         }
-
 
         if (args.containsOption("uris")) {
             return MODE.SYNC;

@@ -99,7 +99,6 @@ public class JmsConfig {
                                          Message<String> message,
                                          javax.jms.Message jmsMessage) {
 
-
         DepositUtil.MessageContext mc =
             toMessageContext(resourceType, eventType, timeStamp, id, session, message, jmsMessage);
 
