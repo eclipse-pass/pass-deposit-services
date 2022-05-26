@@ -12,6 +12,16 @@ jobs:
       - run: echo "This is a CI build of branch ${{ github.ref }} in repository ${{ github.repository }}"
       - run: echo "This job was triggered by a ${{ github.event_name }} event and is running on a ${{ runner.os }} server"
 
+  call-workaround:
+    name: Run Parent POM Workaround
+    uses: eclipse-pass/pass-deposit-services/.github/workflows/parent-pom-workaround.yml@main
+
   call-tests-unit:
     name: Run Unit Tests
     uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-unit.yml@main
+    needs: call-workaround
+
+  call-tests-integration:
+    name: Run Unit Tests
+    uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-integration.yml@main
+    needs: call-workaround
