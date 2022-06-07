@@ -71,38 +71,6 @@
   <profiles>
 
     <profile>
-      <id>release</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-gpg-plugin</artifactId>
-              <version>${maven-gpg-plugin.version}</version>
-              <executions>
-                <execution>
-                  <id>sign-artifacts</id>
-                  <phase>verify</phase>
-                  <goals>
-                    <goal>sign</goal>
-                  </goals>
-                </execution>
-              </executions>
-              <configuration>
-                <useAgent>true</useAgent>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
       <id>external</id>
       <activation>
         <property>
@@ -131,13 +99,9 @@
     <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
-    <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
-    <maven.wagon.ssh.version>2.10</maven.wagon.ssh.version>
     <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
-    <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
-    <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
     <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
     <fabric8.docker.maven.plugin.version>0.30.0</fabric8.docker.maven.plugin.version>
     <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
@@ -191,12 +155,6 @@
   <build>
 
     <plugins>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>${maven.release.plugin.version}</version>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -293,22 +251,6 @@
         </plugin>
 
         <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>${maven.deploy.plugin.version}</version>
-          <configuration>
-            <retryFailedDeploymentCount>5</retryFailedDeploymentCount>
-          </configuration>
-          <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.wagon</groupId>
-              <artifactId>wagon-ssh</artifactId>
-              <version>${maven.wagon.ssh.version}</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-remote-resources-plugin</artifactId>
           <version>${maven.remote-resources.plugin.version}</version>
@@ -318,19 +260,6 @@
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
           <version>${spring-boot.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>${maven.release.plugin.version}</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <pushChanges>false</pushChanges>
-            <localCheckout>true</localCheckout>
-            <goals>deploy</goals>
-            <releaseProfiles>release</releaseProfiles>
-          </configuration>
         </plugin>
 
         <plugin>
@@ -355,24 +284,6 @@
               </goals>
             </execution>
           </executions>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <version>${maven-gpg-plugin.version}</version>
-          <executions>
-            <execution>
-              <id>sign-artifacts</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>sign</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <useAgent>true</useAgent>
-          </configuration>
         </plugin>
 
         <plugin>
@@ -672,60 +583,6 @@
     </dependencies>
 
   </dependencyManagement>
-
-  <repositories>
-
-    <repository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>spring-libs-snap</id>
-      <name>Spring Snapshots</name>
-      <url>https://repo.spring.io/libs-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>dc.public.releases</id>
-      <name>Data Conservancy Release Maven Repository</name>
-      <url>http://maven.dataconservancy.org/public/releases/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>dc.public.snapshots</id>
-      <name>Data Conservancy Snapshot Maven Repository</name>
-      <url>http://maven.dataconservancy.org/public/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-
-  </repositories>
-
-  <distributionManagement>
-
-    <repository>
-      <id>maven-central-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-
-    <snapshotRepository>
-      <id>oss.snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-
-  </distributionManagement>
 
   <scm>
     <connection>scm:git:https://github.com/OA-PASS/deposit-services.git</connection>
