@@ -22,6 +22,6 @@ jobs:
     needs: call-workaround
 
   call-tests-integration:
-    name: Run Unit Tests
+    name: Run Integration Tests
     uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-integration.yml@main
     needs: call-workaround
