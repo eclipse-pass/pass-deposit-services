@@ -26,7 +26,7 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
 2. Create a dependency on the core Deposit Services parent POM with `<scope>import</scope>`.
 
             <dependency>
-                <groupId>org.dataconservancy.pass.deposit</groupId>
+                <groupId>org.eclipse.pass.deposit</groupId>
                 <artifactId>deposit-parent</artifactId>
                 <version>${deposit-services.version}</version>
                 <scope>import</scope>
@@ -37,19 +37,19 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
    concrete dependencies when needed):
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>deposit-model</artifactId>
             <version>${deposit-services.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>assembler-api</artifactId>
             <version>${deposit-services.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>shared-assembler</artifactId>
             <version>${deposit-services.version}</version>
         </dependency>
@@ -60,7 +60,7 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>shared-assembler</artifactId>
             <version>${deposit-services.version}</version>
             <classifier>tests</classifier>
@@ -68,14 +68,14 @@ Fortunately, you should be able to extend a base `Assembler` class without havin
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>shared-resources</artifactId>
             <version>${deposit-services.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.dataconservancy.pass.deposit</groupId>
+            <groupId>org.eclipse.pass.deposit</groupId>
             <artifactId>fedora-builder</artifactId>
             <version>${deposit-services.version}</version>
             <scope>test</scope>
@@ -514,7 +514,7 @@ the ["bill of materials"](https://maven.apache.org/guides/introduction/introduct
 , where your Assembler's POM has dependency on the core Deposit Services parent pom with a scope of import:
 
     <dependency>
-       <groupId>org.dataconservancy.pass.deposit</groupId>
+       <groupId>org.eclipse.pass.deposit</groupId>
        <artifactId>deposit-parent</artifactId>
        <version>0.2.0-3.2-SNAPSHOT</version>
        <scope>import</scope>

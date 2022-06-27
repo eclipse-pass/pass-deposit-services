@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.dataconservancy.pass.deposit</groupId>
+    <groupId>org.eclipse.pass.deposit</groupId>
     <artifactId>deposit-parent</artifactId>
     <version>1.1.0-SNAPSHOT</version>
   </parent>
@@ -36,30 +36,30 @@
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass</groupId>
+      <groupId>org.eclipse.pass</groupId>
       <artifactId>pass-model</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>deposit-model</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>assembler-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>builder-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>deposit-util</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
@@ -105,14 +105,14 @@
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>shared-resources</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>shared-assembler</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
@@ -121,13 +121,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>fedora-builder</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.dataconservancy.pass.deposit</groupId>
+      <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>fedora-builder</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
