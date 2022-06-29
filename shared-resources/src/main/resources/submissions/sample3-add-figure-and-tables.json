@@ -58,13 +58,6 @@
     "@type": "Repository"
   },
   {
-    "name": "DASH Repo",
-    "repositoryKey": "dash",
-    "description": "DASH repository",
-    "@id": "fake:repository4",
-    "@type": "Repository"
-  },
-  {
     "awardNumber": "R01EY026617",
     "awardStatus": "active",
     "localKey": "112233",

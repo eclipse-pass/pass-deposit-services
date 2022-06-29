@@ -9,8 +9,7 @@
     "publication": "fake:publication1",
     "repositories": [
       "fake:repository1",
-      "fake:repository3",
-      "fake:repository4"
+      "fake:repository3"
     ],
     "submitter": "fake:user1",
     "grants": [
@@ -55,13 +54,6 @@
     "repositoryKey": "BagIt",
     "description": "Repository for storing bags",
     "@id": "fake:repository3",
-    "@type": "Repository"
-  },
-  {
-    "name": "DASH Repo",
-    "repositoryKey": "dash",
-    "description": "DASH repository",
-    "@id": "fake:repository4",
     "@type": "Repository"
   },
   {
