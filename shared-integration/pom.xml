@@ -25,7 +25,44 @@
 
   <artifactId>shared-integration</artifactId>
 
-  <name>Shared integration test fixtures</name>
+  <name>Eclipse PASS Shared integration test fixtures</name>
+  <description>PASS integration test fixtures</description>
+  <url>https://github.com/eclipse-pass/pass-deposit-services</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Jim Martino</name>
+      <email>jrm@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Mark Patton</name>
+      <email>mpatton@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>John Abrahams</name>
+      <email>jabrah20@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/eclipse-pass/pass-deposit-services.git</connection>
+    <developerConnection>scm:git:ssh://github.com:eclipse-pass/pass-deposit-services.git</developerConnection>
+    <url>http://github.com/eclipse-pass/pass-deposit-services/tree/main</url>
+    <tag>HEAD</tag>
+  </scm>
+
 
   <dependencies>
 
