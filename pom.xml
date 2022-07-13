@@ -80,7 +80,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scp.port>22</scp.port>
 
-    <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
     <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
     <!-- see:
         - https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.4-Release-Notes#integration-tests-with-the-maven-failsafe-plugin
@@ -445,10 +444,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
             <compilerArgument>-Xlint:all</compilerArgument>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
