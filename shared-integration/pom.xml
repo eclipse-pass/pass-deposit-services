@@ -63,7 +63,6 @@
     <tag>HEAD</tag>
   </scm>
 
-
   <dependencies>
 
     <dependency>
