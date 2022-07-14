@@ -80,21 +80,21 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scp.port>22</scp.port>
 
-    <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+    <!-- <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version> -->
     <!-- see:
         - https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.4-Release-Notes#integration-tests-with-the-maven-failsafe-plugin
         - https://issues.apache.org/jira/browse/SUREFIRE-1198
     -->
-    <maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
+    <!-- <maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
     <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
     <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
-    <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
-    <fabric8.docker.maven.plugin.version>0.30.0</fabric8.docker.maven.plugin.version>
-    <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version> -->
+    <!-- <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version> -->
+    <!-- <fabric8.docker.maven.plugin.version>0.30.0</fabric8.docker.maven.plugin.version>
+    <git-commit-plugin.version>2.2.4</git-commit-plugin.version> -->
     <slf4j.version>1.7.25</slf4j.version>
     <logback-classic.version>1.2.3</logback-classic.version>
     <junit.version>4.12</junit.version>
@@ -454,25 +454,25 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.plugin.version}</version>
+          <version>${maven-surefire-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${maven.failsafe.plugin.version}</version>
+          <version>${maven-failsafe-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>${codehaus.build-helper.plugin.version}</version>
+          <version>${build-helper-maven-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>${maven.jar.plugin.version}</version>
+          <version>${maven-jar-plugin.version}</version>
           <configuration>
             <excludes>
               <exclude>**/logback-test.xml</exclude>
@@ -490,25 +490,25 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>${maven.shade.plugin.version}</version>
+          <version>${maven-shade-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>io.fabric8</groupId>
           <artifactId>docker-maven-plugin</artifactId>
-          <version>${fabric8.docker.maven.plugin.version}</version>
+          <version>${docker-maven-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>${maven.resources.plugin.version}</version>
+          <version>${maven-resources-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-remote-resources-plugin</artifactId>
-          <version>${maven.remote-resources.plugin.version}</version>
+          <version>${maven-remote-resources-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -526,10 +526,11 @@
               <link>https://docs.oracle.com/javase/8/docs/api/</link>
               <link>https://commons.apache.org/proper/commons-io/javadocs/api-${commons-io.version}/</link>
               <link>https://commons.apache.org/proper/commons-compress/javadocs/api-${commons-compress.version}/</link>
-              <link>https://commons.apache.org/proper/commons-codec/javadocs/api-${commons-codec.version}/</link>
+              <!-- <link>https://commons.apache.org/proper/commons-codec/javadocs/api-${commons-codec.version}/</link> -->
               <link>https://docs.spring.io/autorepo/docs/spring-framework/${spring-framework.version}/javadoc-api/
               </link>
             </links>
+            <!-- <source>8</source> -->
           </configuration>
           <executions>
             <execution>
