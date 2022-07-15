@@ -14,9 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -26,7 +24,44 @@
   </parent>
 
   <artifactId>shared-integration</artifactId>
-  <name>Shared integration test fixtures</name>
+
+  <name>Eclipse PASS Shared integration test fixtures</name>
+  <description>PASS integration test fixtures</description>
+  <url>https://github.com/eclipse-pass/pass-deposit-services</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Jim Martino</name>
+      <email>jrm@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Mark Patton</name>
+      <email>mpatton@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+    <developer>
+      <name>John Abrahams</name>
+      <email>jabrah20@jhu.edu</email>
+      <organization>The Sheridan Libraries, Johns Hopkins University</organization>
+      <organizationUrl>https://www.library.jhu.edu/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/eclipse-pass/pass-deposit-services.git</connection>
+    <developerConnection>scm:git:ssh://github.com:eclipse-pass/pass-deposit-services.git</developerConnection>
+    <url>http://github.com/eclipse-pass/pass-deposit-services/tree/main</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <dependencies>
 
@@ -115,9 +150,9 @@
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>shared-assembler</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
       <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -130,9 +165,9 @@
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>fedora-builder</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
       <type>test-jar</type>
+      <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -166,5 +201,4 @@
     </dependency>
 
   </dependencies>
-
 </project>

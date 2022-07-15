@@ -14,9 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -26,6 +24,7 @@
   </parent>
 
   <artifactId>deposit-integration</artifactId>
+
   <name>Integration Tests</name>
 
   <properties>
@@ -59,73 +58,6 @@
     <ftp-data-10.port>30009</ftp-data-10.port>
     <ftp-data-11.port>30010</ftp-data-11.port>
   </properties>
-
-
-  <profiles>
-    <profile>
-      <id>external-ftp-server</id>
-      <activation>
-        <property>
-          <name>ftp.server</name>
-        </property>
-      </activation>
-      <properties>
-        <docker.host.address>${ftp.server}</docker.host.address>
-        <ftp.skip>true</ftp.skip>
-      </properties>
-    </profile>
-    <profile>
-      <id>external-dspace-server</id>
-      <activation>
-        <property>
-          <name>dspace.server</name>
-        </property>
-      </activation>
-      <properties>
-        <docker.host.address>${dspace.server}</docker.host.address>
-        <dspace.skip>true</dspace.skip>
-        <postgres.skip>true</postgres.skip>
-      </properties>
-    </profile>
-    <profile>
-      <id>external-fcrepo-server</id>
-      <activation>
-        <property>
-          <name>fcrepo.server</name>
-        </property>
-      </activation>
-      <properties>
-        <fcrepo.skip>true</fcrepo.skip>
-        <pass.fedora.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
-      </properties>
-    </profile>
-    <profile>
-      <id>standard</id>
-      <activation>
-        <property>
-          <name>standard</name>
-        </property>
-      </activation>
-      <properties>
-        <fcrepo.http.port>8080</fcrepo.http.port>
-        <fcrepo.jms.port>61616</fcrepo.jms.port>
-        <dspace.port>8181</dspace.port>
-        <postgres.port>6543</postgres.port>
-        <ftp-control.port>21</ftp-control.port>
-        <ftp-data-01.port>30000</ftp-data-01.port>
-        <ftp-data-02.port>30001</ftp-data-02.port>
-        <ftp-data-03.port>30002</ftp-data-03.port>
-        <ftp-data-04.port>30003</ftp-data-04.port>
-        <ftp-data-05.port>30004</ftp-data-05.port>
-        <ftp-data-06.port>30005</ftp-data-06.port>
-        <ftp-data-07.port>30006</ftp-data-07.port>
-        <ftp-data-08.port>30007</ftp-data-08.port>
-        <ftp-data-09.port>30008</ftp-data-09.port>
-        <ftp-data-10.port>30009</ftp-data-10.port>
-        <ftp-data-11.port>30010</ftp-data-11.port>
-      </properties>
-    </profile>
-  </profiles>
 
   <dependencies>
 
@@ -222,8 +154,8 @@
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>shared-assembler</artifactId>
       <version>${project.parent.version}</version>
-      <classifier>tests</classifier>
       <type>test-jar</type>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
 
@@ -238,24 +170,23 @@
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>fedora-builder</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
       <type>test-jar</type>
+      <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.pass.deposit</groupId>
       <artifactId>shared-integration</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
       <type>test-jar</type>
+      <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
 
   <build>
-
     <plugins>
 
       <plugin>
@@ -536,4 +467,69 @@
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>external-ftp-server</id>
+      <activation>
+        <property>
+          <name>ftp.server</name>
+        </property>
+      </activation>
+      <properties>
+        <docker.host.address>${ftp.server}</docker.host.address>
+        <ftp.skip>true</ftp.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>external-dspace-server</id>
+      <activation>
+        <property>
+          <name>dspace.server</name>
+        </property>
+      </activation>
+      <properties>
+        <docker.host.address>${dspace.server}</docker.host.address>
+        <dspace.skip>true</dspace.skip>
+        <postgres.skip>true</postgres.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>external-fcrepo-server</id>
+      <activation>
+        <property>
+          <name>fcrepo.server</name>
+        </property>
+      </activation>
+      <properties>
+        <fcrepo.skip>true</fcrepo.skip>
+        <pass.fedora.baseurl>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</pass.fedora.baseurl>
+      </properties>
+    </profile>
+    <profile>
+      <id>standard</id>
+      <activation>
+        <property>
+          <name>standard</name>
+        </property>
+      </activation>
+      <properties>
+        <fcrepo.http.port>8080</fcrepo.http.port>
+        <fcrepo.jms.port>61616</fcrepo.jms.port>
+        <dspace.port>8181</dspace.port>
+        <postgres.port>6543</postgres.port>
+        <ftp-control.port>21</ftp-control.port>
+        <ftp-data-01.port>30000</ftp-data-01.port>
+        <ftp-data-02.port>30001</ftp-data-02.port>
+        <ftp-data-03.port>30002</ftp-data-03.port>
+        <ftp-data-04.port>30003</ftp-data-04.port>
+        <ftp-data-05.port>30004</ftp-data-05.port>
+        <ftp-data-06.port>30005</ftp-data-06.port>
+        <ftp-data-07.port>30006</ftp-data-07.port>
+        <ftp-data-08.port>30007</ftp-data-08.port>
+        <ftp-data-09.port>30008</ftp-data-09.port>
+        <ftp-data-10.port>30009</ftp-data-10.port>
+        <ftp-data-11.port>30010</ftp-data-11.port>
+      </properties>
+    </profile>
+  </profiles>
 </project>
