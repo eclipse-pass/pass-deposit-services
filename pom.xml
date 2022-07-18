@@ -25,7 +25,7 @@
 
   <groupId>org.eclipse.pass.deposit</groupId>
   <artifactId>deposit-parent</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
 
   <name>Deposit Services Parent Project</name>
@@ -72,7 +72,7 @@
     <connection>scm:git:https://github.com/eclipse-pass/pass-deposit-services.git</connection>
     <developerConnection>scm:git:https://github.com/eclipse-pass/pass-deposit-services.git</developerConnection>
     <url>https://github.com/eclipse-pass/pass-deposit-services</url>
-    <tag>HEAD</tag>
+    <tag>0.1.0</tag>
   </scm>
 
   <properties>
@@ -131,19 +131,19 @@
       <dependency>
         <groupId>org.eclipse.pass.support.messaging</groupId>
         <artifactId>json</artifactId>
-        <version>${pass-messaging-support.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.eclipse.pass.support.messaging</groupId>
         <artifactId>cri</artifactId>
-        <version>${pass-messaging-support.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.eclipse.pass.support.messaging</groupId>
         <artifactId>constants</artifactId>
-        <version>${pass-messaging-support.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
@@ -341,25 +341,25 @@
       <dependency>
         <groupId>org.eclipse.pass</groupId>
         <artifactId>pass-model</artifactId>
-        <version>${pass-java-client.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.eclipse.pass</groupId>
         <artifactId>pass-data-client</artifactId>
-        <version>${pass-java-client.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.eclipse.pass</groupId>
         <artifactId>pass-status-service</artifactId>
-        <version>${pass-java-client.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.eclipse.pass</groupId>
         <artifactId>pass-json-adapter</artifactId>
-        <version>${pass-java-client.version}</version>
+        <version>0.1.0</version>
       </dependency>
 
       <dependency>

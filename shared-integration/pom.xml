@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.eclipse.pass.deposit</groupId>
     <artifactId>deposit-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>shared-integration</artifactId>
@@ -60,7 +60,7 @@
     <connection>scm:git:git://github.com/eclipse-pass/pass-deposit-services.git</connection>
     <developerConnection>scm:git:ssh://github.com:eclipse-pass/pass-deposit-services.git</developerConnection>
     <url>http://github.com/eclipse-pass/pass-deposit-services/tree/main</url>
-    <tag>HEAD</tag>
+    <tag>0.1.0</tag>
   </scm>
 
   <dependencies>

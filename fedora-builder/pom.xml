@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.eclipse.pass.deposit</groupId>
     <artifactId>deposit-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>fedora-builder</artifactId>
@@ -54,7 +54,7 @@
     <dependency>
       <groupId>org.eclipse.pass</groupId>
       <artifactId>pass-data-client</artifactId>
-      <version>${pass-client.version}</version>
+      <version>0.1.0</version>
     </dependency>
 
     <dependency>
