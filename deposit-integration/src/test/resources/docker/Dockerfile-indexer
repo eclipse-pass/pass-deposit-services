@@ -25,4 +25,4 @@ CMD echo "Munging /etc/hosts for the Travis build..." ; \
       echo "${FCREPO_IP}  localhost" >> /etc/hosts ; \
       cat /etc/hosts ; \
       rm -rf /var/cache/apk/ ; \
-    ./wait_and_start.sh pass-indexer-cli-${PI_VERSION}-SNAPSHOT-shaded.jar ;
+    ./wait_and_start.sh pass-indexer-cli-${PI_VERSION}-shaded.jar ;
