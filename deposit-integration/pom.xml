@@ -233,7 +233,7 @@
           <images>
             <image>
               <alias>ftpserver</alias>
-              <name>${docker.ftp.version}</name>
+              <name>${it.image.ftp.name}</name>
               <run>
                 <skip>${ftp.skip}</skip>
                 <wait>
@@ -261,7 +261,7 @@
             </image>
             <image>
               <alias>postgres</alias>
-              <name>${docker.postgres.version}</name>
+              <name>${it.image.postgres.name}</name>
               <run>
                 <skip>${postgres.skip}</skip>
                 <wait>
@@ -281,7 +281,7 @@
             </image>
             <image>
               <alias>dspace</alias>
-              <name>${docker.dspace.version}</name>
+              <name>${it.image.dspace.name}</name>
               <run>
                 <skip>${dspace.skip}</skip>
                 <wait>
@@ -305,7 +305,7 @@
             </image>
             <image>
               <alias>fcrepo</alias>
-              <name>${docker.fcrepo.version}</name>
+              <name>${it.image.fcrepo.name}</name>
               <run>
                 <skip>${fcrepo.skip}</skip>
                 <wait>
@@ -337,7 +337,7 @@
             </image>
             <image>
               <alias>elasticsearch</alias>
-              <name>${docker.elasticsearch.version}</name>
+              <name>${it.image.elasticsearch.name}</name>
               <run>
                 <skip>${indexer.skip}</skip>
                 <wait>

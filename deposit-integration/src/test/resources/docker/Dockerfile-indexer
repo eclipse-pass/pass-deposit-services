@@ -1,4 +1,4 @@
-FROM ${docker.indexer.version}
+FROM ${it.image.indexer.name}
 
 #
 # In the Deposit Services integration environment on Travis, JMS messages contain URIs to Fedora resources in the
