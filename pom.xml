@@ -88,7 +88,7 @@
     <commons-io.version>2.6</commons-io.version>
     <mockito.version>3.1.0</mockito.version>
     <okhttp.version>3.10.0</okhttp.version>
-    <guava.version>23.5-jre</guava.version>
+    <guava.version>29.0-jre</guava.version>
     <args4j.version>2.33</args4j.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <xstream.version>1.4.10</xstream.version>
